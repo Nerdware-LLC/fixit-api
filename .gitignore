@@ -1,0 +1,54 @@
+######################################################################
+# GitHub Template .gitignore Files 👉 https://github.com/github/gitignore
+# TODO add project-specific entries to .gitignore
+######################################################################
+# NERDWARE gitignore ENTRIES:
+
+# Notes
+TODO*
+FIXME*
+NOTE*
+
+# Security
+*.bak
+*.ca
+*.crt
+*.csr
+*.der
+*.env
+*.env.*
+*.env*
+*.kdb
+*.mwb
+*.org
+*.p12
+*.pem
+*.rnd
+*.smime
+*.sql
+*.ssleay
+schema.json
+
+# Logs
+logs
+*.log
+
+# VSCode Related
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+.history/
+
+# Diagnostic Reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Runtime Data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+######################################################################

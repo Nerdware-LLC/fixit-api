@@ -1,0 +1,22 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.3.0
+    hooks:
+      # Git Style
+      - id: check-added-large-files # Prevent large files from commit (default=500kb)
+      - id: check-merge-conflict
+      - id: check-vcs-permalinks
+      - id: forbid-new-submodules
+      # TODO Upon deploying into production, add "no-commit-to-branch" to protect "main".
+
+      # Common Errors
+      - id: check-executables-have-shebangs
+      - id: check-yaml # Validate yaml file syntax
+      - id: end-of-file-fixer # Ensure files end in newline char
+      - id: trailing-whitespace # Trim superfluous whitespace from eol
+        args: [--markdown-linebreak-ext=md]
+
+      # Security
+      - id: detect-aws-credentials
+        args: ["--allow-missing-credentials"]
+      - id: detect-private-key

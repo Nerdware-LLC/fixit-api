@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - next
+    paths:
+      - "**" # TODO Update path glob to reflect only the project files that should trigger the Release workflow.
+      - ".github/workflows/release.yaml"
+
+jobs:
+  # This job can be deleted once SEMANTIC_RELEASE_TOKEN has been setup.
+  check-required-secret:
+    runs-on: ubuntu-latest
+    outputs:
+      ok: ${{ steps.check-secret.outputs.is_present }}
+    steps:
+      - name: Check for secret required to run Semantic-Release Action
+        id: check-secret
+        shell: bash
+        run: |
+          if [ -n "${{ secrets.SEMANTIC_RELEASE_TOKEN }}" ]; then
+            echo "::set-output name=is_present::true"
+          else
+            echo "::set-output name=is_present::false"
+          fi
+
+  release:
+    # "needs" and "if" can be deleted once SEMANTIC_RELEASE_TOKEN has been setup.
+    needs: [check-required-secret]
+    if: ${{ needs.check-required-secret.outputs.is_present == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v3
+        with:
+          semantic_version: 19.0.3
+          extra_plugins: |
+            @semantic-release/changelog@6.0.1
+            @semantic-release/git@10.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
