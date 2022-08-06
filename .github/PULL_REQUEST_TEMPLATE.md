@@ -1,5 +1,3 @@
-<!-- Thank you for helping to improve this project! -->
-
 ### Type of Change
 
 Please put an `x` in all boxes which are applicable to your pull request:

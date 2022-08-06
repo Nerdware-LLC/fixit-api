@@ -25,7 +25,7 @@ plugins:
 
   - - "@semantic-release/github"
     - addReleases: bottom
-    # TIP: You can add "assignees" here to auto-assign issues on release failure
+      assignees: trevor-anderson
 
   - - "@semantic-release/changelog"
     - changelogFile: "CHANGELOG.md"
