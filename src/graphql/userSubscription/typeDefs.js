@@ -1,0 +1,26 @@
+import { gql } from "apollo-server-express";
+
+export const typeDefs = gql`
+  type UserSubscription {
+    id: ID!
+    currentPeriodEnd: DateTime!
+    productID: String!
+    priceID: String!
+    status: SubscriptionStatus!
+    createdAt: DateTime!
+  }
+
+  enum SubscriptionStatus {
+    active
+    incomplete
+    incomplete_expired
+    trialing
+    past_due
+    canceled
+    unpaid
+  }
+
+  extend type Query {
+    mySubscription: UserSubscription!
+  }
+`;

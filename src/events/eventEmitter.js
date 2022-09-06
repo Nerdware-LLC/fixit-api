@@ -1,0 +1,56 @@
+import { EventEmitter } from "events";
+import { notifyAssigneeNewInvoice } from "./onInvoiceCreated";
+import { notifyAssigneeUpdatedInvoice } from "./onInvoiceUpdated";
+import { notifyAssigneeDeletedInvoice } from "./onInvoiceDeleted";
+import { notifyAssignorPaidInvoice } from "./onInvoicePaid";
+import { notifyAssigneeNewWO } from "./onWorkOrderCreated";
+import { notifyAssigneeUpdatedWO } from "./onWorkOrderUpdated";
+import { notifyAssigneeCancelledWO } from "./onWorkOrderCancelled";
+import { notifyAssignorCompletedWO } from "./onWorkOrderCompleted";
+
+/**
+ * FixitEventEmitter is a simple wrapper around EventEmitter which
+ * allows events to be called as methods on `eventEmitter`, rather
+ * than as string enums passed to the `emit` method.
+ * For each registered event, it creates an emit method and attaches
+ * all event listeners in order.
+ *
+ * Note: An array of all events for which there are listeners can be
+ * obtained via `process.eventNames`.
+ */
+class FixitEventEmitter extends EventEmitter {
+  #FIXIT_EVENT_HANDLERS = {
+    InvoiceCreated: [notifyAssigneeNewInvoice],
+    InvoiceUpdated: [notifyAssigneeUpdatedInvoice],
+    InvoiceDeleted: [notifyAssigneeDeletedInvoice],
+    InvoicePaid: [notifyAssignorPaidInvoice],
+    NewUser: [], // TODO Add "sendWelcomeEmail" here once implemented.
+    WorkOrderCreated: [notifyAssigneeNewWO],
+    WorkOrderUpdated: [notifyAssigneeUpdatedWO],
+    WorkOrderCancelled: [notifyAssigneeCancelledWO],
+    WorkOrderCompleted: [notifyAssignorCompletedWO]
+  };
+  constructor() {
+    super();
+    Object.entries(this.#FIXIT_EVENT_HANDLERS).forEach(([eventName, eventHandlers]) => {
+      // Provide an emit fn for the event
+      this[`emit${eventName}`] = (...args) => this.emit(eventName, ...args);
+      // Register the event's handler fns
+      eventHandlers.forEach((eventHandler) => this.on(eventName, eventHandler));
+    });
+  }
+}
+
+/**
+ * Fixit eventEmitter
+ *
+ * @method `emitInvoiceCreated()` args: (newInvoice)
+ * @method `emitInvoiceUpdated()` args: (updatedInvoice)
+ * @method `emitInvoiceDeleted()` args: (deletedInvoice)
+ * @method `emitNewUser()` args: (newUser)
+ * @method `emitWorkOrderCreated()` args: (newWorkOrder)
+ * @method `emitWorkOrderUpdated()` args: (newWorkOrder, oldWorkOrder)
+ * @method `emitWorkOrderCancelled()` args: (cancelledWorkOrder)
+ * @method `emitWorkOrderCompleted()` args: (completedWorkOrder)
+ */
+export const eventEmitter = new FixitEventEmitter();
