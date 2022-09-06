@@ -137,6 +137,8 @@ dist
 ######################################################################
 # NERDWARE gitignore ENTRIES:
 
+build/
+
 # Notes
 TODO*
 FIXME*
