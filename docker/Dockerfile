@@ -8,9 +8,6 @@
 # Source image: Nodejs LTS (https://hub.docker.com/_/node)
 FROM node:16.17.0 as base
 
-# Add metadata
-LABEL Name=fixit-api Version=1.0.0
-
 # Expose desired port
 EXPOSE 8080
 
