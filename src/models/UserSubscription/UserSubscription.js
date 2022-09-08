@@ -5,12 +5,6 @@ import { UserSubscriptionEnums } from "./UserSubscriptionEnums";
 import { normalizeStripeFields } from "./normalizeStripeFields";
 import { validateExisting, SUBSCRIPTION_STATUSES } from "./validateExisting";
 
-/* These vars kept causing this error: `ReferenceError: Cannot access
-'USER_ID_REGEX' before initialization`. Using a dynamic import solved
-the problem, but it's still unclear why these would be "uninitialized"
-upon being imported normally.  */
-// const { USER_ID_REGEX, USER_ID_REGEX_STR } = import("@models/User");
-
 export const UserSubscription = Model.makeDynamooseModel("UserSubscription", {
   ITEM_SCHEMA: {
     pk: {

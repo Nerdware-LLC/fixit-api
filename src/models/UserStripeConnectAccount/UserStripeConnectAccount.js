@@ -1,11 +1,6 @@
 import { Model } from "@models/_Model";
+import { USER_ID_REGEX, USER_ID_REGEX_STR } from "@models/User";
 import { createOne } from "./createOne";
-
-/* These vars kept causing this error: `ReferenceError: Cannot access
-'USER_ID_REGEX' before initialization`. Using a dynamic import solved
-the problem, but it's still unclear why these would be "uninitialized"
-upon being imported normally.  */
-const { USER_ID_REGEX, USER_ID_REGEX_STR } = import("@models/User");
 
 export const UserStripeConnectAccount = Model.makeDynamooseModel("UserStripeConnectAccount", {
   ITEM_SCHEMA: {
