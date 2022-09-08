@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/node";
+import "@sentry/tracing"; // <-- patches the global hub for tracing to work
 import { ENV } from "@server/env";
 
 Sentry.init({

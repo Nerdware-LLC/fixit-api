@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/node";
 import { logger } from "@utils/logger";
 
 Object.entries({
@@ -5,6 +6,7 @@ Object.entries({
   unhandledRejection: 2
 }).forEach(([errEvent, errExitCode]) => {
   process.on(errEvent, (error) => {
+    Sentry.captureException(error);
     logger.error(error, `Process Error Event: ${errEvent}`);
     process.exitCode = errExitCode;
   });
