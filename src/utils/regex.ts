@@ -17,7 +17,7 @@ export const EMAIL_REGEX = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}$/i;
 export const UNIX_TIMESTAMP_REGEX_STR = "\\d{10}";
 
 // Example v1 UUID: 2c5ea4c0-4067-11e9-8bad-9b1deb4d3b7d
-export const UUID_V1_REGEX_STR = "[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}";
+export const UUID_V1_REGEX_STR = "[a-z0-9]{8}(-[a-z0-9]{4}){3}-[a-z0-9]{12}";
 
 /* Location components are stored separately, despite some having patterns which are
 currently the exact same and therefore duplicative. This is due to the fact that they
