@@ -2,7 +2,7 @@
   "root": true,
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "ecmaVersion": "latest",
+    "ecmaVersion": 2022,
     "sourceType": "module"
   },
   "plugins": ["@typescript-eslint", "jest", "import"],
@@ -38,7 +38,9 @@
     "jest/prefer-to-have-length": "warn",
     "jest/valid-expect": "error",
     "@typescript-eslint/no-explicit-any": "off",
-    "@typescript-eslint/no-non-null-assertion": "off"
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "node/no-extraneous-import": ["error", { "allowModules": ["@jest/globals"] }],
+    "node/no-unpublished-import": ["error", { "allowModules": ["ts-jest", "@jest/types"] }]
   },
   "settings": {
     "import/resolver": {
