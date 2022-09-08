@@ -15,25 +15,19 @@ EXPOSE 8080
 WORKDIR /home/node/app
 
 # Copy over files used by all build stages
-COPY package*.json tsconfig.json apollo.config.js ./
-
-#---------------------------------------------------------------------
-# dev
-
-# This build stage provides an image that can be used for dev purposes
-FROM base as dev
-
-# Copy over fixit-api src files
-COPY src src/
-
-# Install all dependencies
-RUN npm ci
+COPY package*.json apollo.config.js ./
 
 #---------------------------------------------------------------------
 # builder
 
 # This build stage creates the build/ artifact for "prod" build stage
-FROM dev as builder
+FROM base as builder
+
+# Copy over fixit-api tsconfig and src files
+COPY tsconfig.json  src src/
+
+# Install all dependencies
+RUN npm ci
 
 # Create build/ for "prod" stage
 RUN npm run build

@@ -1,5 +1,5 @@
 version: "3.9"
-
+# This docker-compose file provides quick setup for development
 services:
   api:
     container_name: fixit-api
@@ -8,18 +8,13 @@ services:
     working_dir: /home/node/app
     user: node
     volumes:
-      - ".:/home/node/app:ro"
+      - ".:/home/node/app"
+      - "~/.aws/credentials:/home/node/app/.aws/credentials" # FIXME can we symlink instead? This puts .aws dir in local dir >__<
     env_file:
       - src/server/.dev.env
-      # Also .staging.env and .prod.env
     depends_on:
       - dynamodb-local
   dynamodb-local:
     container_name: dynamodb-local
     image: "amazon/dynamodb-local:latest"
-    ports:
-      - "8000:8000"
-    working_dir: /home/dynamodblocal
-    volumes:
-      - "./docker/dynamodb:/home/dynamodblocal/data"
-    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+    ports: ["8000:8000"]
