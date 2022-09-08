@@ -1,5 +1,5 @@
+import dynamoose from "dynamoose";
 import merge from "lodash.merge";
-import { dynamoose } from "@lib/dynamoDBclient";
 import { COMMON_MODEL_ATTRIBUTES } from "./commonModelAttributes";
 import { COMMON_MODEL_METHODS } from "./commonModelMethods";
 
