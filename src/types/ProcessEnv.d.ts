@@ -1,10 +1,11 @@
 export {};
 
-// Ambient definitions
 declare global {
   namespace NodeJS {
-    // For process.env values
-    export interface ProcessEnv {
+    /**
+     * process.env fields (see src/server/env)
+     */
+    interface ProcessEnv {
       NODE_ENV: "development" | "test" | "ci" | "staging" | "production";
       npm_package_version: string;
       SELF_URI: string;
@@ -14,6 +15,8 @@ declare global {
       JWT_PRIVATE_KEY: string;
       SENTRY_DSN: string;
       STRIPE_API_VERSION: string;
+      STRIPE_WEBHOOKS_SECRET: string;
+      STRIPE_WEBHOOK_SECRETS_BUCKET: string;
       STRIPE_PUBLISHABLE_KEY: string;
       STRIPE_SECRET_KEY: string;
       STRIPE_CONNECT_ONBOARDING_REDIRECT_ROUTE: string;
@@ -25,7 +28,4 @@ declare global {
       STRIPE_VIP_PROMO_CODE_ID: string;
     }
   }
-
-  // Global fallback definition for errors
-  export type ErrorLike = Error | string | any;
 }
