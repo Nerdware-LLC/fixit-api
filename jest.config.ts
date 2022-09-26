@@ -35,19 +35,17 @@ const config: Config.InitialOptions = {
   ),
   preset: "ts-jest/presets/default-esm",        /* A preset that is used as a base for Jest's configuration */
   roots: ["<rootDir>"],                         /* A list of paths to directories that Jest should use to search for files in */
-  setupFiles: ["dotenv/config"],                /* The paths to modules that run some code to configure or set up the testing environment before each test */
+  setupFiles: ["dotenv/config"],                /* Paths to modules that run BEFORE "setupFilesAfterENV" and test suite files */
   testEnvironment: "node",                      /* The test environment that will be used for testing */
   testMatch: [                                  /* The glob patterns Jest uses to detect test files */
-    "**/__tests__/**/*.[tj]s",
-    "**/?(*.)+(spec|test).[tj]s"
+    "<rootDir>/src/**/*.test.[tj]s"
   ],
   transform: {                                  /* A map from regular expressions to paths to transformers */
     "^.+.(js|ts)$": "ts-jest"
   },
   transformIgnorePatterns: [                    /* An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation */
     "node_modules/"
-  ],
-  verbose: false                                /* Indicates whether each individual test should be reported during the run */
+  ]
 };
 
 export default config;
