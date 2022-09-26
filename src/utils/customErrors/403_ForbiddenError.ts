@@ -1,14 +1,14 @@
-import { ENV } from "@server/env";
-import { CustomErrorAbstractClass } from "./CustomErrorAbstractClass";
+import { CustomHttpErrorAbstractClass } from "./CustomHttpErrorAbstractClass";
 
-export class ForbiddenError extends CustomErrorAbstractClass {
+export class ForbiddenError extends CustomHttpErrorAbstractClass {
+  name: string;
+  status: number;
+  statusCode: number;
+
   constructor(message = "Forbidden") {
     super(message);
     this.name = "ForbiddenError";
     this.status = 403;
-    this.statusCode = 403;
-    this.message = message;
-
-    if (!ENV.IS_PROD) Error.captureStackTrace(this, ForbiddenError);
+    this.statusCode = this.status;
   }
 }

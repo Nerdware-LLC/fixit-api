@@ -1,14 +1,14 @@
-import { ENV } from "@server/env";
-import { CustomErrorAbstractClass } from "./CustomErrorAbstractClass";
+import { CustomHttpErrorAbstractClass } from "./CustomHttpErrorAbstractClass";
 
-export class AuthError extends CustomErrorAbstractClass {
+export class AuthError extends CustomHttpErrorAbstractClass {
+  name: string;
+  status: number;
+  statusCode: number;
+
   constructor(message = "Authentication required") {
     super(message);
     this.name = "AuthError";
     this.status = 401;
-    this.statusCode = 401;
-    this.message = message;
-
-    if (!ENV.IS_PROD) Error.captureStackTrace(this, AuthError);
+    this.statusCode = this.status;
   }
 }

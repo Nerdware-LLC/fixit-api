@@ -1,14 +1,14 @@
-import { ENV } from "@server/env";
-import { CustomErrorAbstractClass } from "./CustomErrorAbstractClass";
+import { CustomHttpErrorAbstractClass } from "./CustomHttpErrorAbstractClass";
 
-export class NotFoundError extends CustomErrorAbstractClass {
+export class NotFoundError extends CustomHttpErrorAbstractClass {
+  name: string;
+  status: number;
+  statusCode: number;
+
   constructor(message = "Unable to find the requested resource") {
     super(message);
     this.name = "NotFoundError";
     this.status = 404;
-    this.statusCode = 404;
-    this.message = message;
-
-    if (!ENV.IS_PROD) Error.captureStackTrace(this, NotFoundError);
+    this.statusCode = this.status;
   }
 }
