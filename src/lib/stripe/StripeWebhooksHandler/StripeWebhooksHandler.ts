@@ -1,22 +1,8 @@
-import { s3client } from "@lib/s3client";
-import { ENV } from "@server/env";
-import { InternalServerError } from "@utils";
 import { connectAccountUpdated } from "./connectAccountUpdated";
 import { customerSubscriptionUpdated } from "./customerSubscriptionUpdated";
 import { customerSubscriptionDeleted } from "./customerSubscriptionDeleted";
-
-// Get Stripe webhook secrets json file
-const stripeWebhookSecretsFileStr = await s3client.getObject({
-  // FIXME perms error on call to get this
-  Bucket: ENV.STRIPE.WEBHOOK_SECRETS_BUCKET,
-  Key: "stripeWebhookSecrets.json"
-});
-
-if (!stripeWebhookSecretsFileStr) {
-  throw new InternalServerError("Failed to obtain Stripe webhook secrets");
-}
-
-const stripeWebhookSecrets = JSON.parse(stripeWebhookSecretsFileStr);
+import { stripeWebhookSecrets } from "./getStripeWebhookSecrets";
+import type { StripeWebhooksHandlerRoute } from "./routes";
 
 export class StripeWebhooksHandler {
   static PATHS: Record<StripeWebhooksHandlerRoute, StripeWebhooksHandlerRouteConfig> = {
@@ -63,30 +49,28 @@ export class StripeWebhooksHandler {
   };
 
   // This is used in webhooksRouter to quickly log event info
-  static EVENT_ACTIONABILITY_LOG_PREFIX: Record<string, string> = Object.values(this.PATHS).reduce(
-    (accum, webhooksPathConfig) => {
-      Object.keys(webhooksPathConfig.actionableEventHandlers).forEach((actionableEvent) => {
-        Object.defineProperty(accum, actionableEvent, {
-          value: "(Actionable Event)"
-        });
-      });
+  // prettier-ignore
+  static EVENT_ACTIONABILITY_LOG_PREFIX: Record<string, string> =
+    Object.values(this.PATHS).reduce<Record<string, string>>(
+      (accum, webhooksPathConfig) => {
+        const { actionableEventHandlers, nonActionableEvents } = webhooksPathConfig;
 
-      webhooksPathConfig.nonActionableEvents.forEach((nonActionableEvent) => {
-        Object.defineProperty(accum, nonActionableEvent, {
-          value: "(Non-Actionable Event)"
+        Object.keys(actionableEventHandlers).forEach((actionableEvent) => {
+          accum[actionableEvent] = "(Actionable Event)";
         });
-      });
 
-      return accum;
-    },
-    {} // <-- init accumulator object
-  );
+        nonActionableEvents.forEach((nonActionableEvent) => {
+          accum[nonActionableEvent] = "(Non-Actionable Event)";
+        });
+
+        return accum;
+      },
+    {});
 }
 
-export type StripeWebhooksHandlerRoute = "/account" | "/customer";
-export interface StripeWebhooksHandlerRouteConfig {
+interface StripeWebhooksHandlerRouteConfig {
   connect?: boolean;
-  actionableEventHandlers: Record<string, (...args: any[]) => Promise<void>>;
+  actionableEventHandlers: Record<string, (...args: unknown[]) => Promise<void>>;
   nonActionableEvents: string[];
   secret: string;
 }
