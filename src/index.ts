@@ -8,9 +8,7 @@ const server = expressApp.listen(ENV.CONFIG.PORT, () => {
   logger.server("👂 Server is listening.");
 });
 
-["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signalType) => {
-  process.once(signalType, () => {
-    logger.server(`📢 ${signalType} signal detected. Closing connections ...`);
-    server.close(() => logger.server(`(${signalType}) Connections closed.`));
-  });
+process.on("exit", () => {
+  logger.server("(PROC EXIT) API Server: closing connections ...");
+  server.close(() => logger.server("(PROC EXIT) API Server: connections closed."));
 });

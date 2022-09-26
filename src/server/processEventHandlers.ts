@@ -12,6 +12,10 @@ Object.entries({
   });
 });
 
+["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signalType) => {
+  process.once(signalType, () => process.exit(process?.exitCode ?? 0));
+});
+
 process.on("exit", (exitCode) => {
   if (exitCode === 0) {
     logger.server("Exiting Process [EXIT 0]");
