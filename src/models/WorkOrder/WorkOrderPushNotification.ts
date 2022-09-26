@@ -1,6 +1,7 @@
-import type { WorkOrderType, Location } from "./types";
+import { PushNotification } from "@events/PushNotification";
+import type { WorkOrderType } from "./types";
 
-export class WorkOrderPushNotification {
+export class WorkOrderPushNotification extends PushNotification {
   static PUSH_EVENTS: Record<string, { title: string; body: string }> = {
     WorkOrderAssigned: {
       title: "New Work Order",
@@ -24,38 +25,23 @@ export class WorkOrderPushNotification {
     }
   };
 
-  to?: string;
-  title: string;
-  body: string;
-  data: {
-    _recipientUser: string;
-    _eventName: WorkOrderPushNotificationEventName;
-    workOrderID: string;
-    location: Location;
-  };
-
   constructor({
     pushEventName,
-    recipientUser: { id: userID, expoPushToken },
+    recipientUser,
     workOrder: { id: workOrderID, location }
   }: {
     pushEventName: WorkOrderPushNotificationEventName;
     recipientUser: { id: string; expoPushToken?: string };
     workOrder: WorkOrderType;
   }) {
-    // push token may not be present for fns which batchGet them later on
-    if (expoPushToken) this.to = expoPushToken;
+    super({
+      pushEventName,
+      recipientUser,
+      ...WorkOrderPushNotification.PUSH_EVENTS[pushEventName]
+    });
 
-    const { title, body } = WorkOrderPushNotification.PUSH_EVENTS[pushEventName];
-
-    this.title = title;
-    this.body = body;
-    this.data = {
-      _recipientUser: userID,
-      _eventName: pushEventName,
-      workOrderID,
-      location
-    };
+    this.data.workOrderID = workOrderID;
+    this.data.location = location;
   }
 }
 
