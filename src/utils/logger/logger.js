@@ -8,8 +8,8 @@ export const logger = {
     messageColor: colors.red.bold
   }),
   debug: getLogFnFromTemplate("DEBUG"),
+  test: getLogFnFromTemplate("TEST", { messageColor: colors.bgGreen.black.bold }),
   error: getLogFnFromTemplate("ERROR", { messageColor: colors.red }),
-  auth: getLogFnFromTemplate("AUTH", { messageColor: colors.cyan }),
   gql: getLogFnFromTemplate("GQL", { messageColor: colors.magenta }),
   stripe: getLogFnFromTemplate("STRIPE", { messageColor: colors.green }),
   dynamodb: getLogFnFromTemplate("DynamoDB", { messageColor: colors.blue }),
