@@ -38,7 +38,7 @@
     }
   },
   "include": ["src/**/*"],
-  "exclude": [".github/**/*", "node_modules/**/*", "**/*.spec.ts"],
+  "exclude": [".*/**/*", "node_modules/**/*", "build/**/*"],
   "ts-node": {
     "files": true,
     "esm": true,
