@@ -8,5 +8,6 @@
 !src/**/*.js
 
 **/__tests__
-**/__mocks*
-**/*.spec.*
+**/*_mocks*
+**/*.test.ts
+**/*.test.js

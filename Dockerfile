@@ -24,13 +24,17 @@ COPY package*.json apollo.config.js ./
 FROM base as builder
 
 # Copy over fixit-api tsconfig and src files
-COPY tsconfig.json  src src/
+COPY tsconfig.json src src/
 
 # Install all dependencies
 RUN npm ci
 
 # Create build/ for "prod" stage
 RUN npm run build
+
+# Ensure test files are not included in the build
+RUN find ./build -type d -name '__tests__' -exec rm -rf {} 2>/dev/null \; \
+  && find ./build -type f -name '*.test.js' -exec rm -f {} \;
 
 #---------------------------------------------------------------------
 # prod
