@@ -13,6 +13,16 @@ Use "REGEX_STR" values via `new RegExp()` syntax. */
 
 export const EMAIL_REGEX = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}$/i;
 
+/**
+ * Phone number regex pattern. Valid examples:
+ * - `(123) 456-7890`
+ * - `(123)456-7890`
+ * - `123-456-7890`
+ * - `123-4567890`
+ * - `1234567890`
+ */
+export const PHONE_REGEX = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
+
 // Unix timestamps will be 10 digits until Nov 20 2286
 export const UNIX_TIMESTAMP_REGEX_STR = "\\d{10}";
 
