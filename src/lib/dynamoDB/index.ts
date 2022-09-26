@@ -1,0 +1,1 @@
+export { ddbSingleTable } from "./ddbSingleTable";

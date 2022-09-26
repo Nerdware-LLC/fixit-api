@@ -1,0 +1,52 @@
+import type { TableKeysSchemaType, ModelSchemaType } from "./schema.types";
+
+// DDBSingleTableClient instance property generics:
+
+export type ClientInstanceTableKeys<TableKeysSchema extends TableKeysSchemaType> = {
+  hashKey: TableHashKey<TableKeysSchema>[keyof TableHashKey<TableKeysSchema>];
+  rangeKey: TableRangeKey<TableKeysSchema>[keyof TableRangeKey<TableKeysSchema>];
+};
+
+// DDBSingleTableClient method parameter generics:
+
+export type TableHashKey<Schema extends TableKeysSchemaType | ModelSchemaType> = {
+  [K in keyof PickMatching<Schema, { isHashKey: true }>]: string;
+};
+
+export type TableRangeKey<Schema extends TableKeysSchemaType | ModelSchemaType> = {
+  [K in keyof PickMatching<Schema, { isHashKey: true }>]: string;
+};
+
+export type ItemPrimaryKeys<Schema extends TableKeysSchemaType | ModelSchemaType> = {
+  [K in keyof PickMatching<Schema, { isHashKey: true } | { isRangeKey: true }>]: string;
+};
+
+export type ItemNonKeyAttributes<Schema extends ModelSchemaType> = {
+  [K in keyof PickNonMatching<Schema, { isHashKey: true } | { isRangeKey: true }>]: string;
+};
+
+/**
+ * This generic provides type definitions for the DynamoDB "opts" parameters used
+ * in DDBSingleTableClient methods. It takes a DDB client command class `<C>`,
+ * and returns it's lone constructor parameter - an object - with certain fields
+ * ommitted. The list of ommitted fields includes all parameters identified as
+ * "legacy parameters" in the DynamoDB API documentation, as well as any parameters
+ * which are either provided by DDBSingleTableClient instances (like "TableName"),
+ * or moved to the method's first positional parameter (like "Key").
+ */
+export type DDBSingleTableCommandParameters<C extends abstract new (...args: any) => any> = Expand<
+  Omit<
+    ConstructorParameters<C>[0],
+    | "TableName" //            Handled by DDBSingleTableClient methods
+    | "Key" //                  Handled by DDBSingleTableClient methods
+    | "Item" //                 Handled by DDBSingleTableClient methods
+    | "RequestItems" //         Handled by DDBSingleTableClient methods
+    | "AttributesToGet" //      Legacy param: instead use ProjectionExpression
+    | "AttributeUpdates" //     Legacy param: instead use UpdateExpression
+    | "ConditionalOperator" //  Legacy param: instead use ConditionExpression (for Query/Scan, instead use FilterExpression)
+    | "Expected" //             Legacy param: instead use ConditionExpression
+    | "KeyConditions" //        Legacy param: instead use KeyConditionExpression
+    | "QueryFilter" //          Legacy param: instead use FilterExpression
+    | "ScanFilter" //           Legacy param: instead use FilterExpression
+  >
+>;
