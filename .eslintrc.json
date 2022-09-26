@@ -10,6 +10,7 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
     "plugin:node/recommended",
     "plugin:jest/recommended"
   ],
@@ -29,16 +30,14 @@
   "rules": {
     "no-console": "off",
     "semi": ["error", "always"],
-    "node/no-missing-import": "off",
-    "node/no-unsupported-features/es-syntax": "off",
     "node/no-process-env": "error",
     "jest/no-disabled-tests": "warn",
     "jest/no-focused-tests": "error",
     "jest/no-identical-title": "error",
     "jest/prefer-to-have-length": "warn",
     "jest/valid-expect": "error",
-    "@typescript-eslint/no-explicit-any": "off",
-    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-non-null-assertion": "warn",
     "node/no-extraneous-import": ["error", { "allowModules": ["@jest/globals"] }],
     "node/no-unpublished-import": ["error", { "allowModules": ["ts-jest", "@jest/types"] }]
   },
