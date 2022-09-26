@@ -1,14 +1,12 @@
 import faker from "faker/locale/en_US";
 import { WorkOrderEnums } from "@models/WorkOrder";
 
-// https://www.npmjs.com/package/faker
-
 const makeFakeEnum = (enumArray) =>
   enumArray[faker.random.number({ min: 0, max: enumArray.length - 1 })];
 const BOOLS = [0, 1];
 const makeFakeBool = () => !!BOOLS[faker.random.number({ min: 0, max: 1 })];
 
-// FIXME update ID mocks
+// FIXME update Faker mocks
 
 const makeFakeUser = () => ({
   __typename: "User",
@@ -32,7 +30,6 @@ const makeFakeProfile = () => ({
 const makeFakeContact = () => ({
   __typename: "Contact",
   id: faker.random.number()
-  // FIXME
 });
 
 const makeFakeWO = () => ({
