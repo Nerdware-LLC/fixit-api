@@ -94,11 +94,32 @@ export class DDBSingleTable<TableKeysSchema extends TableKeysSchemaType> {
       }
     });
 
-    return new Model<Schema, AliasedModelSchemaType<Schema>>(
+    const newModel = new Model<Schema, AliasedModelSchemaType<Schema>>(
       modelName,
       merge(this.tableKeysSchema, modelSchema),
       modelSchemaOptions,
       this.ddbClient
     );
+
+    // If addModelMethods was provided, bind them here.
+    if (modelSchemaOptions?.addModelMethods) {
+      Object.entries(modelSchemaOptions.addModelMethods).forEach(([methodName, methodFn]) => {
+        // Ensure 'methodName' is not already present, throw error if so.
+        if (Object.prototype.hasOwnProperty.call(newModel, methodName)) {
+          throw new SchemaValidationError(
+            `"${modelName}" Model schema options contains additional methods with names which already exist on "${modelName}".`
+          );
+        }
+
+        Object.defineProperty(newModel, methodName, {
+          value: methodFn.bind(newModel),
+          writable: false,
+          enumerable: false,
+          configurable: false
+        });
+      });
+    }
+
+    return newModel;
   };
 }
