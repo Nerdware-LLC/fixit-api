@@ -1,5 +1,7 @@
+import merge from "lodash.merge";
 import { DDBSingleTableClient } from "./DDBSingleTableClient";
 import { ensureTableIsActive } from "./ensureTableIsActive";
+import { SchemaValidationError } from "./customErrors";
 import { Model } from "./Model";
 import type { DynamoDBClientConfig } from "@aws-sdk/client-dynamodb";
 import type { TranslateConfig } from "@aws-sdk/lib-dynamodb";
@@ -7,6 +9,7 @@ import type {
   TableKeysSchemaType,
   ModelSchemaType,
   ModelSchemaOptions,
+  AliasedModelSchemaType,
   DDBTableProperties
 } from "./types";
 
@@ -72,6 +75,30 @@ export class DDBSingleTable<TableKeysSchema extends TableKeysSchemaType> {
     modelSchema: Schema,
     modelSchemaOptions: ModelSchemaOptions = {}
   ) => {
-    return new Model<Schema>(modelName, modelSchema, modelSchemaOptions, this.ddbClient);
+    // Ensure all table keys are present in the schema and that "type" is the same if provided.
+    Object.keys(this.tableKeysSchema).forEach((tableKey) => {
+      if (!(tableKey in modelSchema)) {
+        throw new SchemaValidationError(
+          `"${modelName}" Model schema does not contain key attribute "${tableKey}".`
+        );
+      }
+
+      // Ensure the Model schema doesn't specify an invalid "type" in key configs.
+      if (
+        Object.prototype.hasOwnProperty.call(modelSchema[tableKey], "type") &&
+        modelSchema[tableKey].type !== this.tableKeysSchema[tableKey].type
+      ) {
+        throw new SchemaValidationError(
+          `"${modelName}" Model schema defines a different "type" for "${tableKey}" than is specified in the Table Keys Schema.`
+        );
+      }
+    });
+
+    return new Model<Schema, AliasedModelSchemaType<Schema>>(
+      modelName,
+      merge(this.tableKeysSchema, modelSchema),
+      modelSchemaOptions,
+      this.ddbClient
+    );
   };
 }

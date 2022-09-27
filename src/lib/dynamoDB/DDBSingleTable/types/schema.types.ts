@@ -6,7 +6,7 @@
 export type ModelSchemaAttributeConfig = Readonly<{
   alias?: string;
   type: "string" | "number" | "boolean" | "Buffer" | "Date" | "map" | "array";
-  schema?: ModelSchemaNestedAttributes;
+  schema?: ModelSchemaNestedAttributes; // TODO Note in docs that max nest depth = 5 (setting a max solves infinite type recursive instantiation problem)
   isHashKey?: boolean; //  default false
   isRangeKey?: boolean; // default false
   index?: {
@@ -17,10 +17,10 @@ export type ModelSchemaAttributeConfig = Readonly<{
     throughput?: { read: number; write: number }; // don't set this when billing mode is PAY_PER_REQUEST
   };
   // Properties used by Model `toDB` and `fromDB` methods, in order of usage:
-  default?: any; // TODO Have schema attribute "default" type match schema "type".
+  default?: unknown; // TODO Have schema attribute "default" type match schema "type".
   transformValue?: {
-    toDB?: (inputValue: unknown) => any; // <-- Fn to modify value before `validate` fn is called; use for normalization.
-    fromDB?: (dbValue: unknown) => any; // <-- Fn to modify value returned from DDB client; use to format/prettify values.
+    toDB?: (inputValue: unknown) => unknown; // <-- Fn to modify value before `validate` fn is called; use for normalization.
+    fromDB?: (dbValue: unknown) => unknown; // <-- Fn to modify value returned from DDB client; use to format/prettify values.
   };
   validate?: (value: unknown) => boolean;
   required?: boolean; // default false
@@ -37,8 +37,8 @@ export type ModelSchemaType = Record<string, ModelSchemaAttributeConfig>;
 export type ModelSchemaOptions = {
   allowUnknownAttributes?: boolean; // default false
   transformItem?: {
-    toDB?: (item: unknown) => any; // <-- Fn to modify entire Item before `validate` fn is called
-    fromDB?: (item: unknown) => any; // <-- Fn to modify entire Item returned from DDB client
+    toDB?: (item: unknown) => unknown; // <-- Fn to modify entire Item before `validate` fn is called
+    fromDB?: (item: unknown) => unknown; // <-- Fn to modify entire Item returned from DDB client
   };
   validateItem?: (item: unknown) => boolean;
 };
