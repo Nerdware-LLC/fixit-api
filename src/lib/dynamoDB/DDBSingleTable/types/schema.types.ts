@@ -19,10 +19,10 @@ export type ModelSchemaAttributeConfig = Readonly<{
   // Properties used by Model `toDB` and `fromDB` methods, in order of usage:
   default?: unknown; // TODO Have schema attribute "default" type match schema "type".
   transformValue?: {
-    toDB?: (inputValue: unknown) => unknown; // <-- Fn to modify value before `validate` fn is called; use for normalization.
-    fromDB?: (dbValue: unknown) => unknown; // <-- Fn to modify value returned from DDB client; use to format/prettify values.
+    toDB?: (inputValue: any) => any; // <-- Fn to modify value before `validate` fn is called; use for normalization.
+    fromDB?: (dbValue: any) => any; // <-- Fn to modify value returned from DDB client; use to format/prettify values.
   };
-  validate?: (value: unknown) => boolean;
+  validate?: (value: any) => boolean;
   required?: boolean; // default false
 }>;
 
@@ -37,10 +37,11 @@ export type ModelSchemaType = Record<string, ModelSchemaAttributeConfig>;
 export type ModelSchemaOptions = {
   allowUnknownAttributes?: boolean; // default false
   transformItem?: {
-    toDB?: (item: unknown) => unknown; // <-- Fn to modify entire Item before `validate` fn is called
-    fromDB?: (item: unknown) => unknown; // <-- Fn to modify entire Item returned from DDB client
+    toDB?: (item: any) => any; // <-- Fn to modify entire Item before `validate` fn is called
+    fromDB?: (item: any) => any; // <-- Fn to modify entire Item returned from DDB client
   };
-  validateItem?: (item: unknown) => boolean;
+  validateItem?: (item: any) => boolean;
+  addModelMethods?: Record<string, (...args: any[]) => any>;
 };
 
 // prettier-ignore
