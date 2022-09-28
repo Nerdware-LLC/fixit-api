@@ -26,7 +26,7 @@ export const normalizeInput = {
    *
    * Example: converts `"(888) 123-4567"` into `"8881234567"`
    */
-  phone: (rawPhone: string): string => {
+  phone: (rawPhone: string) => {
     return rawPhone.replace(/\D+/g, ""); // save only the digits
   }
 };
