@@ -252,8 +252,29 @@ export class Model<
     };
   };
 
-  readonly query = async (queryOpts: Parameters<typeof this.ddbClient.query>[0]) => {
-    const items = await this.ddbClient.query(queryOpts);
+  readonly query = async ({
+    KeyConditionExpression,
+    ...otherQueryOpts
+  }: Parameters<typeof this.ddbClient.query>[0]) => {
+    // Replace any aliases in KeyConditionExpression with their attribute names.
+    if (KeyConditionExpression && typeof KeyConditionExpression === "string") {
+      KeyConditionExpression = Object.entries(this.aliasedSchema).reduce(
+        (unaliasedKeyExpr, [alias, attrConfig]) => {
+          // Create regex from alias, replace alias with attributeName from aliasedSchema.
+          const aliasRegex = new RegExp(`\\b${alias}\\b`, "g");
+
+          unaliasedKeyExpr = unaliasedKeyExpr.replace(
+            aliasRegex,
+            (attrConfig as { attributeName: string }).attributeName
+          );
+
+          return unaliasedKeyExpr;
+        },
+        KeyConditionExpression
+      );
+    }
+
+    const items = await this.ddbClient.query({ KeyConditionExpression, ...otherQueryOpts });
     return this.processItemData.fromDB(items as Array<Partial<ItemTypeFromSchema<Schema>>>);
   };
 
