@@ -1,5 +1,5 @@
 import moment from "moment";
-import { SchemaValidationError, ItemInputError } from "./customErrors";
+import { DDBSingleTableError, SchemaValidationError, ItemInputError } from "./customErrors";
 import type { DDBSingleTableClient } from "./DDBSingleTableClient";
 import type {
   // Model schema types:
@@ -64,7 +64,10 @@ import type {
  * 7. **Schema-level Validation** — If the Model's schema options include a `validateItem`
  *    function, the entire item will be passed into it for validation.
  *
- * 8. **"Required" Checks** — For Model.createItem and Model.upsertItem, items are
+ * 8. **Convert JS Types** — Date objects are converted into Unix timestamps, and NodeJS
+ *    Buffers are converted into binary.
+ *
+ * 9. **"Required" Checks** — For Model.createItem and Model.upsertItem, items are
  *    checked for attributes configured with `required: true`. Any missing required values
  *    will result in an error.
  *
@@ -73,11 +76,14 @@ import type {
  * 1. **Alias Mapping** — Any item keys matching attribute names which are configured
  *    with an "alias" in the Model schema are replaced by the value of their alias.
  *
- * 2. **Attribute-level `fromDB` Modifiers** — Any attributes configured with a
+ * 2. **Convert JS Types** — Unix timestamps are converted to Date objects, and binary
+ *    values are converted to NodeJS Buffers.
+ *
+ * 3. **Attribute-level `fromDB` Modifiers** — Any attributes configured with a
  *    `transformValue.fromDB` method will have that method called with the property's
  *    existing value.
  *
- * 3. **Schema-level `fromDB` Modifiers** — If a `transformItem.fromDB` method is
+ * 4. **Schema-level `fromDB` Modifiers** — If a `transformItem.fromDB` method is
  *    provided with the Model's schema options, that method is called with the value
  *    of the entire existing item.
  */
@@ -261,7 +267,7 @@ export class Model<
       KeyConditionExpression = Object.entries(this.aliasedSchema).reduce(
         (unaliasedKeyExpr, [alias, attrConfig]) => {
           // Create regex from alias, replace alias with attributeName from aliasedSchema.
-          const aliasRegex = new RegExp(`\\b${alias}\\b`, "g");
+          const aliasRegex = new RegExp(`(?<![:a-zA-Z])${alias}\\b`, "g");
 
           unaliasedKeyExpr = unaliasedKeyExpr.replace(
             aliasRegex,
@@ -281,6 +287,24 @@ export class Model<
   readonly scan = async (scanOpts: Parameters<typeof this.ddbClient.scan>[0]) => {
     const items = await this.ddbClient.scan(scanOpts);
     return this.processItemData.fromDB(items as Array<Partial<ItemTypeFromSchema<Schema>>>);
+  };
+
+  // OTHER PUBLIC INSTANCE METHODS
+
+  readonly addModelMethod = (methodName: string, methodFn: (...args: any[]) => any) => {
+    // Ensure 'methodName' is not already present, throw error if so.
+    if (Object.prototype.hasOwnProperty.call(this, methodName)) {
+      throw new DDBSingleTableError(
+        `Failed to add method "${methodName}" to "${this.modelName}" Model; a method with that name already exists.`
+      );
+    }
+
+    Object.defineProperty(this, methodName, {
+      value: methodFn.bind(methodFn),
+      writable: false,
+      enumerable: false,
+      configurable: false
+    });
   };
 
   // PRIVATE INSTANCE METHODS: instance method utilities
@@ -343,12 +367,16 @@ export class Model<
       (item: ItemOrPartialItem<Schema>) => this.validate(item),
       // Schema-level Validation
       (item: ItemOrPartialItem<Schema>) => this.validateItem(item),
+      // Convert JS Types
+      (item: ItemOrPartialItem<Schema>) => this.convertJsTypes(item, this.schema, "toDB"),
       // Check Required (only createItem, upsertItem, and batchUpsertItems set this to true)
       ...(shouldCheckRequired ? [(item: ItemOrPartialItem<Schema>) => this.checkRequired(item)] : [])
     ],
     fromDB: () => [
       // Alias Mapping
       (item: ItemOrPartialItem<Schema>) => this.aliasMapping(item, this.schema, "alias", "Key"),
+      // Convert JS Types
+      (item: AliasedItemOrPartialAliasedItem<Schema>) => this.convertJsTypes(item, this.aliasedSchema, "fromDB"),
       // Attribute-level transformValue.fromDB
       (item: AliasedItemOrPartialAliasedItem<Schema>) => this.transformValue(item, this.aliasedSchema, "fromDB"),
       // Schema-level transformItem.fromDB
@@ -472,6 +500,51 @@ export class Model<
     Date: (input: unknown) => !!input && moment(input).isValid(),
     map: (input: unknown) => typeof input === "object" && !Array.isArray(input) && input !== null,
     array: (input: unknown) => Array.isArray(input)
+  };
+
+  private readonly convertJsTypes = <Item extends AnySingleItemType<Schema>>(
+    item: Item,
+    schema: Schema | AliasedSchema,
+    actionSet: "toDB" | "fromDB"
+  ) => {
+    // TODO Add recursive functionality for nested schema
+
+    Object.entries(item).forEach(([key, value]) => {
+      if (key in schema) {
+        const attrType = (
+          schema[key as keyof typeof schema] as { type: Schema[keyof Schema]["type"] }
+        ).type;
+
+        let convertedValue;
+
+        if (attrType === "Date") {
+          // For "Date" attributes, convert Date objects to unix timestamps and vice versa.
+
+          if (actionSet === "toDB" && (value as any) instanceof Date) {
+            // toDB, convert Date objects to unix timestamps (Math.floor(new Date(value).getTime() / 1000))
+            convertedValue = moment(value).unix();
+          } else if (actionSet === "fromDB" && moment(value).isValid()) {
+            // fromDB, convert unix timestamps to Date objects
+            convertedValue = moment(value).toDate();
+          }
+        } else if (attrType === "Buffer") {
+          // For "Buffer" attributes, convert Buffers to binary and vice versa.
+
+          if (actionSet === "toDB" && Buffer.isBuffer(value)) {
+            // toDB, convert Buffer objects to binary
+            convertedValue = (value as Buffer).toString("binary");
+          } else if (actionSet === "fromDB" && typeof value === "string") {
+            // fromDB, convert binary to Buffer objects
+            convertedValue = Buffer.from(value, "binary");
+          }
+        }
+
+        // Update the value if necessary
+        if (convertedValue) (item[key as keyof typeof item] as any) = convertedValue;
+      }
+    });
+
+    return item;
   };
 
   private readonly validate = <Item extends ItemOrPartialItem<Schema>>(item: Item) => {

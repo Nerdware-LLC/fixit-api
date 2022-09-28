@@ -10,6 +10,7 @@ import type {
   ModelSchemaType,
   ModelSchemaOptions,
   AliasedModelSchemaType,
+  DDBTableIndexes,
   DDBTableProperties
 } from "./types";
 
@@ -31,6 +32,7 @@ export class DDBSingleTable<TableKeysSchema extends TableKeysSchemaType> {
   // INSTANCE PROPERTIES
   readonly tableName: string;
   readonly tableKeysSchema: TableKeysSchema;
+  readonly indexes: DDBTableIndexes;
   readonly ddbClient: DDBSingleTableClient;
   readonly waitForActive: typeof DDBSingleTable.DEFAULTS.WAIT_FOR_ACTIVE;
   readonly tableConfigs: typeof DDBSingleTable.DEFAULTS.TABLE_CONFIGS & DDBTableProperties;
@@ -64,6 +66,20 @@ export class DDBSingleTable<TableKeysSchema extends TableKeysSchemaType> {
       tableName,
       ddbClientConfigs
     });
+
+    // Identify the indexes, if any, to provide a map user can use to build query args.
+    this.indexes = Object.entries(tableKeysSchema).reduce((accum, [keyAttrName, keyAttrConfig]) => {
+      if (keyAttrConfig?.index) {
+        accum[keyAttrConfig.index.name] = {
+          name: keyAttrConfig.index.name,
+          type: keyAttrConfig.index?.global === true ? "GLOBAL" : "LOCAL",
+          indexPK: keyAttrName,
+          ...(keyAttrConfig.index?.rangeKey && { indexSK: keyAttrConfig.index.rangeKey })
+        };
+      }
+
+      return accum;
+    }, {} as DDBTableIndexes);
   }
 
   // INSTANCE METHODS
@@ -94,32 +110,11 @@ export class DDBSingleTable<TableKeysSchema extends TableKeysSchemaType> {
       }
     });
 
-    const newModel = new Model<Schema, AliasedModelSchemaType<Schema>>(
+    return new Model<Schema, AliasedModelSchemaType<Schema>>(
       modelName,
       merge(this.tableKeysSchema, modelSchema),
       modelSchemaOptions,
       this.ddbClient
     );
-
-    // If addModelMethods was provided, bind them here.
-    if (modelSchemaOptions?.addModelMethods) {
-      Object.entries(modelSchemaOptions.addModelMethods).forEach(([methodName, methodFn]) => {
-        // Ensure 'methodName' is not already present, throw error if so.
-        if (Object.prototype.hasOwnProperty.call(newModel, methodName)) {
-          throw new SchemaValidationError(
-            `"${modelName}" Model schema options contains additional methods with names which already exist on "${modelName}".`
-          );
-        }
-
-        Object.defineProperty(newModel, methodName, {
-          value: methodFn.bind(newModel),
-          writable: false,
-          enumerable: false,
-          configurable: false
-        });
-      });
-    }
-
-    return newModel;
   };
 }

@@ -17,7 +17,7 @@ export type ModelSchemaAttributeConfig = Readonly<{
     throughput?: { read: number; write: number }; // don't set this when billing mode is PAY_PER_REQUEST
   };
   // Properties used by Model `toDB` and `fromDB` methods, in order of usage:
-  default?: unknown; // TODO Have schema attribute "default" type match schema "type".
+  default?: unknown;
   transformValue?: {
     toDB?: (inputValue: any) => any; // <-- Fn to modify value before `validate` fn is called; use for normalization.
     fromDB?: (dbValue: any) => any; // <-- Fn to modify value returned from DDB client; use to format/prettify values.
@@ -41,7 +41,6 @@ export type ModelSchemaOptions = {
     fromDB?: (item: any) => any; // <-- Fn to modify entire Item returned from DDB client
   };
   validateItem?: (item: any) => boolean;
-  addModelMethods?: Record<string, (...args: any[]) => any>;
 };
 
 // prettier-ignore
