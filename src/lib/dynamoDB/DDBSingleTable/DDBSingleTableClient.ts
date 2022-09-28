@@ -309,7 +309,7 @@ export class DDBSingleTableClient {
   };
 
   readonly query = async <Schema extends ModelSchemaType>(
-    queryOpts: DDBSingleTableCommandParameters<typeof QueryCommand> = {}
+    queryOpts: DDBSingleTableCommandParameters<typeof QueryCommand>
   ) => {
     const { Items } = await this.ddbDocClient.send(
       new QueryCommand({
