@@ -19,26 +19,6 @@ export type ItemOrAliasedItem<Schema extends ModelSchemaType> =
   | AliasedItemTypeFromSchema<Schema>;
 
 /**
- * `ItemOrPartialItem`
- *
- * This is used as the fn-param type for most of the Model's Database
- * IO Hook Actions.
- */
-export type ItemOrPartialItem<Schema extends ModelSchemaType> =
-  | ItemTypeFromSchema<Schema>
-  | Partial<ItemTypeFromSchema<Schema>>;
-
-/**
- * `AliasedItemOrPartialAliasedItem` includes
- *
- * - Aliased Item
- * - Parital Aliased Item
- */
-export type AliasedItemOrPartialAliasedItem<Schema extends ModelSchemaType> =
-  | AliasedItemTypeFromSchema<Schema>
-  | Partial<AliasedItemTypeFromSchema<Schema>>;
-
-/**
  * `AnyItemType` includes
  *
  * - Item
@@ -47,8 +27,10 @@ export type AliasedItemOrPartialAliasedItem<Schema extends ModelSchemaType> =
  * - Partial Aliased Item
  */
 export type AnySingleItemType<Schema extends ModelSchemaType> =
-  | ItemOrAliasedItem<Schema>
-  | Partial<ItemOrAliasedItem<Schema>>;
+  | ItemTypeFromSchema<Schema>
+  | Partial<ItemTypeFromSchema<Schema>>
+  | AliasedItemTypeFromSchema<Schema>
+  | Partial<AliasedItemTypeFromSchema<Schema>>;
 
 /**
  * `AnyItemType` includes

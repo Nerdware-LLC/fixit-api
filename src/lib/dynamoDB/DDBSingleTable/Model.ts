@@ -1,5 +1,6 @@
 import moment from "moment";
 import { DDBSingleTableError, SchemaValidationError, ItemInputError } from "./customErrors";
+import type { DDBSingleTable as DDBSingleTableClass } from "./DDBSingleTable";
 import type { DDBSingleTableClient } from "./DDBSingleTableClient";
 import type {
   // Model schema types:
@@ -9,8 +10,6 @@ import type {
   // Item types:
   ItemTypeFromSchema, //              base item generic type
   AliasedItemTypeFromSchema, //       base aliased item generic type
-  ItemOrPartialItem, //               union of single item types (excludes Aliased)
-  AliasedItemOrPartialAliasedItem, // union of aliased item types
   AnySingleItemType, //               union of all single item types
   AnyBatchItemsType, //               union of all item-array types
   AnyItemOrBatchItemsType, //         union of all item/item-array types
@@ -89,7 +88,11 @@ import type {
  */
 export class Model<
   Schema extends ModelSchemaType,
-  AliasedSchema extends AliasedModelSchemaType<Schema>
+  AliasedSchema extends AliasedModelSchemaType<Schema> = AliasedModelSchemaType<Schema>,
+  ItemType extends ItemTypeFromSchema<Schema> = ItemTypeFromSchema<Schema>,
+  AliasedItem extends AliasedItemTypeFromSchema<Schema> = AliasedItemTypeFromSchema<Schema>,
+  PrimaryKeyAttributes extends ItemPrimaryKeys<Schema> = ItemPrimaryKeys<Schema>,
+  PrimaryKeyAliases extends ItemPrimaryKeys<AliasedSchema> = ItemPrimaryKeys<AliasedSchema>
 > {
   // STATIC PROPERTIES
   private static readonly DEFAULT_MODEL_SCHEMA_OPTS: ModelSchemaOptions = {
@@ -104,14 +107,32 @@ export class Model<
   ddbClient: DDBSingleTableClient;
 
   constructor(
+    ddbSingleTable: InstanceType<typeof DDBSingleTableClass>,
     modelName: string,
     modelSchema: Schema,
-    modelSchemaOptions: ModelSchemaOptions,
-    ddbClient: DDBSingleTableClient
+    modelSchemaOptions: ModelSchemaOptions
   ) {
-    this.modelName = modelName;
-    this.ddbClient = ddbClient;
+    // Ensure all table keys are present in the schema and that "type" is the same if provided.
+    Object.keys(ddbSingleTable.tableKeysSchema).forEach((tableKey) => {
+      if (!(tableKey in modelSchema)) {
+        throw new SchemaValidationError(
+          `"${modelName}" Model schema does not contain key attribute "${tableKey}".`
+        );
+      }
 
+      // Ensure the Model schema doesn't specify an invalid "type" in key configs.
+      if (
+        Object.prototype.hasOwnProperty.call(modelSchema[tableKey], "type") &&
+        modelSchema[tableKey].type !== ddbSingleTable.tableKeysSchema[tableKey].type
+      ) {
+        throw new SchemaValidationError(
+          `"${modelName}" Model schema defines a different "type" for "${tableKey}" than is specified in the Table Keys Schema.`
+        );
+      }
+    });
+
+    this.ddbClient = ddbSingleTable.ddbClient;
+    this.modelName = modelName;
     this.schema = modelSchema;
     this.schemaOptions = {
       ...Model.DEFAULT_MODEL_SCHEMA_OPTS,
@@ -150,28 +171,31 @@ export class Model<
   // INSTANCE METHODS: wrapped DDBSingleTableClient methods
 
   readonly getItem = async (
-    primaryKeys: ItemPrimaryKeys<Schema>,
-    getItemOpts: Parameters<typeof this.ddbClient.getItem>[1]
+    primaryKeys: PrimaryKeyAliases,
+    getItemOpts?: Parameters<typeof this.ddbClient.getItem>[1]
   ) => {
-    const item = await this.ddbClient.getItem<Schema>(primaryKeys, getItemOpts);
+    const toDBpks = this.aliasMapping(primaryKeys, this.aliasedSchema) as PrimaryKeyAttributes;
+    const item = await this.ddbClient.getItem<Schema>(toDBpks, getItemOpts);
     return this.processItemData.fromDB(item);
   };
 
   readonly batchGetItems = async (
-    primaryKeys: Array<ItemPrimaryKeys<Schema>>,
-    batchGetItemsOpts: Parameters<typeof this.ddbClient.batchGetItems>[1]
+    primaryKeys: Array<PrimaryKeyAliases>,
+    batchGetItemsOpts?: Parameters<typeof this.ddbClient.batchGetItems>[1]
   ) => {
-    const items = await this.ddbClient.batchGetItems<Schema>(primaryKeys, batchGetItemsOpts);
+    // prettier-ignore
+    const toDBpks = primaryKeys.map((pks) => this.aliasMapping(pks, this.aliasedSchema)) as Array<PrimaryKeyAttributes>;
+    const items = await this.ddbClient.batchGetItems<Schema>(toDBpks, batchGetItemsOpts);
     return this.processItemData.fromDB(items);
   };
 
   // prettier-ignore
   readonly createItem = async (
-    item: AliasedItemTypeFromSchema<Schema>,
-    createItemOpts: Parameters<typeof this.ddbClient.createItem>[1]
+    item: AliasedItem,
+    createItemOpts?: Parameters<typeof this.ddbClient.createItem>[1]
   ) => {
     // TODO Ignored build error: "TS2589: Type instantiation is excessively deep and possibly infinite."
-    const toDBitem = this.processItemData.toDB(item, { shouldCheckRequired: true }) as ItemTypeFromSchema<Schema>;
+    const toDBitem = this.processItemData.toDB(item, { shouldCheckRequired: true }) as ItemType;
     await this.ddbClient.createItem<Schema>(toDBitem, createItemOpts);
     /* PutItem ReturnValues can only be NONE or ALL_OLD, so the DDB API will never
     return anything from createItem, so simply pass toDBitem into fromDB.       */
@@ -180,54 +204,52 @@ export class Model<
 
   // prettier-ignore
   readonly upsertItem = async (
-    item: Partial<AliasedItemTypeFromSchema<Schema>>,
-    upsertItemOpts: Parameters<typeof this.ddbClient.upsertItem>[1]
+    item: Partial<AliasedItem>,
+    upsertItemOpts?: Parameters<typeof this.ddbClient.upsertItem>[1]
   ) => {
-    // TODO Ignored build error: "TS2589: Type instantiation is excessively deep and possibly infinite."
-    const toDBitem = this.processItemData.toDB(item, { shouldCheckRequired: true }) as Partial<ItemTypeFromSchema<Schema>>;
+    const toDBitem = this.processItemData.toDB(item, { shouldCheckRequired: true }) as Partial<ItemType>;
     const itemAttributes = await this.ddbClient.upsertItem<Schema>(toDBitem, upsertItemOpts);
     return this.processItemData.fromDB(itemAttributes);
   };
 
   readonly batchUpsertItems = async (
-    items: Array<Partial<AliasedItemTypeFromSchema<Schema>>>,
-    batchUpsertItemsOpts: Parameters<typeof this.ddbClient.batchUpsertItems>[1]
+    items: Array<Partial<AliasedItem>>,
+    batchUpsertItemsOpts?: Parameters<typeof this.ddbClient.batchUpsertItems>[1]
   ) => {
     // prettier-ignore
-    const toDBitems = this.processItemData.toDB(items, { shouldCheckRequired: true }) as Array<Partial<ItemTypeFromSchema<Schema>>>;
+    const toDBitems = this.processItemData.toDB(items, { shouldCheckRequired: true }) as Array<Partial<ItemType>>;
     await this.ddbClient.batchUpsertItems<Schema>(toDBitems, batchUpsertItemsOpts);
     return this.processItemData.fromDB(items);
   };
 
+  // prettier-ignore
   readonly updateItem = async (
-    primaryKeys: ItemPrimaryKeys<Schema>,
-    attributesToUpdate: Partial<AliasedItemTypeFromSchema<Schema>>,
-    updateItemOpts: Parameters<typeof this.ddbClient.updateItem>[1]
+    primaryKeys: PrimaryKeyAliases,
+    attributesToUpdate: Partial<AliasedItem>,
+    updateItemOpts?: Parameters<typeof this.ddbClient.updateItem>[1]
   ) => {
-    // prettier-ignore
+    const toDBpks = this.aliasMapping(primaryKeys, this.aliasedSchema) as PrimaryKeyAttributes;
     const toDBitem = this.processItemData.toDB(attributesToUpdate) as Partial<ItemNonKeyAttributes<Schema>>;
-    const itemAttributes = await this.ddbClient.updateItem<Schema>(
-      primaryKeys,
-      toDBitem,
-      updateItemOpts
-    );
+    const itemAttributes = await this.ddbClient.updateItem<Schema>(toDBpks, toDBitem, updateItemOpts);
     return this.processItemData.fromDB(itemAttributes);
   };
 
   readonly deleteItem = async (
-    primaryKeys: ItemPrimaryKeys<Schema>,
-    deleteItemOpts: Parameters<typeof this.ddbClient.deleteItem>[1]
+    primaryKeys: PrimaryKeyAliases,
+    deleteItemOpts?: Parameters<typeof this.ddbClient.deleteItem>[1]
   ) => {
-    const itemAttributes = await this.ddbClient.deleteItem<Schema>(primaryKeys, deleteItemOpts);
+    const toDBpks = this.aliasMapping(primaryKeys, this.aliasedSchema) as PrimaryKeyAttributes;
+    const itemAttributes = await this.ddbClient.deleteItem<Schema>(toDBpks, deleteItemOpts);
     return this.processItemData.fromDB(itemAttributes);
   };
 
   readonly batchDeleteItems = async (
-    primaryKeys: Array<ItemPrimaryKeys<Schema>>,
-    batchDeleteItemsOpts: Parameters<typeof this.ddbClient.batchDeleteItems>[1]
+    primaryKeys: Array<PrimaryKeyAliases>,
+    batchDeleteItemsOpts?: Parameters<typeof this.ddbClient.batchDeleteItems>[1]
   ) => {
     // prettier-ignore
-    await this.ddbClient.batchDeleteItems<Schema>(primaryKeys, batchDeleteItemsOpts);
+    const toDBpks = primaryKeys.map((pks) => this.aliasMapping(pks, this.aliasedSchema)) as Array<PrimaryKeyAttributes>;
+    await this.ddbClient.batchDeleteItems<Schema>(toDBpks, batchDeleteItemsOpts);
     return primaryKeys;
   };
 
@@ -236,22 +258,21 @@ export class Model<
       upsertItems,
       deleteItems
     }: {
-      upsertItems: Array<Partial<AliasedItemTypeFromSchema<Schema>>>;
-      deleteItems: Array<ItemPrimaryKeys<Schema>>;
+      upsertItems: Array<Partial<AliasedItem>>;
+      deleteItems: Array<PrimaryKeyAliases>;
     },
-    batchUpsertAndDeleteItemsOpts: Parameters<typeof this.ddbClient.batchUpsertAndDeleteItems>[1]
+    batchUpsertAndDeleteItemsOpts?: Parameters<typeof this.ddbClient.batchUpsertAndDeleteItems>[1]
   ) => {
     // prettier-ignore
     const itemsToDB = {
-      upsertItems: this.processItemData.toDB(upsertItems, { shouldCheckRequired: true }) as Array<Partial<ItemTypeFromSchema<Schema>>>,
-      deleteItems
+      upsertItems: this.processItemData.toDB(upsertItems, { shouldCheckRequired: true }) as Array<Partial<ItemType>>,
+      deleteItems: deleteItems.map((pks) => this.aliasMapping(pks, this.aliasedSchema)) as Array<PrimaryKeyAttributes>
     };
     await this.ddbClient.batchUpsertAndDeleteItems<Schema>(
       itemsToDB,
       batchUpsertAndDeleteItemsOpts
     );
-    /* PutItem ReturnValues can only be NONE or ALL_OLD, so the DDB API will never
-    return anything from createItem, so simply pass toDBitem into fromDB.       */
+    // BatchWrite does not return items, so the input params are formatted for return.
     return {
       upsertItems: this.processItemData.fromDB(itemsToDB.upsertItems),
       deleteItems
@@ -284,7 +305,7 @@ export class Model<
     return this.processItemData.fromDB(items as Array<Partial<ItemTypeFromSchema<Schema>>>);
   };
 
-  readonly scan = async (scanOpts: Parameters<typeof this.ddbClient.scan>[0]) => {
+  readonly scan = async (scanOpts: Parameters<typeof this.ddbClient.scan>[0] = {}) => {
     const items = await this.ddbClient.scan(scanOpts);
     return this.processItemData.fromDB(items as Array<Partial<ItemTypeFromSchema<Schema>>>);
   };
@@ -354,44 +375,44 @@ export class Model<
   private readonly getActionsSet = {
     toDB: (shouldCheckRequired = false) => [
       // Alias Mapping
-      (item: AliasedItemOrPartialAliasedItem<Schema>) => this.aliasMapping(item, this.aliasedSchema, "attributeName", "Attribute alias"),
+      (item: AliasedItem | Partial<AliasedItem>) => this.aliasMapping(item, this.aliasedSchema),
       // Set Defaults
-      (item: ItemOrPartialItem<Schema>) => this.setDefaults(item),
+      (item: ItemType | Partial<ItemType>) => this.setDefaults(item),
       // Attribute-level transformValue.toDB
-      (item: ItemOrPartialItem<Schema>) => this.transformValue(item, this.schema, "toDB"),
+      (item: ItemType | Partial<ItemType>) => this.transformValue(item, this.schema, "toDB"),
       // Schema-level transformItem.toDB
-      (item: ItemOrPartialItem<Schema>) => this.transformItem(item, "toDB"),
+      (item: ItemType | Partial<ItemType>) => this.transformItem(item, "toDB"),
       // Type Checking
-      (item: ItemOrPartialItem<Schema>) => this.typeChecking(item),
+      (item: ItemType | Partial<ItemType>) => this.typeChecking(item),
       // Attribute-level Validation
-      (item: ItemOrPartialItem<Schema>) => this.validate(item),
+      (item: ItemType | Partial<ItemType>) => this.validate(item),
       // Schema-level Validation
-      (item: ItemOrPartialItem<Schema>) => this.validateItem(item),
+      (item: ItemType | Partial<ItemType>) => this.validateItem(item),
       // Convert JS Types
-      (item: ItemOrPartialItem<Schema>) => this.convertJsTypes(item, this.schema, "toDB"),
+      (item: ItemType | Partial<ItemType>) => this.convertJsTypes(item, this.schema, "toDB"),
       // Check Required (only createItem, upsertItem, and batchUpsertItems set this to true)
-      ...(shouldCheckRequired ? [(item: ItemOrPartialItem<Schema>) => this.checkRequired(item)] : [])
+      ...(shouldCheckRequired ? [(item: ItemType | Partial<ItemType>) => this.checkRequired(item)] : [])
     ],
     fromDB: () => [
       // Alias Mapping
-      (item: ItemOrPartialItem<Schema>) => this.aliasMapping(item, this.schema, "alias", "Key"),
+      (item: ItemType | Partial<ItemType>) => this.aliasMapping(item, this.schema),
       // Convert JS Types
-      (item: AliasedItemOrPartialAliasedItem<Schema>) => this.convertJsTypes(item, this.aliasedSchema, "fromDB"),
+      (item: AliasedItem | Partial<AliasedItem>) => this.convertJsTypes(item, this.aliasedSchema, "fromDB"),
       // Attribute-level transformValue.fromDB
-      (item: AliasedItemOrPartialAliasedItem<Schema>) => this.transformValue(item, this.aliasedSchema, "fromDB"),
+      (item: AliasedItem | Partial<AliasedItem>) => this.transformValue(item, this.aliasedSchema, "fromDB"),
       // Schema-level transformItem.fromDB
-      (item: AliasedItemOrPartialAliasedItem<Schema>) => this.transformItem(item, "fromDB"),
+      (item: AliasedItem | Partial<AliasedItem>) => this.transformItem(item, "fromDB"),
     ]
   };
 
   // DATABASE I/O HOOK ACTIONS:
 
   // prettier-ignore
-  private readonly aliasMapping = <Item extends AnySingleItemType<Schema>>(
+  private readonly aliasMapping = <Item extends AnySingleItemType<Schema> | PrimaryKeyAttributes | PrimaryKeyAliases>(
     item: Item,
     schema: Schema | AliasedSchema,
-    lookupKey: "alias" | "attributeName",
-    invalidKeyErrMsgPrefix: "Attribute alias" | "Key"
+    lookupKey: "alias" | "attributeName" = schema === this.schema ? "alias" : "attributeName",
+    invalidKeyErrMsgPrefix: "Attribute alias" | "Key" = schema === this.schema ? "Key" : "Attribute alias"
   ) => {
     // TODO Add recursive functionality for nested schema
     return Object.entries(item).reduce((accum, [key, value]) => {
@@ -401,10 +422,10 @@ export class Model<
         // Get the mapped key ("alias" is optional in schema, hence the fallback to key)
         const mappedKey = attributeConfig?.[lookupKey as keyof typeof attributeConfig] ?? key;
         // Update the item with the mapped key
-        accum[mappedKey as AliasMappingItemKey<typeof schema, typeof item>] = value as AliasMappingItemValue<typeof schema, typeof item>;
+        accum[mappedKey as AliasMappingItemKey<typeof schema, any>] = value as AliasMappingItemValue<typeof schema, any>;
       } else if (this.schemaOptions.allowUnknownAttributes === true) {
         // If schema allows unknown attributes, simply add it to accum
-        accum[key as AliasMappingItemKey<typeof schema, typeof item>] = value as AliasMappingItemValue<typeof schema, typeof item>;
+        accum[key as AliasMappingItemKey<typeof schema, any>] = value as AliasMappingItemValue<typeof schema, any>;
       } else {
         throw new ItemInputError(
           `${invalidKeyErrMsgPrefix} "${key}" does not exist on the "${this.modelName}" Model schema, which is explicitly configured to disallow unknown properties.`
@@ -412,10 +433,10 @@ export class Model<
       }
 
       return accum;
-    }, {} as ReturnFromItemAliasing<typeof schema, typeof item>);
+    }, {} as ReturnFromItemAliasing<typeof schema, any>);
   };
 
-  private readonly setDefaults = <Item extends ItemOrPartialItem<Schema>>(item: Item) => {
+  private readonly setDefaults = <Item extends ItemType | Partial<ItemType>>(item: Item) => {
     // TODO Add recursive functionality for nested schema
     Object.entries(this.schema).forEach(([schemaKey, attrConfig]) => {
       // if attribute has a default value, use it if the key is missing or the value is null/undefined.
@@ -474,7 +495,7 @@ export class Model<
     return item;
   };
 
-  private readonly typeChecking = <Item extends ItemOrPartialItem<Schema>>(item: Item) => {
+  private readonly typeChecking = <Item extends ItemType | Partial<ItemType>>(item: Item) => {
     // TODO Add recursive functionality for nested schema
     Object.entries(this.schema).forEach(([schemaKey, attrConfig]) => {
       // If item has schemaKey, check the type of its value (can't check unknown attributes if schema allows for them)
@@ -547,7 +568,7 @@ export class Model<
     return item;
   };
 
-  private readonly validate = <Item extends ItemOrPartialItem<Schema>>(item: Item) => {
+  private readonly validate = <Item extends ItemType | Partial<ItemType>>(item: Item) => {
     // TODO Add recursive functionality for nested schema
     Object.entries(this.schema).forEach(([schemaKey, attrConfig]) => {
       // Check if item has schemaKey (can't validate unknown attributes if schema allows for them).
@@ -566,7 +587,7 @@ export class Model<
     return item;
   };
 
-  private readonly validateItem = <Item extends ItemOrPartialItem<Schema>>(item: Item) => {
+  private readonly validateItem = <Item extends ItemType | Partial<ItemType>>(item: Item) => {
     // if schemaOptions has transformItem toDB/fromDB, pass the existing item into the fn
     if (this.schemaOptions?.validateItem && !this.schemaOptions?.validateItem(item)) {
       throw new ItemInputError(`Input validation failed for Item of Model "${this.modelName}".`);
@@ -575,7 +596,7 @@ export class Model<
     return item;
   };
 
-  private readonly checkRequired = <Item extends ItemOrPartialItem<Schema>>(item: Item) => {
+  private readonly checkRequired = <Item extends ItemType | Partial<ItemType>>(item: Item) => {
     // Note: checkRequired is only to be used for createItem, upsertItem. and batchUpsertItems.
 
     // TODO Add recursive functionality for nested schema

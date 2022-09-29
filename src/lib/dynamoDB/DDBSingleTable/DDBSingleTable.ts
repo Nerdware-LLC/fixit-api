@@ -1,21 +1,11 @@
-import merge from "lodash.merge";
 import { DDBSingleTableClient } from "./DDBSingleTableClient";
 import { ensureTableIsActive } from "./ensureTableIsActive";
-import { SchemaValidationError } from "./customErrors";
-import { Model } from "./Model";
 import type { DynamoDBClientConfig } from "@aws-sdk/client-dynamodb";
 import type { TranslateConfig } from "@aws-sdk/lib-dynamodb";
-import type {
-  TableKeysSchemaType,
-  ModelSchemaType,
-  ModelSchemaOptions,
-  AliasedModelSchemaType,
-  DDBTableIndexes,
-  DDBTableProperties
-} from "./types";
+import type { TableKeysSchemaType, DDBTableIndexes, DDBTableProperties } from "./types";
 
 // TODO Add jsdoc once further ironed out
-export class DDBSingleTable<TableKeysSchema extends TableKeysSchemaType> {
+export class DDBSingleTable {
   private static readonly DEFAULTS = {
     WAIT_FOR_ACTIVE: {
       enabled: true,
@@ -31,7 +21,7 @@ export class DDBSingleTable<TableKeysSchema extends TableKeysSchemaType> {
 
   // INSTANCE PROPERTIES
   readonly tableName: string;
-  readonly tableKeysSchema: TableKeysSchema;
+  readonly tableKeysSchema: TableKeysSchemaType;
   readonly indexes: DDBTableIndexes;
   readonly ddbClient: DDBSingleTableClient;
   readonly waitForActive: typeof DDBSingleTable.DEFAULTS.WAIT_FOR_ACTIVE;
@@ -45,7 +35,7 @@ export class DDBSingleTable<TableKeysSchema extends TableKeysSchemaType> {
     tableConfigs = DDBSingleTable.DEFAULTS.TABLE_CONFIGS
   }: {
     tableName: string;
-    tableKeysSchema: TableKeysSchema;
+    tableKeysSchema: TableKeysSchemaType;
     ddbClientConfigs?: Expand<DynamoDBClientConfig & TranslateConfig>;
     waitForActive?: Partial<typeof DDBSingleTable.DEFAULTS.WAIT_FOR_ACTIVE>;
     tableConfigs?: Partial<typeof DDBSingleTable.DEFAULTS.TABLE_CONFIGS> & DDBTableProperties;
@@ -84,37 +74,5 @@ export class DDBSingleTable<TableKeysSchema extends TableKeysSchemaType> {
 
   // INSTANCE METHODS
 
-  readonly ensureTableIsActive = ensureTableIsActive<TableKeysSchema>;
-
-  readonly model = <Schema extends ModelSchemaType>(
-    modelName: string,
-    modelSchema: Schema,
-    modelSchemaOptions: ModelSchemaOptions = {}
-  ) => {
-    // Ensure all table keys are present in the schema and that "type" is the same if provided.
-    Object.keys(this.tableKeysSchema).forEach((tableKey) => {
-      if (!(tableKey in modelSchema)) {
-        throw new SchemaValidationError(
-          `"${modelName}" Model schema does not contain key attribute "${tableKey}".`
-        );
-      }
-
-      // Ensure the Model schema doesn't specify an invalid "type" in key configs.
-      if (
-        Object.prototype.hasOwnProperty.call(modelSchema[tableKey], "type") &&
-        modelSchema[tableKey].type !== this.tableKeysSchema[tableKey].type
-      ) {
-        throw new SchemaValidationError(
-          `"${modelName}" Model schema defines a different "type" for "${tableKey}" than is specified in the Table Keys Schema.`
-        );
-      }
-    });
-
-    return new Model<Schema, AliasedModelSchemaType<Schema>>(
-      modelName,
-      merge(this.tableKeysSchema, modelSchema),
-      modelSchemaOptions,
-      this.ddbClient
-    );
-  };
+  readonly ensureTableIsActive = ensureTableIsActive;
 }

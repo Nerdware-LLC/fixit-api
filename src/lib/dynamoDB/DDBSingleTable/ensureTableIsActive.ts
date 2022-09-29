@@ -1,11 +1,8 @@
 import { logger } from "@utils/logger";
 import { DDBSingleTable } from "./DDBSingleTable";
 import { DDBSingleTableError } from "./customErrors";
-import type { TableKeysSchemaType } from "./types";
 
-export const ensureTableIsActive = async function <TableKeysSchema extends TableKeysSchemaType>(
-  this: InstanceType<typeof DDBSingleTable<TableKeysSchema>>
-) {
+export const ensureTableIsActive = async function (this: InstanceType<typeof DDBSingleTable>) {
   // Skip execution if waitForActive is disabled.
   if (this.waitForActive.enabled !== true) return;
 
@@ -31,7 +28,7 @@ export const ensureTableIsActive = async function <TableKeysSchema extends Table
       }
 
       logger.dynamodb(
-        `Table "${this.tableName}" is not ACTIVE. Current table status: ${TableStatus}`
+        `Table "${this.tableName}" is not ACTIVE. Current table status: ${TableStatus ?? "UNKNOWN"}`
       );
 
       // Wait then try again
@@ -105,7 +102,7 @@ export const ensureTableIsActive = async function <TableKeysSchema extends Table
                   AttributeName: keyAttrName,
                   KeyType: "HASH"
                 },
-                ...(!!index?.rangeKey ? [{ AttributeName: index.rangeKey, KeyType: "RANGE" }] : [])
+                ...(index?.rangeKey ? [{ AttributeName: index.rangeKey, KeyType: "RANGE" }] : [])
               ],
               Projection: {
                 ProjectionType: !index?.project // if undefined or false, default "KEYS_ONLY"
@@ -139,7 +136,9 @@ export const ensureTableIsActive = async function <TableKeysSchema extends Table
       // Update this bool flag so ensure CreateTable is only ever called once.
       hasCreateTableBeenCalled = true;
 
-      logger.dynamodb(`CreateTable operation complete. Current table status: ${TableStatus}`);
+      logger.dynamodb(
+        `CreateTable operation complete. Current table status: ${TableStatus ?? "UNKNOWN"}`
+      );
 
       // TableStatus is possibly already ACTIVE if using ddb-local.
       if (TableStatus === "ACTIVE") {

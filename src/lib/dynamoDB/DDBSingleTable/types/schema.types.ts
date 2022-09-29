@@ -45,7 +45,7 @@ export type ModelSchemaOptions = {
 
 // prettier-ignore
 export type AliasedModelSchemaType<Schema extends ModelSchemaType> = {
-  [K in keyof Schema as Schema[K]["alias"] extends string
+  [K in keyof Schema as Schema[K] extends { alias: string }
       ? Schema[K]["alias"]
       : K]: Schema[K] & { attributeName: K };
 };
