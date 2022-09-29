@@ -10,16 +10,18 @@ export const SUBSCRIPTION_STATUSES = {
   past_due: { errMsg: "Sorry, payment for your subscription is past due. Please submit payment and try again." },
   canceled: { errMsg: "Sorry, this subscription was canceled." },
   unpaid: { errMsg: "Sorry, payment for your subscription is past due. Please submit payment and try again." }
-};
+} as const;
 
 // prettier-ignore
-export const validateExisting = function (sub) {
+export const validateExisting = function (sub?: { currentPeriodEnd?: number; status?: keyof typeof SUBSCRIPTION_STATUSES }) {
   if (!sub || !sub.currentPeriodEnd || !sub.status) {
     throw new Error("Invalid subscription.");
   }
 
-  if (!SUBSCRIPTION_STATUSES?.[sub.status]?.isValid ?? false) {
-    throw new Error(SUBSCRIPTION_STATUSES?.[sub.status]?.errMsg ?? "Invalid subscription.");
+  const subStatusConfig: { isValid?: boolean; errMsg?: string } = SUBSCRIPTION_STATUSES?.[sub.status];
+
+  if (!subStatusConfig || (subStatusConfig?.isValid ?? false)) {
+    throw new Error(subStatusConfig?.errMsg ?? "Invalid subscription.");
   }
 
   const subExpiration = sub.currentPeriodEnd;

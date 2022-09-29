@@ -1,7 +1,7 @@
 import { eventEmitter } from "@events/eventEmitter";
 
 export const deleteOne = async function (existingInvoice) {
-  await this.delete({
+  await this.deleteItem({
     createdByUserID: existingInvoice.createdByUserID,
     id: existingInvoice.id
   });

@@ -2,12 +2,6 @@ import { stripe } from "@lib/stripe";
 
 // function, not arrow, bc we need to use "this." syntax to call Dynamoose methods
 export const createOne = async function ({ userID, email, phone, profile }) {
-  /* Create UserStripeConnectAccount related Items in this order:
-
-    stripeConnectAccount        (Stripe)
-    UserStripeConnectAccount    (DynamoDB)  Needs stripeConnectAccountID
-  */
-
   // Create Stripe Connect Account via Stripe API
   const {
     id: stripeConnectAccountID,
@@ -30,9 +24,9 @@ export const createOne = async function ({ userID, email, phone, profile }) {
     },
     individual: {
       email,
+      phone,
       ...(profile?.givenName && { first_name: profile.givenName }),
-      ...(profile?.familyName && { last_name: profile.familyName }),
-      phone
+      ...(profile?.familyName && { last_name: profile.familyName })
     },
     business_profile: {
       ...(profile?.businessName && { name: profile.businessName }),
@@ -50,14 +44,11 @@ export const createOne = async function ({ userID, email, phone, profile }) {
   });
 
   // Create UserStripeConnectAccount in DynamoDB
-  const newUserStripeConnectAccount = await this.create({
-    pk: userID,
-    sk: `STRIPE_CONNECT_ACCOUNT#${userID}`,
-    data: stripeConnectAccountID,
+  return await this.createItem({
+    userID,
+    id: stripeConnectAccountID,
     detailsSubmitted,
     chargesEnabled,
     payoutsEnabled
   });
-
-  return newUserStripeConnectAccount;
 };

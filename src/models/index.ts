@@ -1,4 +1,4 @@
-export * from "./_Model";
+export * from "./_common";
 export * from "./Contact";
 export * from "./Invoice";
 export * from "./User";

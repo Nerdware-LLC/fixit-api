@@ -20,3 +20,7 @@ export const LOCATION_COMPOSITE_REGEX = new RegExp(
   `^(${LOC.COUNTRY})(#${LOC.REGION})(#${LOC.CITY})(#${LOC.STREET_LINE_1})(#${LOC.STREET_LINE_2})?$`,
   "i" // <-- Makes all location field patterns case-insensitive
 );
+
+export const WO_CHECKLIST_ITEM_ID_REGEX = new RegExp(
+  `^${WORK_ORDER_ID_REGEX_STR}#CHECKLIST_ITEM#${UNIX_TIMESTAMP_REGEX_STR}$`
+);

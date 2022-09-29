@@ -2,7 +2,7 @@ import merge from "lodash.merge";
 import { eventEmitter } from "@events/eventEmitter";
 
 export const updateOne = async function (existingWO, newWorkOrderFields) {
-  const updateWorkOrderResult = await this.update(
+  const updateWorkOrderResult = await this.updateItem(
     {
       createdByUserID: existingWO.createdByUserID,
       id: existingWO.id

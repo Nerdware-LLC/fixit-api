@@ -4,7 +4,16 @@
  * fields NOT used by the DynamoDB schema are NOT modified - for example,
  * `obj.latest_invoice` will remain `obj.latest_invoice`.
  */
-export const normalizeStripeFields = ({ created, current_period_end, items, ...rest }) => ({
+export const normalizeStripeFields = ({
+  created,
+  current_period_end,
+  items,
+  ...rest
+}: {
+  created?: number;
+  current_period_end?: number;
+  items?: { data: [{ price: { id: string; product: string } }] };
+}) => ({
   ...(created && { createdAt: created }),
   ...(current_period_end && { currentPeriodEnd: new Date(current_period_end * 1000) }),
   ...(items && {

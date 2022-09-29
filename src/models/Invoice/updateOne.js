@@ -2,7 +2,7 @@ import merge from "lodash.merge";
 import { eventEmitter } from "@events/eventEmitter";
 
 export const updateOne = async function (existingInvoice, newInvoiceFields) {
-  const updateInvoiceResult = await this.update(
+  const updateInvoiceResult = await this.updateItem(
     {
       createdByUserID: existingInvoice.createdByUserID,
       id: existingInvoice.id

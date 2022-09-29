@@ -7,7 +7,7 @@ export const createOne = async function ({
   amount,
   workOrderID
 }) {
-  const newInvoice = await this.create({
+  const newInvoice = await this.createItem({
     createdByUserID,
     assignedToUserID,
     amount,

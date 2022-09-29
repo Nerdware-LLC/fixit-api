@@ -4,6 +4,7 @@ export interface User {
   id: string;
   email: string;
   phone: string;
+  expoPushToken?: string;
   profile: UserProfile;
   login: UserLoginLocal | UserLoginGoogleOAuth;
   stripeCustomerID: string;
