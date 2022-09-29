@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 ---
 
 
+# [1.4.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.3.0...v1.4.0) (2022-09-29)
+
+
+### Bug Fixes
+
+* **DDB-ST-client:** rm default value from query opts ([7967570](https://github.com/Nerdware-LLC/fixit-api/commit/796757029c9bb5e1fecab734af3f8e26910378ed))
+* **DDB-ST:** change toDB/fromDB call sigs to allow any ([e4102a4](https://github.com/Nerdware-LLC/fixit-api/commit/e4102a4afe4c4d6b27456ed5956a084ff1f566ea))
+* **DDB-ST:** correct ioActions-related method param+return types ([b6a5bb4](https://github.com/Nerdware-LLC/fixit-api/commit/b6a5bb48cadefd03ba32772365872695026a4292))
+* **DDB-ST:** rm'd extraneous class type params; nixed model() init method ([d68682f](https://github.com/Nerdware-LLC/fixit-api/commit/d68682f3a2cf7c19c554e38f961a39da5751d528))
+* **eventEmitter:** add typings for FixitEventEmitter ([9e5af71](https://github.com/Nerdware-LLC/fixit-api/commit/9e5af716d77b4a3e5dd02abf7a5bc5d770187d6b))
+* **models:** convert all Models to subclasses of DDBST Model ([11b6b47](https://github.com/Nerdware-LLC/fixit-api/commit/11b6b47dc10d80916a9d035b069403696c244476))
+
+
+### Features
+
+* **DDB-ST:** add conversion of types Date<-->Unix and Buffer<-->binary ([6a12601](https://github.com/Nerdware-LLC/fixit-api/commit/6a12601ba6f042ed5ccaa9bdfdb6dd5b0ecf28bf))
+* **DDB-ST:** impl 'addModelMethods' feature which binds custom methods ([4909206](https://github.com/Nerdware-LLC/fixit-api/commit/4909206ad954016228fbd0c2192db67793fdb375))
+* **Model.query:** add alias mapping to KeyConditionExpression ([a34622c](https://github.com/Nerdware-LLC/fixit-api/commit/a34622c931481bd08e813501fd2444509d9bd8ec))
+
 # [1.3.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.2.0...v1.3.0) (2022-09-26)
 
 
