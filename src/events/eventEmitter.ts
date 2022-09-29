@@ -19,7 +19,7 @@ import { notifyAssignorCompletedWO } from "./onWorkOrderCompleted";
  * obtained via `process.eventNames`.
  */
 class FixitEventEmitter extends EventEmitter {
-  #FIXIT_EVENT_HANDLERS = {
+  static FIXIT_EVENT_HANDLERS = {
     InvoiceCreated: [notifyAssigneeNewInvoice],
     InvoiceUpdated: [notifyAssigneeUpdatedInvoice],
     InvoiceDeleted: [notifyAssigneeDeletedInvoice],
@@ -29,14 +29,25 @@ class FixitEventEmitter extends EventEmitter {
     WorkOrderUpdated: [notifyAssigneeUpdatedWO],
     WorkOrderCancelled: [notifyAssigneeCancelledWO],
     WorkOrderCompleted: [notifyAssignorCompletedWO]
-  };
+  } as const;
+
   constructor() {
     super();
-    Object.entries(this.#FIXIT_EVENT_HANDLERS).forEach(([eventName, eventHandlers]) => {
+    Object.entries(FixitEventEmitter.FIXIT_EVENT_HANDLERS).forEach(([eventName, eventHandlers]) => {
       // Provide an emit fn for the event
-      this[`emit${eventName}`] = (...args) => this.emit(eventName, ...args);
+      Object.defineProperty(this, `emit${eventName}`, {
+        value: (...args: any[]) => {
+          this.emit(eventName, ...args);
+        },
+        writable: false,
+        enumerable: false,
+        configurable: false
+      });
+
       // Register the event's handler fns
-      eventHandlers.forEach((eventHandler) => this.on(eventName, eventHandler));
+      eventHandlers.forEach((eventHandler) =>
+        this.on(eventName, eventHandler as (...args: any[]) => void)
+      );
     });
   }
 }
@@ -54,3 +65,16 @@ class FixitEventEmitter extends EventEmitter {
  * @method `emitWorkOrderCompleted()` args: (completedWorkOrder)
  */
 export const eventEmitter = new FixitEventEmitter();
+
+// To provide the methods in intellisense:
+declare interface FixitEventEmitter {
+  emitInvoiceCreated: (...args: Parameters<typeof notifyAssigneeNewInvoice>) => void;
+  emitInvoiceUpdated: (...args: Parameters<typeof notifyAssigneeUpdatedInvoice>) => void;
+  emitInvoiceDeleted: (...args: Parameters<typeof notifyAssigneeDeletedInvoice>) => void;
+  emitInvoicePaid: (...args: Parameters<typeof notifyAssignorPaidInvoice>) => void;
+  emitNewUser: () => void;
+  emitWorkOrderCreated: (...args: Parameters<typeof notifyAssigneeNewWO>) => void;
+  emitWorkOrderUpdated: (...args: Parameters<typeof notifyAssigneeUpdatedWO>) => void;
+  emitWorkOrderCancelled: (...args: Parameters<typeof notifyAssigneeCancelledWO>) => void;
+  emitWorkOrderCompleted: (...args: Parameters<typeof notifyAssignorCompletedWO>) => void;
+}
