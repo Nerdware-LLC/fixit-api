@@ -1,9 +1,21 @@
 import { ApolloServer, AuthenticationError } from "apollo-server-express";
-import { ApolloServerPluginLandingPageLocalDefault } from "apollo-server-core";
 import { schema } from "@graphql/schema";
 import { UserSubscription } from "@models/UserSubscription";
 import { ENV } from "@server/env";
 import { AuthToken, ApolloPaymentRequiredError } from "@utils";
+import type { UserType } from "@models/User/types";
+
+const envDependentApolloServerConfigs = ENV.IS_PROD
+  ? { introspection: false }
+  : {
+      introspection: true,
+      plugins: [
+        await import("apollo-server-core").then(({ ApolloServerPluginLandingPageLocalDefault }) => {
+          return ApolloServerPluginLandingPageLocalDefault({ embed: true });
+        })
+      ],
+      ...(await import("@graphql/__tests__/utils/mocks")) // { mocks, mockEntireSchema }
+    };
 
 const apolloServer = new ApolloServer({
   typeDefs: schema.typeDefs,
@@ -12,18 +24,18 @@ const apolloServer = new ApolloServer({
   csrfPrevention: true,
   cache: "bounded",
   context: async ({ req }) => {
-    const user = {};
-    // FIXME
-    if (false) {
-      // Authenticate the user
-      const user = await AuthToken.getValidatedRequestAuthTokenPayload(req).catch((err) => {
-        throw new AuthenticationError(err); // If err, re-throw as Apollo 401 auth error
-      });
+    // TODO The below context-init checks currently break Apollo introspection
 
-      // Ensure the User's subscription is active and not expired
-      UserSubscription.validateExisting(user.subscription).catch((err: ErrorLike) => {
-        throw new ApolloPaymentRequiredError(err); // If err, re-throw as Apollo 402 error
-      });
+    // Authenticate the user
+    const user = (await AuthToken.getValidatedRequestAuthTokenPayload(req).catch((err) => {
+      throw new AuthenticationError(err); // If err, re-throw as Apollo 401 auth error
+    })) as UserType;
+
+    // Ensure the User's subscription is active and not expired
+    try {
+      UserSubscription.validateExisting(user.subscription);
+    } catch (err) {
+      throw new ApolloPaymentRequiredError(err); // If err, re-throw as Apollo 402 error
     }
 
     return {
@@ -32,9 +44,7 @@ const apolloServer = new ApolloServer({
     };
   },
   // Env-dependent configs:
-  plugins: !ENV.IS_PROD ? [ApolloServerPluginLandingPageLocalDefault({ embed: true })] : [],
-  introspection: !ENV.IS_PROD,
-  mockEntireSchema: ENV.NODE_ENV === "test" // TODO Update mocks, see graphql/mocks and utils/faker.
+  ...envDependentApolloServerConfigs
 });
 
 // Run required init logic for integrating with Express
