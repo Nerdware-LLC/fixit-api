@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 ---
 
 
+## [1.4.1](https://github.com/Nerdware-LLC/fixit-api/compare/v1.4.0...v1.4.1) (2022-09-30)
+
+
+### Bug Fixes
+
+* **apollo:** commit delete old .js config file ([1557a10](https://github.com/Nerdware-LLC/fixit-api/commit/1557a10cd18a224f070dce3927652a92c99c4699))
+* **apolloServer:** mv dynamic test-env imports out of ApolloServer inst call ([75f221a](https://github.com/Nerdware-LLC/fixit-api/commit/75f221a970711643ea13e252559548cdd3100929))
+* **config-files:** update file extensions in config file settings ([5f050ee](https://github.com/Nerdware-LLC/fixit-api/commit/5f050eed6f34916eb47a2fd5a403133e3354566f))
+* **DDB-ST:** correct Model.aliasMapping typings ([23923c9](https://github.com/Nerdware-LLC/fixit-api/commit/23923c976a7d4daf230484f6e504ad94b1e7166e))
+* **DDB-ST:** misc eslint directives ([41c6c4c](https://github.com/Nerdware-LLC/fixit-api/commit/41c6c4c13619c3dec7752df18bfb3ea9044e576d))
+* **eslint:** rm parserConfigs from overrides, was messing up parsing ([7a1a815](https://github.com/Nerdware-LLC/fixit-api/commit/7a1a8158470de61dd922e988cca2b2b21d871a3d))
+* **models:** correct models' 'schema' property to as const for type parsing ([2fdb090](https://github.com/Nerdware-LLC/fixit-api/commit/2fdb0903d29ee660f647a9368d1fc67eda907ee5))
+* **models:** mv User Sub/SCA types into own dirs, add 'Type' suffix ([9165e59](https://github.com/Nerdware-LLC/fixit-api/commit/9165e599a218036d2bb4085beec07e0eecb2a53a))
+* **mw:** update mw with up-to-date Models/model enums ([6195562](https://github.com/Nerdware-LLC/fixit-api/commit/6195562b20dc50ec4bb713e32a7cdf899a04800c))
+* **ts-build:** add 'build' tsconfig, update npm build script ([531a6db](https://github.com/Nerdware-LLC/fixit-api/commit/531a6db9738b3f9a8b17cc4d8ae4e44ae5017836))
+* **utils:** rm dateTimeUtils, files now just use moment directly ([ae30523](https://github.com/Nerdware-LLC/fixit-api/commit/ae305238a9db943662b6593e6a24b4093d068244))
+
 # [1.4.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.3.0...v1.4.0) (2022-09-29)
 
 
