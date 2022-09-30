@@ -5,45 +5,86 @@
     "ecmaVersion": 2022,
     "sourceType": "module"
   },
-  "plugins": ["@typescript-eslint", "jest", "import"],
-  "extends": [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:@typescript-eslint/recommended-requiring-type-checking",
-    "plugin:node/recommended",
-    "plugin:jest/recommended"
-  ],
+  "plugins": ["import"],
+  "extends": ["eslint:recommended", "plugin:node/recommended"],
   "env": {
     "es2022": true,
-    "node": true,
-    "jest/globals": true
+    "node": true
   },
   "ignorePatterns": [
     "node_modules/*",
     ".github/*",
     "build/*",
     "coverage/*",
-    "jest.config.js",
-    "apollo.config.js"
+    "jest.config.ts",
+    "apollo.config.cjs"
   ],
   "rules": {
     "no-console": "off",
     "semi": ["error", "always"],
+    "import/no-unresolved": "error",
     "node/no-process-env": "error",
-    "jest/no-disabled-tests": "warn",
-    "jest/no-focused-tests": "error",
-    "jest/no-identical-title": "error",
-    "jest/prefer-to-have-length": "warn",
-    "jest/valid-expect": "error",
-    "@typescript-eslint/no-explicit-any": "warn",
-    "@typescript-eslint/no-non-null-assertion": "warn",
     "node/no-extraneous-import": ["error", { "allowModules": ["@jest/globals"] }],
-    "node/no-unpublished-import": ["error", { "allowModules": ["ts-jest", "@jest/types"] }]
+    "node/no-unpublished-import": ["error", { "allowModules": ["ts-jest", "@jest/types"] }],
+    "node/no-missing-import": "off"
   },
   "settings": {
+    "import/parsers": {
+      "@typescript-eslint/parser": [".js", ".ts"]
+    },
     "import/resolver": {
       "typescript": {}
     }
-  }
+  },
+  "overrides": [
+    {
+      // Typescript Files
+      "files": ["**/*.ts"],
+      "parserOptions": {
+        "project": "./tsconfig.json",
+        "ecmaVersion": 2022,
+        "sourceType": "module"
+      },
+      "plugins": ["@typescript-eslint"],
+      "extends": [
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking"
+      ],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-non-null-assertion": "off",
+        "@typescript-eslint/no-unsafe-argument": "off"
+      },
+      "settings": {
+        "import/parsers": {
+          "@typescript-eslint/parser": [".ts"]
+        },
+        "import/resolver": {
+          "typescript": {}
+        }
+      }
+    },
+    {
+      // Jest Test Files
+      "files": ["**/*.test.[tj]s"],
+      "parserOptions": {
+        "project": "./tsconfig.json",
+        "ecmaVersion": 2022,
+        "sourceType": "module"
+      },
+      "plugins": ["jest"],
+      "extends": ["plugin:jest/recommended"],
+      "env": {
+        "jest/globals": true
+      },
+      "rules": {
+        "jest/no-disabled-tests": "warn",
+        "jest/no-focused-tests": "error",
+        "jest/no-identical-title": "error",
+        "jest/prefer-to-have-length": "warn",
+        "jest/valid-expect": "error"
+      }
+    }
+  ]
 }
