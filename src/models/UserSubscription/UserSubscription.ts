@@ -6,7 +6,7 @@ import { USER_SUBSCRIPTION_SK_REGEX } from "./regex";
 import { SUBSCRIPTION_STATUSES } from "./validateExisting";
 import { normalizeStripeFields } from "./normalizeStripeFields";
 import { validateExisting } from "./validateExisting";
-import type { ModelSchemaType, ModelSchemaOptions } from "@lib/dynamoDB";
+import type { ModelSchemaOptions } from "@lib/dynamoDB";
 
 const {
   FIXIT_SUBSCRIPTION: { productID, priceIDs, promoCodes }
@@ -19,20 +19,39 @@ const {
  * @method `queryUserSubscriptions()`
  */
 class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
-  static readonly schema: ModelSchemaType = {
+  static readonly schema = {
     pk: {
       type: "string",
       alias: "userID",
-      validate: (value: string) => USER_ID_REGEX.test(value)
+      validate: (value: string) => USER_ID_REGEX.test(value),
+      isHashKey: true,
+      required: true
     },
     sk: {
       type: "string",
-      validate: (value: string) => USER_SUBSCRIPTION_SK_REGEX.test(value)
+      validate: (value: string) => USER_SUBSCRIPTION_SK_REGEX.test(value),
+      isRangeKey: true,
+      required: true,
+      index: {
+        // For relational queryies using "sk" as the hash key
+        name: "Overloaded_SK_GSI",
+        global: true,
+        rangeKey: "data",
+        project: true
+      }
     },
     data: {
       type: "string",
       alias: "id",
-      validate: (value: string) => /^sub_[a-zA-Z0-9]{14}$/.test(value) // Example from Stripe docs: "sub_IiUAdsiPC26N4e"
+      validate: (value: string) => /^sub_[a-zA-Z0-9]{14}$/.test(value), // Example from Stripe docs: "sub_IiUAdsiPC26N4e"
+      required: true,
+      index: {
+        // For relational queries using "data" as the hash key
+        name: "Overloaded_Data_GSI",
+        global: true,
+        rangeKey: "sk",
+        project: true
+      }
     },
     currentPeriodEnd: {
       ...COMMON_MODEL_ATTRIBUTES.DATETIME, // TODO Make sure client gets a NUMBER, unix time in milliseconds (not a Date object)
@@ -43,7 +62,7 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
       required: true,
       validate: (value: string) => Object.values(UserSubscriptionModel.PRODUCT_IDS).includes(value)
       /* Fixit currently only uses 1 productID for its subscription, but more products
-    and tiers will be added in the future, so `validate` emulates "enum".         */
+      and tiers will be added in the future, so `validate` emulates "enum".         */
     },
     priceID: {
       type: "string",
@@ -55,7 +74,7 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
       required: true,
       validate: (value: string) => Object.keys(SUBSCRIPTION_STATUSES).includes(value)
     }
-  };
+  } as const;
 
   static readonly schemaOptions: ModelSchemaOptions = {
     transformItem: {

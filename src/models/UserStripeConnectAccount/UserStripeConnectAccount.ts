@@ -2,27 +2,46 @@ import { ddbSingleTable, Model } from "@lib/dynamoDB";
 import { USER_ID_REGEX } from "@models/User";
 import { STRIPE_CONNECT_ACCOUNT_SK_REGEX } from "./regex";
 import { createOne } from "./createOne";
-import type { ModelSchemaType, ModelSchemaOptions } from "@lib/dynamoDB";
+import type { ModelSchemaOptions } from "@lib/dynamoDB";
 
 /**
  * UserStripeConnectAccount Model Methods:
  * @method `createOne()`
  */
 class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccountModel.schema> {
-  static readonly schema: ModelSchemaType = {
+  static readonly schema = {
     pk: {
       type: "string",
       alias: "userID",
-      validate: (value: string) => USER_ID_REGEX.test(value)
+      validate: (value: string) => USER_ID_REGEX.test(value),
+      isHashKey: true,
+      required: true
     },
     sk: {
       type: "string",
-      validate: (value: string) => STRIPE_CONNECT_ACCOUNT_SK_REGEX.test(value)
+      validate: (value: string) => STRIPE_CONNECT_ACCOUNT_SK_REGEX.test(value),
+      isRangeKey: true,
+      required: true,
+      index: {
+        // For relational queryies using "sk" as the hash key
+        name: "Overloaded_SK_GSI",
+        global: true,
+        rangeKey: "data",
+        project: true
+      }
     },
     data: {
       type: "string",
       alias: "id",
-      validate: (value: string) => /^acct_[a-zA-Z0-9]{16}$/.test(value) // Example from Stripe docs: "acct_1GpaAGC34C0mN67J"
+      validate: (value: string) => /^acct_[a-zA-Z0-9]{16}$/.test(value), // Example from Stripe docs: "acct_1GpaAGC34C0mN67J"
+      required: true,
+      index: {
+        // For relational queries using "data" as the hash key
+        name: "Overloaded_Data_GSI",
+        global: true,
+        rangeKey: "sk",
+        project: true
+      }
     },
     detailsSubmitted: {
       type: "boolean",
@@ -36,7 +55,7 @@ class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccoun
       type: "boolean",
       required: true
     }
-  };
+  } as const;
 
   static readonly schemaOptions: ModelSchemaOptions = {
     transformItem: {

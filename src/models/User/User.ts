@@ -4,17 +4,10 @@ import { COMMON_MODEL_ATTRIBUTES } from "@models/_common";
 import { EMAIL_REGEX, prettifyStr } from "@utils";
 import { USER_ID_REGEX, USER_SK_REGEX, USER_STRIPE_CUSTOMER_ID_REGEX } from "./regex";
 import { createOne } from "./createOne";
-import type { ModelSchemaType, ModelSchemaOptions } from "@lib/dynamoDB";
+import type { ModelSchemaOptions } from "@lib/dynamoDB";
 
 // TODO make sure sensitive User fields are hidden from other Users: id, stripeCustomerID, stripeConnectAccount, subscription
-
-/* TODO Make the following User properties immutable
-  - id
-  - email
-  - login.type
-  - stripeCustomerID
-  - stripeConnectAccount.id
-*/
+// TODO Make these User properties immutable: id, email, login.type, stripeCustomerID, stripeConnectAccount.id
 
 /**
  * User Model Methods:
@@ -24,20 +17,39 @@ import type { ModelSchemaType, ModelSchemaOptions } from "@lib/dynamoDB";
  * @method `queryUserByEmail()`
  */
 class UserModel extends Model<typeof UserModel.schema> {
-  static readonly schema: ModelSchemaType = {
+  static readonly schema = {
     pk: {
       type: "string",
       alias: "id",
-      validate: (value: string) => USER_ID_REGEX.test(value)
+      validate: (value: string) => USER_ID_REGEX.test(value),
+      isHashKey: true,
+      required: true
     },
     sk: {
       type: "string",
-      validate: (value: string) => USER_SK_REGEX.test(value)
+      validate: (value: string) => USER_SK_REGEX.test(value),
+      isRangeKey: true,
+      required: true,
+      index: {
+        // For relational queryies using "sk" as the hash key
+        name: "Overloaded_SK_GSI",
+        global: true,
+        rangeKey: "data", // TODO Double check - is any model using this GSI sk?
+        project: true
+      }
     },
     data: {
       type: "string",
       alias: "email",
-      validate: (value: string) => EMAIL_REGEX.test(value)
+      validate: (value: string) => EMAIL_REGEX.test(value),
+      required: true,
+      index: {
+        // For relational queries using "data" as the hash key
+        name: "Overloaded_Data_GSI",
+        global: true,
+        rangeKey: "sk", // WO queryWorkOrdersAssignedToUser uses this GSI SK
+        project: true
+      }
     },
     phone: {
       ...COMMON_MODEL_ATTRIBUTES.PHONE,
@@ -87,7 +99,7 @@ class UserModel extends Model<typeof UserModel.schema> {
         photoURL: { type: "string" }
       }
     }
-  };
+  } as const;
 
   static readonly schemaOptions: ModelSchemaOptions = {
     transformItem: {

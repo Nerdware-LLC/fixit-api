@@ -4,7 +4,7 @@ import { USER_ID_REGEX } from "@models/User";
 import { WORK_ORDER_ID_REGEX, LOCATION_COMPOSITE_REGEX, WO_CHECKLIST_ITEM_ID_REGEX } from "./regex";
 import { createOne } from "./createOne";
 import { updateOne } from "./updateOne";
-import type { ModelSchemaType, ModelSchemaOptions } from "@lib/dynamoDB";
+import type { ModelSchemaOptions } from "@lib/dynamoDB";
 
 /**
  * WorkOrder Model Methods:
@@ -15,21 +15,40 @@ import type { ModelSchemaType, ModelSchemaOptions } from "@lib/dynamoDB";
  * @method `queryWorkOrdersAssignedToUser()`
  */
 export class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
-  static readonly schema: ModelSchemaType = {
+  static readonly schema = {
     pk: {
       type: "string",
       alias: "createdByUserID",
-      validate: (value: string) => USER_ID_REGEX.test(value)
+      validate: (value: string) => USER_ID_REGEX.test(value),
+      isHashKey: true,
+      required: true
     },
     sk: {
       type: "string",
       alias: "id",
-      validate: (value: string) => WORK_ORDER_ID_REGEX.test(value)
+      validate: (value: string) => WORK_ORDER_ID_REGEX.test(value),
+      isRangeKey: true,
+      required: true,
+      index: {
+        // For relational queryies using "sk" as the hash key
+        name: "Overloaded_SK_GSI",
+        global: true,
+        rangeKey: "data",
+        project: true
+      }
     },
     data: {
       type: "string",
       alias: "assignedToUserID",
-      validate: (value: string) => USER_ID_REGEX.test(value)
+      validate: (value: string) => USER_ID_REGEX.test(value),
+      required: true,
+      index: {
+        // For relational queries using "data" as the hash key
+        name: "Overloaded_Data_GSI",
+        global: true,
+        rangeKey: "sk",
+        project: true
+      }
     },
     status: {
       type: "string",
@@ -176,7 +195,7 @@ export class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
       type: "string",
       required: false
     }
-  };
+  } as const;
 
   static readonly schemaOptions: ModelSchemaOptions = {
     transformItem: {
