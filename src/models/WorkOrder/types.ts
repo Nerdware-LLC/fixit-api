@@ -1,7 +1,6 @@
 import { WorkOrder } from "./WorkOrder";
 
-// TODO download codegen types; resolve WorkOrder Class/Type naming conflict (currently WorkOrderType for workaround)
-export type WorkOrder = {
+export type WorkOrderType = {
   createdByUserID: string; //   mapped from "pk" table attribute
   id: string; //                mapped from "sk" table attribute
   assignedToUserID?: string; // mapped from "data" table attribute

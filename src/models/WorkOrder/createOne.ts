@@ -1,6 +1,6 @@
 import { eventEmitter } from "@events";
 import type { WorkOrderModel } from "./WorkOrder";
-import type { WorkOrder } from "./types";
+import type { WorkOrderType } from "./types";
 
 // function, not arrow, bc we need to use "this." syntax to call Dynamoose methods
 export const createOne = async function (
@@ -18,7 +18,7 @@ export const createOne = async function (
     entryContactPhone,
     scheduledDateTime,
     contractorNotes
-  }: Omit<WorkOrder, "assignedToUserID" | "status" | "priority"> & {
+  }: Omit<WorkOrderType, "assignedToUserID" | "status" | "priority"> & {
     assignedToUserID: string; //                            <-- optional in base type
     priority?: typeof WorkOrderModel.PRIORITIES[number]; // <-- required in base type
   }

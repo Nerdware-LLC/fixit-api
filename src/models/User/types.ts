@@ -1,15 +1,16 @@
-// TODO Download TS types from Apollo typedefs codegen endpoint once server is up
+import type { UserSubscriptionType } from "@models/UserSubscription/types";
+import type { UserStripeConnectAccountType } from "@models/UserStripeConnectAccount/types";
 
-export interface User {
+export interface UserType {
   id: string;
   email: string;
   phone: string;
   expoPushToken?: string;
   profile: UserProfile;
-  login: UserLoginLocal | UserLoginGoogleOAuth;
+  login: UserLogin;
   stripeCustomerID: string;
-  stripeConnectAccount?: UserStripeConnectAccount;
-  subscription: UserSubscription;
+  stripeConnectAccount?: UserStripeConnectAccountType;
+  subscription?: UserSubscriptionType;
 }
 
 export interface UserProfile {
@@ -20,6 +21,8 @@ export interface UserProfile {
   photoUrl?: string;
 }
 
+export type UserLogin = UserLoginLocal | UserLoginGoogleOAuth;
+
 export interface UserLoginLocal {
   type: "LOCAL";
   passwordHash: string;
@@ -29,30 +32,4 @@ export interface UserLoginGoogleOAuth {
   type: "GOOGLE_OAUTH";
   googleID: string;
   googleAccessToken: string;
-}
-
-export interface UserStripeConnectAccount {
-  id: string;
-  detailsSubmitted: boolean;
-  chargesEnabled: boolean;
-  payoutsEnabled: boolean;
-}
-
-export interface UserSubscription {
-  id: string;
-  currentPeriodEnd: number;
-  productID: string;
-  priceID: string;
-  status: UserSubscriptionStatus;
-  createdAt: number;
-}
-
-export enum UserSubscriptionStatus {
-  active,
-  incomplete,
-  incomplete_expired,
-  trialing,
-  past_due,
-  canceled,
-  unpaid
 }

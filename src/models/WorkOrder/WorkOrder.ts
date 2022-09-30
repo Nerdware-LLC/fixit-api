@@ -14,7 +14,7 @@ import type { ModelSchemaOptions } from "@lib/dynamoDB";
  * @method `queryUsersWorkOrders()`
  * @method `queryWorkOrdersAssignedToUser()`
  */
-export class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
+class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
   static readonly schema = {
     pk: {
       type: "string",

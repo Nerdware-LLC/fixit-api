@@ -1,4 +1,3 @@
-export * from "./WorkOrder";
-export * from "./WorkOrderPushNotification";
+export { WorkOrder } from "./WorkOrder";
 export * from "./types";
 export * from "./regex";

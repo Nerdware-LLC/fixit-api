@@ -1,4 +1,4 @@
-export interface Invoice {
+export interface InvoiceType {
   createdByUserID: string; //   mapped from "pk" table attribute
   id: string; //                mapped from "sk" table attribute
   assignedToUserID?: string; // mapped from "data" table attribute

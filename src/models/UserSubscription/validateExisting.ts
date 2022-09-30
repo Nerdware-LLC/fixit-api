@@ -1,3 +1,5 @@
+import type { UserSubscriptionType } from "./types";
+
 // sub statuses info: https://stripe.com/docs/api/subscriptions/object#subscription_object-status
 // prettier-ignore
 export const SUBSCRIPTION_STATUSES = {
@@ -12,12 +14,12 @@ export const SUBSCRIPTION_STATUSES = {
   unpaid: { errMsg: "Sorry, payment for your subscription is past due. Please submit payment and try again." }
 } as const;
 
-// prettier-ignore
-export const validateExisting = function (sub?: { currentPeriodEnd?: number; status?: keyof typeof SUBSCRIPTION_STATUSES }) {
-  if (!sub || !sub.currentPeriodEnd || !sub.status) {
+export const validateExisting = function (sub?: UserSubscriptionType) {
+  if (!sub || !sub?.currentPeriodEnd || !sub?.status) {
     throw new Error("Invalid subscription.");
   }
 
+  // prettier-ignore
   const subStatusConfig: { isValid?: boolean; errMsg?: string } = SUBSCRIPTION_STATUSES?.[sub.status];
 
   if (!subStatusConfig || (subStatusConfig?.isValid ?? false)) {
