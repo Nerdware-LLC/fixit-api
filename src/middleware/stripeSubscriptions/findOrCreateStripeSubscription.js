@@ -1,5 +1,5 @@
 import { stripe } from "@lib/stripe";
-import { UserSubscription, UserSubscriptionEnums } from "@models";
+import { UserSubscription } from "@models";
 import { catchAsyncMW, ClientInputError, PaymentRequiredError } from "@utils";
 
 // req.originalUrl = "/subscriptions/submit-payment"
@@ -23,10 +23,10 @@ export const findOrCreateStripeSubscription = catchAsyncMW(async (req, res, next
   } else {
     /* If the user doesn't have a valid subscription, validate req.body
     inputs and create a new subscription with the provided values.   */
-    const priceID = UserSubscriptionEnums.PRICE_IDS?.[body.selectedSubscription];
+    const priceID = UserSubscription.PRICE_IDS?.[body.selectedSubscription];
     if (!priceID) throw new ClientInputError("Invalid subscription");
 
-    const promoCodeID = UserSubscriptionEnums.PROMO_CODES?.[body?.promoCode];
+    const promoCodeID = UserSubscription.PROMO_CODES?.[body?.promoCode];
     const isTrialSub = body.selectedSubscription === "TRIAL";
 
     // Submit info to Stripe API for new subscription
@@ -42,16 +42,20 @@ export const findOrCreateStripeSubscription = catchAsyncMW(async (req, res, next
     currentSubscription = UserSubscription.normalizeStripeFields(createSubResult);
 
     // Upsert the sub info to ensure db is up to date and prevent duplicate user subs
-    await UserSubscription.update({
-      pk: _user.id,
-      sk: `SUBSCRIPTION#${_user.id}#${currentSubscription.createdAt}`,
-      id: currentSubscription.id,
-      currentPeriodEnd: currentSubscription.currentPeriodEnd,
-      productID: currentSubscription.productID,
-      priceID: currentSubscription.priceID,
-      status: currentSubscription.status,
-      createdAt: currentSubscription.createdAt
-    });
+    await UserSubscription.updateItem(
+      {
+        userID: _user.id,
+        sk: `SUBSCRIPTION#${_user.id}#${currentSubscription.createdAt}`
+      },
+      {
+        id: currentSubscription.id,
+        currentPeriodEnd: currentSubscription.currentPeriodEnd,
+        productID: currentSubscription.productID,
+        priceID: currentSubscription.priceID,
+        status: currentSubscription.status,
+        createdAt: currentSubscription.createdAt
+      }
+    );
   }
 
   // Destructure currentSubscription

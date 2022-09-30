@@ -8,7 +8,7 @@ export const updateExpoPushToken = catchAsyncMW(async (req, res, next) => {
   } = req;
 
   if (expoPushToken) {
-    await User.update({ pk: userID, sk: `#DATA#${userID}` }, { $SET: { expoPushToken } });
+    await User.updateItem({ id: userID, sk: `#DATA#${userID}` }, { expoPushToken });
   }
 
   next();

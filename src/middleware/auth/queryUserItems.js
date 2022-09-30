@@ -10,11 +10,14 @@ export const queryUserItems = catchAsyncMW(async (req, res, next) => {
     - Contacts
   */
 
-  const items = await User.query({ pk: { eq: req._user.id } })
-    .and()
-    .where("sk")
-    .between(`#DATA#${req._user.id}`, "~")
-    .exec(); // In utf8 byte order, tilde comes after numbers, upper+lowercase letters, #, and $.
+  const items = await User.query({
+    // In utf8 byte order, tilde comes after numbers, upper+lowercase letters, #, and $.
+    KeyConditionExpression: `id = :userID AND sk BETWEEN :userSK AND ~`,
+    ExpressionAttributeValues: {
+      ":userID": req._user.id,
+      ":userSK": `#DATA#${req._user.id}`
+    }
+  });
 
   const { subscription, stripeConnectAccount, workOrders, invoices, contacts } = items.reduce(
     (accum, current) => {

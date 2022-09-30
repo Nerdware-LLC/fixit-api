@@ -17,9 +17,9 @@ export const checkOnboardingStatus = catchAsyncMW(async (req, res, next) => {
     charges_enabled !== !!chargesEnabled ||
     payouts_enabled !== !!payoutsEnabled
   ) {
-    const updatedStripeConnectAccount = await UserStripeConnectAccount.update(
+    const updatedStripeConnectAccount = await UserStripeConnectAccount.updateItem(
       {
-        pk: userID,
+        userID,
         sk: `STRIPE_CONNECT_ACCOUNT#${userID}`
       },
       {

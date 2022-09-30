@@ -23,9 +23,9 @@ export const checkSubscriptionStatus = catchAsyncMW(async (req, res, next) => {
       upToDateSubInfo.status !== status_inDB ||
       upToDateSubInfo.currentPeriodEnd !== currentPeriodEnd_inDB.getTime()
     ) {
-      const updatedSub = await UserSubscription.update(
+      const updatedSub = await UserSubscription.updateItem(
         {
-          pk: userID,
+          userID,
           sk: `SUBSCRIPTION#${userID}#${upToDateSubInfo.createdAt}`
         },
         {
