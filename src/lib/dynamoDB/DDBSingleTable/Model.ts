@@ -339,6 +339,7 @@ export class Model<
 
     // Ignored 'reduce not callable' parser flag; there's a known issue with calling reduce on an array of methods (link below).
     // https://github.com/microsoft/TypeScript/issues/36390#issuecomment-840082057
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     // prettier-ignore
     return ioActions.reduce(itemDataReducer, itemData) as ReturnFromIOHookActionsSet<

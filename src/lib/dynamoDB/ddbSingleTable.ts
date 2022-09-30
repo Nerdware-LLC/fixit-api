@@ -42,7 +42,7 @@ export const ddbSingleTable = new DDBSingleTable({
         project: true // all attributes
       }
     }
-  },
+  } as const,
   ddbClientConfigs: {
     region: REGION,
     ...(shouldUseDDBlocal && { endpoint: DYNAMODB_LOCAL_ENDPOINT_URL })
