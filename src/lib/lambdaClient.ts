@@ -1,6 +1,5 @@
-import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
+import { LambdaClient, InvokeCommand, type InvokeCommandInput } from "@aws-sdk/client-lambda";
 import { ENV } from "@server/env";
-import type { InvokeCommandInput } from "@aws-sdk/client-lambda";
 
 const _lambdaClient = new LambdaClient({ region: ENV.AWS.REGION });
 
