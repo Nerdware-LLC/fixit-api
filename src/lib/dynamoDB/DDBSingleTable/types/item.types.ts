@@ -6,6 +6,7 @@ import type {
   ModelSchemaNestedArray,
   ModelSchemaNestedAttributeConfig
 } from "./schema.types";
+import { ItemPrimaryKeys, AliasedItemPrimaryKeys } from "./client.types";
 
 /**
  * `ItemOrAliasedItem` yields a union of Item types defined by the Model
@@ -58,6 +59,10 @@ export type AnyItemOrBatchItemsType<Schema extends ModelSchemaType> =
   | AnySingleItemType<Schema>
   | AnyBatchItemsType<Schema>;
 
+export type AnyPrimaryKeysType<Schema extends ModelSchemaType> =
+  | ItemPrimaryKeys<Schema>
+  | AliasedItemPrimaryKeys<Schema>;
+
 // prettier-ignore
 /**
  * `ReturnFromItemAliasing` provides the return type for functions which include in their
@@ -66,15 +71,19 @@ export type AnyItemOrBatchItemsType<Schema extends ModelSchemaType> =
  */
 export type ReturnFromItemAliasing<
   Schema extends ModelSchemaType,
-  Item extends AnySingleItemType<Schema>
-> = Item extends ItemTypeFromSchema<Schema>
+  ItemParam extends AnySingleItemType<Schema> | AnyPrimaryKeysType<Schema>
+> = ItemParam  extends ItemTypeFromSchema<Schema>
   ? AliasedItemTypeFromSchema<Schema>
-  : Item extends AliasedItemTypeFromSchema<Schema>
+  : ItemParam  extends AliasedItemTypeFromSchema<Schema>
   ? ItemTypeFromSchema<Schema>
-  : Item extends Partial<ItemTypeFromSchema<Schema>>
+  : ItemParam  extends Partial<ItemTypeFromSchema<Schema>>
   ? Partial<AliasedItemTypeFromSchema<Schema>>
-  : Item extends Partial<AliasedItemTypeFromSchema<Schema>>
+  : ItemParam  extends Partial<AliasedItemTypeFromSchema<Schema>>
   ? Partial<ItemTypeFromSchema<Schema>>
+  : ItemParam extends ItemPrimaryKeys<Schema>
+  ? AliasedItemPrimaryKeys<Schema>
+  : ItemParam extends AliasedItemPrimaryKeys<Schema>
+  ? ItemPrimaryKeys<Schema>
   : never;
 
 /**
@@ -108,6 +117,7 @@ export type ReturnFromIOHookActionsSet<
   ? Partial<ItemTypeFromSchema<Schema>>
   : never;
 
+// prettier-ignore
 /**
  * `ItemTypeFromSchema`
  * - This generic creates a Model Item type definition from a DDBSingleTable Model schema using
@@ -170,20 +180,15 @@ export type ReturnFromIOHookActionsSet<
 export type ItemTypeFromSchema<
   T extends ModelSchemaType | ModelSchemaNestedAttributes,
   NestDepth extends ModelSchemaNestDepth = 0
-> = NestDepth extends 6
+> = Iterate<NestDepth> extends 5
   ? never
   : T extends Record<string, ModelSchemaAttributeConfig | ModelSchemaNestedAttributeConfig>
-  ? WriteableR<
-      // prettier-ignore
-      Intersection<
-        { [K in keyof PickMatching<T, { required: true }>]-?: GetTypeFromAttributeConfig<T[K], NestDepth> },
-        { [K in keyof PickNonMatching<T, { required: true }>]+?: GetTypeFromAttributeConfig<T[K], NestDepth> }
-      >
-    >
+  ? GetMappedItemWithAccessMods<T, NestDepth>
   : T extends Array<ModelSchemaAttributeConfig | ModelSchemaNestedAttributeConfig>
   ? GetTypeFromAttributeConfig<T[number], NestDepth>
   : never;
 
+// prettier-ignore
 /**
  * `AliasedItemTypeFromSchema`
  * - This generic creates a Model Item type definition from a DDBSingleTable Model schema using
@@ -249,24 +254,34 @@ export type AliasedItemTypeFromSchema<
 > = Iterate<NestDepth> extends 5
   ? never
   : T extends Record<string, ModelSchemaAttributeConfig | ModelSchemaNestedAttributeConfig>
-  ? WriteableR<
-      // prettier-ignore
-      Intersection<
-        { [K in keyof PickMatching<T, { required: true }> as TryAlias<T, K>]-?: GetTypeFromAttributeConfig<T[K], NestDepth> },
-        { [K in keyof PickNonMatching<T, { required: true }> as TryAlias<T, K>]+?: GetTypeFromAttributeConfig<T[K], NestDepth> }
-      >
-    >
+  ? GetMappedItemWithAccessMods<T, NestDepth, { aliasKeys: true }>
   : T extends Array<ModelSchemaAttributeConfig | ModelSchemaNestedAttributeConfig>
   ? GetTypeFromAttributeConfig<T[number], Iterate<NestDepth>, { aliasKeys: true }>
   : never;
 
+// prettier-ignore
 /**
- * `TryAlias` returns "alias" if exists, else key.
+ * This type maps Item keys to values and makes the following access modifications:
+ * - Removes readonly
+ * - Adds/removes optionality "?" depending on attr cpmfog property `required`
  */
-type TryAlias<
+export type GetMappedItemWithAccessMods<
   T extends Record<string, ModelSchemaAttributeConfig | ModelSchemaNestedAttributeConfig>,
-  K extends keyof T
-> = T[K]["alias"] extends string ? T[K]["alias"] : K;
+  NestDepth extends ModelSchemaNestDepth = 0,
+  Opts extends { aliasKeys?: boolean } = { aliasKeys: false }
+> = Intersection<
+  { -readonly [K in keyof T as GetItemKey<T, K, Opts>]+?: GetTypeFromAttributeConfig<T[K], NestDepth, Opts> },
+  { -readonly [K in keyof PickMatching<T, { required: true }> as GetItemKey<T, K, Opts>]-?: GetTypeFromAttributeConfig<T[K], NestDepth, Opts> }
+>;
+
+/**
+ * `GetItemKey` returns "alias" if Opts.aliasKeys is true AND an alias exists, else key.
+ */
+type GetItemKey<
+  T extends Record<string, ModelSchemaAttributeConfig | ModelSchemaNestedAttributeConfig>,
+  K extends keyof T,
+  Opts extends { aliasKeys?: boolean } = { aliasKeys: false }
+> = Opts["aliasKeys"] extends true ? (T[K]["alias"] extends string ? T[K]["alias"] : K) : K;
 
 /**
  * `GetTypeFromAttributeConfig`

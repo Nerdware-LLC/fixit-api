@@ -1,4 +1,5 @@
 import type { TableKeysSchemaType, ModelSchemaType } from "./schema.types";
+import { GetMappedItemWithAccessMods } from "./item.types";
 
 // DDBSingleTableClient instance property generics:
 
@@ -10,20 +11,31 @@ export type ClientInstanceTableKeys<TableKeysSchema extends TableKeysSchemaType>
 // DDBSingleTableClient method parameter generics:
 
 export type TableHashKey<Schema extends TableKeysSchemaType | ModelSchemaType> = {
-  [K in keyof PickMatching<Schema, { isHashKey: true }>]: string;
+  -readonly [K in keyof PickMatching<Schema, { isHashKey: true }>]: string;
 };
 
 export type TableRangeKey<Schema extends TableKeysSchemaType | ModelSchemaType> = {
-  [K in keyof PickMatching<Schema, { isHashKey: true }>]: string;
+  -readonly [K in keyof PickMatching<Schema, { isHashKey: true }>]: string;
 };
 
 export type ItemPrimaryKeys<Schema extends TableKeysSchemaType | ModelSchemaType> = {
-  [K in keyof PickMatching<Schema, { isHashKey: true } | { isRangeKey: true }>]: string;
+  -readonly [K in keyof GetKeyAttributes<Schema>]: string;
 };
 
-export type ItemNonKeyAttributes<Schema extends ModelSchemaType> = {
-  [K in keyof PickNonMatching<Schema, { isHashKey: true } | { isRangeKey: true }>]: string;
+export type AliasedItemPrimaryKeys<Schema extends TableKeysSchemaType | ModelSchemaType> = {
+  -readonly [K in keyof GetKeyAttributes<Schema> as GetKeyAttributes<Schema>[K]["alias"] extends string
+    ? GetKeyAttributes<Schema>[K]["alias"]
+    : K]: string;
 };
+
+export type ItemNonKeyAttributes<Schema extends ModelSchemaType> = GetMappedItemWithAccessMods<
+  PickNonMatching<Schema, { isHashKey: true } | { isRangeKey: true }>
+>;
+
+type GetKeyAttributes<Schema extends ModelSchemaType> = PickMatching<
+  Schema,
+  { isHashKey: true } | { isRangeKey: true }
+>;
 
 /**
  * This generic provides type definitions for the DynamoDB "opts" parameters used

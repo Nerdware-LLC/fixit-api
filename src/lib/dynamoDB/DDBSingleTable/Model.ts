@@ -1,5 +1,6 @@
+import { deepStrictEqual } from "assert";
 import moment from "moment";
-import { DDBSingleTableError, SchemaValidationError, ItemInputError } from "./customErrors";
+import { SchemaValidationError, ItemInputError } from "./customErrors";
 import type { DDBSingleTable as DDBSingleTableClass } from "./DDBSingleTable";
 import type { DDBSingleTableClient } from "./DDBSingleTableClient";
 import type {
@@ -16,6 +17,8 @@ import type {
   // Item attribute types:
   ItemPrimaryKeys,
   ItemNonKeyAttributes,
+  AliasedItemPrimaryKeys,
+  AnyPrimaryKeysType,
   // Item attribute alias mapping types:
   ReturnFromItemAliasing,
   AliasMappingItemKey,
@@ -90,9 +93,7 @@ export class Model<
   Schema extends ModelSchemaType,
   AliasedSchema extends AliasedModelSchemaType<Schema> = AliasedModelSchemaType<Schema>,
   ItemType extends ItemTypeFromSchema<Schema> = ItemTypeFromSchema<Schema>,
-  AliasedItem extends AliasedItemTypeFromSchema<Schema> = AliasedItemTypeFromSchema<Schema>,
-  PrimaryKeyAttributes extends ItemPrimaryKeys<Schema> = ItemPrimaryKeys<Schema>,
-  PrimaryKeyAliases extends ItemPrimaryKeys<AliasedSchema> = ItemPrimaryKeys<AliasedSchema>
+  AliasedItem extends AliasedItemTypeFromSchema<Schema> = AliasedItemTypeFromSchema<Schema>
 > {
   // STATIC PROPERTIES
   private static readonly DEFAULT_MODEL_SCHEMA_OPTS: ModelSchemaOptions = {
@@ -112,23 +113,19 @@ export class Model<
     modelSchema: Schema,
     modelSchemaOptions: ModelSchemaOptions
   ) {
-    // Ensure all table keys are present in the schema and that "type" is the same if provided.
-    Object.keys(ddbSingleTable.tableKeysSchema).forEach((tableKey) => {
+    // Ensure the key attribute configs defined in the Model schema match those in the TableKeysSchema.
+    Object.entries(ddbSingleTable.tableKeysSchema).forEach(([tableKey, keyAttrConfig]) => {
       if (!(tableKey in modelSchema)) {
         throw new SchemaValidationError(
           `"${modelName}" Model schema does not contain key attribute "${tableKey}".`
         );
       }
 
-      // Ensure the Model schema doesn't specify an invalid "type" in key configs.
-      if (
-        Object.prototype.hasOwnProperty.call(modelSchema[tableKey], "type") &&
-        modelSchema[tableKey].type !== ddbSingleTable.tableKeysSchema[tableKey].type
-      ) {
-        throw new SchemaValidationError(
-          `"${modelName}" Model schema defines a different "type" for "${tableKey}" than is specified in the Table Keys Schema.`
-        );
-      }
+      deepStrictEqual(
+        keyAttrConfig,
+        modelSchema[tableKey],
+        `"${modelName}" Model schema defines configs for key attribute "${tableKey}" which do not match that defined by the TableKeysSchema.`
+      );
     });
 
     this.ddbClient = ddbSingleTable.ddbClient;
@@ -171,20 +168,20 @@ export class Model<
   // INSTANCE METHODS: wrapped DDBSingleTableClient methods
 
   readonly getItem = async (
-    primaryKeys: PrimaryKeyAliases,
+    primaryKeys: AliasedItemPrimaryKeys<Schema>,
     getItemOpts?: Parameters<typeof this.ddbClient.getItem>[1]
   ) => {
-    const toDBpks = this.aliasMapping(primaryKeys, this.aliasedSchema) as PrimaryKeyAttributes;
+    const toDBpks = this.aliasMapping(primaryKeys, this.aliasedSchema) as ItemPrimaryKeys<Schema>;
     const item = await this.ddbClient.getItem<Schema>(toDBpks, getItemOpts);
     return this.processItemData.fromDB(item);
   };
 
   readonly batchGetItems = async (
-    primaryKeys: Array<PrimaryKeyAliases>,
+    primaryKeys: Array<AliasedItemPrimaryKeys<Schema>>,
     batchGetItemsOpts?: Parameters<typeof this.ddbClient.batchGetItems>[1]
   ) => {
     // prettier-ignore
-    const toDBpks = primaryKeys.map((pks) => this.aliasMapping(pks, this.aliasedSchema)) as Array<PrimaryKeyAttributes>;
+    const toDBpks = primaryKeys.map((pks) => this.aliasMapping(pks, this.aliasedSchema)) as Array<ItemPrimaryKeys<Schema>>;
     const items = await this.ddbClient.batchGetItems<Schema>(toDBpks, batchGetItemsOpts);
     return this.processItemData.fromDB(items);
   };
@@ -194,7 +191,6 @@ export class Model<
     item: AliasedItem,
     createItemOpts?: Parameters<typeof this.ddbClient.createItem>[1]
   ) => {
-    // TODO Ignored build error: "TS2589: Type instantiation is excessively deep and possibly infinite."
     const toDBitem = this.processItemData.toDB(item, { shouldCheckRequired: true }) as ItemType;
     await this.ddbClient.createItem<Schema>(toDBitem, createItemOpts);
     /* PutItem ReturnValues can only be NONE or ALL_OLD, so the DDB API will never
@@ -224,31 +220,31 @@ export class Model<
 
   // prettier-ignore
   readonly updateItem = async (
-    primaryKeys: PrimaryKeyAliases,
+    primaryKeys: AliasedItemPrimaryKeys<Schema>,
     attributesToUpdate: Partial<AliasedItem>,
     updateItemOpts?: Parameters<typeof this.ddbClient.updateItem>[1]
   ) => {
-    const toDBpks = this.aliasMapping(primaryKeys, this.aliasedSchema) as PrimaryKeyAttributes;
+    const toDBpks = this.aliasMapping(primaryKeys, this.aliasedSchema) as ItemPrimaryKeys<Schema>;
     const toDBitem = this.processItemData.toDB(attributesToUpdate) as Partial<ItemNonKeyAttributes<Schema>>;
     const itemAttributes = await this.ddbClient.updateItem<Schema>(toDBpks, toDBitem, updateItemOpts);
     return this.processItemData.fromDB(itemAttributes);
   };
 
   readonly deleteItem = async (
-    primaryKeys: PrimaryKeyAliases,
+    primaryKeys: AliasedItemPrimaryKeys<Schema>,
     deleteItemOpts?: Parameters<typeof this.ddbClient.deleteItem>[1]
   ) => {
-    const toDBpks = this.aliasMapping(primaryKeys, this.aliasedSchema) as PrimaryKeyAttributes;
+    const toDBpks = this.aliasMapping(primaryKeys, this.aliasedSchema) as ItemPrimaryKeys<Schema>;
     const itemAttributes = await this.ddbClient.deleteItem<Schema>(toDBpks, deleteItemOpts);
     return this.processItemData.fromDB(itemAttributes);
   };
 
   readonly batchDeleteItems = async (
-    primaryKeys: Array<PrimaryKeyAliases>,
+    primaryKeys: Array<AliasedItemPrimaryKeys<Schema>>,
     batchDeleteItemsOpts?: Parameters<typeof this.ddbClient.batchDeleteItems>[1]
   ) => {
     // prettier-ignore
-    const toDBpks = primaryKeys.map((pks) => this.aliasMapping(pks, this.aliasedSchema)) as Array<PrimaryKeyAttributes>;
+    const toDBpks = primaryKeys.map((pks) => this.aliasMapping(pks, this.aliasedSchema)) as Array<ItemPrimaryKeys<Schema>>;
     await this.ddbClient.batchDeleteItems<Schema>(toDBpks, batchDeleteItemsOpts);
     return primaryKeys;
   };
@@ -259,14 +255,14 @@ export class Model<
       deleteItems
     }: {
       upsertItems: Array<Partial<AliasedItem>>;
-      deleteItems: Array<PrimaryKeyAliases>;
+      deleteItems: Array<AliasedItemPrimaryKeys<Schema>>;
     },
     batchUpsertAndDeleteItemsOpts?: Parameters<typeof this.ddbClient.batchUpsertAndDeleteItems>[1]
   ) => {
     // prettier-ignore
     const itemsToDB = {
       upsertItems: this.processItemData.toDB(upsertItems, { shouldCheckRequired: true }) as Array<Partial<ItemType>>,
-      deleteItems: deleteItems.map((pks) => this.aliasMapping(pks, this.aliasedSchema)) as Array<PrimaryKeyAttributes>
+      deleteItems: deleteItems.map((pks) => this.aliasMapping(pks, this.aliasedSchema)) as Array<ItemPrimaryKeys<Schema>>
     };
     await this.ddbClient.batchUpsertAndDeleteItems<Schema>(
       itemsToDB,
@@ -308,24 +304,6 @@ export class Model<
   readonly scan = async (scanOpts: Parameters<typeof this.ddbClient.scan>[0] = {}) => {
     const items = await this.ddbClient.scan(scanOpts);
     return this.processItemData.fromDB(items as Array<Partial<ItemTypeFromSchema<Schema>>>);
-  };
-
-  // OTHER PUBLIC INSTANCE METHODS
-
-  readonly addModelMethod = (methodName: string, methodFn: (...args: any[]) => any) => {
-    // Ensure 'methodName' is not already present, throw error if so.
-    if (Object.prototype.hasOwnProperty.call(this, methodName)) {
-      throw new DDBSingleTableError(
-        `Failed to add method "${methodName}" to "${this.modelName}" Model; a method with that name already exists.`
-      );
-    }
-
-    Object.defineProperty(this, methodName, {
-      value: methodFn.bind(methodFn),
-      writable: false,
-      enumerable: false,
-      configurable: false
-    });
   };
 
   // PRIVATE INSTANCE METHODS: instance method utilities
@@ -408,7 +386,7 @@ export class Model<
   // DATABASE I/O HOOK ACTIONS:
 
   // prettier-ignore
-  private readonly aliasMapping = <Item extends AnySingleItemType<Schema> | PrimaryKeyAttributes | PrimaryKeyAliases>(
+  private readonly aliasMapping = <Item extends AnySingleItemType<Schema> | AnySingleItemType<AliasedSchema> | AnyPrimaryKeysType<Schema> | AnyPrimaryKeysType<AliasedSchema>>(
     item: Item,
     schema: Schema | AliasedSchema,
     lookupKey: "alias" | "attributeName" = schema === this.schema ? "alias" : "attributeName",
