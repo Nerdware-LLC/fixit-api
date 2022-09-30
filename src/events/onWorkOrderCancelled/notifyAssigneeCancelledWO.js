@@ -1,5 +1,6 @@
+import { User } from "@models/User";
 import { lambdaClient } from "@lib/lambdaClient";
-import { User, WorkOrderPushNotification } from "@models";
+import { WorkOrderPushNotification } from "@events/pushNotifications";
 
 export const notifyAssigneeCancelledWO = async (cancelledWO) => {
   const { assignedToUserID } = cancelledWO;

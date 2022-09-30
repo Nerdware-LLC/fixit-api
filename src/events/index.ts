@@ -1,2 +1,2 @@
 export { eventEmitter } from "./eventEmitter";
-export { PushNotification } from "./PushNotification";
+export { PushNotification } from "./pushNotifications/_PushNotification";

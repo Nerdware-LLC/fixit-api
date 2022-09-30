@@ -1,5 +1,6 @@
+import { User } from "@models/User";
 import { lambdaClient } from "@lib/lambdaClient";
-import { User, WorkOrderPushNotification } from "@models";
+import { WorkOrderPushNotification } from "@events/pushNotifications";
 
 /**
  * After a WorkOrder is updated by the User who created it, this event handler
@@ -67,7 +68,10 @@ export const notifyAssigneeUpdatedWO = async (currentWOstate, prevWOstate) => {
   if (pushNotificationsToSend.length > 0) {
     // Get the users push notification tokens
     const usersToNotify = await User.batchGetUsersByID(
-      pushNotificationsToSend.map(({ data }) => data._recipientUser)
+      pushNotificationsToSend.map(({ data }) => ({
+        id: data._recipientUser,
+        sk: `#DATA#${data._recipientUser}`
+      }))
     );
 
     // Remove push notifications for users without valid push tokens (bad tokens are rm'd by push service).
