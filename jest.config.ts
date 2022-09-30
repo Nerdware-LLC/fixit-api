@@ -15,11 +15,11 @@ const config: Config.InitialOptions = {
     "!.github/**/*",
     "!build/**/*",
     "!coverage/**/*",
-    "!apollo.config.js",
-    "!jest.config.js"
+    "!apollo.config.cjs",
+    "!jest.config.ts"
   ],
   coverageDirectory: "coverage",                /* The directory where Jest should output its coverage files */
-  extensionsToTreatAsEsm: [".ts"],              /* Extensions to run as ESM (.js and .mjs are included by default, listing them below causes error) */
+  extensionsToTreatAsEsm: [".ts", ".js"],       /* Extensions to run as ESM (.js and .mjs are included by default, listing them below causes error) */
   globals: {                                    /* A set of global variables that need to be available in all test environments */
     "ts-jest": {
       tsconfig: "tsconfig.json",
