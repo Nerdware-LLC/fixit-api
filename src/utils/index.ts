@@ -5,7 +5,6 @@ export { catchAsyncMW, catchMWwrapper } from "./middlewareWrappers";
 export { prettifyStr } from "./prettifyStr";
 // util files:
 export { AuthToken } from "./AuthToken";
-export * from "./dateTimeUtils";
 export { getObjValuesByKeys } from "./getObjValuesByKeys";
 export { signAndEncodeJWT, validateAndDecodeJWT } from "./jwt";
 export { normalizeInput } from "./normalizeInput";
