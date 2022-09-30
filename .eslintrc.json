@@ -40,11 +40,6 @@
     {
       // Typescript Files
       "files": ["**/*.ts"],
-      "parserOptions": {
-        "project": "./tsconfig.json",
-        "ecmaVersion": 2022,
-        "sourceType": "module"
-      },
       "plugins": ["@typescript-eslint"],
       "extends": [
         "plugin:@typescript-eslint/eslint-recommended",
@@ -68,11 +63,6 @@
     {
       // Jest Test Files
       "files": ["**/*.test.[tj]s"],
-      "parserOptions": {
-        "project": "./tsconfig.json",
-        "ecmaVersion": 2022,
-        "sourceType": "module"
-      },
       "plugins": ["jest"],
       "extends": ["plugin:jest/recommended"],
       "env": {
