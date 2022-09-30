@@ -23,8 +23,7 @@
   "scripts": {
     "start": "nodemon ./src/index.ts dotenv_config_path=./src/server/.dev.env",
     "start:prod": "node --no-warnings --loader ./build/loader.js ./build/index.js",
-    "build": "rm -rf ./build 2>/dev/null && tsc --build --force && npm run build:rmTestFiles",
-    "build:rmTestFiles": "find ./build -type d -name '__tests__' -exec rm -rf {} 2>/dev/null \\; && find ./build -type f -name '*.test.js' -exec rm -f {} \\;",
+    "build": "rm -rf ./build 2>/dev/null && tsc --project tsconfig.build.json",
     "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' dotenv_config_path=./src/server/.test.env jest",
     "test:watch": "npm run test -- --watch ;        # Re-run tests when associated files change",
     "test:verbose": "npm run test -- --verbose ;    # Get test log output in console"
@@ -85,8 +84,6 @@
     "@middleware": "build/middleware",
     "@models": "build/models",
     "@server": "build/server",
-    "@tests": "build/__tests__",
-    "@types": "build/types",
     "@utils": "build/utils"
   }
 }
