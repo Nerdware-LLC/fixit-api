@@ -1,17 +1,17 @@
 import jwt from "jsonwebtoken";
 import { ENV } from "@server/env";
 
-export const validateAndDecodeJWT = async (token) => {
+export const validateAndDecodeJWT = async (token: string): Promise<FixitApiJwtPayload> => {
   return new Promise((resolve, reject) => {
     // prettier-ignore
-    jwt.verify(token, JWT_PRIVATE_KEY, JWT_VERIFICATION_PARAMS, (err, decoded) => {
+    jwt.verify(token, JWT_PRIVATE_KEY, JWT_VERIFICATION_PARAMS, (err: ErrorLike, decoded) => {
       if (err) reject(new Error("Invalid token."));
-      resolve(decoded);
+      resolve(decoded as FixitApiJwtPayload);
     });
   });
 };
 
-export const signAndEncodeJWT = (payload) => {
+export const signAndEncodeJWT = (payload: FixitApiJwtPayload) => {
   return jwt.sign(payload, JWT_PRIVATE_KEY, {
     ...JWT_SIGNING_PARAMS,
     subject: `${payload.id}`
@@ -29,15 +29,24 @@ const SHARED_JWT_PARAMS = {
   issuer: "fixit"
 };
 
-const JWT_SIGNING_PARAMS = {
+const JWT_SIGNING_PARAMS: jwt.SignOptions = {
   ...SHARED_JWT_PARAMS,
   algorithm: "HS256",
   expiresIn: "10h"
   // subject is payload-dependent
 };
 
-const JWT_VERIFICATION_PARAMS = {
+const JWT_VERIFICATION_PARAMS: jwt.VerifyOptions = {
   ...SHARED_JWT_PARAMS,
   algorithms: ["HS256"],
   maxAge: "10h"
 };
+
+/**
+ * Fixit API JWT Token Payload
+ * - Usage: provide a User object with an "id" property to use for the jwt "sub".
+ */
+export interface FixitApiJwtPayload {
+  id: string;
+  [tokenProperties: string]: any;
+}
