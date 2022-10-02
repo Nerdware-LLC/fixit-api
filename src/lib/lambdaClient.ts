@@ -7,7 +7,11 @@ const _invoke = async ({
   FunctionName,
   InvocationType,
   Payload: payloadToSend
-}: InvokeCommandInput) => {
+}: {
+  FunctionName: InvokeCommandInput["FunctionName"];
+  InvocationType: InvokeCommandInput["InvocationType"];
+  Payload: any;
+}) => {
   // rest: { $metadata, ExecutedVersion, StatusCode, FunctionError, LogResult }
   const { Payload: returnedPayload, ...rest } = await _lambdaClient.send(
     new InvokeCommand({
@@ -28,17 +32,21 @@ const _invoke = async ({
  * @method `invokeRequestResponse` Invoke Lambda fn using synchronous "RequestResponse" invocation.
  */
 export const lambdaClient = Object.freeze({
-  invokeEvent: async (
-    lambdaFnName: InvokeCommandInput["FunctionName"],
-    lambdaFnPayload: InvokeCommandInput["Payload"]
-  ) => _invoke({ FunctionName: lambdaFnName, InvocationType: "Event", Payload: lambdaFnPayload }),
+  invokeEvent: async (lambdaFnName: InvokeCommandInput["FunctionName"], lambdaFnPayload: any) => {
+    return _invoke({
+      FunctionName: lambdaFnName,
+      InvocationType: "Event",
+      Payload: lambdaFnPayload
+    });
+  },
   invokeRequestResponse: async (
     lambdaFnName: InvokeCommandInput["FunctionName"],
-    lambdaFnPayload: InvokeCommandInput["Payload"]
-  ) =>
-    _invoke({
+    lambdaFnPayload: any
+  ) => {
+    return _invoke({
       FunctionName: lambdaFnName,
       InvocationType: "RequestResponse",
       Payload: lambdaFnPayload
-    })
+    });
+  }
 });
