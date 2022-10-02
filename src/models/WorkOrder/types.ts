@@ -1,6 +1,6 @@
 import { WorkOrder } from "./WorkOrder";
 
-export type WorkOrderType = {
+export interface WorkOrderType {
   createdByUserID: string; //   mapped from "pk" table attribute
   id: string; //                mapped from "sk" table attribute
   assignedToUserID?: string; // mapped from "data" table attribute
@@ -15,14 +15,14 @@ export type WorkOrderType = {
   dueDate: Date | number;
   scheduledDateTime: Date | number;
   contractorNotes?: string;
-};
+}
 
 // Location moved to @types/env.d.ts
 
-export type WorkOrderChecklistItem = {
+export interface WorkOrderChecklistItem {
   id: string;
   description: string;
   isCompleted: boolean;
-};
+}
 
 export type WorkOrderChecklist = Array<WorkOrderChecklistItem>;

@@ -1,8 +1,7 @@
-import { ddbSingleTable, Model } from "@lib/dynamoDB";
+import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
 import { USER_ID_REGEX } from "@models/User";
 import { STRIPE_CONNECT_ACCOUNT_SK_REGEX } from "./regex";
 import { createOne } from "./createOne";
-import type { ModelSchemaOptions } from "@lib/dynamoDB";
 
 /**
  * UserStripeConnectAccount Model Methods:

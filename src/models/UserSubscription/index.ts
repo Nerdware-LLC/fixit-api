@@ -1,3 +1,3 @@
 export { UserSubscription } from "./UserSubscription";
-export * from "./types";
 export * from "./regex";
+export * from "./types";

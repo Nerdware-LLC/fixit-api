@@ -1,4 +1,4 @@
-import { ddbSingleTable, Model } from "@lib/dynamoDB";
+import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
 import { COMMON_MODEL_ATTRIBUTES } from "@models/_common";
 import { USER_ID_REGEX } from "@models/User";
 import { ENV } from "@server/env";
@@ -6,7 +6,7 @@ import { USER_SUBSCRIPTION_SK_REGEX } from "./regex";
 import { SUBSCRIPTION_STATUSES } from "./validateExisting";
 import { normalizeStripeFields } from "./normalizeStripeFields";
 import { validateExisting } from "./validateExisting";
-import type { ModelSchemaOptions } from "@lib/dynamoDB";
+import type { UserSubscriptionType } from "./types";
 
 const {
   FIXIT_SUBSCRIPTION: { productID, priceIDs, promoCodes }
@@ -115,10 +115,10 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
   readonly validateExisting = validateExisting;
 
   readonly queryUserSubscriptions = async (userID: string) => {
-    return await this.query({
+    return (await this.query({
       KeyConditionExpression: "pk = :userID AND begins_with(sk, :subSKprefix)",
       ExpressionAttributeValues: { ":userID": userID, ":subSKprefix": "SUBSCRIPTION#" }
-    });
+    })) as Array<UserSubscriptionType>;
   };
 }
 

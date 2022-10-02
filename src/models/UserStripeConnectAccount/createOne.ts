@@ -1,7 +1,23 @@
 import { stripe } from "@lib/stripe";
+import type { Model } from "@lib/dynamoDB";
+import type { UserType } from "@models/User/types";
+import type { UserStripeConnectAccountType } from "./types";
 
 // function, not arrow, bc we need to use "this." syntax to call Dynamoose methods
-export const createOne = async function ({ userID, email, phone, profile }) {
+export const createOne = async function (
+  this: InstanceType<typeof Model>,
+  {
+    userID,
+    email,
+    phone,
+    profile
+  }: {
+    userID: UserType["id"];
+    email: UserType["email"];
+    phone: UserType["phone"];
+    profile: UserType["profile"];
+  }
+) {
   // Create Stripe Connect Account via Stripe API
   const {
     id: stripeConnectAccountID,
@@ -44,11 +60,11 @@ export const createOne = async function ({ userID, email, phone, profile }) {
   });
 
   // Create UserStripeConnectAccount in DynamoDB
-  return await this.createItem({
+  return (await this.createItem({
     userID,
     id: stripeConnectAccountID,
     detailsSubmitted,
     chargesEnabled,
     payoutsEnabled
-  });
+  })) as UserStripeConnectAccountType;
 };

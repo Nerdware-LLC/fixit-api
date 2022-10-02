@@ -1,11 +1,11 @@
-import { ddbSingleTable, Model } from "@lib/dynamoDB";
+import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
 import { USER_ID_REGEX } from "@models/User";
 import { WORK_ORDER_ID_REGEX } from "@models/WorkOrder";
 import { INVOICE_SK_REGEX } from "./regex";
 import { createOne } from "./createOne";
 import { updateOne } from "./updateOne";
 import { deleteOne } from "./deleteOne";
-import type { ModelSchemaOptions } from "@lib/dynamoDB";
+import type { InvoiceType } from "./types";
 
 /**
  * Invoice Model Methods:
@@ -60,7 +60,7 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema> {
     },
     status: {
       type: "string",
-      validate: (value: string) => {
+      validate: (value: any) => {
         return InvoiceModel.STATUSES.includes(value);
       },
       default: "OPEN"
@@ -79,11 +79,20 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema> {
     }
   };
 
-  static readonly STATUSES = ["OPEN", "CLOSED", "DISPUTED"];
+  static readonly STATUSES = ["OPEN", "CLOSED", "DISPUTED"] as const;
 
   constructor() {
     super(ddbSingleTable, "Invoice", InvoiceModel.schema, InvoiceModel.schemaOptions);
   }
+
+  // INVOICE MODEL — Instance property getters
+  // Allow static enum to be read from the model instance for convenience
+
+  get STATUSES() {
+    return InvoiceModel.STATUSES;
+  }
+
+  // INVOICE MODEL — Instance methods:
 
   readonly createOne = createOne;
 
@@ -92,19 +101,19 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema> {
   readonly deleteOne = deleteOne;
 
   readonly queryInvoiceByID = async (invoiceID: string) => {
-    return await this.query({
+    return (await this.query({
       IndexName: "Overloaded_SK_GSI",
       KeyConditionExpression: "id = :id",
       ExpressionAttributeValues: { ":id": invoiceID },
       Limit: 1
-    });
+    })) as InvoiceType;
   };
 
   readonly queryUsersInvoices = async (userID: string) => {
-    return await this.query({
+    return (await this.query({
       KeyConditionExpression: "pk = :userID AND begins_with(sk, :invSKprefix)",
       ExpressionAttributeValues: { ":userID": userID, ":invSKprefix": "INV#" }
-    });
+    })) as Array<InvoiceType>;
   };
 }
 

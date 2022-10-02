@@ -1,7 +1,7 @@
-import { ddbSingleTable, Model } from "@lib/dynamoDB";
+import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
 import { USER_ID_REGEX } from "@models/User";
 import { CONTACT_SK_REGEX } from "./regex";
-import type { ModelSchemaOptions } from "@lib/dynamoDB";
+import type { ContactType } from "./types";
 
 /**
  * Contact Model Methods:
@@ -58,10 +58,10 @@ class ContactModel extends Model<typeof ContactModel.schema> {
   }
 
   readonly queryUsersContacts = async (userID: string) => {
-    return await this.query({
+    return (await this.query({
       KeyConditionExpression: "pk = :userID AND begins_with(sk, :contactSKprefix)",
       ExpressionAttributeValues: { ":userID": userID, ":contactSKprefix": "CONTACT#" }
-    });
+    })) as Array<ContactType>;
   };
 }
 
