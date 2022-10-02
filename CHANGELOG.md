@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 ---
 
 
+# [1.5.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.4.1...v1.5.0) (2022-10-02)
+
+
+### Bug Fixes
+
+* **LambdaClient:** update payload type to allow objects to be passed into JSON.stringify ([cd85620](https://github.com/Nerdware-LLC/fixit-api/commit/cd8562040ba5b09dd1094e07f011bbd5c2bb28ea))
+* **utils:** update utils index exports to export new util types ([f92b1cd](https://github.com/Nerdware-LLC/fixit-api/commit/f92b1cd9486f11e851ef8ad30299feec99856d78))
+
+
+### Features
+
+* **events:** convert all event handlers to TS ([1166ed8](https://github.com/Nerdware-LLC/fixit-api/commit/1166ed8d4a9279963e35d4256230165de7d6ee8e))
+* **Models:** ensure all Model custom methods have param+return types ([d860c55](https://github.com/Nerdware-LLC/fixit-api/commit/d860c559209385d92572d933fc549b05957c1982))
+* **type:** add 'UserType' return type to User.createOne ([caf2ed0](https://github.com/Nerdware-LLC/fixit-api/commit/caf2ed079c28674e6ff23de9cc1e63aa68d40a3c))
+* **types:** add types for AuthToken ([5270fea](https://github.com/Nerdware-LLC/fixit-api/commit/5270feaf3851b6dd9446dbe0e7143f5c41f15041))
+* **types:** add types for JWT-related values and util fns ([204d8ac](https://github.com/Nerdware-LLC/fixit-api/commit/204d8ac115c0779a1d450db3cc2390390b148036))
+* **types:** add types for MW wrappers ([52c5ce5](https://github.com/Nerdware-LLC/fixit-api/commit/52c5ce57fc333442fd6764f17bf8a2b6ca9a26e0))
+* **types:** convert 'getObjValuesByKeys' to TS, add types ([89fb684](https://github.com/Nerdware-LLC/fixit-api/commit/89fb6844554d11c7aaed96bfc64b3f0cecbe4d4e))
+* **User:** add return types to User model custom methods ([a162e18](https://github.com/Nerdware-LLC/fixit-api/commit/a162e18ee21e9c9375230a01c4809251881bed8a))
+
 ## [1.4.1](https://github.com/Nerdware-LLC/fixit-api/compare/v1.4.0...v1.4.1) (2022-09-30)
 
 
