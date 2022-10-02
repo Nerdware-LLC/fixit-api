@@ -2,7 +2,7 @@ import { stripe } from "@lib/stripe";
 import { UserStripeConnectAccount } from "@models/UserStripeConnectAccount";
 import { getUnixTimestampUUID, passwordHasher, logger } from "@utils";
 import type { Model } from "@lib/dynamoDB";
-import type { UserProfile } from "./types";
+import type { UserType } from "./types";
 
 // function, not arrow, bc we need to use "this." syntax to call Dynamoose methods
 export const createOne = async function (
@@ -19,7 +19,7 @@ export const createOne = async function (
     email: string;
     phone: string;
     expoPushToken: string;
-    profile?: UserProfile; //      Only Google logins will have this at reg time
+    profile?: UserType["profile"]; //      Only Google logins will have this at reg time
     password?: string; //          Only local logins will have this
     googleID?: string; //          Only Google logins will have this
     googleAccessToken?: string; // Only Google logins will have this
@@ -94,5 +94,5 @@ export const createOne = async function (
     throw error;
   }
 
-  return newUser;
+  return newUser as UserType;
 };
