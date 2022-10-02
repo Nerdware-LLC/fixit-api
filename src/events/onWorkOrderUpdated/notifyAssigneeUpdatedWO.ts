@@ -1,4 +1,4 @@
-import { User } from "@models/User";
+import { User, type WorkOrderType } from "@models";
 import { lambdaClient } from "@lib/lambdaClient";
 import { WorkOrderPushNotification } from "@events/pushNotifications";
 
@@ -27,7 +27,10 @@ import { WorkOrderPushNotification } from "@events/pushNotifications";
  * |      Yes      |      Yes      |      Yes       | Notify Assignee of the UPDATE                             |
  * |      Yes      |      Yes      |       No       | Notify previous: UNASSIGNMENT, AND Notify new: ASSIGNMENT |
  */
-export const notifyAssigneeUpdatedWO = async (currentWOstate, prevWOstate) => {
+export const notifyAssigneeUpdatedWO = async (
+  currentWOstate: WorkOrderType,
+  prevWOstate: WorkOrderType
+) => {
   const pushNotificationsToSend = [];
 
   const { assignedToUserID: currentAssignedToUserID } = currentWOstate;
@@ -68,10 +71,7 @@ export const notifyAssigneeUpdatedWO = async (currentWOstate, prevWOstate) => {
   if (pushNotificationsToSend.length > 0) {
     // Get the users push notification tokens
     const usersToNotify = await User.batchGetUsersByID(
-      pushNotificationsToSend.map(({ data }) => ({
-        id: data._recipientUser,
-        sk: `#DATA#${data._recipientUser}`
-      }))
+      pushNotificationsToSend.map(({ data }) => data._recipientUser)
     );
 
     // Remove push notifications for users without valid push tokens (bad tokens are rm'd by push service).
@@ -80,7 +80,7 @@ export const notifyAssigneeUpdatedWO = async (currentWOstate, prevWOstate) => {
       const user = usersToNotify.find((user) => user.id === pushMsgObj.data._recipientUser);
 
       // If the User has a valid push token, add it to pushMsgObj, else msg must be discarded.
-      if (user?.expoPushToken) {
+      if (!!user?.expoPushToken) {
         accum.push({
           to: user.expoPushToken,
           ...pushMsgObj
@@ -88,7 +88,7 @@ export const notifyAssigneeUpdatedWO = async (currentWOstate, prevWOstate) => {
       }
 
       return accum;
-    }, []); // <-- reducer init accum is empty array
+    }, [] as Array<WorkOrderPushNotification>); // <-- reducer init accum is empty array
 
     // Submit deliverable push msgs as the PushService Lambda fn payload
     await lambdaClient.invokeEvent("PushNotificationService", deliverablePushNotifications);

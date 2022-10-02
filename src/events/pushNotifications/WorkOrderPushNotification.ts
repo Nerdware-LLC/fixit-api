@@ -2,7 +2,7 @@ import { PushNotification } from "./_PushNotification";
 import type { WorkOrderType } from "@models/WorkOrder/types";
 
 export class WorkOrderPushNotification extends PushNotification {
-  static PUSH_EVENTS: Record<string, { title: string; body: string }> = {
+  static PUSH_EVENTS = {
     WorkOrderAssigned: {
       title: "New Work Order",
       body: "A new Work Order is available."
@@ -23,7 +23,7 @@ export class WorkOrderPushNotification extends PushNotification {
       title: "Work Order Complete",
       body: "One of your Work Orders has been completed."
     }
-  };
+  } as const;
 
   constructor({
     pushEventName,

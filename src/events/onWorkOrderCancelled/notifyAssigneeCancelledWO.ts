@@ -1,11 +1,11 @@
-import { User } from "@models/User";
+import { User, type WorkOrderType } from "@models";
 import { lambdaClient } from "@lib/lambdaClient";
 import { WorkOrderPushNotification } from "@events/pushNotifications";
 
-export const notifyAssigneeNewWO = async (newWO) => {
-  const { assignedToUserID } = newWO;
+export const notifyAssigneeCancelledWO = async (cancelledWO: WorkOrderType) => {
+  const { assignedToUserID } = cancelledWO;
 
-  // If new WorkOrder is UNASSIGNED, return.
+  // If new WorkOrder was UNASSIGNED, return.
   if (!assignedToUserID) return;
 
   const { expoPushToken: assigneePushToken } = await User.getUserByID(assignedToUserID);
@@ -15,9 +15,9 @@ export const notifyAssigneeNewWO = async (newWO) => {
 
   await lambdaClient.invokeEvent("PushNotificationService", [
     new WorkOrderPushNotification({
-      pushEventName: "WorkOrderAssigned",
+      pushEventName: "WorkOrderCancelled",
       recipientUser: { id: assignedToUserID, expoPushToken: assigneePushToken },
-      workOrder: newWO
+      workOrder: cancelledWO
     })
   ]);
 };

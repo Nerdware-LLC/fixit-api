@@ -2,7 +2,7 @@ import { PushNotification } from "./_PushNotification";
 import type { InvoiceType } from "@models/Invoice/types";
 
 export class InvoicePushNotification extends PushNotification {
-  static PUSH_EVENTS: Record<string, { title: string; body: string }> = {
+  static PUSH_EVENTS = {
     NewInvoice: {
       title: "New Invoice",
       body: "A new Invoice is available."
@@ -19,7 +19,7 @@ export class InvoicePushNotification extends PushNotification {
       title: "Invoice Paid",
       body: "Payment has been submitted for one of your invoices."
     }
-  };
+  } as const;
 
   constructor({
     pushEventName,

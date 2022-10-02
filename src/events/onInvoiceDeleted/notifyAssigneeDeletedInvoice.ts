@@ -1,12 +1,9 @@
-import { User } from "@models/User";
+import { User, type InvoiceType } from "@models";
 import { lambdaClient } from "@lib/lambdaClient";
-import { WorkOrderPushNotification } from "@events/pushNotifications";
+import { InvoicePushNotification } from "@events/pushNotifications";
 
-export const notifyAssigneeCancelledWO = async (cancelledWO) => {
-  const { assignedToUserID } = cancelledWO;
-
-  // If new WorkOrder was UNASSIGNED, return.
-  if (!assignedToUserID) return;
+export const notifyAssigneeDeletedInvoice = async (deletedInvoice: InvoiceType) => {
+  const { assignedToUserID } = deletedInvoice;
 
   const { expoPushToken: assigneePushToken } = await User.getUserByID(assignedToUserID);
 
@@ -14,10 +11,10 @@ export const notifyAssigneeCancelledWO = async (cancelledWO) => {
   if (!assigneePushToken) return;
 
   await lambdaClient.invokeEvent("PushNotificationService", [
-    new WorkOrderPushNotification({
-      pushEventName: "WorkOrderCancelled",
+    new InvoicePushNotification({
+      pushEventName: "InvoiceDeleted",
       recipientUser: { id: assignedToUserID, expoPushToken: assigneePushToken },
-      workOrder: cancelledWO
+      invoice: deletedInvoice
     })
   ]);
 };
