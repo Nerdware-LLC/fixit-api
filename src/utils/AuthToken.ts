@@ -1,7 +1,10 @@
-import { signAndEncodeJWT, validateAndDecodeJWT } from "./jwt";
+import type { Request } from "express";
+import type { UserType } from "@models";
+
+import { signAndEncodeJWT, validateAndDecodeJWT, type FixitApiJwtPayload } from "./jwt";
 
 export class AuthToken {
-  #tokenValue;
+  private tokenValue;
 
   constructor({
     id: userID,
@@ -11,8 +14,8 @@ export class AuthToken {
     stripeCustomerID,
     stripeConnectAccount,
     subscription
-  }) {
-    const payload = {
+  }: FixitApiAuthTokenPayload) {
+    const payload: FixitApiAuthTokenPayload = {
       id: userID,
       email,
       phone,
@@ -37,18 +40,18 @@ export class AuthToken {
       })
     };
 
-    this.#tokenValue = signAndEncodeJWT(payload);
+    this.tokenValue = signAndEncodeJWT(payload);
   }
 
   toString() {
-    return this.#tokenValue;
+    return this.tokenValue;
   }
 
-  static validateAndDecodeAuthToken = async (authToken) => {
-    return await validateAndDecodeJWT(authToken);
+  static validateAndDecodeAuthToken = async (encodedAuthToken: string) => {
+    return (await validateAndDecodeJWT(encodedAuthToken)) as FixitApiAuthTokenPayload;
   };
 
-  static getValidatedRequestAuthTokenPayload = async (request) => {
+  static getValidatedRequestAuthTokenPayload = async (request: Request) => {
     // Get token from "Authorization" header
     let token = request.get("Authorization");
     if (!token || typeof token !== "string") throw new Error("Invalid token");
@@ -63,4 +66,16 @@ export class AuthToken {
 
     return authTokenPayload;
   };
+}
+
+export interface FixitApiAuthTokenPayload extends FixitApiJwtPayload {
+  id: UserType["id"];
+  email: UserType["email"];
+  phone: UserType["phone"];
+  profile: Expand<Pick<UserType["profile"], "id">>;
+  stripeCustomerID: UserType["stripeCustomerID"];
+  stripeConnectAccount?: UserType["stripeConnectAccount"];
+  subscription?: Expand<
+    Pick<NonNullable<UserType["subscription"]>, "id" | "status" | "currentPeriodEnd">
+  >;
 }
