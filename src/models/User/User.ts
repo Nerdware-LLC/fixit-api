@@ -1,10 +1,10 @@
 import { Expo } from "expo-server-sdk";
-import { ddbSingleTable, Model } from "@lib/dynamoDB";
+import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
 import { COMMON_MODEL_ATTRIBUTES } from "@models/_common";
 import { EMAIL_REGEX, prettifyStr } from "@utils";
 import { USER_ID_REGEX, USER_SK_REGEX, USER_STRIPE_CUSTOMER_ID_REGEX } from "./regex";
 import { createOne } from "./createOne";
-import type { ModelSchemaOptions } from "@lib/dynamoDB";
+import type { UserType } from "./types";
 
 // TODO make sure sensitive User fields are hidden from other Users: id, stripeCustomerID, stripeConnectAccount, subscription
 // TODO Make these User properties immutable: id, email, login.type, stripeCustomerID, stripeConnectAccount.id
@@ -123,20 +123,22 @@ class UserModel extends Model<typeof UserModel.schema> {
   readonly createOne = createOne;
 
   readonly getUserByID = async (userID: string) => {
-    return await this.getItem({ id: userID, sk: `#DATA#${userID}` });
+    return (await this.getItem({ id: userID, sk: `#DATA#${userID}` })) as UserType;
   };
 
   readonly batchGetUsersByID = async (userIDs: Array<string>) => {
-    return await this.batchGetItems(userIDs.map((id) => ({ id, sk: `#DATA#${id}` })));
+    return (await this.batchGetItems(
+      userIDs.map((id) => ({ id, sk: `#DATA#${id}` }))
+    )) as Array<UserType>;
   };
 
   readonly queryUserByEmail = async (email: string) => {
-    return await this.query({
+    return (await this.query({
       IndexName: "Overloaded_Data_GSI",
       KeyConditionExpression: "email = :email",
       ExpressionAttributeValues: { ":email": email },
       Limit: 1
-    });
+    })) as UserType;
   };
 }
 
