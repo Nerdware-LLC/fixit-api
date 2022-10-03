@@ -1,4 +1,3 @@
-import type jwt from "jsonwebtoken";
 export {};
 
 declare global {
@@ -13,7 +12,7 @@ declare global {
       PORT: string;
       AWS_REGION: string;
       DYNAMODB_TABLE_NAME: string;
-      JWT_PRIVATE_KEY: jwt.Secret;
+      JWT_PRIVATE_KEY: string;
       SENTRY_DSN: string;
       STRIPE_API_VERSION: string;
       STRIPE_WEBHOOKS_SECRET: string;
