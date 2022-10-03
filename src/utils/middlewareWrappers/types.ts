@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import type Stripe from "stripe";
-import type { UserType } from "@models/User/types";
+import type { UserType, WorkOrderType, InvoiceType, ContactType } from "@models";
 
 // Middleware Function Types
 
@@ -16,6 +16,11 @@ export type AsyncMiddlewareFn<
 
 export interface APIRequestWithUserData extends Request {
   _user?: UserType;
+  _userQueryItems?: {
+    workOrders?: Array<WorkOrderType>;
+    invoices?: Array<InvoiceType>;
+    contacts?: Array<ContactType>;
+  };
 }
 
 export interface StripeWebhookRequestObject extends Request {
