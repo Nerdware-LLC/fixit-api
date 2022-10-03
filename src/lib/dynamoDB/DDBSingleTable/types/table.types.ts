@@ -1,6 +1,7 @@
 export type DDBTableProperties = Expand<{
   billingMode?: "PROVISIONED" | "PAY_PER_REQUEST";
-  // TODO Add CreateTable params: "ProvisionedThroughput", "SSESpecification", "StreamSpecification", "TableClass".
+  provisionedThroughput?: { read: number; write: number };
+  // TODO Add CreateTable params: "SSESpecification", "StreamSpecification", "TableClass".
 }>;
 
 export type DDBTableIndexes = Record<

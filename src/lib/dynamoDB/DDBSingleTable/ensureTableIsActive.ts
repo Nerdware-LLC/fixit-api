@@ -129,7 +129,15 @@ export const ensureTableIsActive = async function (this: InstanceType<typeof DDB
 
       // Create the table (TableName is provided to the CreateTable cmd by the SingleTable client)
       const { TableStatus } = await this.ddbClient.createTable({
-        ...(this.tableConfigs?.billingMode && { BillingMode: this.tableConfigs.billingMode }),
+        ...(this.tableConfigs?.billingMode && {
+          BillingMode: this.tableConfigs.billingMode
+        }),
+        ...(this.tableConfigs?.provisionedThroughput && {
+          ProvisionedThroughput: {
+            ReadCapacityUnits: this.tableConfigs.provisionedThroughput.read,
+            WriteCapacityUnits: this.tableConfigs.provisionedThroughput.write
+          }
+        }),
         ...createTableArgsFromSchema
       });
 

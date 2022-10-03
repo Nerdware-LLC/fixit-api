@@ -9,7 +9,6 @@ const {
 
 // Use ddb-local in dev and test environments.
 const shouldUseDDBlocal = /^(dev|test)/i.test(NODE_ENV);
-if (shouldUseDDBlocal) logger.dynamodb("Using dynamodb-local");
 
 export const ddbSingleTable = new DDBSingleTable({
   tableName: DYNAMODB_TABLE_NAME,
@@ -28,7 +27,8 @@ export const ddbSingleTable = new DDBSingleTable({
         name: "Overloaded_SK_GSI",
         global: true,
         rangeKey: "data", // TODO Double check - is any model using this GSI sk?
-        project: true // all attributes
+        project: true, // all attributes
+        throughput: { read: 5, write: 5 } // <-- arbitrary throughput for ddb-local
       }
     },
     data: {
@@ -39,14 +39,26 @@ export const ddbSingleTable = new DDBSingleTable({
         name: "Overloaded_Data_GSI",
         global: true,
         rangeKey: "sk", // WO queryWorkOrdersAssignedToUser uses this GSI SK
-        project: true // all attributes
+        project: true, // all attributes
+        throughput: { read: 5, write: 5 } // <-- arbitrary throughput for ddb-local
       }
     }
   } as const,
+  // DynamoDB client
   ddbClientConfigs: {
     region: REGION,
     ...(shouldUseDDBlocal && { endpoint: DYNAMODB_LOCAL_ENDPOINT_URL })
-  }
+  },
+  // Table CRUD behavior - in dev/test envs, use ddb-local Table with arbitrary throughput.
+  ...(!!shouldUseDDBlocal && {
+    tableConfigs: {
+      createIfNotExists: true,
+      billingMode: "PROVISIONED",
+      provisionedThroughput: { read: 20, write: 20 }
+    }
+  })
 });
 
 await ddbSingleTable.ensureTableIsActive();
+
+shouldUseDDBlocal && logger.dynamodb("Using dynamodb-local");

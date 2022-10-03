@@ -2,6 +2,7 @@ import {
   DynamoDBClient,
   DescribeTableCommand,
   CreateTableCommand,
+  ListTablesCommand,
   type DynamoDBClientConfig,
   type TableDescription
 } from "@aws-sdk/client-dynamodb";
@@ -341,7 +342,7 @@ export class DDBSingleTableClient {
       new DescribeTableCommand({ TableName: tableName ?? this.tableName })
     );
 
-    return Table as TableDescription;
+    return Table ?? {};
   };
 
   readonly createTable = async (
@@ -354,6 +355,12 @@ export class DDBSingleTableClient {
       })
     );
 
-    return TableDescription as TableDescription;
+    return TableDescription ?? {};
+  };
+
+  readonly listTables = async () => {
+    const { TableNames } = await this.ddbClient.send(new ListTablesCommand({}));
+
+    return TableNames ?? [];
   };
 }

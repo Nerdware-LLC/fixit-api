@@ -121,11 +121,11 @@ export class Model<
         );
       }
 
-      deepStrictEqual(
-        keyAttrConfig,
-        modelSchema[tableKey],
-        `"${modelName}" Model schema defines configs for key attribute "${tableKey}" which do not match that defined by the TableKeysSchema.`
-      );
+      if (keyAttrConfig.type !== modelSchema[tableKey].type) {
+        throw new SchemaValidationError(
+          `The "type" of key attribute "${tableKey}" defined in the TableKeysSchema does not match the "type" defined in the schema for Model "${modelName}".`
+        );
+      }
     });
 
     this.ddbClient = ddbSingleTable.ddbClient;
