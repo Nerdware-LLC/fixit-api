@@ -306,9 +306,10 @@ export class Model<
     return this.processItemData.fromDB(items as Array<Partial<ItemTypeFromSchema<Schema>>>);
   };
 
-  // PRIVATE INSTANCE METHODS: instance method utilities
+  // INSTANCE METHOD UTILS:
 
-  private readonly processItemData = {
+  // Public methods to transform Items; keep public to allow transformation of items as necessary.
+  readonly processItemData = {
     toDB: (
       itemInput: AnyItemOrBatchItemsType<Schema>,
       { shouldCheckRequired }: { shouldCheckRequired?: boolean } = {}
