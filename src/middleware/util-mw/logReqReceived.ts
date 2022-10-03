@@ -1,6 +1,7 @@
+import type { Request, Response, NextFunction } from "express";
 import { logger } from "@utils/logger";
 
-export const logReqReceived = (req, res, next) => {
+export const logReqReceived = (req: Request, res: Response, next: NextFunction) => {
   const { body, originalUrl } = req;
 
   // The operationName check ensures console-cluttering introspection queries aren't logged here
