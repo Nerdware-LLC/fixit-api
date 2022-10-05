@@ -1,8 +1,6 @@
 import express from "express";
-import type {} from "express";
 import * as Sentry from "@sentry/node";
 import { ENV } from "@server/env";
-import {} from "graphql";
 import { apolloServer } from "./apolloServer";
 import {
   corsMW,
