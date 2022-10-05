@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 ---
 
 
+# [1.6.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.5.1...v1.6.0) (2022-10-05)
+
+
+### Bug Fixes
+
+* **DDB-ST:** add table/index throughput config opts; add ListTables cmd ([bc9839c](https://github.com/Nerdware-LLC/fixit-api/commit/bc9839c7ffe698cd19fb1368ce10c4ff47816db3))
+* **Invoice.createOne:** correct type to include required keys on create ([178ce46](https://github.com/Nerdware-LLC/fixit-api/commit/178ce467200ffa710fd8d739273754414b2608ad))
+* **Jest:** update 'collectCoverageFrom' so jest properly reports coverage ([475debe](https://github.com/Nerdware-LLC/fixit-api/commit/475debe9c99d8df75767199fd67f2f30230eb067))
+* **Jwt:** convert typeof jwt key to string ([c905331](https://github.com/Nerdware-LLC/fixit-api/commit/c905331d9386b151f73f44389b2699bf7e1c4a98))
+* **Model:** correct aliasedSchema ctor logic; add return types to api methods ([344ccd3](https://github.com/Nerdware-LLC/fixit-api/commit/344ccd3fcc9a12352795b7921c44b13a12da0818))
+* **User.createOne:** correct obj types to include 'sk' ([6fb523b](https://github.com/Nerdware-LLC/fixit-api/commit/6fb523b9c902f49b257695f1e7465eadfd94ea40))
+* **WO.createOne:** correct new WO type ([2f80a15](https://github.com/Nerdware-LLC/fixit-api/commit/2f80a15dc608b50abcd29f4dd1a3f897aca1cf15))
+
+
+### Features
+
+* **AuthToken:** rm 'profile.id' from jwt payload ([3ec5399](https://github.com/Nerdware-LLC/fixit-api/commit/3ec5399479e5a10244bb854ad2bdbc41c35aee1c))
+* **env:** rm unused 'directives.should_run_mocks' from ENV obj ([7015ded](https://github.com/Nerdware-LLC/fixit-api/commit/7015deda161506afe6b85fe50f79dd74d9e0c04e))
+* **models:** add 'createdAt' and 'updatedAt' to all models ([65a1a1f](https://github.com/Nerdware-LLC/fixit-api/commit/65a1a1f2ccc410aa1bfea8e51fe930d7d60a504d))
+* **MW-auth:** convert auth MW to TS ([d180c44](https://github.com/Nerdware-LLC/fixit-api/commit/d180c446f409133f42d16caae2f0792876e4a938))
+* **MW-wrappers:** add _userQueryItems to Req type for pre-fetch queries ([97b0248](https://github.com/Nerdware-LLC/fixit-api/commit/97b0248ecf0aba699a1b28fdfe4c687c0fb96d07))
+* **npm-test-scripts:** add DDB-local docker cmds to npm scripts ([1f6f977](https://github.com/Nerdware-LLC/fixit-api/commit/1f6f97753d8e82a82894e2b61741bc82a2d1ed0d))
+* **tsconfig:** rm '[@types](https://github.com/types)' from tsconfig as it is unused ([2c5cac5](https://github.com/Nerdware-LLC/fixit-api/commit/2c5cac54f7406985f94d8ef18b88ecb226336c45))
+* **User:** add test covering all User model methods ([3802624](https://github.com/Nerdware-LLC/fixit-api/commit/380262482da2b94d39dae5377dd3d5dc89ee8fd5))
+
 ## [1.5.1](https://github.com/Nerdware-LLC/fixit-api/compare/v1.5.0...v1.5.1) (2022-10-02)
 
 # [1.5.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.4.1...v1.5.0) (2022-10-02)
