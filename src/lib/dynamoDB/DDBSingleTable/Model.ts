@@ -115,7 +115,7 @@ export class Model<
   ) {
     // Ensure the key attribute configs defined in the Model schema match those in the TableKeysSchema.
     Object.entries(ddbSingleTable.tableKeysSchema).forEach(([tableKey, keyAttrConfig]) => {
-      if (!(tableKey in modelSchema)) {
+      if (!Object.prototype.hasOwnProperty.call(modelSchema, tableKey)) {
         throw new SchemaValidationError(
           `"${modelName}" Model schema does not contain key attribute "${tableKey}".`
         );
@@ -412,7 +412,7 @@ export class Model<
   ) => {
     // TODO Add recursive functionality for nested schema
     return Object.entries(item).reduce((accum, [key, value]) => {
-      if (key in schema) {
+      if (Object.prototype.hasOwnProperty.call(schema, key)) {
         // Identify the attribute's config in the schema/aliasedSchema
         const attributeConfig = schema[key as keyof typeof schema];
         // Get the mapped key ("alias" is optional in schema, hence the fallback to key)
@@ -436,16 +436,11 @@ export class Model<
     // TODO Add recursive functionality for nested schema
     Object.entries(this.schema).forEach(([schemaKey, attrConfig]) => {
       // if attribute has a default value, use it if the key is missing or the value is null/undefined.
-      // prettier-ignore
-      if (
-          attrConfig?.default && (
-            !Object.prototype.hasOwnProperty.call(item, schemaKey) ||
-            [null, undefined].includes(item?.[schemaKey as keyof typeof item])
-          )
-        ) {
-          // "default" values are validated upon Model init at runtime to ensure defaults comply with "type"
-          item[schemaKey as keyof typeof item] = attrConfig.default as unknown as typeof item[keyof typeof item];
-        }
+      if (attrConfig?.default && !Model.doesHaveDefinedProperty(item, schemaKey)) {
+        // "default" values are validated upon Model init at runtime to ensure defaults comply with "type"
+        item[schemaKey as keyof typeof item] =
+          attrConfig.default as unknown as typeof item[keyof typeof item];
+      }
     });
 
     return item;
@@ -494,8 +489,12 @@ export class Model<
   private readonly typeChecking = <Item extends ItemType | Partial<ItemType>>(item: Item) => {
     // TODO Add recursive functionality for nested schema
     Object.entries(this.schema).forEach(([schemaKey, attrConfig]) => {
-      // If item has schemaKey, check the type of its value (can't check unknown attributes if schema allows for them)
-      if (schemaKey in item && !Model.TYPE_CHECK_FNS[attrConfig.type](item[schemaKey])) {
+      /* If item has schemaKey and the value is truthy, check the type of its
+      value (can't check unknown attributes if schema allows for them).    */
+      if (
+        Model.doesHaveDefinedProperty(item, schemaKey) &&
+        !Model.TYPE_CHECK_FNS[attrConfig.type](item[schemaKey])
+      ) {
         // String to identify the attribute in the err msg
         const propertyIdentifierStr = attrConfig?.alias
           ? `"${attrConfig.alias}" (alias of "${schemaKey}")`
@@ -529,7 +528,7 @@ export class Model<
     // TODO Add recursive functionality for nested schema
 
     Object.entries(item).forEach(([key, value]) => {
-      if (key in schema) {
+      if (Model.doesHaveDefinedProperty(schema, key)) {
         const attrType = (
           schema[key as keyof typeof schema] as { type: Schema[keyof Schema]["type"] }
         ).type;
@@ -569,8 +568,9 @@ export class Model<
   private readonly validate = <Item extends ItemType | Partial<ItemType>>(item: Item) => {
     // TODO Add recursive functionality for nested schema
     Object.entries(this.schema).forEach(([schemaKey, attrConfig]) => {
-      // Check if item has schemaKey (can't validate unknown attributes if schema allows for them).
-      if (schemaKey in item) {
+      /* Check if item has schemaKey and value is neither null/undefined
+      (can't validate unknown attributes if schema allows for them).  */
+      if (Model.doesHaveDefinedProperty(item, schemaKey)) {
         // Run "validate" if fn exists, throw error if validation fails.
         if (!!attrConfig?.validate && !attrConfig.validate(item[schemaKey])) {
           // String to identify the attribute in the err msg
@@ -605,7 +605,7 @@ export class Model<
     // Loop through schema attributes (can't check unknown attributes if schema allows for them).
     Object.entries(this.schema).forEach(([schemaKey, attrConfig]) => {
       // Check if item is missing a required field
-      if (!(schemaKey in item) && attrConfig?.required === true) {
+      if (attrConfig?.required === true && !Model.doesHaveDefinedProperty(item, schemaKey)) {
         // String to identify the attribute in the err msg
         const propertyIdentifierStr = attrConfig?.alias
           ? `"${attrConfig.alias}" (alias of "${schemaKey}")`
@@ -618,5 +618,12 @@ export class Model<
     });
 
     return item;
+  };
+
+  // Static key/value checking util
+  private static readonly doesHaveDefinedProperty = (obj: Record<string, any>, key: string) => {
+    return (
+      Object.prototype.hasOwnProperty.call(obj, key) && obj[key] !== null && obj[key] !== undefined
+    );
   };
 }
