@@ -25,7 +25,7 @@ export const createOne = async function (
     googleAccessToken?: string; // Only Google logins will have this
   }
 ) {
-  let newUser;
+  let newUser: Expand<UserType & { sk: string }>;
 
   // Create Stripe Customer via Stripe API
   const { id: stripeCustomerID } = await stripe.customers.create({
@@ -94,5 +94,5 @@ export const createOne = async function (
     throw error;
   }
 
-  return newUser as UserType;
+  return newUser;
 };
