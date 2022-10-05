@@ -1,7 +1,8 @@
-import express, { Request, Response, NextFunction } from "express";
-import Stripe from "stripe";
+import express from "express";
+import type { Request, Response, NextFunction } from "express";
+import type Stripe from "stripe";
 import { stripe, StripeWebhooksHandler, type StripeWebhooksHandlerRoute } from "@lib/stripe";
-import { logger, catchAsyncMW, getTypeSafeErr } from "@utils";
+import { logger, catchAsyncMW, getTypeSafeErr, type StripeWebhookRequestObject } from "@utils";
 
 export const webhooksRouter = express.Router();
 
@@ -9,10 +10,9 @@ export const webhooksRouter = express.Router();
 
 // For any and all /webhooks requests, try to validate and log the Stripe webhook event.
 webhooksRouter.use((req: Request, res: Response, next: NextFunction) => {
-  let event: Stripe.Event;
-
   try {
     // Get Stripe event object
+    let event: Stripe.Event;
 
     event = stripe.webhooks.constructEvent(
       req.body,
@@ -29,7 +29,7 @@ webhooksRouter.use((req: Request, res: Response, next: NextFunction) => {
     );
 
     // Attach event to req object
-    Object.defineProperty(req, "event", { value: event });
+    (req as StripeWebhookRequestObject).event = event;
     next();
     //
   } catch (error: ErrorLike) {
@@ -43,7 +43,7 @@ webhooksRouter.use((req: Request, res: Response, next: NextFunction) => {
 Object.entries(StripeWebhooksHandler.PATHS).forEach(([webhookReqPath, webhookPathConfig]) => {
   webhooksRouter.post(
     webhookReqPath,
-    catchAsyncMW(async ({ event }: RequestWithEvent, res: Response, next: NextFunction) => {
+    catchAsyncMW<StripeWebhookRequestObject>(async ({ event }, res, next) => {
       // Ensure we have the Stripe event object
       if (!event) next("ERROR: req.event NOT FOUND IN PATH /webhooks");
       // Get the event handler (will be undefined for nonactionable/unhandled events)
@@ -59,7 +59,3 @@ Object.entries(StripeWebhooksHandler.PATHS).forEach(([webhookReqPath, webhookPat
     })
   );
 });
-
-interface RequestWithEvent extends Request {
-  event: Stripe.Event;
-}
