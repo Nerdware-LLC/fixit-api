@@ -12,10 +12,13 @@ export const SUBSCRIPTION_STATUSES = {
   incomplete_expired: { errMsg: "Sorry, please try again." },
   past_due: { errMsg: "Sorry, payment for your subscription is past due. Please submit payment and try again." },
   canceled: { errMsg: "Sorry, this subscription was canceled." },
-  unpaid: { errMsg: "Sorry, payment for your subscription is past due. Please submit payment and try again." }
+  unpaid: { errMsg: "Sorry, payment for your subscription is past due. Please submit payment and try again." },
 } as const;
 
-export const validateExisting = function ({ status, currentPeriodEnd }: UserSubscriptionType) {
+export const validateExisting = function ({
+  status,
+  currentPeriodEnd
+}: Partial<UserSubscriptionType> = {}) {
   if (
     !status ||
     !(status in SUBSCRIPTION_STATUSES) ||
@@ -23,9 +26,11 @@ export const validateExisting = function ({ status, currentPeriodEnd }: UserSubs
     !currentPeriodEnd ||
     !moment(currentPeriodEnd).isValid()
   ) {
-    // prettier-ignore
     throw new Error(
-      (SUBSCRIPTION_STATUSES?.[status] as SubscriptionStatusConfig)?.errMsg ?? "Invalid subscription."
+      // prettier-ignore
+      status && status in SUBSCRIPTION_STATUSES
+        ? (SUBSCRIPTION_STATUSES[status] as SubscriptionStatusConfig)?.errMsg ?? "Invalid subscription."
+        : "Invalid subscription."
     );
   }
 

@@ -7,11 +7,11 @@ import { UserSubscription } from "./UserSubscription";
 import { USER_SUBSCRIPTION_SK_REGEX, STRIPE_SUB_ID_REGEX } from "./regex";
 import type { UserSubscriptionType } from "./types";
 
-const SECONDS_PER_DAY = 86400;
-const MILLISECONDS_PER_DAY = SECONDS_PER_DAY * 1000;
-
 // Requires "maxWorkers" to be 1
 await ddbSingleTable.ensureTableIsActive();
+
+const SECONDS_PER_DAY = 86400;
+const MILLISECONDS_PER_DAY = SECONDS_PER_DAY * 1000;
 
 const MOCK_SUB_INPUTS = {
   SUB_A: {
@@ -45,7 +45,7 @@ const MOCK_SUB_INPUTS = {
 
 jest.setTimeout(15000); // 15s
 
-const testUserFields = (
+const testSubFields = (
   mockSubKey: keyof typeof MOCK_SUB_INPUTS,
   mockSubInstance: UserSubscriptionType
 ) => {
@@ -59,9 +59,9 @@ const testUserFields = (
   expect(mockSubInstance.productID).toEqual(UserSubscription.PRODUCT_IDS.FIXIT_SUBSCRIPTION);
   expect(mockSubInstance.priceID).toEqual(mockUserSubInputs.priceID);
 
-  expect(moment(mockSubInstance.currentPeriodEnd).isValid()).toBeTruthy();
-  expect(moment(mockSubInstance.createdAt).isValid()).toBeTruthy();
-  expect(moment(mockSubInstance.updatedAt).isValid()).toBeTruthy();
+  expect(moment(mockSubInstance.currentPeriodEnd).isValid()).toEqual(true);
+  expect(moment(mockSubInstance.createdAt).isValid()).toEqual(true);
+  expect(moment(mockSubInstance.updatedAt).isValid()).toEqual(true);
 };
 
 describe("UserSubscription model R/W database operations", () => {
@@ -80,7 +80,7 @@ describe("UserSubscription model R/W database operations", () => {
 
   test("User.upsertItem returns expected keys and values", () => {
     Object.entries(createdSubs).forEach(([mockSubKey, createdSub]) => {
-      testUserFields(mockSubKey as keyof typeof MOCK_SUB_INPUTS, createdSub);
+      testSubFields(mockSubKey as keyof typeof MOCK_SUB_INPUTS, createdSub);
     });
   });
 
@@ -93,7 +93,7 @@ describe("UserSubscription model R/W database operations", () => {
       );
 
       subscriptions.forEach((sub) => {
-        testUserFields(mockSubKey as keyof typeof MOCK_SUB_INPUTS, sub);
+        testSubFields(mockSubKey as keyof typeof MOCK_SUB_INPUTS, sub);
       });
     }
   });
