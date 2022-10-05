@@ -21,9 +21,9 @@ declare global {
       STRIPE_SECRET_KEY: string;
       STRIPE_CONNECT_ONBOARDING_REDIRECT_ROUTE: string;
       STRIPE_CUSTOMER_PORTAL_REDIRECT_ROUTE: string;
-      FIXIT_SUB_productID: string;
-      FIXIT_SUB_priceID_MONTHLY: string;
-      FIXIT_SUB_priceID_ANNUAL: string;
+      FIXIT_SUB_PRODUCT_ID: string;
+      FIXIT_SUB_PRICE_ID_MONTHLY: string;
+      FIXIT_SUB_PRICE_ID_ANNUAL: string;
       STRIPE_VIP_PROMO_CODE: string;
       STRIPE_VIP_PROMO_CODE_ID: string;
     }
