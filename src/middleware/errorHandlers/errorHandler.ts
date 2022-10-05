@@ -1,9 +1,10 @@
+import type { ErrorRequestHandler } from "express";
 import { ENV } from "@server/env";
-import { logger } from "@utils";
+import { logger } from "@utils/logger";
 
-const { IS_PROD } = ENV.CONFIG;
+const { IS_PROD } = ENV;
 
-export const errorHandler = (err, req, res, next) => {
+export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   const errStatusCode = err.status || err.statusCode || 500;
 
   // LOG SERVER ERRORS, NOT 4xx CLIENT ERRORS
