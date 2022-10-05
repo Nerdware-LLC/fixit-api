@@ -29,10 +29,6 @@
       "@models/*": ["src/models/*"],
       "@server": ["src/server"],
       "@server/*": ["src/server/*"],
-      "@tests": ["src/__tests__"],
-      "@tests/*": ["src/__tests__/*"],
-      "@types": ["src/types"],
-      "@types/*": ["src/types/*"],
       "@utils": ["src/utils"],
       "@utils/*": ["src/utils/*"]
     }
