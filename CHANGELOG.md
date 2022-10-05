@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 ---
 
 
+# [1.7.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.6.0...v1.7.0) (2022-10-05)
+
+
+### Bug Fixes
+
+* **DDB-ST:** correct type of obj returned from upsertItem ([519aa5f](https://github.com/Nerdware-LLC/fixit-api/commit/519aa5f3f9d0126b395c2f54c06900ca32ba9b05))
+* **env:** correct Stripe env var name casing ([0ec8abb](https://github.com/Nerdware-LLC/fixit-api/commit/0ec8abb0d07b0ba22ec79306b4d21bfe98dd679e))
+
+
+### Features
+
+* **err-MW:** convert error-handler MW to TS ([ac623f0](https://github.com/Nerdware-LLC/fixit-api/commit/ac623f02260133e7a53280647aff8ea7132c2142))
+* **getTypeSafeErr:** add explicit 'Error' return type ([c0873a4](https://github.com/Nerdware-LLC/fixit-api/commit/c0873a41b3ce0492f9203043ef37099bf92ae67c))
+* **PN-MW:** convert 'updateExpoPushToken' to TS ([e084337](https://github.com/Nerdware-LLC/fixit-api/commit/e084337ffd76f1be55806bff005949460d305771))
+* **Subs-MW:** combine 2 Sub-related MW into 1 and convert to TS ([74de686](https://github.com/Nerdware-LLC/fixit-api/commit/74de68630522421a00c10c9bb675f7c7af256595))
+* **UserSub:** add tests covering UserSub methods ([0d82b3d](https://github.com/Nerdware-LLC/fixit-api/commit/0d82b3d48b08206e89c05b27064072cb9115d928))
+
 # [1.6.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.5.1...v1.6.0) (2022-10-05)
 
 
