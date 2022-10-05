@@ -10,7 +10,6 @@ export class AuthToken {
     id: userID,
     email,
     phone,
-    profile,
     stripeCustomerID,
     stripeConnectAccount,
     subscription
@@ -19,18 +18,13 @@ export class AuthToken {
       id: userID,
       email,
       phone,
-      profile: {
-        id: `${profile.id}`
-      },
       stripeCustomerID,
-      ...(stripeConnectAccount && {
-        stripeConnectAccount: {
-          id: stripeConnectAccount.id,
-          detailsSubmitted: !!stripeConnectAccount.detailsSubmitted,
-          chargesEnabled: !!stripeConnectAccount.chargesEnabled,
-          payoutsEnabled: !!stripeConnectAccount.payoutsEnabled
-        }
-      }),
+      stripeConnectAccount: {
+        id: stripeConnectAccount.id,
+        detailsSubmitted: !!stripeConnectAccount.detailsSubmitted,
+        chargesEnabled: !!stripeConnectAccount.chargesEnabled,
+        payoutsEnabled: !!stripeConnectAccount.payoutsEnabled
+      },
       ...(subscription && {
         subscription: {
           id: subscription.id,
@@ -72,9 +66,13 @@ export interface FixitApiAuthTokenPayload extends FixitApiJwtPayload {
   id: UserType["id"];
   email: UserType["email"];
   phone: UserType["phone"];
-  profile: Expand<Pick<UserType["profile"], "id">>;
   stripeCustomerID: UserType["stripeCustomerID"];
-  stripeConnectAccount?: UserType["stripeConnectAccount"];
+  stripeConnectAccount: Expand<
+    Pick<
+      NonNullable<UserType["stripeConnectAccount"]>,
+      "id" | "detailsSubmitted" | "chargesEnabled" | "payoutsEnabled"
+    >
+  >;
   subscription?: Expand<
     Pick<NonNullable<UserType["subscription"]>, "id" | "status" | "currentPeriodEnd">
   >;
