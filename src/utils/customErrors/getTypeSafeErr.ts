@@ -1,6 +1,6 @@
 import { InternalServerError } from "./500_InternalServerError";
 
-export const getTypeSafeErr = (err: ErrorLike) => {
+export const getTypeSafeErr = (err: ErrorLike): Error => {
   return err instanceof Error
     ? err
     : err === null || err === undefined
