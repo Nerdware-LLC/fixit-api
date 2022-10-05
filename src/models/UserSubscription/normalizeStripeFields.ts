@@ -1,3 +1,6 @@
+import type Stripe from "stripe";
+import type { UserSubscriptionType } from "./types";
+
 /**
  * This function takes an object in the shape returned by the Stripe API
  * and normalizes the keys+values used by the DynamoDB table. Note that
@@ -9,16 +12,14 @@ export const normalizeStripeFields = ({
   current_period_end,
   items,
   ...rest
-}: {
-  created?: number;
-  current_period_end?: number;
-  items?: { data: [{ price: { id: string; product: string } }] };
-}) => ({
-  ...(created && { createdAt: created }),
-  ...(current_period_end && { currentPeriodEnd: new Date(current_period_end * 1000) }),
-  ...(items && {
-    productID: items.data[0].price.product,
-    priceID: items.data[0].price.id
-  }),
-  ...rest
-});
+}: Stripe.Subscription) => {
+  return {
+    ...(created && { createdAt: created }),
+    ...(current_period_end && { currentPeriodEnd: new Date(current_period_end * 1000) }),
+    ...(items && {
+      productID: items.data[0].price.product,
+      priceID: items.data[0].price.id
+    }),
+    ...rest
+  } as Partial<UserSubscriptionType> & Stripe.Response<Stripe.Subscription>;
+};
