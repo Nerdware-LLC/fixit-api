@@ -29,9 +29,9 @@ const MOCK_USER_INPUTS = {
   }
 } as const;
 
-const MOCK_USERS_EXPECTED_LOGIN_AND_PROFILE_FIELDS = new WeakMap();
+const MOCK_USERS_EXPECTED_FIELDS = new WeakMap();
 
-MOCK_USERS_EXPECTED_LOGIN_AND_PROFILE_FIELDS.set(MOCK_USER_INPUTS.USER_A, {
+MOCK_USERS_EXPECTED_FIELDS.set(MOCK_USER_INPUTS.USER_A, {
   login: {
     type: "LOCAL",
     passwordHash: expect.stringMatching(/\S{30,}/i)
@@ -39,7 +39,7 @@ MOCK_USERS_EXPECTED_LOGIN_AND_PROFILE_FIELDS.set(MOCK_USER_INPUTS.USER_A, {
   profile: {}
 });
 
-MOCK_USERS_EXPECTED_LOGIN_AND_PROFILE_FIELDS.set(MOCK_USER_INPUTS.USER_B, {
+MOCK_USERS_EXPECTED_FIELDS.set(MOCK_USER_INPUTS.USER_B, {
   login: {
     type: "GOOGLE_OAUTH",
     googleID: "userB_googleID",
@@ -67,7 +67,7 @@ const testUserFields = (mockUserKey: keyof typeof MOCK_USER_INPUTS, userInstance
   expect(userInstanceObj.expoPushToken).toMatch(mockUserInputs.expoPushToken);
 
   // prettier-ignore
-  const { login: expectedLogin, profile: expectedProfile } = MOCK_USERS_EXPECTED_LOGIN_AND_PROFILE_FIELDS.get(mockUserInputs);
+  const { login: expectedLogin, profile: expectedProfile } = MOCK_USERS_EXPECTED_FIELDS.get(mockUserInputs);
 
   expect(userInstanceObj.login).toMatchObject(expectedLogin);
   expect(userInstanceObj?.profile ?? {}).toMatchObject(expectedProfile);
