@@ -1,9 +1,14 @@
 import { jest } from "@jest/globals";
-import { User, type UserType } from "@models/User";
-import { USER_ID_REGEX, USER_SK_REGEX, USER_STRIPE_CUSTOMER_ID_REGEX } from "@models/User/regex";
+import { ddbSingleTable } from "@lib/dynamoDB";
 import { normalizeInput, prettifyStr } from "@utils";
+import { User } from "./User";
+import { USER_ID_REGEX, USER_SK_REGEX, USER_STRIPE_CUSTOMER_ID_REGEX } from "./regex";
+import type { UserType } from "./types";
 
-const MOCK_USERS = {
+// Requires "maxWorkers" to be 1
+await ddbSingleTable.ensureTableIsActive();
+
+const MOCK_USER_INPUTS = {
   USER_A: {
     email: "userA@gmail.com",
     phone: "888-111-1111",
@@ -26,7 +31,7 @@ const MOCK_USERS = {
 
 const MOCK_USERS_EXPECTED_LOGIN_AND_PROFILE_FIELDS = new WeakMap();
 
-MOCK_USERS_EXPECTED_LOGIN_AND_PROFILE_FIELDS.set(MOCK_USERS.USER_A, {
+MOCK_USERS_EXPECTED_LOGIN_AND_PROFILE_FIELDS.set(MOCK_USER_INPUTS.USER_A, {
   login: {
     type: "LOCAL",
     passwordHash: expect.stringMatching(/\S{30,}/i)
@@ -34,7 +39,7 @@ MOCK_USERS_EXPECTED_LOGIN_AND_PROFILE_FIELDS.set(MOCK_USERS.USER_A, {
   profile: {}
 });
 
-MOCK_USERS_EXPECTED_LOGIN_AND_PROFILE_FIELDS.set(MOCK_USERS.USER_B, {
+MOCK_USERS_EXPECTED_LOGIN_AND_PROFILE_FIELDS.set(MOCK_USER_INPUTS.USER_B, {
   login: {
     type: "GOOGLE_OAUTH",
     googleID: "userB_googleID",
@@ -49,8 +54,8 @@ MOCK_USERS_EXPECTED_LOGIN_AND_PROFILE_FIELDS.set(MOCK_USERS.USER_B, {
 
 jest.setTimeout(15000); // 15s
 
-const testUserFields = (mockUserKey: keyof typeof MOCK_USERS, userInstanceObj: UserType) => {
-  const mockUserInputs = MOCK_USERS[mockUserKey];
+const testUserFields = (mockUserKey: keyof typeof MOCK_USER_INPUTS, userInstanceObj: UserType) => {
+  const mockUserInputs = MOCK_USER_INPUTS[mockUserKey];
 
   expect(userInstanceObj.id).toMatch(USER_ID_REGEX);
   expect(userInstanceObj.sk).toMatch(USER_SK_REGEX);
@@ -69,31 +74,31 @@ const testUserFields = (mockUserKey: keyof typeof MOCK_USERS, userInstanceObj: U
 };
 
 describe("User model R/W database operations", () => {
-  let createdUsers: Partial<Record<keyof typeof MOCK_USERS, UserType>> = {};
+  let createdUsers: Partial<Record<keyof typeof MOCK_USER_INPUTS, UserType>> = {};
 
   // Write mock Users to Table
   beforeAll(async () => {
-    for (const mockUserKey in MOCK_USERS) {
+    for (const mockUserKey in MOCK_USER_INPUTS) {
       // prettier-ignore
-      const createdUser = await User.createOne(MOCK_USERS[mockUserKey as keyof typeof MOCK_USERS])
-      createdUsers[mockUserKey as keyof typeof MOCK_USERS] = createdUser;
+      const createdUser = await User.createOne(MOCK_USER_INPUTS[mockUserKey as keyof typeof MOCK_USER_INPUTS])
+      createdUsers[mockUserKey as keyof typeof MOCK_USER_INPUTS] = createdUser;
     }
   });
 
   test("User.createOne returns expected keys and values", () => {
     Object.entries(createdUsers).forEach(([mockUserKey, createdUser]) => {
-      testUserFields(mockUserKey as keyof typeof MOCK_USERS, createdUser);
+      testUserFields(mockUserKey as keyof typeof MOCK_USER_INPUTS, createdUser);
     });
   });
 
   test("User.getUserByID returns expected keys and values", async () => {
     // Get mock Users by email
     for (const mockUserKey in createdUsers) {
-      const userID = createdUsers[mockUserKey as keyof typeof MOCK_USERS]!.id;
+      const userID = createdUsers[mockUserKey as keyof typeof MOCK_USER_INPUTS]!.id;
 
       const result = await User.getUserByID(userID);
 
-      testUserFields(mockUserKey as keyof typeof MOCK_USERS, result as UserType);
+      testUserFields(mockUserKey as keyof typeof MOCK_USER_INPUTS, result);
     }
   });
 
@@ -103,19 +108,19 @@ describe("User model R/W database operations", () => {
       createdUsers!.USER_B!.id
     ]);
 
-    (users as Array<UserType>).forEach((user) => {
-      testUserFields(user.id === createdUsers!.USER_A!.id ? "USER_A" : "USER_B", user as UserType);
+    users.forEach((user) => {
+      testUserFields(user.id === createdUsers!.USER_A!.id ? "USER_A" : "USER_B", user);
     });
   });
 
   test("User.queryUserByEmail returns expected keys and values", async () => {
     // Get mock Users by email
-    for (const mockUserKey in MOCK_USERS) {
-      const { email } = MOCK_USERS[mockUserKey as keyof typeof MOCK_USERS];
+    for (const mockUserKey in MOCK_USER_INPUTS) {
+      const { email } = MOCK_USER_INPUTS[mockUserKey as keyof typeof MOCK_USER_INPUTS];
 
       const result = await User.queryUserByEmail(email);
 
-      testUserFields(mockUserKey as keyof typeof MOCK_USERS, result as UserType);
+      testUserFields(mockUserKey as keyof typeof MOCK_USER_INPUTS, result);
     }
   });
 });
