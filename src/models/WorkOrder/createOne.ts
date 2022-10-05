@@ -1,10 +1,11 @@
 import { eventEmitter } from "@events";
-import type { WorkOrderModel } from "./WorkOrder";
+import type { Model } from "@lib/dynamoDB";
+import { WorkOrder } from "./WorkOrder";
 import type { WorkOrderType } from "./types";
 
 // function, not arrow, bc we need to use "this." syntax to call Dynamoose methods
 export const createOne = async function (
-  this: InstanceType<typeof WorkOrderModel>,
+  this: InstanceType<typeof Model>,
   {
     createdByUserID,
     assignedToUserID = "UNASSIGNED", // <-- Default placeholder, since "data" Attr is required
@@ -20,7 +21,7 @@ export const createOne = async function (
     contractorNotes
   }: Omit<WorkOrderType, "assignedToUserID" | "status" | "priority"> & {
     assignedToUserID: string; //                            <-- optional in base type
-    priority?: typeof WorkOrderModel.PRIORITIES[number]; // <-- required in base type
+    priority?: typeof WorkOrder.PRIORITIES[number]; // <-- required in base type
   }
 ) {
   /* Create WorkOrder via model.create, which unlike item.save will not
@@ -40,9 +41,9 @@ export const createOne = async function (
     entryContactPhone,
     scheduledDateTime,
     contractorNotes
-  } as any); // FIXME <-- rm this `as any` once aliasedItemTypeFromSchema has been fixed (currently every property set to type `undefined`, some problem w Matching/NonMatching)
+  });
 
   eventEmitter.emitWorkOrderCreated(newWorkOrder);
 
-  return newWorkOrder;
+  return newWorkOrder as WorkOrderType;
 };
