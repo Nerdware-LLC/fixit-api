@@ -1,4 +1,3 @@
-import { deepStrictEqual } from "assert";
 import moment from "moment";
 import { SchemaValidationError, ItemInputError } from "./customErrors";
 import type { DDBSingleTable as DDBSingleTableClass } from "./DDBSingleTable";
@@ -159,7 +158,10 @@ export class Model<
         );
       }
 
-      accum[alias] = attrConfig as AliasedSchema[keyof AliasedSchema];
+      accum[alias] = {
+        ...attrConfig,
+        attributeName: attrName
+      } as AliasedSchema[keyof AliasedSchema];
 
       return accum;
     }, {} as AliasedSchema);
@@ -173,7 +175,7 @@ export class Model<
   ) => {
     const toDBpks = this.aliasMapping(primaryKeys, this.aliasedSchema) as ItemPrimaryKeys<Schema>;
     const item = await this.ddbClient.getItem<Schema>(toDBpks, getItemOpts);
-    return this.processItemData.fromDB(item);
+    return this.processItemData.fromDB(item) as Partial<AliasedItem>;
   };
 
   readonly batchGetItems = async (
@@ -183,29 +185,35 @@ export class Model<
     // prettier-ignore
     const toDBpks = primaryKeys.map((pks) => this.aliasMapping(pks, this.aliasedSchema)) as Array<ItemPrimaryKeys<Schema>>;
     const items = await this.ddbClient.batchGetItems<Schema>(toDBpks, batchGetItemsOpts);
-    return this.processItemData.fromDB(items);
+    return this.processItemData.fromDB(items) as Array<Partial<AliasedItem>>;
   };
 
-  // prettier-ignore
   readonly createItem = async (
     item: AliasedItem,
     createItemOpts?: Parameters<typeof this.ddbClient.createItem>[1]
   ) => {
-    const toDBitem = this.processItemData.toDB(item, { shouldCheckRequired: true }) as ItemType;
+    const toDBitem = this.processItemData.toDB(
+      { ...item, createdAt: new Date() }, // <-- add "createdAt" timestamp
+      { shouldCheckRequired: true }
+    ) as ItemType;
     await this.ddbClient.createItem<Schema>(toDBitem, createItemOpts);
-    /* PutItem ReturnValues can only be NONE or ALL_OLD, so the DDB API will never
-    return anything from createItem, so simply pass toDBitem into fromDB.       */
-    return this.processItemData.fromDB(toDBitem);
+    /* PutItem ReturnValues can only be "NONE" or "ALL_OLD", so the DDB API will
+    never return anything from `createItem`, so `toDBitem` is passed into fromDB
+    to provide the user with an Item with createdAt, updatedAt, defaults, etc.
+    Returning the Item param after passing it through toDB/fromDB also allows the
+    return type to NOT be wrapped in Partial<>, since DDB API args have no impact
+    on the returned Item's properties (params like ProjectionExpression).      */
+    return this.processItemData.fromDB(toDBitem) as AliasedItem;
   };
 
-  // prettier-ignore
   readonly upsertItem = async (
     item: Partial<AliasedItem>,
     upsertItemOpts?: Parameters<typeof this.ddbClient.upsertItem>[1]
   ) => {
+    // prettier-ignore
     const toDBitem = this.processItemData.toDB(item, { shouldCheckRequired: true }) as Partial<ItemType>;
     const itemAttributes = await this.ddbClient.upsertItem<Schema>(toDBitem, upsertItemOpts);
-    return this.processItemData.fromDB(itemAttributes);
+    return this.processItemData.fromDB(itemAttributes) as Partial<AliasedItem>;
   };
 
   readonly batchUpsertItems = async (
@@ -215,7 +223,7 @@ export class Model<
     // prettier-ignore
     const toDBitems = this.processItemData.toDB(items, { shouldCheckRequired: true }) as Array<Partial<ItemType>>;
     await this.ddbClient.batchUpsertItems<Schema>(toDBitems, batchUpsertItemsOpts);
-    return this.processItemData.fromDB(items);
+    return this.processItemData.fromDB(items) as Array<Partial<AliasedItem>>;
   };
 
   // prettier-ignore
@@ -227,7 +235,7 @@ export class Model<
     const toDBpks = this.aliasMapping(primaryKeys, this.aliasedSchema) as ItemPrimaryKeys<Schema>;
     const toDBitem = this.processItemData.toDB(attributesToUpdate) as Partial<ItemNonKeyAttributes<Schema>>;
     const itemAttributes = await this.ddbClient.updateItem<Schema>(toDBpks, toDBitem, updateItemOpts);
-    return this.processItemData.fromDB(itemAttributes);
+    return this.processItemData.fromDB(itemAttributes) as Partial<AliasedItem>;
   };
 
   readonly deleteItem = async (
@@ -236,7 +244,7 @@ export class Model<
   ) => {
     const toDBpks = this.aliasMapping(primaryKeys, this.aliasedSchema) as ItemPrimaryKeys<Schema>;
     const itemAttributes = await this.ddbClient.deleteItem<Schema>(toDBpks, deleteItemOpts);
-    return this.processItemData.fromDB(itemAttributes);
+    return this.processItemData.fromDB(itemAttributes) as Partial<AliasedItem>;
   };
 
   readonly batchDeleteItems = async (
@@ -272,6 +280,9 @@ export class Model<
     return {
       upsertItems: this.processItemData.fromDB(itemsToDB.upsertItems),
       deleteItems
+    } as {
+      upsertItems: Array<Partial<AliasedItem>>;
+      deleteItems: Array<AliasedItemPrimaryKeys<Schema>>;
     };
   };
 
@@ -298,12 +309,14 @@ export class Model<
     }
 
     const items = await this.ddbClient.query({ KeyConditionExpression, ...otherQueryOpts });
-    return this.processItemData.fromDB(items as Array<Partial<ItemTypeFromSchema<Schema>>>);
+    // prettier-ignore
+    return this.processItemData.fromDB(items as Array<Partial<ItemType>>) as Array<Partial<AliasedItem>>;
   };
 
   readonly scan = async (scanOpts: Parameters<typeof this.ddbClient.scan>[0] = {}) => {
     const items = await this.ddbClient.scan(scanOpts);
-    return this.processItemData.fromDB(items as Array<Partial<ItemTypeFromSchema<Schema>>>);
+    // prettier-ignore
+    return this.processItemData.fromDB(items as Array<Partial<ItemType>>) as Array<Partial<AliasedItem>>;
   };
 
   // INSTANCE METHOD UTILS:
@@ -342,7 +355,6 @@ export class Model<
     // https://github.com/microsoft/TypeScript/issues/36390#issuecomment-840082057
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    // prettier-ignore
     return ioActions.reduce(itemDataReducer, itemData) as ReturnFromIOHookActionsSet<
       Schema,
       typeof itemData
@@ -443,7 +455,7 @@ export class Model<
     // TODO Add recursive functionality for nested schema
     Object.entries(schema).forEach(([schemaKey, attrConfig]) => {
       // if schema has transformValue toDB/fromDB, pass the existing value into the fn
-      if (typeof attrConfig?.transformValue?.[actionSet] === "function" && schemaKey in item) {
+      if (typeof attrConfig?.transformValue?.[actionSet] === "function") {
         const transformValue = attrConfig.transformValue[actionSet];
         /* Model "transformValue" fns are not validated, but type mismatches will be caught by the
         typeChecking action at runtime. Note: non-null assertion used to call transformValue below
@@ -480,11 +492,13 @@ export class Model<
     Object.entries(this.schema).forEach(([schemaKey, attrConfig]) => {
       // If item has schemaKey, check the type of its value (can't check unknown attributes if schema allows for them)
       if (schemaKey in item && !Model.TYPE_CHECK_FNS[attrConfig.type](item[schemaKey])) {
-        // Format error message and throw
-        const inputKeyName = attrConfig?.alias ?? schemaKey;
-        const aliasOf = attrConfig?.alias ? `(alias of "${attrConfig?.alias}") ` : "";
+        // String to identify the attribute in the err msg
+        const propertyIdentifierStr = attrConfig?.alias
+          ? `"${attrConfig.alias}" (alias of "${schemaKey}")`
+          : `"${schemaKey}"`;
+
         throw new ItemInputError(
-          `"${this.modelName}" Model property "${inputKeyName}" ${aliasOf}must be a valid "${attrConfig.type}" type.`
+          `"${this.modelName}" Model property ${propertyIdentifierStr} must be a valid "${attrConfig.type}" type.`
         );
       }
     });
@@ -521,12 +535,12 @@ export class Model<
         if (attrType === "Date") {
           // For "Date" attributes, convert Date objects to unix timestamps and vice versa.
 
-          if (actionSet === "toDB" && (value as any) instanceof Date) {
+          if (actionSet === "toDB" && !!value && (value as any) instanceof Date) {
             // toDB, convert Date objects to unix timestamps (Math.floor(new Date(value).getTime() / 1000))
             convertedValue = moment(value).unix();
-          } else if (actionSet === "fromDB" && moment(value).isValid()) {
+          } else if (actionSet === "fromDB" && !!value && moment(value).isValid()) {
             // fromDB, convert unix timestamps to Date objects
-            convertedValue = moment(value).toDate();
+            convertedValue = new Date(value * 1000);
           }
         } else if (attrType === "Buffer") {
           // For "Buffer" attributes, convert Buffers to binary and vice versa.
@@ -555,10 +569,13 @@ export class Model<
       if (schemaKey in item) {
         // Run "validate" if fn exists, throw error if validation fails.
         if (!!attrConfig?.validate && !attrConfig.validate(item[schemaKey])) {
-          const inputKeyName = attrConfig?.alias ?? schemaKey;
-          const aliasOf = attrConfig?.alias ? `(alias of "${attrConfig?.alias}") ` : "";
+          // String to identify the attribute in the err msg
+          const propertyIdentifierStr = attrConfig?.alias
+            ? `"${attrConfig.alias}" (alias of "${schemaKey}")`
+            : `"${schemaKey}"`;
+
           throw new ItemInputError(
-            `Input validation failed for "${this.modelName}" Model property "${inputKeyName}" ${aliasOf}.`
+            `Input validation failed for "${this.modelName}" Model property ${propertyIdentifierStr}.`
           );
         }
       }
@@ -580,13 +597,18 @@ export class Model<
     // Note: checkRequired is only to be used for createItem, upsertItem. and batchUpsertItems.
 
     // TODO Add recursive functionality for nested schema
+
+    // Loop through schema attributes (can't check unknown attributes if schema allows for them).
     Object.entries(this.schema).forEach(([schemaKey, attrConfig]) => {
-      // Check if item has schemaKey (can't check unknown attributes if schema allows for them).
+      // Check if item is missing a required field
       if (!(schemaKey in item) && attrConfig?.required === true) {
-        const inputKeyName = attrConfig?.alias ?? schemaKey;
-        const aliasOf = attrConfig?.alias ? `(alias of "${attrConfig?.alias}") ` : "";
+        // String to identify the attribute in the err msg
+        const propertyIdentifierStr = attrConfig?.alias
+          ? `"${attrConfig.alias}" (alias of "${schemaKey}")`
+          : `"${schemaKey}"`;
+
         throw new ItemInputError(
-          `A value is required for property "${inputKeyName}" ${aliasOf}on the "${this.modelName}" Model.`
+          `A value is required for property ${propertyIdentifierStr} on the "${this.modelName}" Model.`
         );
       }
     });
