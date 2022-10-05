@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 ---
 
 
+# [1.8.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.7.0...v1.8.0) (2022-10-05)
+
+
+### Bug Fixes
+
+* **Model:** add 'doesHaveDefinedProperty', ensure IO actions account for undefined values ([e5e080d](https://github.com/Nerdware-LLC/fixit-api/commit/e5e080de5882e28a9239eff7974be27b26ad2256))
+* **models:** ensure PHONE common attr doesnt pass undefined to transform fns ([e44ea1c](https://github.com/Nerdware-LLC/fixit-api/commit/e44ea1c1f681d0743bca52329958bd89f5635423))
+
+
+### Features
+
+* **WO:** add tests for WO.createOne, fix schema elements ([07ac0b4](https://github.com/Nerdware-LLC/fixit-api/commit/07ac0b44a69fbb2188cee7c75c9388174977aacd))
+
 # [1.7.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.6.0...v1.7.0) (2022-10-05)
 
 
