@@ -5,16 +5,9 @@ import type { InvoiceType } from "./types";
 // function, not arrow, bc we need to use "this." syntax to call Dynamoose methods
 export const createOne = async function (
   this: InstanceType<typeof Model>,
-  {
-    createdByUserID,
-    assignedToUserID,
-    amount,
-    workOrderID
-  }: NonNullable<
-    Pick<InvoiceType, "createdByUserID" | "assignedToUserID" | "amount" | "workOrderID">
-  >
+  { createdByUserID, assignedToUserID, amount, workOrderID }: NewInvoice
 ) {
-  const newInvoice = await this.createItem({
+  const newInvoice: NewInvoice = await this.createItem({
     createdByUserID,
     assignedToUserID,
     amount,
@@ -24,5 +17,10 @@ export const createOne = async function (
 
   eventEmitter.emitInvoiceCreated(newInvoice);
 
-  return newInvoice as InvoiceType;
+  return newInvoice;
 };
+
+type NewInvoice = Expand<
+  InvoiceType &
+    Required<Pick<InvoiceType, "createdByUserID" | "assignedToUserID" | "amount" | "workOrderID">>
+>;
