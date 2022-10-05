@@ -1,4 +1,5 @@
 import moment from "moment";
+import merge from "lodash.merge";
 import { SchemaValidationError, ItemInputError } from "./customErrors";
 import type { DDBSingleTable as DDBSingleTableClass } from "./DDBSingleTable";
 import type { DDBSingleTableClient } from "./DDBSingleTableClient";
@@ -213,7 +214,10 @@ export class Model<
     // prettier-ignore
     const toDBitem = this.processItemData.toDB(item, { shouldCheckRequired: true }) as Partial<ItemType>;
     const itemAttributes = await this.ddbClient.upsertItem<Schema>(toDBitem, upsertItemOpts);
-    return this.processItemData.fromDB(itemAttributes) as Partial<AliasedItem>;
+    // Upon Item creation, `itemAttributes` would be undefined, hence the below merge logic
+    return this.processItemData.fromDB(
+      merge(toDBitem, itemAttributes ?? {})
+    ) as Partial<AliasedItem>;
   };
 
   readonly batchUpsertItems = async (
