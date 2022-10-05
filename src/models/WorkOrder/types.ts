@@ -15,9 +15,11 @@ export interface WorkOrderType {
   dueDate: Date | number;
   scheduledDateTime: Date | number;
   contractorNotes?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-// Location moved to @types/env.d.ts
+// Location moved to src/types/codegen.d.ts
 
 export interface WorkOrderChecklistItem {
   id: string;

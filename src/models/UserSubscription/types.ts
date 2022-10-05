@@ -6,5 +6,6 @@ export interface UserSubscriptionType {
   productID: string;
   priceID: string;
   status: keyof typeof SUBSCRIPTION_STATUSES;
-  createdAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }

@@ -1,7 +1,7 @@
 import moment from "moment";
 import { normalizeInput, prettifyStr } from "@utils";
 
-export const COMMON_MODEL_ATTRIBUTES = {
+export const COMMON_ATTRIBUTE_TYPES = {
   // User phone, WorkOrder entryContactPhone
   PHONE: {
     type: "string",
@@ -15,5 +15,21 @@ export const COMMON_MODEL_ATTRIBUTES = {
   DATETIME: {
     type: "Date",
     validate: (value?: Date) => moment(value).isValid()
+  }
+} as const;
+
+export const COMMON_ATTRIBUTES = {
+  TIMESTAMPS: {
+    createdAt: {
+      ...COMMON_ATTRIBUTE_TYPES.DATETIME,
+      required: true
+    },
+    updatedAt: {
+      ...COMMON_ATTRIBUTE_TYPES.DATETIME,
+      required: true,
+      transformValue: {
+        toDB: () => Math.floor(Date.now() / 1000) // <-- always update value
+      }
+    }
   }
 } as const;

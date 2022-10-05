@@ -1,1 +1,1 @@
-export { COMMON_MODEL_ATTRIBUTES } from "./commonModelAttributes";
+export * from "./commonModelAttributes";

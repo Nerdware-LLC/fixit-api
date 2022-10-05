@@ -1,4 +1,5 @@
 import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
+import { COMMON_ATTRIBUTES } from "@models/_common";
 import { USER_ID_REGEX } from "@models/User";
 import { CONTACT_SK_REGEX } from "./regex";
 import type { ContactType } from "./types";
@@ -41,14 +42,16 @@ class ContactModel extends Model<typeof ContactModel.schema> {
         rangeKey: "sk",
         project: true
       }
-    }
+    },
+    // "createdAt" and "updatedAt"
+    ...COMMON_ATTRIBUTES.TIMESTAMPS
   } as const;
 
   static readonly schemaOptions: ModelSchemaOptions = {
     transformItem: {
-      toDB: (contactItem: { contactUserID: string }) => ({
+      toDB: (contactItem) => ({
         ...contactItem,
-        sk: `CONTACT#${contactItem.contactUserID}`
+        sk: `CONTACT#${contactItem.data}`
       })
     }
   };

@@ -1,10 +1,10 @@
-import { ddbSingleTable, Model } from "@lib/dynamoDB";
-import { COMMON_MODEL_ATTRIBUTES } from "@models/_common";
+import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
+import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@models/_common";
 import { USER_ID_REGEX } from "@models/User";
 import { WORK_ORDER_ID_REGEX, LOCATION_COMPOSITE_REGEX, WO_CHECKLIST_ITEM_ID_REGEX } from "./regex";
 import { createOne } from "./createOne";
 import { updateOne } from "./updateOne";
-import type { ModelSchemaOptions } from "@lib/dynamoDB";
+import type { WorkOrderType } from "./types";
 
 /**
  * WorkOrder Model Methods:
@@ -180,32 +180,34 @@ class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
       required: false
     },
     entryContactPhone: {
-      ...COMMON_MODEL_ATTRIBUTES.PHONE,
+      ...COMMON_ATTRIBUTE_TYPES.PHONE,
       required: false
     },
     dueDate: {
-      ...COMMON_MODEL_ATTRIBUTES.DATETIME,
+      ...COMMON_ATTRIBUTE_TYPES.DATETIME,
       required: false
     },
     scheduledDateTime: {
-      ...COMMON_MODEL_ATTRIBUTES.DATETIME,
+      ...COMMON_ATTRIBUTE_TYPES.DATETIME,
       required: false
     },
     contractorNotes: {
       type: "string",
       required: false
-    }
+    },
+    // "createdAt" and "updatedAt"
+    ...COMMON_ATTRIBUTES.TIMESTAMPS
   } as const;
 
   static readonly schemaOptions: ModelSchemaOptions = {
     transformItem: {
-      toDB: (workOrderItem: { id: string; checklist?: Array<{ createdAt: Date }> }) => ({
+      toDB: (workOrderItem: { sk: string; checklist?: Array<{ createdAt: Date }> }) => ({
         ...workOrderItem,
         ...(Array.isArray(workOrderItem?.checklist) && {
           checklist: workOrderItem.checklist.map((checklistItem) => ({
             ...checklistItem,
             // prettier-ignore
-            id: `${workOrderItem.id}#CHECKLIST_ITEM#${Math.floor(new Date(checklistItem.createdAt).getTime() / 1000)}`
+            id: `${workOrderItem.sk}#CHECKLIST_ITEM#${Math.floor(new Date(checklistItem.createdAt).getTime() / 1000)}`
           }))
         })
       })
@@ -261,27 +263,41 @@ class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
   readonly updateOne = updateOne;
 
   readonly queryWorkOrderByID = async (workOrderID: string) => {
-    return await this.query({
+    const [workOrder] = await this.query({
       IndexName: "Overloaded_SK_GSI",
       KeyConditionExpression: "id = :id",
       ExpressionAttributeValues: { ":id": workOrderID },
       Limit: 1
     });
+
+    /* The conversion to "unknown" below is necessary due to the "Location"
+    property, which is a compound Item attribute defined as `type: "string"` in
+    the WO schema for the DDB-ST Model.typeChecking action, but everywhere else
+    in the API this property's type is an object with keys country, region, city,
+    streetLine1, and streetLine2. To address this issue, a schema attribute config
+    property could be added to allow Item inputs to have a different type than what's
+    ultimately written into the DB after toDB IO hook actions.  */
+    return workOrder as unknown as WorkOrderType;
   };
 
   readonly queryUsersWorkOrders = async (userID: string) => {
-    return await this.query({
+    return (await this.query({
       KeyConditionExpression: "pk = :userID AND begins_with(sk, :woSKprefix)",
       ExpressionAttributeValues: { ":userID": userID, ":woSKprefix": "WO#" }
-    });
+    })) as unknown as Array<WorkOrderType>;
+    /* See note in queryWorkOrderByID regarding why these `as unknown`
+    conversions are currently necessary in WorkOrder Model methods. */
   };
 
   readonly queryWorkOrdersAssignedToUser = async (userID: string) => {
-    return await this.query({
+    return (await this.query({
       IndexName: "Overloaded_Data_GSI",
-      KeyConditionExpression: "assignedToUserID = :userID AND begins_with(sk, :woSKprefix)",
+      KeyConditionExpression: "#uid = :userID AND begins_with(sk, :woSKprefix)",
+      ExpressionAttributeNames: { "#uid": "data" },
       ExpressionAttributeValues: { ":userID": userID, ":woSKprefix": "WO#" }
-    });
+    })) as unknown as Array<WorkOrderType>;
+    /* See note in queryWorkOrderByID regarding why these `as unknown`
+    conversions are currently necessary in WorkOrder Model methods. */
   };
 }
 

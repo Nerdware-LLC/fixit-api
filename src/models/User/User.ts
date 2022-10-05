@@ -1,7 +1,7 @@
 import { Expo } from "expo-server-sdk";
 import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
-import { COMMON_MODEL_ATTRIBUTES } from "@models/_common";
-import { EMAIL_REGEX, prettifyStr } from "@utils";
+import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@models/_common";
+import { EMAIL_REGEX } from "@utils";
 import { USER_ID_REGEX, USER_SK_REGEX, USER_STRIPE_CUSTOMER_ID_REGEX } from "./regex";
 import { createOne } from "./createOne";
 import type { UserType } from "./types";
@@ -52,7 +52,7 @@ class UserModel extends Model<typeof UserModel.schema> {
       }
     },
     phone: {
-      ...COMMON_MODEL_ATTRIBUTES.PHONE,
+      ...COMMON_ATTRIBUTE_TYPES.PHONE,
       required: true
     },
     expoPushToken: {
@@ -98,18 +98,16 @@ class UserModel extends Model<typeof UserModel.schema> {
         businessName: { type: "string" },
         photoURL: { type: "string" }
       }
-    }
+    },
+    // "createdAt" and "updatedAt"
+    ...COMMON_ATTRIBUTES.TIMESTAMPS
   } as const;
 
   static readonly schemaOptions: ModelSchemaOptions = {
     transformItem: {
-      toDB: (userItem: { id: string }) => ({
+      toDB: (userItem) => ({
         ...userItem,
-        sk: `#DATA#${userItem.id}`
-      }),
-      fromDB: (userItem: { phone: string }) => ({
-        ...userItem,
-        phone: prettifyStr.phone(userItem.phone)
+        sk: `#DATA#${userItem.pk}`
       })
     }
   };
@@ -133,12 +131,15 @@ class UserModel extends Model<typeof UserModel.schema> {
   };
 
   readonly queryUserByEmail = async (email: string) => {
-    return (await this.query({
+    const [user] = await this.query({
       IndexName: "Overloaded_Data_GSI",
-      KeyConditionExpression: "email = :email",
+      KeyConditionExpression: "#e = :email",
+      ExpressionAttributeNames: { "#e": "data" },
       ExpressionAttributeValues: { ":email": email },
       Limit: 1
-    })) as UserType;
+    });
+
+    return user as UserType;
   };
 }
 

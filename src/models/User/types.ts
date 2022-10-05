@@ -3,6 +3,7 @@ import type { UserStripeConnectAccountType } from "@models/UserStripeConnectAcco
 
 export interface UserType {
   id: string;
+  sk?: string;
   email: string;
   phone: string;
   expoPushToken?: string;
@@ -11,10 +12,11 @@ export interface UserType {
   stripeCustomerID: string;
   stripeConnectAccount?: UserStripeConnectAccountType;
   subscription?: UserSubscriptionType;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface UserProfile {
-  id: string;
   givenName?: string;
   familyName?: string;
   businessName?: string;

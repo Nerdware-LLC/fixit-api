@@ -1,4 +1,5 @@
 import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
+import { COMMON_ATTRIBUTES } from "@models/_common";
 import { USER_ID_REGEX } from "@models/User";
 import { WORK_ORDER_ID_REGEX } from "@models/WorkOrder";
 import { INVOICE_SK_REGEX } from "./regex";
@@ -67,14 +68,17 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema> {
     },
     stripePaymentIntentID: {
       type: "string"
-    }
+    },
+    // "createdAt" and "updatedAt"
+    ...COMMON_ATTRIBUTES.TIMESTAMPS
   } as const;
 
   static readonly schemaOptions: ModelSchemaOptions = {
     transformItem: {
-      toDB: (invoiceItem: { id: string; createdAt: Date }) => ({
+      // prettier-ignore
+      toDB: (invoiceItem) => ({
         ...invoiceItem,
-        sk: `INV#${invoiceItem.id}#${Math.floor(new Date(invoiceItem.createdAt).getTime() / 1000)}`
+        sk: invoiceItem?.sk ?? `INV#${invoiceItem.pk}#${Math.floor(new Date(invoiceItem.createdAt).getTime() / 1000)}`
       })
     }
   };
@@ -101,12 +105,14 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema> {
   readonly deleteOne = deleteOne;
 
   readonly queryInvoiceByID = async (invoiceID: string) => {
-    return (await this.query({
+    const [invoice] = await this.query({
       IndexName: "Overloaded_SK_GSI",
       KeyConditionExpression: "id = :id",
       ExpressionAttributeValues: { ":id": invoiceID },
       Limit: 1
-    })) as InvoiceType;
+    });
+
+    return invoice as InvoiceType;
   };
 
   readonly queryUsersInvoices = async (userID: string) => {

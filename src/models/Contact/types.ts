@@ -6,4 +6,5 @@ export interface ContactType {
   phone: UserType["phone"];
   profile: UserType["profile"];
   createdAt: Date;
+  updatedAt: Date;
 }

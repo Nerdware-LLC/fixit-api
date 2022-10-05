@@ -1,5 +1,5 @@
 import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
-import { COMMON_MODEL_ATTRIBUTES } from "@models/_common";
+import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@models/_common";
 import { USER_ID_REGEX } from "@models/User";
 import { ENV } from "@server/env";
 import { USER_SUBSCRIPTION_SK_REGEX } from "./regex";
@@ -54,7 +54,7 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
       }
     },
     currentPeriodEnd: {
-      ...COMMON_MODEL_ATTRIBUTES.DATETIME, // TODO Make sure client gets a NUMBER, unix time in milliseconds (not a Date object)
+      ...COMMON_ATTRIBUTE_TYPES.DATETIME, // TODO Make sure client gets a NUMBER, unix time in milliseconds (not a Date object)
       required: true
     },
     productID: {
@@ -73,15 +73,17 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
       type: "string",
       required: true,
       validate: (value: string) => Object.keys(SUBSCRIPTION_STATUSES).includes(value)
-    }
+    },
+    // "createdAt" and "updatedAt"
+    ...COMMON_ATTRIBUTES.TIMESTAMPS
   } as const;
 
   static readonly schemaOptions: ModelSchemaOptions = {
     transformItem: {
-      toDB: (userSubItem: { userID: string; createdAt: Date }) => ({
+      toDB: (userSubItem) => ({
         ...userSubItem,
         // prettier-ignore
-        sk: `SUBSCRIPTION#${userSubItem.userID}#${Math.floor(new Date(userSubItem.createdAt).getTime() / 1000)}`
+        sk: `SUBSCRIPTION#${userSubItem.pk}#${Math.floor(new Date(userSubItem.createdAt).getTime() / 1000)}`
       })
     }
   };
@@ -115,10 +117,10 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
   readonly validateExisting = validateExisting;
 
   readonly queryUserSubscriptions = async (userID: string) => {
-    return (await this.query({
+    return await this.query({
       KeyConditionExpression: "pk = :userID AND begins_with(sk, :subSKprefix)",
       ExpressionAttributeValues: { ":userID": userID, ":subSKprefix": "SUBSCRIPTION#" }
-    })) as Array<UserSubscriptionType>;
+    });
   };
 }
 

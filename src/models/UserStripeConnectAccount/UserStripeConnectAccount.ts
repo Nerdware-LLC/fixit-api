@@ -1,4 +1,5 @@
 import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
+import { COMMON_ATTRIBUTES } from "@models/_common";
 import { USER_ID_REGEX } from "@models/User";
 import { STRIPE_CONNECT_ACCOUNT_SK_REGEX } from "./regex";
 import { createOne } from "./createOne";
@@ -53,14 +54,16 @@ class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccoun
     payoutsEnabled: {
       type: "boolean",
       required: true
-    }
+    },
+    // "createdAt" and "updatedAt"
+    ...COMMON_ATTRIBUTES.TIMESTAMPS
   } as const;
 
   static readonly schemaOptions: ModelSchemaOptions = {
     transformItem: {
-      toDB: (userStripeConnectAccountItem: { id: string }) => ({
+      toDB: (userStripeConnectAccountItem) => ({
         ...userStripeConnectAccountItem,
-        sk: `STRIPE_CONNECT_ACCOUNT#${userStripeConnectAccountItem.id}`
+        sk: `STRIPE_CONNECT_ACCOUNT#${userStripeConnectAccountItem.pk}`
       })
     }
   };

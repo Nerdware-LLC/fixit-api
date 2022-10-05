@@ -3,4 +3,6 @@ export interface UserStripeConnectAccountType {
   detailsSubmitted: boolean;
   chargesEnabled: boolean;
   payoutsEnabled: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
