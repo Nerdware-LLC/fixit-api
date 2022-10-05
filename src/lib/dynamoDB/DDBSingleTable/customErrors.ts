@@ -1,6 +1,6 @@
 export class DDBSingleTableError extends Error {
-  constructor(message = "An unknown error occurred") {
-    super(`[DDBSingleTable ERROR] ${message}`);
+  constructor(message = "Unknown error") {
+    super(message);
     this.name = "DynamoDBError";
 
     // Set the prototype explicitly.
@@ -14,15 +14,15 @@ export class DDBSingleTableError extends Error {
 }
 
 export class SchemaValidationError extends DDBSingleTableError {
-  constructor(message = "Unknown error") {
-    super(`Invalid Schema: ${message}`);
+  constructor(message?: string) {
+    super(message);
     this.name = "SchemaValidationError";
   }
 }
 
 export class ItemInputError extends DDBSingleTableError {
-  constructor(message = "Unknown error") {
-    super(`Invalid Item Input: ${message}`);
+  constructor(message?: string) {
+    super(message);
     this.name = "ItemInputError";
   }
 }
