@@ -2,7 +2,6 @@ import express from "express";
 import {
   validateSubmitPaymentReqBody,
   getUserFromAuthHeaderToken,
-  updateCustomerPaymentMethod,
   findOrCreateStripeSubscription,
   generateAuthToken,
   createCustomerPortalLink
@@ -17,7 +16,6 @@ subscriptionsRouter.use(getUserFromAuthHeaderToken);
 subscriptionsRouter.post(
   "/submit-payment",
   validateSubmitPaymentReqBody,
-  updateCustomerPaymentMethod,
   findOrCreateStripeSubscription,
   generateAuthToken
 );
