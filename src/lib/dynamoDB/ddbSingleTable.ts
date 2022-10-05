@@ -1,5 +1,4 @@
 import { ENV } from "@server/env";
-import { logger } from "@utils/logger";
 import { DDBSingleTable } from "./DDBSingleTable";
 
 const {
@@ -58,7 +57,3 @@ export const ddbSingleTable = new DDBSingleTable({
     }
   })
 });
-
-await ddbSingleTable.ensureTableIsActive();
-
-shouldUseDDBlocal && logger.dynamodb("Using dynamodb-local");
