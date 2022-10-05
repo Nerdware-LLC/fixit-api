@@ -1,3 +1,4 @@
+import moment from "moment";
 import { eventEmitter } from "@events";
 import type { Model } from "@lib/dynamoDB";
 import { WorkOrder } from "./WorkOrder";
@@ -17,12 +18,8 @@ export const createOne = async function (
     dueDate,
     entryContact,
     entryContactPhone,
-    scheduledDateTime,
-    contractorNotes
-  }: Omit<WorkOrderType, "assignedToUserID" | "status" | "priority"> & {
-    assignedToUserID: string; //                            <-- optional in base type
-    priority?: typeof WorkOrder.PRIORITIES[number]; // <-- required in base type
-  }
+    scheduledDateTime
+  }: CreateWorkOrderInput
 ) {
   /* Create WorkOrder via model.create, which unlike item.save will not
   overwrite an existing item. newWorkOrder is re-assigned to the return
@@ -35,15 +32,30 @@ export const createOne = async function (
     location,
     category,
     description,
-    checklist,
     dueDate,
     entryContact,
     entryContactPhone,
     scheduledDateTime,
-    contractorNotes
+    ...(checklist && {
+      checklist: checklist.map((checklistItem) => ({
+        ...checklistItem,
+        id: `WO#${createdByUserID}#${moment().unix()}`,
+        isCompleted: false
+      }))
+    })
   });
 
   eventEmitter.emitWorkOrderCreated(newWorkOrder);
 
   return newWorkOrder as WorkOrderType;
 };
+
+type CreateWorkOrderInput = Readonly<
+  Omit<
+    WorkOrderType,
+    "id" | "status" | "priority" | "checklist" | "contractorNotes" | "updatedAt" | "createdAt"
+  > & {
+    priority?: typeof WorkOrder.PRIORITIES[number]; // <-- required in base type
+    checklist?: ReadonlyArray<{ description: string }>;
+  }
+>;

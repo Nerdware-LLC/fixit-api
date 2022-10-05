@@ -8,12 +8,12 @@ export interface WorkOrderType {
   priority: typeof WorkOrder.PRIORITIES[number];
   location: Location;
   category?: typeof WorkOrder.CATEGORIES[number];
-  description: string;
+  description?: string;
   checklist?: WorkOrderChecklist;
   entryContact?: string;
   entryContactPhone?: string;
-  dueDate: Date | number;
-  scheduledDateTime: Date | number;
+  dueDate?: Date | number;
+  scheduledDateTime?: Date | number;
   contractorNotes?: string;
   createdAt: Date;
   updatedAt: Date;

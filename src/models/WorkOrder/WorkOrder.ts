@@ -1,3 +1,4 @@
+import moment from "moment";
 import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@models/_common";
 import { USER_ID_REGEX } from "@models/User";
@@ -40,7 +41,7 @@ class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
     data: {
       type: "string",
       alias: "assignedToUserID",
-      validate: (value: string) => USER_ID_REGEX.test(value),
+      validate: (value: string) => value === "UNASSIGNED" || USER_ID_REGEX.test(value),
       required: true,
       index: {
         // For relational queries using "data" as the hash key
@@ -200,16 +201,13 @@ class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
   } as const;
 
   static readonly schemaOptions: ModelSchemaOptions = {
+    // This validateItem fn ensures WOs can not be assigned to the createdBy user.
+    validateItem: ({ pk: createdBy, data: assignedTo }) => createdBy !== assignedTo,
     transformItem: {
-      toDB: (workOrderItem: { sk: string; checklist?: Array<{ createdAt: Date }> }) => ({
+      // toDB, ascertain WO "sk" value
+      toDB: (workOrderItem: { pk: string; createdAt: Date }) => ({
         ...workOrderItem,
-        ...(Array.isArray(workOrderItem?.checklist) && {
-          checklist: workOrderItem.checklist.map((checklistItem) => ({
-            ...checklistItem,
-            // prettier-ignore
-            id: `${workOrderItem.sk}#CHECKLIST_ITEM#${Math.floor(new Date(checklistItem.createdAt).getTime() / 1000)}`
-          }))
-        })
+        sk: `WO#${workOrderItem.pk}#${moment(workOrderItem.createdAt).unix()}`
       })
     }
   };
