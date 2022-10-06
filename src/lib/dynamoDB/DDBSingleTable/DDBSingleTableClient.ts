@@ -3,8 +3,7 @@ import {
   DescribeTableCommand,
   CreateTableCommand,
   ListTablesCommand,
-  type DynamoDBClientConfig,
-  type TableDescription
+  type DynamoDBClientConfig
 } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
@@ -29,9 +28,9 @@ import type {
 
 /**
  * A DynamoDB CRUD utility for single-table designs. All methods wrap DDB API
- * commands to provide a simplified interface for consuming modules.
+ * commands to provide a simplified DDB API interface to consuming modules.
  *
- * **Methods:**
+ * **CRUD Methods:**
  *
  * - `getItem()` GetItem command wrapper.
  *
@@ -74,6 +73,14 @@ import type {
  * - `query()` Query command wrapper.
  *
  * - `scan()` Scan command wrapper.
+ *
+ * **Utility Methods:**
+ *
+ * - `describeTable()` DescribeTable command wrapper.
+ *
+ * - `createTable()` CreateTable command wrapper.
+ *
+ * - `listTables()` ListTables command wrapper.
  */
 export class DDBSingleTableClient {
   // STATIC PROPERTIES
@@ -323,7 +330,7 @@ export class DDBSingleTableClient {
   };
 
   readonly scan = async <Schema extends ModelSchemaType>(
-    scanOpts: DDBSingleTableCommandParameters<typeof ScanCommand>
+    scanOpts: DDBSingleTableCommandParameters<typeof ScanCommand> = {}
   ) => {
     const { Items } = await this.ddbDocClient.send(
       new ScanCommand({
