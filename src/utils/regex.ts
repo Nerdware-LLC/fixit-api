@@ -34,9 +34,9 @@ currently the exact same and therefore duplicative. This is due to the fact that
 may differ when converted into unicode-based patterns to support i18n. Note that these
 patterns all assume spaces have been replaced with underscores.  */
 export const LOCATION_REGEX_STRS = {
-  COUNTRY: "[a-z-_]{2,}", //           Two or more letters/hyphens/underscores
-  REGION: "[a-z-_]{2,}", //            Two or more letters/hyphens/underscores
-  CITY: "[a-z-_]{2,}", //              Two or more letters/hyphens/underscores
-  STREET_LINE_1: "[a-z0-9-_.]{2,}", // Two or more letters/hyphens/underscores/numbers/periods
-  STREET_LINE_2: "[a-z0-9-_.#]{2,}" // Two or more letters/hyphens/underscores/numbers/periods/#s
+  COUNTRY: "[a-z-_]{2,}", //            Two or more letters/hyphens/underscores
+  REGION: "[a-z-_]{2,}", //             Two or more letters/hyphens/underscores
+  CITY: "[a-z-_]{2,}", //               Two or more letters/hyphens/underscores
+  STREET_LINE_1: "[a-z0-9-_.]{2,}", //  Two or more letters/hyphens/underscores/numbers/periods
+  STREET_LINE_2: "[a-z0-9-_.:#]{2,}" // Two or more letters/hyphens/underscores/numbers/periods/:/#
 };
