@@ -14,13 +14,15 @@ const jestConfig: JestConfigWithTsJest = {
   ],
   coverageDirectory: "coverage",
   extensionsToTreatAsEsm: [".ts"],
-  moduleFileExtensions: ["ts", "js", "json"],
+  globalSetup: "<rootDir>/src/__tests__/globalSetup.cjs",
+  moduleFileExtensions: ["ts", "js", "cts", "cjs", "json"],
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: "<rootDir>/" }),
   preset: "ts-jest/presets/js-with-ts-esm",
   rootDir: "./",
   setupFiles: ["dotenv/config"],
   testEnvironment: "node",
   testMatch: ["<rootDir>/src/**/*.test.[tj]s"],
+  testTimeout: 15000, // 15s
   transform: {
     "^.+\\.[tj]s$": [
       "ts-jest",
@@ -30,8 +32,8 @@ const jestConfig: JestConfigWithTsJest = {
       }
     ]
   },
-  transformIgnorePatterns: ["<rootDir>/node_modules/"]
-  // verbose: true
+  transformIgnorePatterns: ["<rootDir>/node_modules/"],
+  verbose: true
 };
 
 export default jestConfig;
