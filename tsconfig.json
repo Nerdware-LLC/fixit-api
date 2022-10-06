@@ -29,6 +29,7 @@
       "@models/*": ["src/models/*"],
       "@server": ["src/server"],
       "@server/*": ["src/server/*"],
+      "@tests/*": ["src/__tests__/*"],
       "@utils": ["src/utils"],
       "@utils/*": ["src/utils/*"]
     }
