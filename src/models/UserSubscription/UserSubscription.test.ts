@@ -1,21 +1,14 @@
-import { jest } from "@jest/globals";
 import moment from "moment";
-import { ddbSingleTable } from "@lib/dynamoDB";
 import { ENV } from "@server/env";
 import { USER_ID_REGEX } from "@models/User/regex";
+import { MILLISECONDS_PER_DAY } from "@tests/datetime";
 import { UserSubscription } from "./UserSubscription";
-import { USER_SUBSCRIPTION_SK_REGEX, STRIPE_SUB_ID_REGEX } from "./regex";
+import { USER_SUBSCRIPTION_SK_REGEX, USER_SUB_STRIPE_ID_REGEX } from "./regex";
 import type { UserSubscriptionType } from "./types";
 
-// Requires "maxWorkers" to be 1
-await ddbSingleTable.ensureTableIsActive();
-
-const SECONDS_PER_DAY = 86400;
-const MILLISECONDS_PER_DAY = SECONDS_PER_DAY * 1000;
-
-const MOCK_SUB_INPUTS = {
+const MOCK_INPUTS = {
   SUB_A: {
-    userID: "USER#b0045de0-43f8-11ed-801e-73fbcb5491b6",
+    userID: "USER#11111111-1111-1111-1111-sub111111111",
     id: "sub_11111111111111",
     productID: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.productID,
     priceID: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.priceIDs.MONTHLY,
@@ -24,7 +17,7 @@ const MOCK_SUB_INPUTS = {
     createdAt: new Date(Date.now() - MILLISECONDS_PER_DAY * 30) //         - 30 days
   },
   SUB_B: {
-    userID: "USER#b1e1f780-43f8-11ed-801e-73fbcb5491b6",
+    userID: "USER#22222222-2222-2222-2222-sub222222222",
     id: "sub_22222222222222",
     productID: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.productID,
     priceID: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.priceIDs.TRIAL,
@@ -33,7 +26,7 @@ const MOCK_SUB_INPUTS = {
     createdAt: new Date()
   },
   SUB_C: {
-    userID: "USER#33333333-3333-3333-3333-333333333333",
+    userID: "USER#33333333-3333-3333-3333-sub333333333",
     id: "sub_33333333333333",
     productID: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.productID,
     priceID: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.priceIDs.TRIAL,
@@ -43,57 +36,50 @@ const MOCK_SUB_INPUTS = {
   }
 } as const;
 
-jest.setTimeout(15000); // 15s
+const testSubFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockSub: UserSubscriptionType) => {
+  expect(mockSub.userID).toMatch(USER_ID_REGEX);
+  expect(mockSub.sk).toMatch(USER_SUBSCRIPTION_SK_REGEX);
+  expect(mockSub.id).toMatch(USER_SUB_STRIPE_ID_REGEX);
 
-const testSubFields = (
-  mockSubKey: keyof typeof MOCK_SUB_INPUTS,
-  mockSubInstance: UserSubscriptionType
-) => {
-  const mockUserSubInputs = MOCK_SUB_INPUTS[mockSubKey];
+  expect(mockSub.status).toEqual(MOCK_INPUTS[mockInputsKey].status);
+  expect(mockSub.productID).toEqual(UserSubscription.PRODUCT_IDS.FIXIT_SUBSCRIPTION);
+  expect(mockSub.priceID).toEqual(MOCK_INPUTS[mockInputsKey].priceID);
 
-  expect(mockSubInstance.userID).toMatch(USER_ID_REGEX);
-  expect(mockSubInstance.sk).toMatch(USER_SUBSCRIPTION_SK_REGEX);
-  expect(mockSubInstance.id).toMatch(STRIPE_SUB_ID_REGEX);
-
-  expect(mockSubInstance.status).toEqual(MOCK_SUB_INPUTS[mockSubKey].status);
-  expect(mockSubInstance.productID).toEqual(UserSubscription.PRODUCT_IDS.FIXIT_SUBSCRIPTION);
-  expect(mockSubInstance.priceID).toEqual(mockUserSubInputs.priceID);
-
-  expect(moment(mockSubInstance.currentPeriodEnd).isValid()).toEqual(true);
-  expect(moment(mockSubInstance.createdAt).isValid()).toEqual(true);
-  expect(moment(mockSubInstance.updatedAt).isValid()).toEqual(true);
+  expect(moment(mockSub.currentPeriodEnd).isValid()).toEqual(true);
+  expect(moment(mockSub.createdAt).isValid()).toEqual(true);
+  expect(moment(mockSub.updatedAt).isValid()).toEqual(true);
 };
 
 describe("UserSubscription model R/W database operations", () => {
   // prettier-ignore
-  let createdSubs: Partial<Record<keyof typeof MOCK_SUB_INPUTS, UserSubscriptionType>> = {};
+  let createdSubs: Partial<Record<keyof typeof MOCK_INPUTS, UserSubscriptionType>> = {};
 
   // Write mock UserSubscriptions to Table
   beforeAll(async () => {
-    for (const mockSubKey in MOCK_SUB_INPUTS) {
-      const subInput = MOCK_SUB_INPUTS[mockSubKey as keyof typeof MOCK_SUB_INPUTS];
+    for (const mockInputsKey in MOCK_INPUTS) {
+      const subInput = MOCK_INPUTS[mockInputsKey as keyof typeof MOCK_INPUTS];
 
       const createdSub = await UserSubscription.upsertItem(subInput);
-      createdSubs[mockSubKey as keyof typeof MOCK_SUB_INPUTS] = createdSub as UserSubscriptionType;
+      createdSubs[mockInputsKey as keyof typeof MOCK_INPUTS] = createdSub as UserSubscriptionType;
     }
   });
 
   test("User.upsertItem returns expected keys and values", () => {
-    Object.entries(createdSubs).forEach(([mockSubKey, createdSub]) => {
-      testSubFields(mockSubKey as keyof typeof MOCK_SUB_INPUTS, createdSub);
+    Object.entries(createdSubs).forEach(([mockInputsKey, createdSub]) => {
+      testSubFields(mockInputsKey as keyof typeof MOCK_INPUTS, createdSub);
     });
   });
 
   test("UserSubscription.queryUserSubscriptions returns expected keys and values", async () => {
     // Get mock UserSubscriptions by userID
-    for (const mockSubKey in createdSubs) {
+    for (const mockInputsKey in createdSubs) {
       // Each user should only have the 1 subscription
       const subscriptions = await UserSubscription.queryUserSubscriptions(
-        createdSubs[mockSubKey as keyof typeof MOCK_SUB_INPUTS]!.userID as string
+        createdSubs[mockInputsKey as keyof typeof MOCK_INPUTS]!.userID as string
       );
 
       subscriptions.forEach((sub) => {
-        testSubFields(mockSubKey as keyof typeof MOCK_SUB_INPUTS, sub);
+        testSubFields(mockInputsKey as keyof typeof MOCK_INPUTS, sub);
       });
     }
   });
@@ -109,5 +95,16 @@ describe("UserSubscription model R/W database operations", () => {
       // Invalid sub
       UserSubscription.validateExisting(createdSubs.SUB_C as NonNullable<typeof createdSubs.SUB_C>);
     }).toThrow();
+  });
+
+  // After tests are complete, delete mock Subs from Table
+  afterAll(async () => {
+    // batchDeleteItems called from ddbClient to circumvent toDB IO hook actions
+    await UserSubscription.ddbClient.batchDeleteItems(
+      Object.values(createdSubs as Record<string, { userID: string; sk: string }>).map((sub) => ({
+        pk: sub.userID,
+        sk: sub.sk
+      }))
+    );
   });
 });

@@ -1,19 +1,12 @@
-import { jest } from "@jest/globals";
 import moment from "moment";
-import { ddbSingleTable } from "@lib/dynamoDB";
+import { MILLISECONDS_PER_DAY } from "@tests/datetime";
 import { WorkOrder } from "./WorkOrder";
 import { WORK_ORDER_ID_REGEX, WORK_ORDER_ID_REGEX_STR } from "./regex";
 import type { WorkOrderType } from "./types";
 
-// Requires "maxWorkers" to be 1
-await ddbSingleTable.ensureTableIsActive();
-
-const SECONDS_PER_DAY = 86400;
-const MILLISECONDS_PER_DAY = SECONDS_PER_DAY * 1000;
-
-const MOCK_WO_INPUTS = {
+const MOCK_INPUTS = {
+  // WO_A contains the bare minimum inputs for WorkOrder.createOne
   WO_A: {
-    // Bare minimum inputs for WorkOrder.createOne
     createdByUserID: "USER#11111111-1111-1111-1111-111111111111",
     location: {
       region: "Washington",
@@ -21,8 +14,8 @@ const MOCK_WO_INPUTS = {
       streetLine1: "1 Microsoft Way"
     }
   },
+  // WO_B contains all WO properties that can be provided to WorkOrder.createOne
   WO_B: {
-    // All WO properties that can be provided to WorkOrder.createOne
     createdByUserID: "USER#22222222-2222-2222-2222-222222222222",
     assignedToUserID: "USER#11111111-1111-1111-1111-111111111111",
     priority: "HIGH",
@@ -47,35 +40,30 @@ const MOCK_WO_INPUTS = {
   }
 } as const;
 
-jest.setTimeout(15000); // 15s
+const testWorkOrderFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockWO: WorkOrderType) => {
+  const mockWOinputs = MOCK_INPUTS[mockInputsKey];
 
-const testWorkOrderFields = (
-  mockWorkOrderKey: keyof typeof MOCK_WO_INPUTS,
-  woInstanceObj: WorkOrderType
-) => {
-  const mockWO = MOCK_WO_INPUTS[mockWorkOrderKey];
+  expect(mockWO.createdByUserID).toEqual(mockWOinputs.createdByUserID);
+  expect(mockWO.id).toMatch(WORK_ORDER_ID_REGEX);
+  expect(mockWO.location).toEqual({ country: "USA", ...mockWOinputs.location });
 
-  expect(woInstanceObj.createdByUserID).toEqual(mockWO.createdByUserID);
-  expect(woInstanceObj.id).toMatch(WORK_ORDER_ID_REGEX);
-  expect(woInstanceObj.location).toEqual({ country: "USA", ...mockWO.location });
+  expect(moment(mockWO.createdAt).isValid()).toEqual(true);
+  expect(moment(mockWO.updatedAt).isValid()).toEqual(true);
 
-  expect(moment(woInstanceObj.createdAt).isValid()).toEqual(true);
-  expect(moment(woInstanceObj.updatedAt).isValid()).toEqual(true);
-
-  if (mockWO === MOCK_WO_INPUTS.WO_A) {
-    expect(woInstanceObj.assignedToUserID).toEqual("UNASSIGNED");
-    expect(woInstanceObj.priority).toEqual("NORMAL");
+  if (mockWOinputs === MOCK_INPUTS.WO_A) {
+    expect(mockWO.assignedToUserID).toEqual("UNASSIGNED");
+    expect(mockWO.priority).toEqual("NORMAL");
     //
-  } else if (mockWO === MOCK_WO_INPUTS.WO_B) {
-    expect(woInstanceObj.assignedToUserID).toEqual(mockWO.assignedToUserID);
-    expect(woInstanceObj.description).toEqual(mockWO.description);
-    expect(woInstanceObj.priority).toEqual(mockWO.priority);
-    expect(woInstanceObj.category).toEqual(mockWO.category);
-    expect(woInstanceObj.entryContact).toEqual(mockWO.entryContact);
-    expect(woInstanceObj.entryContactPhone).toEqual(mockWO.entryContactPhone);
-    expect(moment(woInstanceObj.dueDate).isValid()).toEqual(true);
-    expect(moment(woInstanceObj.scheduledDateTime).isValid()).toEqual(true);
-    expect(woInstanceObj.checklist).toEqual(
+  } else if (mockWOinputs === MOCK_INPUTS.WO_B) {
+    expect(mockWO.assignedToUserID).toEqual(mockWOinputs.assignedToUserID);
+    expect(mockWO.description).toEqual(mockWOinputs.description);
+    expect(mockWO.priority).toEqual(mockWOinputs.priority);
+    expect(mockWO.category).toEqual(mockWOinputs.category);
+    expect(mockWO.entryContact).toEqual(mockWOinputs.entryContact);
+    expect(mockWO.entryContactPhone).toEqual(mockWOinputs.entryContactPhone);
+    expect(moment(mockWO.dueDate).isValid()).toEqual(true);
+    expect(moment(mockWO.scheduledDateTime).isValid()).toEqual(true);
+    expect(mockWO.checklist).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: expect.stringMatching(WORK_ORDER_ID_REGEX_STR),
@@ -88,32 +76,32 @@ const testWorkOrderFields = (
 };
 
 describe("WorkOrder model R/W database operations", () => {
-  let createdWOs: Partial<Record<keyof typeof MOCK_WO_INPUTS, WorkOrderType>> = {};
+  let createdWOs: Expand<Partial<Record<keyof typeof MOCK_INPUTS, WorkOrderType>>> = {};
 
   // Write mock Users to Table
   beforeAll(async () => {
-    for (const mockWorkOrderKey in MOCK_WO_INPUTS) {
+    for (const mockInputsKey in MOCK_INPUTS) {
       //
       const createdWO = await WorkOrder.createOne(
-        MOCK_WO_INPUTS[mockWorkOrderKey as keyof typeof MOCK_WO_INPUTS]
+        MOCK_INPUTS[mockInputsKey as keyof typeof MOCK_INPUTS]
       );
 
-      createdWOs[mockWorkOrderKey as keyof typeof MOCK_WO_INPUTS] = createdWO;
+      createdWOs[mockInputsKey as keyof typeof MOCK_INPUTS] = createdWO;
     }
   });
 
   test("WorkOrder.createOne returns expected keys and values", () => {
-    Object.entries(createdWOs).forEach(([mockWorkOrderKey, createdUser]) => {
-      testWorkOrderFields(mockWorkOrderKey as keyof typeof MOCK_WO_INPUTS, createdUser);
+    Object.entries(createdWOs).forEach(([mockInputsKey, createdUser]) => {
+      testWorkOrderFields(mockInputsKey as keyof typeof MOCK_INPUTS, createdUser);
     });
   });
 
   // test("WorkOrder. returns expected keys and values", async () => {
   //   // Get mock Users by email
-  //   // for (const mockWorkOrderKey in createdWOs) {
-  //   //   const userID = createdWOs[mockWorkOrderKey as keyof typeof MOCK_WO_INPUTS]!.id;
+  //   // for (const mockInputsKey in createdWOs) {
+  //   //   const userID = createdWOs[mockInputsKey as keyof typeof MOCK_INPUTS]!.id;
   //   //   const result = await WorkOrder.getUserByID(userID);
-  //   //   testWorkOrderFields(mockWorkOrderKey as keyof typeof MOCK_WO_INPUTS, result);
+  //   //   testWorkOrderFields(mockInputsKey as keyof typeof MOCK_INPUTS, result);
   //   // }
   // });
 
@@ -126,10 +114,23 @@ describe("WorkOrder model R/W database operations", () => {
 
   // test("User. returns expected keys and values", async () => {
   //   // Get mock Users by email
-  //   // for (const mockWorkOrderKey in MOCK_WO_INPUTS) {
-  //   //   const { email } = MOCK_WO_INPUTS[mockWorkOrderKey as keyof typeof MOCK_WO_INPUTS];
+  //   // for (const mockInputsKey in MOCK_INPUTS) {
+  //   //   const { email } = MOCK_INPUTS[mockInputsKey as keyof typeof MOCK_INPUTS];
   //   //   const result = await User.queryUserByEmail(email);
-  //   //   testUserFields(mockWorkOrderKey as keyof typeof MOCK_WO_INPUTS, result);
+  //   //   testUserFields(mockInputsKey as keyof typeof MOCK_INPUTS, result);
   //   // }
   // });
+
+  // After tests are complete, delete mock WOs from Table
+  afterAll(async () => {
+    // batchDeleteItems called from ddbClient to circumvent toDB IO hook actions
+    await WorkOrder.ddbClient.batchDeleteItems(
+      Object.values(createdWOs as Record<string, { createdByUserID: string; id: string }>).map(
+        (wo) => ({
+          pk: wo.createdByUserID,
+          sk: wo.id
+        })
+      )
+    );
+  });
 });

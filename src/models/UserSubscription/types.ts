@@ -3,8 +3,8 @@ import { SUBSCRIPTION_STATUSES } from "./validateExisting";
 
 export interface UserSubscriptionType {
   userID?: UserType["id"];
-  id: string;
   sk?: string;
+  id: string;
   currentPeriodEnd: Date;
   productID: string;
   priceID: string;

@@ -15,9 +15,9 @@ export const createOne = async function (
     userID: UserType["id"];
     email: UserType["email"];
     phone: UserType["phone"];
-    profile: UserType["profile"];
+    profile?: UserType["profile"];
   }
-) {
+): Promise<UserStripeConnectAccountType> {
   // Create Stripe Connect Account via Stripe API
   const {
     id: stripeConnectAccountID,
@@ -60,11 +60,11 @@ export const createOne = async function (
   });
 
   // Create UserStripeConnectAccount in DynamoDB
-  return (await this.createItem({
+  return await this.createItem({
     userID,
     id: stripeConnectAccountID,
     detailsSubmitted,
     chargesEnabled,
     payoutsEnabled
-  })) as UserStripeConnectAccountType;
+  });
 };

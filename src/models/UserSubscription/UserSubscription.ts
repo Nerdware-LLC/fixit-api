@@ -2,7 +2,7 @@ import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@models/_common";
 import { USER_ID_REGEX } from "@models/User";
 import { ENV } from "@server/env";
-import { USER_SUBSCRIPTION_SK_REGEX, STRIPE_SUB_ID_REGEX } from "./regex";
+import { USER_SUBSCRIPTION_SK_REGEX, USER_SUB_STRIPE_ID_REGEX } from "./regex";
 import { upsertOne } from "./upsertOne";
 import { SUBSCRIPTION_STATUSES } from "./validateExisting";
 import { normalizeStripeFields } from "./normalizeStripeFields";
@@ -44,7 +44,7 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
     data: {
       type: "string",
       alias: "id",
-      validate: (value: string) => STRIPE_SUB_ID_REGEX.test(value), // Example from Stripe docs: "sub_IiUAdsiPC26N4e"
+      validate: (value: string) => USER_SUB_STRIPE_ID_REGEX.test(value), // Example from Stripe docs: "sub_IiUAdsiPC26N4e"
       required: true,
       index: {
         // For relational queries using "data" as the hash key

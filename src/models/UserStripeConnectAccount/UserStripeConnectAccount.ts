@@ -1,7 +1,7 @@
 import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
 import { COMMON_ATTRIBUTES } from "@models/_common";
-import { USER_ID_REGEX } from "@models/User";
-import { STRIPE_CONNECT_ACCOUNT_SK_REGEX } from "./regex";
+import { USER_ID_REGEX } from "@models/User/regex";
+import { STRIPE_CONNECT_ACCOUNT_SK_REGEX, STRIPE_CONNECT_ACCOUNT_STRIPE_ID_REGEX } from "./regex";
 import { createOne } from "./createOne";
 
 /**
@@ -33,7 +33,7 @@ class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccoun
     data: {
       type: "string",
       alias: "id",
-      validate: (value: string) => /^acct_[a-zA-Z0-9]{16}$/.test(value), // Example from Stripe docs: "acct_1GpaAGC34C0mN67J"
+      validate: (value: string) => STRIPE_CONNECT_ACCOUNT_STRIPE_ID_REGEX.test(value), // Example from Stripe docs: "acct_1GpaAGC34C0mN67J"
       required: true,
       index: {
         // For relational queries using "data" as the hash key
