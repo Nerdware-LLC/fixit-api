@@ -9,8 +9,8 @@ export const resolvers = {
     description: "Custom DateTime scalar; pass a string or js date instance obj",
 
     // parseValue = value from the client
-    parseValue(value) {
-      if (!moment(value).isValid()) {
+    parseValue(value: unknown) {
+      if (!!value && !moment(value).isValid()) {
         const errMsg = _getScalarErrMsg("DateTime", value);
         logger.gql(errMsg);
         throw new TypeError(errMsg);
@@ -19,8 +19,8 @@ export const resolvers = {
     },
 
     // serialize = value sent to the client
-    serialize(value) {
-      if (!moment(value).isValid()) {
+    serialize(value: unknown) {
+      if (!!value && !moment(value).isValid()) {
         const errMsg = _getScalarErrMsg("DateTime", value);
         logger.gql(errMsg);
         throw new TypeError(errMsg);
@@ -42,8 +42,8 @@ export const resolvers = {
     description: "Custom Email scalar; validates using regex",
 
     // parseValue = value from the client
-    parseValue(value) {
-      if (!EMAIL_REGEX.test(value)) {
+    parseValue(value: unknown) {
+      if (typeof value === "string" && !EMAIL_REGEX.test(value)) {
         const errMsg = _getScalarErrMsg("Email", value);
         logger.gql(errMsg);
         throw new TypeError(errMsg);
@@ -52,8 +52,8 @@ export const resolvers = {
     },
 
     // serialize = value sent to the client
-    serialize(value) {
-      if (!EMAIL_REGEX.test(value)) {
+    serialize(value: unknown) {
+      if (typeof value === "string" && !EMAIL_REGEX.test(value)) {
         const errMsg = _getScalarErrMsg("Email", value);
         logger.gql(errMsg);
         throw new TypeError(errMsg);
@@ -68,7 +68,7 @@ export const resolvers = {
   })
 };
 
-const _getScalarErrMsg = (scalarType, invalidValue) => {
+const _getScalarErrMsg = (scalarType: string, invalidValue: unknown) => {
   // prettier-ignore
   return `[${scalarType.toUpperCase()} SCALAR ERROR]: Client provided an invalid ${scalarType.toLowerCase()}: ${JSON.stringify(invalidValue)}`;
 };

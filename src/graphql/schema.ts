@@ -56,7 +56,7 @@ export const schema = {
       return [
         resolverType,
         Object.fromEntries(
-          Object.entries(resolversOfType).map(([resolverName, resolver]) => {
+          Object.entries(resolversOfType as Record<string, any>).map(([resolverName, resolver]) => {
             // For scalar resolvers and whatnot, "resolver" won't be a function, just continue to next.
             if (typeof resolver !== "function") return [resolverName, resolver];
 
@@ -67,17 +67,17 @@ export const schema = {
             logic using the resolver's constructor.name property works for this use case.  */
             const wrappedResolverFn =
               resolver.constructor.name === "AsyncFunction"
-                ? async (...args) => {
-                    return await resolver(...args).catch((err) => {
+                ? async (...args: any[]) => {
+                    return await resolver(...args).catch((err: ErrorLike) => {
                       // Log error and re-throw as-is
                       logger.error(err, resolverLogID);
                       throw err;
                     });
                   }
-                : (...args) => {
+                : (...args: any[]) => {
                     try {
                       return resolver(...args);
-                    } catch (err) {
+                    } catch (err: ErrorLike) {
                       // Log error and re-throw as-is
                       logger.error(err, resolverLogID);
                       throw err;
