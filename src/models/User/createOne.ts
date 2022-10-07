@@ -4,7 +4,7 @@ import { getUnixTimestampUUID, passwordHasher, logger } from "@utils";
 import type { Model } from "@lib/dynamoDB";
 import type { UserType } from "./types";
 
-// function, not arrow, bc we need to use "this." syntax to call Dynamoose methods
+// function, not arrow, bc we need "this" to be the User model
 export const createOne = async function (
   this: InstanceType<typeof Model>,
   {

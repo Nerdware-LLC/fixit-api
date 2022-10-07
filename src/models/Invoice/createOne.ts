@@ -2,16 +2,15 @@ import { eventEmitter } from "@events";
 import type { Model } from "@lib/dynamoDB";
 import type { InvoiceType } from "./types";
 
-// function, not arrow, bc we need to use "this." syntax to call Dynamoose methods
+// function, not arrow, bc we need "this" to be the Invoice model
 export const createOne = async function (
   this: InstanceType<typeof Model>,
-  { createdByUserID, assignedToUserID, amount, workOrderID }: NewInvoice
+  { createdByUserID, assignedToUserID, amount }: CreateInvoiceInput
 ) {
-  const newInvoice: NewInvoice = await this.createItem({
+  const newInvoice = await this.createItem({
     createdByUserID,
     assignedToUserID,
     amount,
-    workOrderID,
     status: "OPEN"
   });
 
@@ -20,7 +19,6 @@ export const createOne = async function (
   return newInvoice;
 };
 
-type NewInvoice = Expand<
-  InvoiceType &
-    Required<Pick<InvoiceType, "createdByUserID" | "assignedToUserID" | "amount" | "workOrderID">>
+type CreateInvoiceInput = Readonly<
+  Pick<InvoiceType, "createdByUserID" | "assignedToUserID" | "amount">
 >;

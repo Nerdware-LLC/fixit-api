@@ -6,13 +6,12 @@ export const deleteOne = async function (
   this: InstanceType<typeof Model>,
   existingInvoice: InvoiceType
 ) {
-  await this.deleteItem({
+  const deletedInvoice = await this.deleteItem({
     createdByUserID: existingInvoice.createdByUserID,
     id: existingInvoice.id
   });
 
-  eventEmitter.emitInvoiceDeleted(existingInvoice);
+  eventEmitter.emitInvoiceDeleted(deletedInvoice);
 
-  // Return: DeleteMutationResponse
-  return { id: existingInvoice.id } as Pick<InvoiceType, "id">;
+  return deletedInvoice;
 };

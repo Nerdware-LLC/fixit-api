@@ -4,7 +4,7 @@ import type { Model } from "@lib/dynamoDB";
 import { WorkOrder } from "./WorkOrder";
 import type { WorkOrderType } from "./types";
 
-// function, not arrow, bc we need to use "this." syntax to call Dynamoose methods
+// function, not arrow, bc we need "this" to be the WorkOrder model
 export const createOne = async function (
   this: InstanceType<typeof Model>,
   {

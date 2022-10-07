@@ -75,19 +75,23 @@ class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
       Storing "location" in this way makes it possible to flexibly query the DynamoDB db for
       access patterns like "Find all work orders on Foo Street".  */
       transformValue: {
-        toDB: ({
-          country: countryRawInput = "USA",
-          region: regionRawInput, // Region examples: US states, Canadian provinces
-          city: cityRawInput,
-          streetLine1: streetLine1RawInput,
-          streetLine2: streetLine2RawInput = null
-        }: {
+        toDB: (workOrderLocation?: {
           country?: string;
           region: string;
           city: string;
           streetLine1: string;
           streetLine2?: string | null;
         }) => {
+          if (!workOrderLocation) return;
+
+          const {
+            country: countryRawInput = "USA",
+            region: regionRawInput, // Region examples: US states, Canadian provinces
+            city: cityRawInput,
+            streetLine1: streetLine1RawInput,
+            streetLine2: streetLine2RawInput = null
+          } = workOrderLocation;
+
           // reduce returns the "location" composite value as a single string with "#" as the field delimeter
           return [
             countryRawInput,
@@ -100,13 +104,13 @@ class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
             if (currentRawInput === null) return accum;
 
             /* For all "location" values, underscores are not valid in the raw input, but we
-            can't catch underscores in the "validation" Dynamoose Model attribute regex since
-            spaces are replaced with underscores. We could `throw new Error` from this "set"
-            Model fn if the raw input includes an underscore, but at this time throwing from
-            "set" does not result in a proper validation error msg. So instead, underscores
-            are replaced with the string literal "%_UNDERSCORE_%"; since "%" signs are invalid
-            chars, the "validation" field regex catches the invalid input, and the resultant
-            error message properly informs the user that underscores are invalid.  */
+            can't catch underscores in the Model attribute validation regex since spaces are
+            replaced with underscores. We could `throw new Error` from this "set" Model fn if
+            the raw input includes an underscore, but at this time throwing from "set" does not
+            result in a proper validation error msg. So instead, underscores are replaced with
+            the string literal "%_UNDERSCORE_%"; since "%" signs are invalid chars, the validate
+            field regex catches the invalid input, and the resultant error message properly
+            informs the user that underscores are invalid.  */
             let formattedInput = currentRawInput.replace(/_/g, "%_UNDERSCORE_%");
 
             // For all "location" values, replace spaces with underscores
@@ -127,7 +131,9 @@ class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
             return accum;
           }, "" as string); // <-- reducer init accum is an empty string
         },
-        fromDB: (locationValue: string) => {
+        fromDB: (locationValue?: string) => {
+          if (!locationValue) return;
+
           // Return "location" object from db format: [COUNTRY]#[STATE]#[CITY]#[STREET_LINE_1]#[STREET_LINE_2]
 
           // Split the composite value string using the "#" delimeter
@@ -204,10 +210,13 @@ class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
     // This validateItem fn ensures WOs can not be assigned to the createdBy user.
     validateItem: ({ pk: createdBy, data: assignedTo }) => createdBy !== assignedTo,
     transformItem: {
-      // toDB, ascertain WO "sk" value
-      toDB: (workOrderItem: { pk: string; createdAt: Date }) => ({
-        ...workOrderItem,
-        sk: `WO#${workOrderItem.pk}#${moment(workOrderItem.createdAt).unix()}`
+      // prettier-ignore
+      toDB: (woItem) => ({
+        ...woItem,
+        // If "sk" does not exist, but "pk" and "createdAt" do, add "sk".
+        ...(!woItem?.sk && !!woItem?.pk && !!woItem?.createdAt && {
+          sk: `WO#${woItem.pk}#${moment(woItem.createdAt).unix()}`
+        })
       })
     }
   };
@@ -283,16 +292,16 @@ class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
       KeyConditionExpression: "pk = :userID AND begins_with(sk, :woSKprefix)",
       ExpressionAttributeValues: { ":userID": userID, ":woSKprefix": "WO#" }
     })) as unknown as Array<WorkOrderType>;
-    /* See note in queryWorkOrderByID regarding why these `as unknown`
-    conversions are currently necessary in WorkOrder Model methods. */
+    /* See note in queryWorkOrderByID regarding why these `as unknown` type
+    casts are currently necessary in some WorkOrder Model methods.       */
   };
 
   readonly queryWorkOrdersAssignedToUser = async (userID: string) => {
     return (await this.query({
       IndexName: "Overloaded_Data_GSI",
-      KeyConditionExpression: "#uid = :userID AND begins_with(sk, :woSKprefix)",
+      KeyConditionExpression: "#uid = :userID AND begins_with(sk, :skPrefix)",
       ExpressionAttributeNames: { "#uid": "data" },
-      ExpressionAttributeValues: { ":userID": userID, ":woSKprefix": "WO#" }
+      ExpressionAttributeValues: { ":userID": userID, ":skPrefix": "WO#" }
     })) as unknown as Array<WorkOrderType>;
     /* See note in queryWorkOrderByID regarding why these `as unknown`
     conversions are currently necessary in WorkOrder Model methods. */

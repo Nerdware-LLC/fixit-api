@@ -6,9 +6,13 @@ import { UserSubscription } from "./UserSubscription";
 import { USER_SUBSCRIPTION_SK_REGEX, USER_SUB_STRIPE_ID_REGEX } from "./regex";
 import type { UserSubscriptionType } from "./types";
 
+const USER_1 = "USER#11111111-1111-1111-1111-sub111111111";
+const USER_2 = "USER#22222222-2222-2222-2222-sub222222222";
+const USER_3 = "USER#33333333-3333-3333-3333-sub333333333";
+
 const MOCK_INPUTS = {
   SUB_A: {
-    userID: "USER#11111111-1111-1111-1111-sub111111111",
+    userID: USER_1,
     id: "sub_11111111111111",
     productID: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.productID,
     priceID: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.priceIDs.MONTHLY,
@@ -17,7 +21,7 @@ const MOCK_INPUTS = {
     createdAt: new Date(Date.now() - MILLISECONDS_PER_DAY * 30) //         - 30 days
   },
   SUB_B: {
-    userID: "USER#22222222-2222-2222-2222-sub222222222",
+    userID: USER_2,
     id: "sub_22222222222222",
     productID: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.productID,
     priceID: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.priceIDs.TRIAL,
@@ -26,7 +30,7 @@ const MOCK_INPUTS = {
     createdAt: new Date()
   },
   SUB_C: {
-    userID: "USER#33333333-3333-3333-3333-sub333333333",
+    userID: USER_3,
     id: "sub_33333333333333",
     productID: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.productID,
     priceID: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.priceIDs.TRIAL,
@@ -35,6 +39,9 @@ const MOCK_INPUTS = {
     createdAt: new Date(Date.now() - MILLISECONDS_PER_DAY * 30) //    - 30 days
   }
 } as const;
+
+// This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
+const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<keyof typeof MOCK_INPUTS>;
 
 const testSubFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockSub: UserSubscriptionType) => {
   expect(mockSub.userID).toMatch(USER_ID_REGEX);
@@ -51,20 +58,22 @@ const testSubFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockSub: UserSub
 };
 
 describe("UserSubscription model R/W database operations", () => {
-  // prettier-ignore
-  let createdSubs: Partial<Record<keyof typeof MOCK_INPUTS, UserSubscriptionType>> = {};
+  let createdSubs = {} as {
+    -readonly [K in keyof typeof MOCK_INPUTS]: Expand<
+      UserSubscriptionType & Required<Pick<UserSubscriptionType, "userID" | "sk">>
+    >;
+  };
 
-  // Write mock UserSubscriptions to Table
   beforeAll(async () => {
-    for (const mockInputsKey in MOCK_INPUTS) {
-      const subInput = MOCK_INPUTS[mockInputsKey as keyof typeof MOCK_INPUTS];
-
-      const createdSub = await UserSubscription.upsertItem(subInput);
-      createdSubs[mockInputsKey as keyof typeof MOCK_INPUTS] = createdSub as UserSubscriptionType;
+    // Write mock UserSubscriptions to Table
+    for (const key of MOCK_INPUT_KEYS) {
+      createdSubs[key] = (await UserSubscription.upsertItem(
+        MOCK_INPUTS[key]
+      )) as Required<UserSubscriptionType>;
     }
   });
 
-  test("User.upsertItem returns expected keys and values", () => {
+  test("UserSubscription.upsertItem returns expected keys and values", () => {
     Object.entries(createdSubs).forEach(([mockInputsKey, createdSub]) => {
       testSubFields(mockInputsKey as keyof typeof MOCK_INPUTS, createdSub);
     });
@@ -72,14 +81,12 @@ describe("UserSubscription model R/W database operations", () => {
 
   test("UserSubscription.queryUserSubscriptions returns expected keys and values", async () => {
     // Get mock UserSubscriptions by userID
-    for (const mockInputsKey in createdSubs) {
+    for (const key of MOCK_INPUT_KEYS) {
       // Each user should only have the 1 subscription
-      const subscriptions = await UserSubscription.queryUserSubscriptions(
-        createdSubs[mockInputsKey as keyof typeof MOCK_INPUTS]!.userID as string
-      );
+      const subscriptions = await UserSubscription.queryUserSubscriptions(createdSubs[key].userID);
 
       subscriptions.forEach((sub) => {
-        testSubFields(mockInputsKey as keyof typeof MOCK_INPUTS, sub);
+        testSubFields(key, sub);
       });
     }
   });
@@ -87,24 +94,44 @@ describe("UserSubscription model R/W database operations", () => {
   test("UserSubscription.validateExisting only throws on invalid/expired subscription", async () => {
     expect(() => {
       // Valid subs
-      UserSubscription.validateExisting(createdSubs.SUB_A as NonNullable<typeof createdSubs.SUB_C>);
-      UserSubscription.validateExisting(createdSubs.SUB_B as NonNullable<typeof createdSubs.SUB_C>);
+      UserSubscription.validateExisting(createdSubs.SUB_A);
+      UserSubscription.validateExisting(createdSubs.SUB_B);
     }).not.toThrow();
 
     expect(() => {
       // Invalid sub
-      UserSubscription.validateExisting(createdSubs.SUB_C as NonNullable<typeof createdSubs.SUB_C>);
+      UserSubscription.validateExisting(createdSubs.SUB_C);
     }).toThrow();
   });
 
-  // After tests are complete, delete mock Subs from Table
-  afterAll(async () => {
-    // batchDeleteItems called from ddbClient to circumvent toDB IO hook actions
-    await UserSubscription.ddbClient.batchDeleteItems(
-      Object.values(createdSubs as Record<string, { userID: string; sk: string }>).map((sub) => ({
-        pk: sub.userID,
-        sk: sub.sk
-      }))
-    );
+  // TODO Test UserSubscription updateItem
+
+  // DELETE:
+
+  test("UserSubscription.deleteItem returns expected keys and values", async () => {
+    for (const key of MOCK_INPUT_KEYS) {
+      const { userID, sk } = createdSubs[key];
+      // If deleteItem did not error out, the delete succeeded, check userID.
+      const { userID: userIDofDeletedSub } = await UserSubscription.deleteItem({ userID, sk });
+      expect(userIDofDeletedSub).toEqual(userID);
+    }
   });
+});
+
+// ENSURE MOCK RESOURCE CLEANUP:
+
+afterAll(async () => {
+  /* After all tests are complete, ensure all mock Items created here have been deleted.
+  Note: DDB methods are called from the ddbClient to circumvent toDB IO hook actions. */
+
+  const remainingMockSubs = await UserSubscription.ddbClient.scan({
+    FilterExpression: "begins_with(sk, :skPrefix)",
+    ExpressionAttributeValues: { ":skPrefix": "SUBSCRIPTION#" }
+  });
+
+  if (Array.isArray(remainingMockSubs) && remainingMockSubs.length > 0) {
+    await UserSubscription.ddbClient.batchDeleteItems(
+      remainingMockSubs.map(({ pk, sk }) => ({ pk, sk }))
+    );
+  }
 });

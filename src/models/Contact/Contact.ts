@@ -2,10 +2,13 @@ import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
 import { COMMON_ATTRIBUTES } from "@models/_common";
 import { USER_ID_REGEX } from "@models/User";
 import { CONTACT_SK_REGEX } from "./regex";
+import { createOne } from "./createOne";
 import type { ContactType } from "./types";
 
 /**
  * Contact Model Methods:
+ * @method `createOne()`
+ * @method `queryContactByID()`
  * @method `queryUsersContacts()`
  */
 class ContactModel extends Model<typeof ContactModel.schema> {
@@ -19,6 +22,7 @@ class ContactModel extends Model<typeof ContactModel.schema> {
     },
     sk: {
       type: "string",
+      // Contact "sk" contains the "contactUserID"
       validate: (value: string) => CONTACT_SK_REGEX.test(value),
       isRangeKey: true,
       required: true,
@@ -59,6 +63,23 @@ class ContactModel extends Model<typeof ContactModel.schema> {
   constructor() {
     super(ddbSingleTable, "Contact", ContactModel.schema, ContactModel.schemaOptions);
   }
+
+  // CONTACT MODEL — Instance methods:
+
+  readonly createOne = createOne;
+
+  readonly queryContactByID = async (ownUserID: string, contactUserID: string) => {
+    const [contact] = await this.query({
+      KeyConditionExpression: "pk = :pk AND sk = :sk",
+      ExpressionAttributeValues: {
+        ":pk": ownUserID,
+        ":sk": `CONTACT#${contactUserID}`
+      },
+      Limit: 1
+    });
+
+    return contact as ContactType;
+  };
 
   readonly queryUsersContacts = async (userID: string) => {
     return (await this.query({

@@ -24,6 +24,9 @@ const MOCK_INPUTS = {
   }
 } as const;
 
+// This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
+const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<keyof typeof MOCK_INPUTS>;
+
 const testUserFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockUser: UserType) => {
   const mockUserInputs = MOCK_INPUTS[mockInputsKey];
 
@@ -51,14 +54,14 @@ const testUserFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockUser: UserT
 };
 
 describe("User model R/W database operations", () => {
-  let createdUsers: Partial<Record<keyof typeof MOCK_INPUTS, UserType>> = {};
+  let createdUsers = {} as {
+    -readonly [K in keyof typeof MOCK_INPUTS]: Expand<UserType & { sk: string }>;
+  };
 
-  // Write mock Users to Table
   beforeAll(async () => {
-    for (const mockInputsKey in MOCK_INPUTS) {
-      // prettier-ignore
-      const createdUser = await User.createOne(MOCK_INPUTS[mockInputsKey as keyof typeof MOCK_INPUTS])
-      createdUsers[mockInputsKey as keyof typeof MOCK_INPUTS] = createdUser;
+    // Write mock Users to Table
+    for (const key of MOCK_INPUT_KEYS) {
+      createdUsers[key] = await User.createOne(MOCK_INPUTS[key]);
     }
   });
 
@@ -69,13 +72,9 @@ describe("User model R/W database operations", () => {
   });
 
   test("User.getUserByID returns expected keys and values", async () => {
-    // Get mock Users by email
-    for (const mockInputsKey in createdUsers) {
-      const userID = createdUsers[mockInputsKey as keyof typeof MOCK_INPUTS]!.id;
-
-      const result = await User.getUserByID(userID);
-
-      testUserFields(mockInputsKey as keyof typeof MOCK_INPUTS, result);
+    for (const key of MOCK_INPUT_KEYS) {
+      const result = await User.getUserByID(createdUsers[key].id);
+      testUserFields(key, result);
     }
   });
 
@@ -83,29 +82,44 @@ describe("User model R/W database operations", () => {
     const users = await User.batchGetUsersByID([createdUsers.USER_A!.id, createdUsers.USER_B!.id]);
 
     users.forEach((user) => {
-      testUserFields(user.id === createdUsers.USER_A!.id ? "USER_A" : "USER_B", user);
+      testUserFields(user.id === createdUsers.USER_A.id ? "USER_A" : "USER_B", user);
     });
   });
 
   test("User.queryUserByEmail returns expected keys and values", async () => {
-    // Get mock Users by email
-    for (const mockInputsKey in MOCK_INPUTS) {
-      const { email } = MOCK_INPUTS[mockInputsKey as keyof typeof MOCK_INPUTS];
-
-      const result = await User.queryUserByEmail(email);
-
-      testUserFields(mockInputsKey as keyof typeof MOCK_INPUTS, result);
+    for (const key of MOCK_INPUT_KEYS) {
+      // Get mock Users by email
+      const result = await User.queryUserByEmail(MOCK_INPUTS[key].email);
+      testUserFields(key, result);
     }
   });
 
-  // After tests are complete, delete mock Users from Table
-  afterAll(async () => {
-    // batchDeleteItems called from ddbClient to circumvent toDB IO hook actions
-    await User.ddbClient.batchDeleteItems(
-      Object.values(createdUsers as Record<string, { id: string; sk: string }>).map((user) => ({
-        pk: user.id,
-        sk: user.sk
-      }))
-    );
+  // TODO Test User updateItem
+
+  // DELETE:
+
+  test("User.deleteItem returns expected keys and values", async () => {
+    for (const key of MOCK_INPUT_KEYS) {
+      const { id, sk } = createdUsers[key];
+      const { id: deletedUserID } = await User.deleteItem({ id, sk });
+      // If deleteItem did not error out, the delete succeeded, check ID.
+      expect(deletedUserID).toEqual(id);
+    }
   });
+});
+
+// ENSURE MOCK RESOURCE CLEANUP:
+
+afterAll(async () => {
+  /* After all tests are complete, ensure all mock Items created here have been deleted.
+  Note: DDB methods are called from the ddbClient to circumvent toDB IO hook actions. */
+
+  const remainingMockUsers = await User.ddbClient.scan({
+    FilterExpression: "begins_with(pk, :pkPrefix)",
+    ExpressionAttributeValues: { ":pkPrefix": "USER#" }
+  });
+
+  if (Array.isArray(remainingMockUsers) && remainingMockUsers.length > 0) {
+    await User.ddbClient.batchDeleteItems(remainingMockUsers.map(({ pk, sk }) => ({ pk, sk })));
+  }
 });

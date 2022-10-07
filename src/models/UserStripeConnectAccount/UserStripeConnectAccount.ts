@@ -61,9 +61,12 @@ class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccoun
 
   static readonly schemaOptions: ModelSchemaOptions = {
     transformItem: {
+      // prettier-ignore
       toDB: (userStripeConnectAccountItem) => ({
         ...userStripeConnectAccountItem,
-        sk: `STRIPE_CONNECT_ACCOUNT#${userStripeConnectAccountItem.pk}`
+        ...(!userStripeConnectAccountItem.sk && !!userStripeConnectAccountItem.pk && {
+          sk: `STRIPE_CONNECT_ACCOUNT#${userStripeConnectAccountItem.pk}`
+        })
       })
     }
   };

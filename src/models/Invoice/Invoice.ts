@@ -1,3 +1,4 @@
+import moment from "moment";
 import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
 import { COMMON_ATTRIBUTES } from "@models/_common";
 import { USER_ID_REGEX } from "@models/User";
@@ -57,7 +58,11 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema> {
       validate: (value: string) => WORK_ORDER_ID_REGEX.test(value)
     },
     amount: {
-      type: "number"
+      type: "number",
+      /* Invoice amount is a non-zero integer reflecting USD centage,
+      where 100 = 100 ¢ = $1 USD. For i18n purposes, currency conversions
+      will be handled through the Stripe API.  */
+      validate: (value: number) => Number.isSafeInteger(value) && value > 0
     },
     status: {
       type: "string",
@@ -78,7 +83,10 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema> {
       // prettier-ignore
       toDB: (invoiceItem) => ({
         ...invoiceItem,
-        sk: invoiceItem?.sk ?? `INV#${invoiceItem.pk}#${Math.floor(new Date(invoiceItem.createdAt).getTime() / 1000)}`
+        // If "sk" does not exist, but "pk" and "createdAt" do, add "sk".
+        ...(!invoiceItem?.sk && !!invoiceItem?.pk && !!invoiceItem?.createdAt && {
+          sk: `INV#${invoiceItem.pk}#${moment(invoiceItem.createdAt).unix()}`
+        })
       })
     }
   };
@@ -117,8 +125,17 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema> {
 
   readonly queryUsersInvoices = async (userID: string) => {
     return (await this.query({
-      KeyConditionExpression: "pk = :userID AND begins_with(sk, :invSKprefix)",
-      ExpressionAttributeValues: { ":userID": userID, ":invSKprefix": "INV#" }
+      KeyConditionExpression: "pk = :userID AND begins_with(sk, :skPrefix)",
+      ExpressionAttributeValues: { ":userID": userID, ":skPrefix": "INV#" }
+    })) as Array<InvoiceType>;
+  };
+
+  readonly queryInvoicesAssignedToUser = async (userID: string) => {
+    return (await this.query({
+      IndexName: "Overloaded_Data_GSI",
+      KeyConditionExpression: "#uid = :userID AND begins_with(sk, :skPrefix)",
+      ExpressionAttributeNames: { "#uid": "data" },
+      ExpressionAttributeValues: { ":userID": userID, ":skPrefix": "INV#" }
     })) as Array<InvoiceType>;
   };
 }

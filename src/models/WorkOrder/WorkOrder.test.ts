@@ -4,10 +4,14 @@ import { WorkOrder } from "./WorkOrder";
 import { WORK_ORDER_ID_REGEX, WORK_ORDER_ID_REGEX_STR } from "./regex";
 import type { WorkOrderType } from "./types";
 
+const USER_1 = "USER#11111111-1111-1111-1111-wo1111111111";
+const USER_2 = "USER#22222222-2222-2222-2222-wo2222222222";
+const USER_3 = "USER#33333333-3333-3333-3333-wo3333333333";
+
 const MOCK_INPUTS = {
   // WO_A contains the bare minimum inputs for WorkOrder.createOne
   WO_A: {
-    createdByUserID: "USER#11111111-1111-1111-1111-111111111111",
+    createdByUserID: USER_1,
     location: {
       region: "Washington",
       city: "Redmond",
@@ -16,8 +20,8 @@ const MOCK_INPUTS = {
   },
   // WO_B contains all WO properties that can be provided to WorkOrder.createOne
   WO_B: {
-    createdByUserID: "USER#22222222-2222-2222-2222-222222222222",
-    assignedToUserID: "USER#11111111-1111-1111-1111-111111111111",
+    createdByUserID: USER_2,
+    assignedToUserID: USER_1,
     priority: "HIGH",
     location: {
       country: "USA",
@@ -39,6 +43,9 @@ const MOCK_INPUTS = {
     scheduledDateTime: new Date(Date.now() + MILLISECONDS_PER_DAY * 2) // + 2 days
   }
 } as const;
+
+// This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
+const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<keyof typeof MOCK_INPUTS>;
 
 const testWorkOrderFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockWO: WorkOrderType) => {
   const mockWOinputs = MOCK_INPUTS[mockInputsKey];
@@ -76,61 +83,115 @@ const testWorkOrderFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockWO: Wo
 };
 
 describe("WorkOrder model R/W database operations", () => {
-  let createdWOs: Expand<Partial<Record<keyof typeof MOCK_INPUTS, WorkOrderType>>> = {};
+  let createdWOs = {} as { -readonly [K in keyof typeof MOCK_INPUTS]: WorkOrderType };
 
-  // Write mock Users to Table
   beforeAll(async () => {
-    for (const mockInputsKey in MOCK_INPUTS) {
-      //
-      const createdWO = await WorkOrder.createOne(
-        MOCK_INPUTS[mockInputsKey as keyof typeof MOCK_INPUTS]
-      );
-
-      createdWOs[mockInputsKey as keyof typeof MOCK_INPUTS] = createdWO;
+    // Write mock WOs to Table
+    for (const key of MOCK_INPUT_KEYS) {
+      createdWOs[key] = await WorkOrder.createOne(MOCK_INPUTS[key]);
     }
   });
 
+  // CREATE:
+
   test("WorkOrder.createOne returns expected keys and values", () => {
-    Object.entries(createdWOs).forEach(([mockInputsKey, createdUser]) => {
-      testWorkOrderFields(mockInputsKey as keyof typeof MOCK_INPUTS, createdUser);
+    Object.entries(createdWOs).forEach(([mockInputsKey, createdWO]) => {
+      testWorkOrderFields(mockInputsKey as keyof typeof createdWOs, createdWO);
+    });
+
+    // TODO Ensure FixitEventEmitter triggered onWorkOrderCreated event handlers
+  });
+
+  // QUERIES:
+
+  test("WorkOrder.queryWorkOrderByID returns expected keys and values", async () => {
+    for (const key of MOCK_INPUT_KEYS) {
+      const result = await WorkOrder.queryWorkOrderByID(createdWOs[key].id);
+      testWorkOrderFields(key, result);
+    }
+  });
+
+  test("WorkOrder.queryUsersWorkOrders returns expected keys and values", async () => {
+    for (const key of MOCK_INPUT_KEYS) {
+      // Should be an array of 1 WorkOrder
+      const workOrders = await WorkOrder.queryUsersWorkOrders(createdWOs[key].createdByUserID);
+      workOrders.forEach((wo) => testWorkOrderFields(key, wo));
+    }
+  });
+
+  test("WorkOrder.queryWorkOrdersAssignedToUser returns expected keys and values", async () => {
+    // Should be an array of 1 WorkOrder (WO_B)
+    const workOrders = await WorkOrder.queryWorkOrdersAssignedToUser(
+      MOCK_INPUTS.WO_B.assignedToUserID
+    );
+
+    workOrders.forEach((wo) => {
+      testWorkOrderFields("WO_B", wo);
     });
   });
 
-  // test("WorkOrder. returns expected keys and values", async () => {
-  //   // Get mock Users by email
-  //   // for (const mockInputsKey in createdWOs) {
-  //   //   const userID = createdWOs[mockInputsKey as keyof typeof MOCK_INPUTS]!.id;
-  //   //   const result = await WorkOrder.getUserByID(userID);
-  //   //   testWorkOrderFields(mockInputsKey as keyof typeof MOCK_INPUTS, result);
-  //   // }
-  // });
+  // UPDATE:
 
-  // test("WorkOrder. returns expected keys and values", async () => {
-  //   // const users = await WorkOrder.batchGetUsersByID([createdWOs!.WO_A!.id, createdWOs!.WO_B!.id]);
-  //   // users.forEach((user) => {
-  //   //   testWorkOrderFields(user.id === createdWOs!.USER_A!.id ? "USER_A" : "USER_B", user);
-  //   // });
-  // });
+  test("WorkOrder.updateOne returns expected keys and values", async () => {
+    let updatedWOs = { ...createdWOs };
 
-  // test("User. returns expected keys and values", async () => {
-  //   // Get mock Users by email
-  //   // for (const mockInputsKey in MOCK_INPUTS) {
-  //   //   const { email } = MOCK_INPUTS[mockInputsKey as keyof typeof MOCK_INPUTS];
-  //   //   const result = await User.queryUserByEmail(email);
-  //   //   testUserFields(mockInputsKey as keyof typeof MOCK_INPUTS, result);
-  //   // }
-  // });
+    const NEW_WO_VALUES: Record<keyof typeof createdWOs, Partial<WorkOrderType>> = {
+      WO_A: {
+        assignedToUserID: USER_3,
+        description: "Visit Google's Toronto HQ",
+        location: {
+          country: "Canada",
+          region: "Ontario",
+          city: "Toronto",
+          streetLine1: "65 King East"
+        }
+      },
+      WO_B: {
+        assignedToUserID: "UNASSIGNED",
+        status: "UNASSIGNED" // <-- "status" currently added by updateWorkOrder resolver (conditionally)
+      }
+    };
 
-  // After tests are complete, delete mock WOs from Table
-  afterAll(async () => {
-    // batchDeleteItems called from ddbClient to circumvent toDB IO hook actions
-    await WorkOrder.ddbClient.batchDeleteItems(
-      Object.values(createdWOs as Record<string, { createdByUserID: string; id: string }>).map(
-        (wo) => ({
-          pk: wo.createdByUserID,
-          sk: wo.id
-        })
-      )
-    );
+    // Update WO values
+    for (const key of MOCK_INPUT_KEYS) {
+      updatedWOs[key] = await WorkOrder.updateOne(createdWOs[key], NEW_WO_VALUES[key]);
+    }
+
+    // Test updated values
+    for (const key of MOCK_INPUT_KEYS) {
+      expect(updatedWOs[key]).toMatchObject({
+        ...createdWOs[key],
+        ...NEW_WO_VALUES[key]
+      });
+    }
+
+    // TODO Ensure FixitEventEmitter triggered onWorkOrder{Updated,Cancelled,Completed} event handlers
   });
+
+  // DELETE:
+
+  test("WorkOrder.deleteItem returns expected keys and values", async () => {
+    for (const key of MOCK_INPUT_KEYS) {
+      const { createdByUserID, id } = createdWOs[key];
+      const { id: deletedWorkOrderID } = await WorkOrder.deleteItem({ createdByUserID, id });
+      // If deleteItem did not error out, the delete succeeded, so delete from createdWOs (for good measure, test returned ID is same as arg)
+      expect(deletedWorkOrderID).toEqual(id);
+    }
+  });
+});
+
+// ENSURE MOCK RESOURCE CLEANUP:
+
+afterAll(async () => {
+  /* After all tests are complete, ensure all mock Items created here have been deleted.
+  Note: DDB methods are called from the ddbClient to circumvent toDB IO hook actions. */
+
+  const remainingMockWOs = await WorkOrder.ddbClient.scan({
+    FilterExpression: "begins_with(sk, :skPrefix)",
+    ExpressionAttributeValues: { ":skPrefix": "WO#" }
+  });
+
+  if (Array.isArray(remainingMockWOs) && remainingMockWOs.length > 0) {
+    await WorkOrder.ddbClient.batchDeleteItems(remainingMockWOs.map(({ pk, sk }) => ({ pk, sk })));
+  }
 });

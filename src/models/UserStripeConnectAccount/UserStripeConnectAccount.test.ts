@@ -22,6 +22,9 @@ const MOCK_INPUTS = {
   }
 } as const;
 
+// This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
+const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<keyof typeof MOCK_INPUTS>;
+
 const testUserFields = (mockUserSCA: UserStripeConnectAccountType) => {
   expect(mockUserSCA.userID).toMatch(USER_ID_REGEX);
   expect(mockUserSCA.sk).toMatch(STRIPE_CONNECT_ACCOUNT_SK_REGEX);
@@ -34,14 +37,18 @@ const testUserFields = (mockUserSCA: UserStripeConnectAccountType) => {
 };
 
 describe("UserStripeConnectAccount model R/W database operations", () => {
-  let createdUserSCAs: Partial<Record<keyof typeof MOCK_INPUTS, UserStripeConnectAccountType>> = {};
+  let createdUserSCAs = {} as {
+    -readonly [K in keyof typeof MOCK_INPUTS]: Awaited<
+      ReturnType<typeof UserStripeConnectAccount.createOne>
+    >;
+  };
 
   // Write mock UserStripeConnectAccounts to Table
   beforeAll(async () => {
-    for (const mockInputsKey in MOCK_INPUTS) {
+    for (const key of MOCK_INPUT_KEYS) {
       // prettier-ignore
-      const createdUser = await UserStripeConnectAccount.createOne(MOCK_INPUTS[mockInputsKey as keyof typeof MOCK_INPUTS])
-      createdUserSCAs[mockInputsKey as keyof typeof MOCK_INPUTS] = createdUser;
+      const createdUser = await UserStripeConnectAccount.createOne(MOCK_INPUTS[key])
+      createdUserSCAs[key] = createdUser;
     }
   });
 
@@ -51,16 +58,35 @@ describe("UserStripeConnectAccount model R/W database operations", () => {
     });
   });
 
-  // After tests are complete, delete mock Subs from Table
-  afterAll(async () => {
-    // batchDeleteItems called from ddbClient to circumvent toDB IO hook actions
-    await UserStripeConnectAccount.ddbClient.batchDeleteItems(
-      Object.values(createdUserSCAs as Record<string, { userID: string; sk: string }>).map(
-        (userSCA) => ({
-          pk: userSCA.userID,
-          sk: userSCA.sk
-        })
-      )
-    );
+  // TODO Test UserStripeConnectAccount updateItem
+
+  // DELETE:
+
+  test("UserStripeConnectAccount.deleteItem returns expected keys and values", async () => {
+    for (const key of MOCK_INPUT_KEYS) {
+      const { userID, sk } = createdUserSCAs[key];
+      // If deleteItem did not error out, the delete succeeded, check userID.
+      // prettier-ignore
+      const { userID: userIDofDeletedUserSCA } = await UserStripeConnectAccount.deleteItem({ userID, sk });
+      expect(userIDofDeletedUserSCA).toEqual(userID);
+    }
   });
+});
+
+// ENSURE MOCK RESOURCE CLEANUP:
+
+afterAll(async () => {
+  /* After all tests are complete, ensure all mock Items created here have been deleted.
+  Note: DDB methods are called from the ddbClient to circumvent toDB IO hook actions. */
+
+  const remainingMockUserSCAs = await UserStripeConnectAccount.ddbClient.scan({
+    FilterExpression: "begins_with(pk, :skPrefix)",
+    ExpressionAttributeValues: { ":skPrefix": "STRIPE_CONNECT_ACCOUNT#" }
+  });
+
+  if (Array.isArray(remainingMockUserSCAs) && remainingMockUserSCAs.length > 0) {
+    await UserStripeConnectAccount.ddbClient.batchDeleteItems(
+      remainingMockUserSCAs.map(({ pk, sk }) => ({ pk, sk }))
+    );
+  }
 });

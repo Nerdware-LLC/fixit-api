@@ -121,8 +121,8 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
 
   readonly queryUserSubscriptions = async (userID: string) => {
     return (await this.query({
-      KeyConditionExpression: "pk = :userID AND begins_with(sk, :subSKprefix)",
-      ExpressionAttributeValues: { ":userID": userID, ":subSKprefix": "SUBSCRIPTION#" }
+      KeyConditionExpression: "pk = :userID AND begins_with(sk, :skPrefix)",
+      ExpressionAttributeValues: { ":userID": userID, ":skPrefix": "SUBSCRIPTION#" }
     })) as Array<UserSubscriptionType>;
   };
 }

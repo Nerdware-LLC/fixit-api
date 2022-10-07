@@ -3,7 +3,7 @@ import type { Model } from "@lib/dynamoDB";
 import type { UserType } from "@models/User/types";
 import type { UserStripeConnectAccountType } from "./types";
 
-// function, not arrow, bc we need to use "this." syntax to call Dynamoose methods
+// function, not arrow, bc we need "this" to be the UserStripeConnectAccount model
 export const createOne = async function (
   this: InstanceType<typeof Model>,
   {
@@ -17,7 +17,7 @@ export const createOne = async function (
     phone: UserType["phone"];
     profile?: UserType["profile"];
   }
-): Promise<UserStripeConnectAccountType> {
+): Promise<CreateUserStripeConnectAccountReturnType> {
   // Create Stripe Connect Account via Stripe API
   const {
     id: stripeConnectAccountID,
@@ -68,3 +68,7 @@ export const createOne = async function (
     payoutsEnabled
   });
 };
+
+type CreateUserStripeConnectAccountReturnType = Expand<
+  UserStripeConnectAccountType & Required<Pick<UserStripeConnectAccountType, "userID" | "sk">>
+>;
