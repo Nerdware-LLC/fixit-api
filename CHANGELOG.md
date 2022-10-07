@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 ---
 
 
+# [1.9.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.8.0...v1.9.0) (2022-10-07)
+
+
+### Bug Fixes
+
+* **DDB-ST:** add ExprAttrNames to auto-gen fn; correct transformValue hook logic ([d776be2](https://github.com/Nerdware-LLC/fixit-api/commit/d776be281f51cd47c439a6a0f27337e1f2d1d93f))
+* **models:** add Model tests, correct schema where necessary ([aa24195](https://github.com/Nerdware-LLC/fixit-api/commit/aa2419579aa660e3fb183c41ef1e1e2b868dfc79))
+* **util-regex:** add colon to possible chars in street line 2 ([e8b422a](https://github.com/Nerdware-LLC/fixit-api/commit/e8b422a2d13f1c37b271170522672b24d759b388))
+
+
+### Features
+
+* **models-tests:** add ddb batchDelete to afterAll models' tests ([16a6301](https://github.com/Nerdware-LLC/fixit-api/commit/16a6301769d1d769b461fcb02c41fa74dbd828ca))
+* **tests:** add Jest globalSetup for ddb-local ([6f3ccac](https://github.com/Nerdware-LLC/fixit-api/commit/6f3ccace0dc5045a470e3871320c68108926cee1))
+* **tsconfig:** add path alias '[@tests](https://github.com/tests)' for src/__tests__ ([7df046e](https://github.com/Nerdware-LLC/fixit-api/commit/7df046e42af55c84658e5568f2dd92c59c6c69b5))
+
 # [1.8.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.7.0...v1.8.0) (2022-10-05)
 
 
