@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 ---
 
 
+# [1.10.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.9.0...v1.10.0) (2022-10-07)
+
+
+### Bug Fixes
+
+* **docker:** update file refs in docker-related files ([7853975](https://github.com/Nerdware-LLC/fixit-api/commit/7853975d79fd404112498ba01d6459d948831e43))
+
+
+### Features
+
+* **ECR-push:** add GitHub Action ecr_image_push ([54a5011](https://github.com/Nerdware-LLC/fixit-api/commit/54a50117e3ae0c9e7edd8f2933cecd321a7a978d))
+* **gql:** convert gql schema,customScalars,deleteMutResp to TS ([6c253a6](https://github.com/Nerdware-LLC/fixit-api/commit/6c253a67c4dda4d4d9ce3b7dcd88afb99d5e20d6))
+
 # [1.9.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.8.0...v1.9.0) (2022-10-07)
 
 
