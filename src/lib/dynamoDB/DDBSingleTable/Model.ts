@@ -230,15 +230,22 @@ export class Model<
     return this.processItemData.fromDB(items) as Array<Partial<AliasedItem>>;
   };
 
-  // prettier-ignore
   readonly updateItem = async (
     primaryKeys: AliasedItemPrimaryKeys<Schema>,
     attributesToUpdate: Partial<AliasedItem>,
     updateItemOpts?: Parameters<typeof this.ddbClient.updateItem>[1]
   ) => {
     const toDBpks = this.aliasMapping(primaryKeys, this.aliasedSchema) as ItemPrimaryKeys<Schema>;
-    const toDBitem = this.processItemData.toDB(attributesToUpdate) as Partial<ItemNonKeyAttributes<Schema>>;
-    const itemAttributes = await this.ddbClient.updateItem<Schema>(toDBpks, toDBitem, updateItemOpts);
+
+    const toDBitem = this.processItemData.toDB(attributesToUpdate, {
+      shouldSetDefaults: false,
+      shouldTransformItem: false
+    }) as Partial<ItemNonKeyAttributes<Schema>>;
+    const itemAttributes = await this.ddbClient.updateItem<Schema>(
+      toDBpks,
+      toDBitem,
+      updateItemOpts
+    );
     return this.processItemData.fromDB(itemAttributes) as Partial<AliasedItem>;
   };
 
@@ -329,9 +336,13 @@ export class Model<
   readonly processItemData = {
     toDB: (
       itemInput: AnyItemOrBatchItemsType<Schema>,
-      { shouldCheckRequired }: { shouldCheckRequired?: boolean } = {}
+      { shouldSetDefaults = true, shouldTransformItem = true, shouldCheckRequired = false } = {}
     ) => {
-      return this.applyActionSetToItemData("toDB", itemInput, shouldCheckRequired ?? false);
+      return this.applyActionSetToItemData("toDB", itemInput, {
+        shouldSetDefaults,
+        shouldTransformItem,
+        shouldCheckRequired
+      });
     },
     fromDB: (itemOutput?: AnyItemOrBatchItemsType<Schema>) => {
       return itemOutput && this.applyActionSetToItemData("fromDB", itemOutput);
@@ -341,10 +352,14 @@ export class Model<
   private readonly applyActionSetToItemData = (
     actionSet: "toDB" | "fromDB",
     itemData: AnyItemOrBatchItemsType<Schema>,
-    shouldCheckRequired = false
+    { shouldSetDefaults = true, shouldTransformItem = true, shouldCheckRequired = false } = {}
   ) => {
     // Get list of ioActions to apply to item/items
-    const ioActions = this.getActionsSet[actionSet](shouldCheckRequired);
+    const ioActions = this.getActionsSet[actionSet]({
+      shouldSetDefaults,
+      shouldTransformItem,
+      shouldCheckRequired
+    });
 
     // Define fn for applying ioActions to item/items
     const itemDataReducer = !Array.isArray(itemData)
@@ -369,15 +384,15 @@ export class Model<
 
   // prettier-ignore
   private readonly getActionsSet = {
-    toDB: (shouldCheckRequired = false) => [
+    toDB: ({ shouldSetDefaults = true, shouldTransformItem = true, shouldCheckRequired = false } = {}) => [
       // Alias Mapping
       (item: AliasedItem | Partial<AliasedItem>) => this.aliasMapping(item, this.aliasedSchema),
-      // Set Defaults
-      (item: ItemType | Partial<ItemType>) => this.setDefaults(item),
+      // Set Defaults (skipped by updateItem)
+      ...(shouldSetDefaults ? [(item: ItemType | Partial<ItemType>) => this.setDefaults(item)] : []),
       // Attribute-level transformValue.toDB
       (item: ItemType | Partial<ItemType>) => this.transformValue(item, this.schema, "toDB"),
-      // Schema-level transformItem.toDB
-      (item: ItemType | Partial<ItemType>) => this.transformItem(item, "toDB"),
+      // Schema-level transformItem.toDB (skipped by updateItem)
+      ...(shouldTransformItem ? [(item: ItemType | Partial<ItemType>) => this.transformItem(item, "toDB")] : []),
       // Type Checking
       (item: ItemType | Partial<ItemType>) => this.typeChecking(item),
       // Attribute-level Validation
@@ -457,12 +472,16 @@ export class Model<
       if (typeof attrConfig?.transformValue?.[actionSet] === "function") {
         const transformValue = attrConfig.transformValue[actionSet];
         /* Model "transformValue" fns are not validated, but type mismatches will be caught by the
-        typeChecking action at runtime. Note: non-null assertion used to call transformValue below
-        because the if-clause ensures that it's here, but the TS parser isn't inferring that it's
-        not undefined.  */
-        item[schemaKey as keyof typeof item] = transformValue!(
-          item[schemaKey]
-        ) as typeof item[keyof typeof item];
+        typeChecking action at runtime. To prevent odd behavior whereby a transformed value is
+        undefined, the attribute is only added to item if it's not undefined.
+        Note: non-null assertion used to call transformValue below because the if-clause ensures
+        that it's here, but the TS parser isn't inferring that it's not undefined.  */
+
+        const transformedValue = transformValue!(item[schemaKey]);
+
+        if (transformedValue !== undefined) {
+          item[schemaKey as keyof typeof item] = transformedValue as typeof item[keyof typeof item];
+        }
       }
     });
 

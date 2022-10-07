@@ -229,23 +229,24 @@ export class DDBSingleTableClient {
     const { ReturnValues = "ALL_NEW", ...otherUpdateItemOpts } = updateItemOpts;
 
     // Destructure updateItemOpts which may be updated
-    let { UpdateExpression, ExpressionAttributeValues } = updateItemOpts;
+    let { UpdateExpression, ExpressionAttributeNames, ExpressionAttributeValues } = updateItemOpts;
 
     if (!UpdateExpression) {
-      /* For now, ensure the caller hasn't provided "ExpressionAttributeValues".
-      In the future, however, the auto-gen'd EAV object could be merged with the
-      caller's EAV, with any existing EAV key-placeholders regex-swapped in the
-      ConditionExpression (if provided). Support could also be added for nested
-      value updates (right now it just uses top-level keys and values).      */
-      if (ExpressionAttributeValues) {
+      /* For now, ensure the caller hasn't provided "ExpressionAttributeValues"
+      /"ExpressionAttributeValues". In the future, however, the auto-gen'd EA
+      Names/Values objects could be merged with the caller's EA Names/Values args,
+      with any existing key-placeholders regex-swapped in the ConditionExpression
+      (if provided). Support could also be added for nested value updates (right
+        now it just uses top-level keys and values).      */
+      if (ExpressionAttributeNames || ExpressionAttributeValues) {
         throw new Error(
-          `(ddbTable.updateItem) "ExpressionAttributeValues" must not be provided without an "UpdateExpression".`
+          `(ddbTable.updateItem) For auto-generated "UpdateExpression"s, params "ExpressionAttribute{Names,Values}" must not be provided.`
         );
       }
 
       // Auto-gen UpdateExpression if not provided (and ExprAttrValues)
       // prettier-ignore
-      ({ UpdateExpression, ExpressionAttributeValues } = generateUpdateExpression(attributesToUpdate));
+      ({ UpdateExpression, ExpressionAttributeNames, ExpressionAttributeValues } = generateUpdateExpression(attributesToUpdate));
     }
 
     const { Attributes } = await this.ddbDocClient.send(
@@ -253,6 +254,7 @@ export class DDBSingleTableClient {
         ...otherUpdateItemOpts, // <-- Placed first, so the rest overwrite.
         ReturnValues,
         UpdateExpression,
+        ...(ExpressionAttributeNames && { ExpressionAttributeNames }),
         ...(ExpressionAttributeValues && { ExpressionAttributeValues }),
         TableName: this.tableName,
         Key: primaryKeys
@@ -266,9 +268,13 @@ export class DDBSingleTableClient {
     primaryKeys: ItemPrimaryKeys<Schema>,
     deleteItemOpts: DDBSingleTableCommandParameters<typeof DeleteCommand> = {}
   ) => {
+    // Destructure constants from deleteItemOpts to set default ReturnValues (DeleteItem API default: "NONE")
+    const { ReturnValues = "ALL_OLD", ...otherDeleteItemOpts } = deleteItemOpts;
+
     const { Attributes } = await this.ddbDocClient.send(
       new DeleteCommand({
-        ...deleteItemOpts,
+        ...otherDeleteItemOpts, // <-- Placed first, so the rest overwrite.
+        ReturnValues,
         TableName: this.tableName,
         Key: primaryKeys
       })
