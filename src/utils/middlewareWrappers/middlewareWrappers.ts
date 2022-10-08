@@ -1,8 +1,8 @@
 import type {
   AsyncMiddlewareFn,
   MiddlewareFn,
-  APIRequestWithUserData,
-  StripeWebhookRequestObject
+  UnionOfReqObjectTypes,
+  APIRequestWithUserData // <-- default "req" Object type
 } from "./types";
 
 /**
@@ -11,9 +11,7 @@ import type {
  * - For Stripe webhook requests, pass `StripeWebhookRequestObject` as a
  *   type parameter to this function.
  */
-export const catchAsyncMW = <
-  ReqT extends APIRequestWithUserData | StripeWebhookRequestObject = APIRequestWithUserData
->(
+export const catchAsyncMW = <ReqT extends UnionOfReqObjectTypes = APIRequestWithUserData>(
   asyncMiddlewareFn: AsyncMiddlewareFn<ReqT>
 ): MiddlewareFn => {
   return (req, res, next) => {
@@ -27,9 +25,7 @@ export const catchAsyncMW = <
  * - For Stripe webhook requests, pass `StripeWebhookRequestObject` as a
  *   type parameter to this function.
  */
-export const catchMWwrapper = <
-  ReqT extends APIRequestWithUserData | StripeWebhookRequestObject = APIRequestWithUserData
->(
+export const catchMWwrapper = <ReqT extends UnionOfReqObjectTypes = APIRequestWithUserData>(
   middlewareFn: MiddlewareFn<ReqT>
 ): MiddlewareFn => {
   return (req, res, next) => {

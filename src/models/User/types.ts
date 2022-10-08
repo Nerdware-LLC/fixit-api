@@ -16,6 +16,19 @@ export interface UserType {
   updatedAt: Date;
 }
 
+// AuthenticatedUser overrides optionality of certain fields.
+export type AuthenticatedUser = Expand<
+  Omit<
+    UserType, // Omit changed fields which are intersected below
+    "stripeConnectAccount" | "subscription" | "createdAt" | "updatedAt"
+  > & {
+    stripeConnectAccount: UserStripeConnectAccountType; // Required
+    subscription: UserSubscriptionType; //                 Required
+    createdAt?: Date; //                                   Optional
+    updatedAt?: Date; //                                   Optional
+  }
+>;
+
 export interface UserProfile {
   givenName?: string;
   familyName?: string;

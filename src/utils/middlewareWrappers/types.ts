@@ -1,16 +1,20 @@
 import type { Request, Response, NextFunction } from "express";
 import type Stripe from "stripe";
-import type { UserType, WorkOrderType, InvoiceType, ContactType } from "@models";
+import type { UserType, AuthenticatedUser, WorkOrderType, InvoiceType, ContactType } from "@models";
 
 // Middleware Function Types
 
-export type MiddlewareFn<
-  ReqT extends APIRequestWithUserData | StripeWebhookRequestObject = APIRequestWithUserData
-> = (req: ReqT, res: Response, next: NextFunction) => void;
+export type MiddlewareFn<ReqT extends UnionOfReqObjectTypes = APIRequestWithUserData> = (
+  req: ReqT,
+  res: Response,
+  next: NextFunction
+) => void;
 
-export type AsyncMiddlewareFn<
-  ReqT extends APIRequestWithUserData | StripeWebhookRequestObject = APIRequestWithUserData
-> = (req: ReqT, res: Response, next: NextFunction) => Promise<void>;
+export type AsyncMiddlewareFn<ReqT extends UnionOfReqObjectTypes = APIRequestWithUserData> = (
+  req: ReqT,
+  res: Response,
+  next: NextFunction
+) => Promise<void>;
 
 // Middleware "req" Object Types
 
@@ -23,6 +27,20 @@ export interface APIRequestWithUserData extends Request {
   };
 }
 
+// APIRequestWithAuthenticatedUserData sets "_user" to required.
+export type APIRequestWithAuthenticatedUserData = Expand<
+  Omit<APIRequestWithUserData, "_user"> & {
+    _user: AuthenticatedUser;
+  }
+>;
+
 export interface StripeWebhookRequestObject extends Request {
   event: Stripe.Event;
 }
+
+// Union of middleware "req" Object types
+
+export type UnionOfReqObjectTypes =
+  | APIRequestWithUserData
+  | APIRequestWithAuthenticatedUserData
+  | StripeWebhookRequestObject;
