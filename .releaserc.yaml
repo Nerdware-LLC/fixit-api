@@ -15,13 +15,15 @@ plugins:
         - { type: fix, release: patch }
         - { type: perf, release: patch }
         # Non-default release rules
-        - { type: refactor, scope: "core*", release: minor }
-        - { type: docs, release: patch }
         - { type: refactor, release: patch }
+        - { type: docs, release: false }
         - { scope: no-release, release: false }
 
   - - "@semantic-release/release-notes-generator"
     - preset: angular
+
+  - - "@semantic-release/npm"
+    - npmPublish: false
 
   - - "@semantic-release/github"
     - addReleases: bottom
