@@ -3,6 +3,7 @@ import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@models/_common";
 import { USER_ID_REGEX } from "@models/User";
 import { ENV } from "@server/env";
 import { USER_SUBSCRIPTION_SK_REGEX, USER_SUB_STRIPE_ID_REGEX } from "./regex";
+import { updateOne } from "./updateOne";
 import { upsertOne } from "./upsertOne";
 import { SUBSCRIPTION_STATUSES } from "./validateExisting";
 import { normalizeStripeFields } from "./normalizeStripeFields";
@@ -113,11 +114,27 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
 
   // USER SUBSCRIPTION MODEL — Instance methods:
 
+  // TODO Add test for this method
+  readonly updateOne = updateOne;
+
   readonly upsertOne = upsertOne;
 
   readonly normalizeStripeFields = normalizeStripeFields; // <-- utility for normalizing sub objects returned from Stripe API
 
   readonly validateExisting = validateExisting;
+
+  // TODO Add test for this method
+  readonly queryBySubscriptionID = async (subID: string) => {
+    const [userSubscription] = await this.query({
+      IndexName: "Overloaded_Data_GSI",
+      KeyConditionExpression: "#subID = :subID AND begins_with(sk, :skPrefix)",
+      ExpressionAttributeNames: { "#subID": "data" },
+      ExpressionAttributeValues: { ":subID": subID, ":skPrefix": "SUBSCRIPTION#" },
+      Limit: 1
+    });
+
+    return userSubscription as Required<UserSubscriptionType>;
+  };
 
   readonly queryUserSubscriptions = async (userID: string) => {
     return (await this.query({

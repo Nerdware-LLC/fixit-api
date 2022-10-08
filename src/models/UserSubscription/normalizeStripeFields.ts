@@ -1,4 +1,5 @@
 import type Stripe from "stripe";
+import type { UserType } from "@models/User/types";
 import type { UserSubscriptionType } from "./types";
 
 /**
@@ -8,18 +9,23 @@ import type { UserSubscriptionType } from "./types";
  * `obj.latest_invoice` will remain `obj.latest_invoice`.
  */
 export const normalizeStripeFields = ({
+  customer,
   created,
   current_period_end,
   items,
   ...rest
 }: Stripe.Subscription) => {
   return {
-    ...(created && { createdAt: created }),
-    ...(current_period_end && { currentPeriodEnd: new Date(current_period_end * 1000) }),
-    ...(items && {
-      productID: items.data[0].price.product,
-      priceID: items.data[0].price.id
-    }),
+    stripeCustomerID: customer,
+    createdAt: new Date(created * 1000),
+    currentPeriodEnd: new Date(current_period_end * 1000),
+    productID: items.data[0].price.product,
+    priceID: items.data[0].price.id,
     ...rest
-  } as Partial<UserSubscriptionType> & Stripe.Response<Stripe.Subscription>;
+  } as Omit<UserSubscriptionType, "updatedAt"> &
+    Pick<UserType, "stripeCustomerID"> &
+    Omit<
+      Stripe.Response<Stripe.Subscription>,
+      "customer" | "created" | "current_period_end" | "items" | "lastResponse"
+    >;
 };
