@@ -59,10 +59,10 @@ jobs:
           docker build ${IMAGE_BUILD_TAG_ARGS[*]} .
 
           for tag in "${IMAGE_TAGS[@]}"; do
-            docker push "$ECR_REGISTRY/$IMAGE:$tag";
+            docker push "$IMAGE:$tag";
           done
 
-# The above IMAGE_TAG value will be the variable component of the GITHUB_REF env var,
+# The above REF_TAG value will be the variable component of the GITHUB_REF env var,
 # the value of which depends on the type of event which caused the Action to run.
 #
 #   EVENT           REF                             IMAGE_TAG
@@ -71,4 +71,5 @@ jobs:
 #   release         refs/tags/<release_tag>         <release_tag>
 #
 # If the action was triggered by a RELEASE event on the "main" or "next" branches, the
-# IMAGE_TAG is converted into "prod" or "staging" respectively.
+# REF_TAG is converted into "prod" or "staging" respectively, and a VERSION_TAG is
+# added using the value of the "version" field in the package.json.
