@@ -39,5 +39,5 @@ plugins:
         ---
 
   - - "@semantic-release/git"
-    - assets: ["CHANGELOG.md"]
+    - assets: ["CHANGELOG.md", "package.json", "package-lock.json", "npm-shrinkwrap.json"]
       message: "chore(release): version ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
