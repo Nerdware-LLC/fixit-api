@@ -2,6 +2,7 @@ name: ECR Image Push
 # This Action builds the fixit-api Docker image and pushes it to ECR
 
 on:
+  workflow_dispatch:
   release:
     types: ["published"]
 
