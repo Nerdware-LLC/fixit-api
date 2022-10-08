@@ -39,23 +39,36 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.AWS_ECR_PRIVATE_REPO }}
           TRIGGER_EVENT_NAME: ${{ github.event_name }}
         run: |
-          REF="${GITHUB_REF#refs/*/}" && IMAGE_TAG="${REF%/merge}"
+          IMAGE="$ECR_REGISTRY/$ECR_REPOSITORY/fixit-api"
+          IMAGE_TAGS=()
+
+          REF="${GITHUB_REF#refs/*/}" && REF_TAG="${REF%/merge}"
 
           if [ "$TRIGGER_EVENT_NAME" == 'release' ]; then
-            [ "$IMAGE_TAG" == 'main'] && IMAGE_TAG='prod';
-            [ "$IMAGE_TAG" == 'next'] && IMAGE_TAG='staging';
+            [ "$REF_TAG" == 'main' ] && REF_TAG='prod';
+            [ "$REF_TAG" == 'next' ] && REF_TAG='staging';
+
+            VERSION_TAG="$( jq '.version' < ./package.json | tr -d '"' )"
+            IMAGE_TAGS+=("$VERSION_TAG")
           fi
 
-          docker build -t $ECR_REPOSITORY/fixit-api:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY/fixit-api:$IMAGE_TAG
+          IMAGE_TAGS+=("$REF_TAG")
+          IMAGE_BUILD_TAG_ARGS=("${IMAGE_TAGS[@]/#/-t ${IMAGE}:}")
 
-        # The above IMAGE_TAG value will be the variable component of the GITHUB_REF env var,
-        # the value of which depends on the type of event which caused the Action to run.
-        #
-        #   EVENT           REF                             IMAGE_TAG
-        #   branch push     refs/heads/<branch_name>        <branch_name>
-        #   pr              refs/pull/<pr_number>/merge     <pr_number>
-        #   release         refs/tags/<release_tag>         <release_tag>
-        #
-        # If the action was triggered by a RELEASE event on the "main" or "next" branches, the
-        # IMAGE_TAG is converted into "prod" or "staging" respectively.
+          # shellcheck disable=SC2048,SC2086 # <-- Word splitting intended.
+          docker build ${IMAGE_BUILD_TAG_ARGS[*]} .
+
+          for tag in "${IMAGE_TAGS[@]}"; do
+            docker push "$ECR_REGISTRY/$IMAGE:$tag";
+          done
+
+# The above IMAGE_TAG value will be the variable component of the GITHUB_REF env var,
+# the value of which depends on the type of event which caused the Action to run.
+#
+#   EVENT           REF                             IMAGE_TAG
+#   branch push     refs/heads/<branch_name>        <branch_name>
+#   pr              refs/pull/<pr_number>/merge     <pr_number>
+#   release         refs/tags/<release_tag>         <release_tag>
+#
+# If the action was triggered by a RELEASE event on the "main" or "next" branches, the
+# IMAGE_TAG is converted into "prod" or "staging" respectively.
