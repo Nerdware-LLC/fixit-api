@@ -29,8 +29,6 @@ COPY tsconfig*.json ./
 # Copy over src files
 COPY src src/
 
-RUN find . -type f -exec echo {} \;
-
 # Install all dependencies
 RUN npm ci
 
@@ -53,7 +51,7 @@ ENTRYPOINT ["/tini", "--"]
 COPY --from=builder /home/node/app/build ./build/
 
 # Install only the dependencies necessary to run fixit-api
-RUN npm ci --production
+RUN npm ci --omit=dev
 
 # Set non-root user (this step must be after tini-setup)
 USER node
