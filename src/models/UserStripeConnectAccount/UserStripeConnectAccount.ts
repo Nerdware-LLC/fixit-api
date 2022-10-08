@@ -3,10 +3,13 @@ import { COMMON_ATTRIBUTES } from "@models/_common";
 import { USER_ID_REGEX } from "@models/User/regex";
 import { STRIPE_CONNECT_ACCOUNT_SK_REGEX, STRIPE_CONNECT_ACCOUNT_STRIPE_ID_REGEX } from "./regex";
 import { createOne } from "./createOne";
+import { updateOne } from "./updateOne";
 
 /**
  * UserStripeConnectAccount Model Methods:
  * @method `createOne()`
+ * @method `updateOne()`
+ * @method `queryByStripeConnectAccountID()`
  */
 class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccountModel.schema> {
   static readonly schema = {
@@ -80,7 +83,28 @@ class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccoun
     );
   }
 
+  // USER STRIPE CONNECT ACCOUNT MODEL — Instance methods:
+
   readonly createOne = createOne;
+
+  // TODO Add test for this method
+  readonly updateOne = updateOne;
+
+  // TODO Add test for this method
+  readonly queryByStripeConnectAccountID = async (stripeConnectAccountID: string) => {
+    const [userSCA] = await this.query({
+      IndexName: "Overloaded_Data_GSI",
+      KeyConditionExpression: "#scaID = :scaID AND begins_with(sk, :skPrefix)",
+      ExpressionAttributeNames: { "#scaID": "data" },
+      ExpressionAttributeValues: {
+        ":scaID": stripeConnectAccountID,
+        ":skPrefix": "STRIPE_CONNECT_ACCOUNT#"
+      },
+      Limit: 1
+    });
+
+    return userSCA;
+  };
 }
 
 export const UserStripeConnectAccount = new UserStripeConnectAccountModel();

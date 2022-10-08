@@ -1,7 +1,7 @@
 import { stripe } from "@lib/stripe";
 import type { Model } from "@lib/dynamoDB";
 import type { UserType } from "@models/User/types";
-import type { UserStripeConnectAccountType } from "./types";
+import type { UserStripeConnectAccountAllFields } from "./types";
 
 // function, not arrow, bc we need "this" to be the UserStripeConnectAccount model
 export const createOne = async function (
@@ -17,7 +17,7 @@ export const createOne = async function (
     phone: UserType["phone"];
     profile?: UserType["profile"];
   }
-): Promise<CreateUserStripeConnectAccountReturnType> {
+): Promise<UserStripeConnectAccountAllFields> {
   // Create Stripe Connect Account via Stripe API
   const {
     id: stripeConnectAccountID,
@@ -68,7 +68,3 @@ export const createOne = async function (
     payoutsEnabled
   });
 };
-
-type CreateUserStripeConnectAccountReturnType = Expand<
-  UserStripeConnectAccountType & Required<Pick<UserStripeConnectAccountType, "userID" | "sk">>
->;
