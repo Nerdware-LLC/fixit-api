@@ -39,8 +39,8 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.AWS_ECR_PRIVATE_REPO }}
           TRIGGER_EVENT_NAME: ${{ github.event_name }}
         run: |
-          IMAGE="$ECR_REGISTRY/$ECR_REPOSITORY/fixit-api"
-          echo "IMAGE = ${IMAGE}"
+          IMAGE_REPO="$ECR_REGISTRY/$ECR_REPOSITORY"
+          IMAGE="fixit-api"
           IMAGE_TAGS=()
 
           REF="${GITHUB_REF#refs/*/}" && REF_TAG="${REF%/merge}"
@@ -49,19 +49,17 @@ jobs:
             [ "$REF_TAG" == 'main' ] && REF_TAG='prod';
             [ "$REF_TAG" == 'next' ] && REF_TAG='staging';
 
-            VERSION_TAG="$( jq '.version' < ./package.json | tr -d '"' )"
+            VERSION_TAG="v$( jq '.version' < ./package.json | tr -d '"' )"
             IMAGE_TAGS+=("$VERSION_TAG")
           fi
 
           IMAGE_TAGS+=("$REF_TAG")
-          IMAGE_BUILD_TAG_ARGS=("${IMAGE_TAGS[@]/#/-t ${IMAGE}:}")
+          IMAGE_TAGS=("${IMAGE_TAGS[@]/#/$IMAGE_REPO:$IMAGE.}")
 
-          # shellcheck disable=SC2048,SC2086 # <-- Word splitting intended.
-          docker build ${IMAGE_BUILD_TAG_ARGS[*]} .
+          # shellcheck disable=SC2068 # <-- Word splitting intended.
+          docker build ${IMAGE_TAGS[@]/#/-t } .
 
-          for tag in "${IMAGE_TAGS[@]}"; do
-            docker push "$IMAGE:$tag";
-          done
+          for tag in "${IMAGE_TAGS[@]}"; do docker push "$tag"; done
 
 # The above REF_TAG value will be the variable component of the GITHUB_REF env var,
 # the value of which depends on the type of event which caused the Action to run.
