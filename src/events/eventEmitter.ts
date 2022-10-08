@@ -1,4 +1,6 @@
 import { EventEmitter } from "events";
+import { ENV } from "@server/env";
+import { logger } from "@utils/logger";
 import { notifyAssigneeNewInvoice } from "./onInvoiceCreated";
 import { notifyAssigneeUpdatedInvoice } from "./onInvoiceUpdated";
 import { notifyAssigneeDeletedInvoice } from "./onInvoiceDeleted";
@@ -46,7 +48,12 @@ class FixitEventEmitter extends EventEmitter {
 
       // Register the event's handler fns
       eventHandlers.forEach((eventHandler) =>
-        this.on(eventName, eventHandler as (...args: any[]) => void)
+        this.on(
+          eventName,
+          !/^test/i.test(ENV.NODE_ENV)
+            ? eventHandler
+            : () => logger.test(`(Mock FixitEventEmitter) Event emitted: ${eventName}`)
+        )
       );
     });
   }
