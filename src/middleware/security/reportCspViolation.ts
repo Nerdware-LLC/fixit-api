@@ -1,6 +1,7 @@
 import { logger } from "@utils";
+import type { Request, Response, NextFunction } from "express";
 
-export const reportCspViolation = (req, res) => {
+export const reportCspViolation = (req: Request, res: Response) => {
   const report = Object.prototype.hasOwnProperty.call(req.body, "csp-report")
     ? req.body["csp-report"]
     : { ...req.body };

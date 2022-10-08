@@ -1,30 +1,34 @@
 import helmet from "helmet";
 import { ENV } from "@server/env";
+import type { Request, Response, NextFunction } from "express";
 
-export const setSecureHttpHeaders = (req, res, next) => {
+export const setSecureHttpHeaders = (req: Request, res: Response, next: NextFunction) => {
   res.set({
     "Cache-Control": "no-store",
     "Report-To": REPORT_TO
   });
+
   helmetMW(req, res, next);
 };
 
-const VIOLATION_REPORTS_URI = `${ENV.CONFIG.SELF_URI}/admin/csp-violation`;
+const CSP_VIOLATION_REPORTS_URI = `${ENV.CONFIG.SELF_URI}/admin/csp-violation`;
+
 const REPORT_TO = JSON.stringify({
   group: "fixit-security",
   max_age: 10886400,
-  url: VIOLATION_REPORTS_URI
+  url: CSP_VIOLATION_REPORTS_URI
 });
-const TRUSTED = ["'self'", `'${ENV.CONFIG.SELF_URI}'`];
+
+const TRUSTED_SOURCES = ["'self'", `'${ENV.CONFIG.SELF_URI}'`];
 
 const helmetMW = helmet({
   contentSecurityPolicy: {
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(), // see below
-      "default-src": TRUSTED,
-      "report-uri": [VIOLATION_REPORTS_URI], // deprecated, but as of Feb 2021 most browsers don't yet support the new 'report-to' directive
+      "default-src": TRUSTED_SOURCES,
+      "report-uri": [CSP_VIOLATION_REPORTS_URI], // deprecated, but as of Feb 2021 most browsers don't yet support the new 'report-to' directive
       "report-to": ["fixit-security"],
-      "script-src": TRUSTED
+      "script-src": TRUSTED_SOURCES
     }
   }
 });
