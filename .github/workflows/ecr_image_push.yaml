@@ -40,6 +40,7 @@ jobs:
           TRIGGER_EVENT_NAME: ${{ github.event_name }}
         run: |
           IMAGE="$ECR_REGISTRY/$ECR_REPOSITORY/fixit-api"
+          echo "IMAGE = ${IMAGE}"
           IMAGE_TAGS=()
 
           REF="${GITHUB_REF#refs/*/}" && REF_TAG="${REF%/merge}"
