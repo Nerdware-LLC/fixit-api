@@ -50,7 +50,7 @@ Author: [Trevor Anderson](https://github.com/trevor-anderson), Founder of [Nerdw
 .
 ├── docker                          # Dockerfile and docker-compose.yaml
 └── src                             # Source code files
-    ├── __tests__                   # Jest tests
+    ├── __tests__                   # Jest test-env setup files for all tests
     ├── events                      # Event emitter and handlers
     ├── graphql                     # GraphQL typedefs and resolvers
     ├── lib                         # Third-party client configs
