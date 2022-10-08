@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 ---
 
 
+# [1.12.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.11.0...v1.12.0) (2022-10-08)
+
+
+### Bug Fixes
+
+* **ECR-push:** rm push-events from event triggers, only on release now ([a03c954](https://github.com/Nerdware-LLC/fixit-api/commit/a03c954379765b4032aaa549006f4a8a9cb6b519))
+* **release-action:** add releaserc to file triggers ([e35ce21](https://github.com/Nerdware-LLC/fixit-api/commit/e35ce2194fbadb8374194c5ec1b519851ffe4d58))
+
+
+### Features
+
+* **SemanticRelease:** add npm release plugin, rm unused release rules ([f28201d](https://github.com/Nerdware-LLC/fixit-api/commit/f28201dc87d47260b90da72c11745c2d841671ab))
+
 # [1.11.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.10.0...v1.11.0) (2022-10-08)
 
 
