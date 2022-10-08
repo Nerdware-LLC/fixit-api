@@ -70,8 +70,8 @@ Author: [Trevor Anderson](https://github.com/trevor-anderson), Founder of [Nerdw
 
 The graph below outlines every available API route and endpoint. Endpoint graph nodes have color-coded outlines indicating the level of authentication required for user access:
 
-- Endpoints outlined in <span style="color:#f1ff2e;">yellow</span> require a valid auth token (for more info, see [Fixit-API User Authentication](#-user-authentication))
-- Endpoints outlined in <span style="color:#37ff21;">green</span> require both a valid auth token and an active subscription (for more info, see [Fixit SaaS Products](#-premium-saas-products))
+- ![#f1ff2e](https://via.placeholder.com/15/f1ff2e/f1ff2e.png) Endpoints outlined in <span style="color:#f1ff2e;">yellow</span> require a valid auth token (for more info, see [Fixit-API User Authentication](#-user-authentication))
+- ![#37ff21](https://via.placeholder.com/15/37ff21/37ff21.png) Endpoints outlined in <span style="color:#37ff21;">green</span> require both a valid auth token and an active subscription (for more info, see [Fixit SaaS Products](#-premium-saas-products))
 
 ```mermaid
 flowchart LR
