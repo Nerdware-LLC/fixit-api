@@ -70,7 +70,7 @@ export class StripeWebhooksHandler {
 
 interface StripeWebhooksHandlerRouteConfig {
   connect?: boolean;
-  actionableEventHandlers: Record<string, (...args: unknown[]) => Promise<void>>;
+  actionableEventHandlers: Record<string, (...args: any[]) => Promise<void>>;
   nonActionableEvents: string[];
   secret: string;
 }

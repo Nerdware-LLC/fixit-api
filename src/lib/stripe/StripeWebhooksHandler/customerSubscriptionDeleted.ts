@@ -1,3 +1,5 @@
+import type Stripe from "stripe";
+import moment from "moment";
 import { UserSubscription } from "@models/UserSubscription";
 import { logger } from "@utils/logger";
 
@@ -6,23 +8,22 @@ import { logger } from "@utils/logger";
  *
  * In this event, `req.event.data.object` is a Stripe Subscription object.
  */
-export const customerSubscriptionDeleted = async (rawStripeSubscriptionObj) => {
+export const customerSubscriptionDeleted = async (
+  rawStripeSubscriptionObj: Stripe.Subscription
+) => {
   // Normalize the Stripe-provided fields first
-  const { id: subID } = UserSubscription.normalizeStripeFields(rawStripeSubscriptionObj);
+  const { id: subID, createdAt } = UserSubscription.normalizeStripeFields(rawStripeSubscriptionObj);
 
   let userID;
 
   try {
-    // The "data" GSI is queried for the "userID" needed for the primary key.
-    const { userID, createdAt } = await UserSubscription.query("data")
-      .eq(subID)
-      .using("Overloaded_Data_GSI")
-      .exec();
+    // Get "userID" needed for the primary key
+    const { userID } = await UserSubscription.queryBySubscriptionID(subID);
 
     // Delete the user's subscription item
-    await UserSubscription.delete({
-      pk: userID,
-      sk: `SUBSCRIPTION#${userID}#${createdAt}`
+    await UserSubscription.deleteItem({
+      userID,
+      sk: `SUBSCRIPTION#${userID}#${moment(createdAt).unix()}`
     });
   } catch (err) {
     // If err, log it, do not re-throw from here.

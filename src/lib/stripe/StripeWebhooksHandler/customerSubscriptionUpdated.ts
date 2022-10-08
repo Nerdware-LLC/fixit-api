@@ -1,3 +1,4 @@
+import type Stripe from "stripe";
 import { UserSubscription } from "@models/UserSubscription";
 import { logger } from "@utils/logger";
 
@@ -11,35 +12,37 @@ import { logger } from "@utils/logger";
  *
  * In this event, `req.event.data.object` is a Stripe Subscription object.
  */
-export const customerSubscriptionUpdated = async (rawStripeSubscriptionObj) => {
+export const customerSubscriptionUpdated = async (
+  rawStripeSubscriptionObj: Stripe.Subscription
+) => {
   // Normalize the Stripe-provided fields first
   const {
     id: subscriptionID,
     currentPeriodEnd,
     productID,
     priceID,
-    status
+    status,
+    createdAt
   } = UserSubscription.normalizeStripeFields(rawStripeSubscriptionObj);
 
   let userID;
 
   try {
-    // The "data" GSI is queried for the "userID" needed for the primary key.
-    const { userID, createdAt } = await UserSubscription.query("data")
-      .eq(subscriptionID)
-      .using("Overloaded_Data_GSI")
-      .exec();
+    const { userID } = await UserSubscription.queryBySubscriptionID(subscriptionID);
 
-    // Upsert, bc incomplete_expired subs need to be replaced so user's don't have dupe subs in db.
-    await UserSubscription.update({
-      pk: userID,
-      sk: `SUBSCRIPTION#${userID}#${createdAt}`,
-      id: subscriptionID,
-      currentPeriodEnd,
-      productID,
-      priceID,
-      status
-    });
+    await UserSubscription.updateOne(
+      {
+        userID,
+        createdAt
+      },
+      {
+        id: subscriptionID,
+        currentPeriodEnd,
+        productID,
+        priceID,
+        status
+      }
+    );
   } catch (err) {
     // If err, log it, do not re-throw from here.
     logger.error(
