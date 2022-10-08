@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 ---
 
 
+## [1.12.1](https://github.com/Nerdware-LLC/fixit-api/compare/v1.12.0...v1.12.1) (2022-10-08)
+
+
+### Bug Fixes
+
+* **releaserc:** add package.json assets to SR/git plugin ([7af3e6f](https://github.com/Nerdware-LLC/fixit-api/commit/7af3e6f957a8e22b80a8e82c5684dc34a61b0c09))
+
 # [1.12.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.11.0...v1.12.0) (2022-10-08)
 
 
