@@ -8,7 +8,7 @@ export const logger = {
     messageColor: colors.red.bold
   }),
   debug: getLogFnFromTemplate("DEBUG"),
-  test: getLogFnFromTemplate("TEST", { messageColor: colors.bgGreen.black.bold }),
+  test: getLogFnFromTemplate("TEST", { messageColor: colors.bgCyan.black.bold }),
   error: getLogFnFromTemplate("ERROR", { messageColor: colors.red }),
   gql: getLogFnFromTemplate("GQL", { messageColor: colors.magenta }),
   stripe: getLogFnFromTemplate("STRIPE", { messageColor: colors.green }),
