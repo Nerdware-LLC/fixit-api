@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 ---
 
 
+# [1.11.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.10.0...v1.11.0) (2022-10-08)
+
+
+### Features
+
+* **EventEmitter:** add mock event handlers to EE for test env ([f313408](https://github.com/Nerdware-LLC/fixit-api/commit/f313408599f6a45e89d812a08cf29acec72e4d48))
+* **MW-security:** convert from JW to TS, update staging/prod CORS origins ([39bccea](https://github.com/Nerdware-LLC/fixit-api/commit/39bccea1a50b562bbafbbca1a2c6ba5694ed81c8))
+* **MW-stripeConnect:** convert from JW to TS, impl new Auth'd UserData type ([1784c0e](https://github.com/Nerdware-LLC/fixit-api/commit/1784c0e615cbe8388f570fbdf42aeb06c2664332))
+* **Stripe-WHs:** convert handlers from JS to TS ([01c15f0](https://github.com/Nerdware-LLC/fixit-api/commit/01c15f08a15be9e9296d0bdc86e8484da3065c3c))
+* **User-types:** add 'AuthenticatedUser' type for MW req objs ([d6203b7](https://github.com/Nerdware-LLC/fixit-api/commit/d6203b78e25f5c0d52d1233a3157b5c30beac0fe))
+* **UserSCA:** add updateOne model method ([1962a1e](https://github.com/Nerdware-LLC/fixit-api/commit/1962a1e93d57f68bb370a9e2e0a6e68a5d7af46b))
+* **UserSub:** add updateOne model method ([b31cbf8](https://github.com/Nerdware-LLC/fixit-api/commit/b31cbf84bfe0e8475e5f052702a246afe89f6b82))
+
 # [1.10.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.9.0...v1.10.0) (2022-10-07)
 
 
