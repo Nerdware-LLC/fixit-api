@@ -2,8 +2,6 @@ name: ECR Image Push
 # This Action builds the fixit-api Docker image and pushes it to ECR
 
 on:
-  push:
-    branches: ["main"]
   release:
     types: ["published"]
 
