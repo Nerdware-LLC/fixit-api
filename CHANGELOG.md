@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 ---
 
 
+# [1.13.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.12.1...v1.13.0) (2022-10-08)
+
+
+### Bug Fixes
+
+* **Dockerfile:** swap build flag '--production' for '--omit=dev' ([89a81b0](https://github.com/Nerdware-LLC/fixit-api/commit/89a81b069d810d5529153f9a515698bcff3dd411))
+
+
+### Features
+
+* **colors:** uninstall unnecessary @types/colors pkg ([db36a0c](https://github.com/Nerdware-LLC/fixit-api/commit/db36a0c9ae1ebf679ff882d4dfe091626205031a))
+* **ECR-push:** add workflow_dispatch trigger to allow manual runs ([5c5dd6e](https://github.com/Nerdware-LLC/fixit-api/commit/5c5dd6e7c4e345fefd833b3526af1e433cdfd8ce))
+* **ECR-push:** on 'release' events swap tags main/next w prod/staging ([703d4e7](https://github.com/Nerdware-LLC/fixit-api/commit/703d4e7a18647505ac100003a42cdf568a23d4e8))
+
 ## [1.12.1](https://github.com/Nerdware-LLC/fixit-api/compare/v1.12.0...v1.12.1) (2022-10-08)
 
 
