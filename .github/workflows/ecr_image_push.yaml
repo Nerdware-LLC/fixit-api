@@ -40,7 +40,6 @@ jobs:
           TRIGGER_EVENT_NAME: ${{ github.event_name }}
         run: |
           IMAGE_REPO="$ECR_REGISTRY/$ECR_REPOSITORY"
-          IMAGE="fixit-api"
           IMAGE_TAGS=()
 
           REF="${GITHUB_REF#refs/*/}" && REF_TAG="${REF%/merge}"
@@ -54,7 +53,7 @@ jobs:
           fi
 
           IMAGE_TAGS+=("$REF_TAG")
-          IMAGE_TAGS=("${IMAGE_TAGS[@]/#/$IMAGE_REPO:$IMAGE.}")
+          IMAGE_TAGS=("${IMAGE_TAGS[@]/#/$IMAGE_REPO:}")
 
           # shellcheck disable=SC2068 # <-- Word splitting intended.
           docker build ${IMAGE_TAGS[@]/#/-t } .
