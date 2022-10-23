@@ -8,6 +8,6 @@ export const generateAuthToken = catchMWwrapper((req, res, next) => {
   res.json({
     token: token.toString(),
     // If req includes pre-fetched WOs/Invoices/Contacts, attach them to response.
-    ...(!!req._userQueryItems && { queryItems: req._userQueryItems })
+    ...(!!req._userQueryItems && { userItems: req._userQueryItems })
   });
 });

@@ -1,7 +1,10 @@
 import { ClientInputError } from "@utils";
+import type { Request, Response, NextFunction } from "express";
 
-const getRequestBodyValidatorMW = (validatorFn) => {
-  return (req, res, next) => {
+type ReqBodyValidatorFn = (body: Request["body"]) => boolean;
+
+const getRequestBodyValidatorMW = (validatorFn: ReqBodyValidatorFn) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     const isReqBodyValid = validatorFn(req.body);
     if (!isReqBodyValid) next(new ClientInputError("Invalid request"));
 
@@ -10,15 +13,20 @@ const getRequestBodyValidatorMW = (validatorFn) => {
 };
 
 // Just shortens some otherwise long lines below.
-const hasKey = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
+const hasKey = (obj: Record<string, any>, key: string) => {
+  return Object.prototype.hasOwnProperty.call(obj, key);
+};
 
 // XOR checks for login types.
 // prettier-ignore
-const xorLoginTypes = (req_body) => {
-  // password XOR googleAccessToken
+const xorLoginTypes = (req_body: Request["body"] & { type?: "LOCAL" | "GOOGLE_OAUTH" }) => {
+  // password XOR googleID+googleAccessToken
   return (
-    (hasKey(req_body, "password") || hasKey(req_body, "googleAccessToken"))
-    && !(hasKey(req_body, "password") && hasKey(req_body, "googleAccessToken"))
+    req_body?.type === "LOCAL"
+      ? (hasKey(req_body, "password") && !hasKey(req_body, "googleID") && !hasKey(req_body, "googleAccessToken"))
+      : req_body?.type === "GOOGLE_OAUTH"
+      ? (!hasKey(req_body, "password") && hasKey(req_body, "googleID") && hasKey(req_body, "googleAccessToken"))
+      : false
   );
 };
 
@@ -32,9 +40,9 @@ export const validateLoginReqBody = getRequestBodyValidatorMW((body) => {
 // For req.baseUrl /auth/register
 // prettier-ignore
 export const validateUserRegReqBody = getRequestBodyValidatorMW((body) => {
-  // userType AND email AND phone AND expoPushToken AND ( password XOR googleAccessToken )
+  // email AND phone AND expoPushToken AND ( password XOR googleAccessToken )
   return (
-    ["userType", "email", "phone", "expoPushToken"].every((key) => hasKey(body, key))
+    ["email", "phone", "expoPushToken"].every((key) => hasKey(body, key))
     && xorLoginTypes(body)
   );
 });

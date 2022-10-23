@@ -1,13 +1,6 @@
 import { ddbSingleTable } from "@lib/dynamoDB";
 import { catchAsyncMW } from "@utils/middlewareWrappers";
-import {
-  User,
-  UserSubscription,
-  UserStripeConnectAccount,
-  WorkOrder,
-  Invoice,
-  Contact
-} from "@models";
+import { UserSubscription, UserStripeConnectAccount, WorkOrder, Invoice, Contact } from "@models";
 import type {
   UserType,
   UserSubscriptionType,
