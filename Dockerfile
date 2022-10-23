@@ -9,7 +9,7 @@
 FROM node:16.17.0 as base
 
 # Expose desired port
-EXPOSE 8080
+EXPOSE 80
 
 # Explicitly set workdir
 WORKDIR /home/node/app
