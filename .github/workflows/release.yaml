@@ -8,7 +8,7 @@ on:
       - next
     paths:
       - "**/*.[jt]s"
-      - releaserc.yaml
+      - ".releaserc.yaml"
       - ".github/workflows/release.yaml"
 
 jobs:
