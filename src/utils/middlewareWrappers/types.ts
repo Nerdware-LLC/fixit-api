@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import type Stripe from "stripe";
 import type { UserType, AuthenticatedUser, WorkOrderType, InvoiceType, ContactType } from "@models";
+import type { FixitApiAuthTokenPayload } from "@utils/AuthToken";
 
 // Middleware Function Types
 
@@ -19,7 +20,7 @@ export type AsyncMiddlewareFn<ReqT extends UnionOfReqObjectTypes = APIRequestWit
 // Middleware "req" Object Types
 
 export interface APIRequestWithUserData extends Request {
-  _user?: UserType;
+  _user?: UserType | FixitApiAuthTokenPayload;
   _userQueryItems?: {
     workOrders?: Array<WorkOrderType>;
     invoices?: Array<InvoiceType>;
