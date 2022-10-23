@@ -3,7 +3,6 @@ import { schema } from "@graphql/schema";
 import { UserSubscription } from "@models/UserSubscription";
 import { ENV } from "@server/env";
 import { AuthToken, ApolloPaymentRequiredError } from "@utils";
-import type { UserType } from "@models/User/types";
 
 const envDependentApolloServerConfigs = ENV.IS_PROD
   ? { introspection: false }
@@ -27,9 +26,9 @@ const apolloServer = new ApolloServer({
     // TODO The below context-init checks currently break Apollo introspection
 
     // Authenticate the user
-    const user = (await AuthToken.getValidatedRequestAuthTokenPayload(req).catch((err) => {
+    const user = await AuthToken.getValidatedRequestAuthTokenPayload(req).catch((err) => {
       throw new AuthenticationError(err); // If err, re-throw as Apollo 401 auth error
-    })) as UserType;
+    });
 
     // Ensure the User's subscription is active and not expired
     try {
@@ -43,7 +42,6 @@ const apolloServer = new ApolloServer({
       user
     };
   },
-  // Env-dependent configs:
   ...envDependentApolloServerConfigs
 });
 
