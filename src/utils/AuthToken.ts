@@ -1,6 +1,5 @@
 import type { Request } from "express";
 import type { UserType } from "@models";
-
 import { signAndEncodeJWT, validateAndDecodeJWT, type FixitApiJwtPayload } from "./jwt";
 
 export class AuthToken {
