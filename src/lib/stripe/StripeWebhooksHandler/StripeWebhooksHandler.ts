@@ -1,7 +1,7 @@
+import { ENV } from "@server/env";
 import { connectAccountUpdated } from "./connectAccountUpdated";
 import { customerSubscriptionUpdated } from "./customerSubscriptionUpdated";
 import { customerSubscriptionDeleted } from "./customerSubscriptionDeleted";
-import { stripeWebhookSecrets } from "./getStripeWebhookSecrets";
 import type { StripeWebhooksHandlerRoute } from "./routes";
 
 export class StripeWebhooksHandler {
@@ -18,7 +18,7 @@ export class StripeWebhooksHandler {
         "account.external_account.deleted",
         "account.external_account.updated"
       ],
-      secret: stripeWebhookSecrets["/account"]
+      secret: ENV.STRIPE.WEBHOOKS_SECRET
     },
     "/customer": {
       actionableEventHandlers: {
@@ -44,7 +44,7 @@ export class StripeWebhooksHandler {
         "customer.tax_id.deleted",
         "customer.tax_id.updated"
       ],
-      secret: stripeWebhookSecrets["/customer"]
+      secret: ENV.STRIPE.WEBHOOKS_SECRET
     }
   };
 
