@@ -1,10 +1,13 @@
 import { InternalServerError } from "./500_InternalServerError";
 
-export const getTypeSafeErr = (err: ErrorLike): Error => {
+export const getTypeSafeErr = (
+  err: ErrorLike,
+  fallBackErrMsg: string = "An unknown error occurred."
+): Error => {
   return err instanceof Error
     ? err
     : err === null || err === undefined
-    ? new InternalServerError(FALLBACK_ERROR_MSG)
+    ? new InternalServerError(fallBackErrMsg)
     : typeof err === "string" && err !== ""
     ? new InternalServerError(err)
     : typeof err === "object" &&
@@ -13,8 +16,6 @@ export const getTypeSafeErr = (err: ErrorLike): Error => {
     ? new InternalServerError((err as { message: string }).message)
     : new InternalServerError(
         // prettier-ignore
-        `${FALLBACK_ERROR_MSG} Original error payload: ${typeof err !== "bigint" ? JSON.stringify(err) : "[BigInt]"}`
+        `${fallBackErrMsg} Original error payload: ${typeof err !== "bigint" ? JSON.stringify(err) : "[BigInt]"}`
       );
 };
-
-const FALLBACK_ERROR_MSG = "An unknown error occurred.";
