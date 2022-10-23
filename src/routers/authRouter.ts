@@ -26,6 +26,7 @@ authRouter.use(
   findUserByEmail,
   userLoginShouldExist,
   validatePassword,
+  updateExpoPushToken,
   queryUserItems,
   checkSubscriptionStatus,
   checkOnboardingStatus
