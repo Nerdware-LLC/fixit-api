@@ -44,9 +44,7 @@ export const createOne = async function (
   // The new Stripe Customer obj should be deleted if user creation fails, so try-catch.
 
   try {
-    /* Create User via model.create, which unlike item.save will not
-    overwrite an existing item. newUser is re-assigned to the return
-    value to capture "createdAt" and "updatedAt" generated fields.*/
+    // Create User
     newUser = await this.createItem({
       id: `USER#${getUnixTimestampUUID()}`,
       email,
@@ -67,8 +65,8 @@ export const createOne = async function (
       ...(!!profile && { profile })
     });
 
-    // Create Stripe Connect Account
-    await UserStripeConnectAccount.createOne({
+    // Create newUser's Stripe Connect Account
+    newUser.stripeConnectAccount = await UserStripeConnectAccount.createOne({
       userID: newUser.id,
       email: newUser.email,
       phone: newUser.phone,
