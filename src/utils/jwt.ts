@@ -19,13 +19,12 @@ export const signAndEncodeJWT = (payload: FixitApiJwtPayload) => {
 };
 
 const {
-  IS_PROD,
-  CONFIG: { SELF_URI, PORT },
+  CONFIG: { API_FULL_URL },
   SECURITY: { JWT_PRIVATE_KEY }
 } = ENV;
 
 const SHARED_JWT_PARAMS = {
-  audience: `http${IS_PROD ? "s" : ""}://${SELF_URI}:${PORT}`,
+  audience: API_FULL_URL,
   issuer: "fixit"
 };
 
