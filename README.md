@@ -23,13 +23,6 @@ Author: [Trevor Anderson](https://github.com/trevor-anderson), Founder of [Nerdw
 &nbsp;
 [![license][license-shield]](/LICENSE)
 
-[graphql-shield]: https://img.shields.io/badge/GraphQL-E10098.svg?logo=graphql&logoColor=E10098&labelColor=454545
-[apollo-shield]: https://img.shields.io/badge/Apollo_Server_v3-311C87.svg?logo=apollo-graphql&labelColor=454545
-[express-shield]: https://img.shields.io/badge/Express_v4-7B7B7B.svg?logo=express&logoColor=FFF&labelColor=454545
-[pre-commit-shield]: https://img.shields.io/badge/pre--commit-33A532.svg?logo=pre-commit&logoColor=F8B424&labelColor=454545
-[semantic-shield]: https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-E10098.svg
-[license-shield]: https://img.shields.io/badge/license-Proprietary-000080.svg?labelColor=454545
-
 </div>
 
 - [🗺 Project Layout](#-project-layout)
@@ -48,7 +41,7 @@ Author: [Trevor Anderson](https://github.com/trevor-anderson), Founder of [Nerdw
 
 ```bash
 .
-├── docker                          # Dockerfile and docker-compose.yaml
+├── .github                         # GitHub Actions and other GitHub-related files
 └── src                             # Source code files
     ├── __tests__                   # Jest test-env setup files for all tests
     ├── events                      # Event emitter and handlers
@@ -75,27 +68,27 @@ The graph below outlines every available API route and endpoint. Endpoint graph 
 
 ```mermaid
 flowchart LR
-  root("/") --> api("/api \n\n • GraphQL API entrypoint")
-  root --> admin("/admin \n\n • CSP reports and \n healthchecks")
-  root --> auth("/auth \n\n • User registration and logins \n (administers auth tokens)")
-  root --> connect("/connect \n\n • Stripe Connect \n endpoints")
-  root --> subs("/subscriptions \n\n • Endpoints for managing \n Fixit subscriptions")
-  root --> webhooks("/webhooks \n\n • Webhook endpoints")
+  root("/api") --> api("/api \n\n • GraphQL API entrypoint")
+  root --> admin("/api/admin \n\n • CSP reports and \n healthchecks")
+  root --> auth("/api/auth \n\n • User registration and logins \n (administers auth tokens)")
+  root --> connect("/api/connect \n\n • Stripe Connect \n endpoints")
+  root --> subs("/api/subscriptions \n\n • Endpoints for managing \n Fixit subscriptions")
+  root --> webhooks("/api/webhooks \n\n • Webhook endpoints")
   subgraph gql ["ApolloServer GraphQL Endpoints"]
   api
   end
   subgraph express ["Express Endpoints"]
-  admin --> csp("/admin/csp-violation \n\n • CSP #quot;report-to#quot;" target)
-  admin --> healthcheck("/admin/healthcheck \n\n • Healthchecks target")
-  auth --> register("/auth/register \n\n • User registration")
-  auth --> login("/auth/login \n\n • User login target. Accepts \n email+pw or Google OAuth")
-  auth --> token("/auth/token \n\n • Refreshes auth tokens")
-  connect --> accountLink("/connect/account-link \n\n • Creates link to Stripe Connect \n setup for new/existing users")
-  connect --> dashboardLink("/connect/dashboard-link \n\n • Creates link to Stripe Dashboard \n for existing users")
-  subs --> pay("/subscriptions/submit-payment \n\n • Handles payments for \n Fixit subscriptions")
-  subs --> portal("/subscriptions/customer-portal \n\n • Provides subscription \n management portal for users")
-  webhooks --> whAccount("/webhooks/account \n\n • Stripe Accounts \n webhooks handler")
-  webhooks --> whCustomer("/webhooks/customer \n\n • Stripe Customers \n webhooks handler")
+  admin --> csp("/api/admin/csp-violation \n\n • CSP #quot;report-to#quot;" target)
+  admin --> healthcheck("/api/admin/healthcheck \n\n • Healthchecks target")
+  auth --> register("/api/auth/register \n\n • User registration")
+  auth --> login("/api/auth/login \n\n • User login target. Accepts \n email+pw or Google OAuth")
+  auth --> token("/api/auth/token \n\n • Refreshes auth tokens")
+  connect --> accountLink("/api/connect/account-link \n\n • Creates link to Stripe Connect \n setup for new/existing users")
+  connect --> dashboardLink("/api/connect/dashboard-link \n\n • Creates link to Stripe Dashboard \n for existing users")
+  subs --> pay("/api/subscriptions/submit-payment \n\n • Handles payments for \n Fixit subscriptions")
+  subs --> portal("/api/subscriptions/customer-portal \n\n • Provides subscription \n management portal for users")
+  webhooks --> whAccount("/api/webhooks/account \n\n • Stripe Accounts \n webhooks handler")
+  webhooks --> whCustomer("/api/webhooks/customer \n\n • Stripe Customers \n webhooks handler")
   end
 
   classDef default fill:#1f2020,stroke:#7aa4c9,stroke-width:1px
@@ -218,7 +211,9 @@ Trevor Anderson - [@TeeRevTweets](https://twitter.com/teerevtweets) - [Trevor@Ne
 
 <!-- LINKS -->
 
-<!-- [express-shield]: https://img.shields.io/badge/Express-7B7B7B.svg?logo=express&labelColor=gray
-[pre-commit-shield]: https://img.shields.io/badge/pre--commit-33A532.svg?logo=pre-commit&logoColor=F8B424&labelColor=gray
-[semantic-shield]: https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-E10079.svg
-[license-shield]: https://img.shields.io/badge/license-Proprietary-000080.svg?labelColor=gray -->
+[graphql-shield]: https://img.shields.io/badge/GraphQL-E10098.svg?logo=graphql&logoColor=E10098&labelColor=454545
+[apollo-shield]: https://img.shields.io/badge/Apollo_Server_v3-311C87.svg?logo=apollo-graphql&labelColor=454545
+[express-shield]: https://img.shields.io/badge/Express_v4-7B7B7B.svg?logo=express&logoColor=FFF&labelColor=454545
+[pre-commit-shield]: https://img.shields.io/badge/pre--commit-33A532.svg?logo=pre-commit&logoColor=F8B424&labelColor=454545
+[semantic-shield]: https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-E10098.svg
+[license-shield]: https://img.shields.io/badge/license-Proprietary-000080.svg?labelColor=454545
