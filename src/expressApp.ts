@@ -1,11 +1,13 @@
 import express from "express";
 import * as Sentry from "@sentry/node";
+import { expressMiddleware } from "@apollo/server/express4";
 import { ENV } from "@server/env";
 import { apolloServer } from "./apolloServer";
 import {
   corsMW,
   setSecureHttpHeaders,
   logReqReceived,
+  validateGqlReqContext,
   errorHandler,
   handle404
 } from "./middleware";
@@ -27,22 +29,35 @@ if (!ENV.IS_PROD) {
   expressApp.use(logReqReceived);
 }
 
-// APOLLO SERVER
-apolloServer.applyMiddleware({ app: expressApp, path: "/api" });
-
 // SECURITY
 expressApp.use(corsMW, setSecureHttpHeaders);
 
+/* API root path is /api (e.g., https://gofixit.app/api)
+
+  Routing behavior:
+    - /api    Go to apolloServer
+    - /api/*  Use Express routes
+*/
+
 // BODY-PARSING
-expressApp.use(["/auth", "/connect", "/subscriptions"], express.json());
-expressApp.use("/webhooks", express.raw({ type: "application/json" }));
+expressApp.use(["/api/auth", "/api/connect", "/api/subscriptions"], express.json());
+expressApp.use("/api/webhooks", express.raw({ type: "application/json" }));
 
 // EXPRESS ROUTE HANDLERS
-expressApp.get("/admin/*", adminRouter);
-expressApp.use("/auth", authRouter);
-expressApp.use("/connect", connectRouter);
-expressApp.use("/subscriptions", subscriptionsRouter);
-expressApp.use("/webhooks", webhooksRouter);
+expressApp.get("/api/admin/*", adminRouter);
+expressApp.use("/api/auth", authRouter);
+expressApp.use("/api/connect", connectRouter);
+expressApp.use("/api/subscriptions", subscriptionsRouter);
+expressApp.use("/api/webhooks", webhooksRouter);
+
+// APOLLO SERVER (root path: /api)
+expressApp.use(
+  "/api",
+  express.json(),
+  expressMiddleware(apolloServer, {
+    context: validateGqlReqContext
+  })
+);
 
 // The error handler must be before any other error middleware and after all controllers
 expressApp.use(Sentry.Handlers.errorHandler());
