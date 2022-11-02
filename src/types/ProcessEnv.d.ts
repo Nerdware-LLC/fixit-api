@@ -16,11 +16,8 @@ declare global {
       SENTRY_DSN: string;
       STRIPE_API_VERSION: string;
       STRIPE_WEBHOOKS_SECRET: string;
-      STRIPE_WEBHOOK_SECRETS_BUCKET: string;
       STRIPE_PUBLISHABLE_KEY: string;
       STRIPE_SECRET_KEY: string;
-      STRIPE_CONNECT_ONBOARDING_REDIRECT_ROUTE: string;
-      STRIPE_CUSTOMER_PORTAL_REDIRECT_ROUTE: string;
       FIXIT_SUB_PRODUCT_ID: string;
       FIXIT_SUB_PRICE_ID_MONTHLY: string;
       FIXIT_SUB_PRICE_ID_ANNUAL: string;
