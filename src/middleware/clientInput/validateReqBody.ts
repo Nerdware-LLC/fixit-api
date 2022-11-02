@@ -1,4 +1,4 @@
-import { ClientInputError } from "@utils";
+import { UserInputError } from "@utils";
 import type { Request, Response, NextFunction } from "express";
 
 type ReqBodyValidatorFn = (body: Request["body"]) => boolean;
@@ -6,7 +6,7 @@ type ReqBodyValidatorFn = (body: Request["body"]) => boolean;
 const getRequestBodyValidatorMW = (validatorFn: ReqBodyValidatorFn) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const isReqBodyValid = validatorFn(req.body);
-    if (!isReqBodyValid) next(new ClientInputError("Invalid request"));
+    if (!isReqBodyValid) next(new UserInputError("Invalid request"));
     next();
   };
 };

@@ -2,11 +2,9 @@ import type Stripe from "stripe";
 import { stripe } from "@lib/stripe";
 import type { Model } from "@lib/dynamoDB";
 import type { UserType } from "@models/User/types";
-import { ClientInputError } from "@utils/customErrors";
+import { UserInputError } from "@utils/customErrors";
 import { UserSubscription } from "./UserSubscription";
 import type { UserSubscriptionType } from "./types";
-
-const { PRICE_IDS, PROMO_CODES } = UserSubscription;
 
 /**
  * `upsertOne`
@@ -24,20 +22,21 @@ export const upsertOne = async function (
     promoCode
   }: {
     user: { id: UserType["id"]; stripeCustomerID: UserType["stripeCustomerID"] };
-    selectedSubscription?: keyof typeof PRICE_IDS | "";
-    priceID?: typeof PRICE_IDS[keyof typeof PRICE_IDS];
-    promoCode?: keyof typeof PROMO_CODES;
+    selectedSubscription?: keyof typeof UserSubscription.PRICE_IDS | "";
+    priceID?: typeof UserSubscription.PRICE_IDS[keyof typeof UserSubscription.PRICE_IDS];
+    promoCode?: keyof typeof UserSubscription.PROMO_CODES;
   }
 ) {
   // Ascertain the subscription's Stripe price ID
   if (!priceID) {
-    priceID = PRICE_IDS?.[selectedSubscription as keyof typeof PRICE_IDS];
+    // prettier-ignore
+    priceID = UserSubscription.PRICE_IDS?.[selectedSubscription as keyof typeof UserSubscription.PRICE_IDS];
   }
 
-  if (!priceID) throw new ClientInputError("Invalid subscription");
+  if (!priceID) throw new UserInputError("Invalid subscription");
 
   // Ascertain the subscription's Stripe promoCode ID if applicable
-  const promoCodeID = PROMO_CODES?.[promoCode ?? ""];
+  const promoCodeID = UserSubscription.PROMO_CODES?.[promoCode ?? ""];
 
   // Submit info to Stripe API for new subscription
   const stripeSubObject = await stripe.subscriptions.create({
