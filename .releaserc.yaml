@@ -2,7 +2,6 @@
 branches:
   - main
   - next
-ci: false
 tagFormat: v${version}
 plugins:
   - - "@semantic-release/commit-analyzer"
