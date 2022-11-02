@@ -3,7 +3,7 @@ import { DDBSingleTable } from "./DDBSingleTable";
 
 const {
   NODE_ENV,
-  AWS: { REGION, DYNAMODB_TABLE_NAME, DYNAMODB_LOCAL_ENDPOINT_URL }
+  AWS: { REGION, DYNAMODB_TABLE_NAME }
 } = ENV;
 
 // Use ddb-local in dev and test environments.
@@ -46,7 +46,7 @@ export const ddbSingleTable = new DDBSingleTable({
   // DynamoDB client
   ddbClientConfigs: {
     region: REGION,
-    ...(shouldUseDDBlocal && { endpoint: DYNAMODB_LOCAL_ENDPOINT_URL })
+    ...(shouldUseDDBlocal && { endpoint: "http://localhost:8000" })
   },
   // Table CRUD behavior - in dev/test envs, use ddb-local Table with arbitrary throughput.
   ...(!!shouldUseDDBlocal && {
