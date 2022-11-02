@@ -1,4 +1,5 @@
-import { ApolloError } from "apollo-server-express";
+import { GraphQLError } from "graphql";
+import { ApolloServerErrorCode } from "@apollo/server/errors";
 import { ENV } from "@server/env";
 import { CustomHttpErrorAbstractClass } from "./CustomHttpErrorAbstractClass";
 
@@ -15,15 +16,18 @@ export class InternalServerError extends CustomHttpErrorAbstractClass {
   }
 }
 
-export class ApolloInternalServerError extends ApolloError {
+export class GqlInternalServerError extends GraphQLError {
   name: string;
 
-  constructor(additionalProperties?: Record<string, any>) {
-    super("An unexpected error occurred", "INTERNAL_SERVER_ERROR", additionalProperties);
+  constructor(message = "An unexpected error occurred") {
+    super(message, {
+      extensions: {
+        code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR
+      },
+      originalError: new InternalServerError(message)
+    });
     this.name = "InternalServerError";
-    this.status = 500;
-    this.statusCode = this.status;
 
-    if (!ENV.IS_PROD) Error.captureStackTrace(this, ApolloInternalServerError);
+    if (!ENV.IS_PROD) Error.captureStackTrace(this, GqlInternalServerError);
   }
 }

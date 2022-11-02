@@ -1,7 +1,6 @@
-import { ApolloError } from "apollo-server-express";
+import { GraphQLError } from "graphql";
 import { ENV } from "@server/env";
 import { CustomHttpErrorAbstractClass } from "./CustomHttpErrorAbstractClass";
-import { getTypeSafeErr } from "./getTypeSafeErr";
 
 export class PaymentRequiredError extends CustomHttpErrorAbstractClass {
   name: string;
@@ -16,15 +15,18 @@ export class PaymentRequiredError extends CustomHttpErrorAbstractClass {
   }
 }
 
-export class ApolloPaymentRequiredError extends ApolloError {
+export class GqlPaymentRequiredError extends GraphQLError {
   name: string;
 
-  constructor(additionalProperties?: ErrorLike) {
-    super("Payment required", "PAYMENT_REQUIRED", getTypeSafeErr(additionalProperties));
-    this.name = "PaymentRequiredError";
-    this.status = 402;
-    this.statusCode = this.status;
+  constructor(message = "Payment required") {
+    super(message, {
+      extensions: {
+        code: "PAYMENT_REQUIRED"
+      },
+      originalError: new PaymentRequiredError(message)
+    });
+    this.name = "GqlPaymentRequiredError";
 
-    if (!ENV.IS_PROD) Error.captureStackTrace(this, ApolloPaymentRequiredError);
+    if (!ENV.IS_PROD) Error.captureStackTrace(this, GqlPaymentRequiredError);
   }
 }
