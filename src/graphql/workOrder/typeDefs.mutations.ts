@@ -1,4 +1,4 @@
-import { gql } from "apollo-server-express";
+import gql from "graphql-tag";
 
 // TODO create updateWO_Checklist mutation typedef
 // TODO create updateWO_ContractorNotes mutation typedef
