@@ -11,7 +11,7 @@ export const setSecureHttpHeaders = (req: Request, res: Response, next: NextFunc
   helmetMW(req, res, next);
 };
 
-const CSP_VIOLATION_REPORTS_URI = `${ENV.CONFIG.SELF_URI}/admin/csp-violation`;
+const CSP_VIOLATION_REPORTS_URI = `${ENV.CONFIG.API_FULL_URL}/admin/csp-violation`;
 
 const REPORT_TO = JSON.stringify({
   group: "fixit-security",
