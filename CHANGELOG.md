@@ -5,6 +5,47 @@ All notable changes to this project will be documented in this file.
 ---
 
 
+# [1.14.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.13.0...v1.14.0) (2022-11-07)
+
+
+### Bug Fixes
+
+* **apolloServer:** rm User type-cast in context fn ([178d65f](https://github.com/Nerdware-LLC/fixit-api/commit/178d65f551995bdbd4c50f9b6daed4ac5e2de3fb))
+* **ci:** rm 'ci=false' from Semantic Release config file ([6cf9ba2](https://github.com/Nerdware-LLC/fixit-api/commit/6cf9ba261c9cbcf49ef12ef9dfeaa57463749cfd))
+* **cors:** correct 'self-uri' origin regex ([ba161c6](https://github.com/Nerdware-LLC/fixit-api/commit/ba161c6c81d94f6e0132f60eae506fa508b3e2cf))
+* **ECR-push:** correct docker push cmd syntax ([abdaf1f](https://github.com/Nerdware-LLC/fixit-api/commit/abdaf1f125f92c8f176903cfcede085bc3bb5cf4))
+* **ECR-push:** correct docker push cmd syntax ([b94ccd7](https://github.com/Nerdware-LLC/fixit-api/commit/b94ccd78a6021c3e55ea92a85083145e5e41f8a9))
+* **ECR-push:** correct docker tag syntax for push to ECR ([d5156fe](https://github.com/Nerdware-LLC/fixit-api/commit/d5156fedc139266879f14017d0c7a321a7e910cd))
+* **errors:** convert old ApolloErrs into new GqlErrs ([786304b](https://github.com/Nerdware-LLC/fixit-api/commit/786304bb7d1d6eaa6ea97a6258122569ff303835))
+* **jwt:** rm dupe protocol url-component from 'aud' ([dd7927a](https://github.com/Nerdware-LLC/fixit-api/commit/dd7927a7b07cbfa762a323997e9aa9233e1bb652))
+* **MW-type:** change req._user type to include AuthTokenPayload union ([0b8b5ad](https://github.com/Nerdware-LLC/fixit-api/commit/0b8b5ad95d34210140b9798aaaa619e26a0b44ad))
+* **mw:** update cors+httpHeaders mw to use /api base route ([d2d78bc](https://github.com/Nerdware-LLC/fixit-api/commit/d2d78bc8ab269027e28c13ef93e912e7b2ca4e68))
+* **release:** correct filename for semantic release config file ([b1bfdf9](https://github.com/Nerdware-LLC/fixit-api/commit/b1bfdf9231b46a6b6be29724f62444c57d1e3e75))
+* **User.createOne:** ensure SCA is attached to newUser ([da1bcdd](https://github.com/Nerdware-LLC/fixit-api/commit/da1bcdd4dedcfcc010d7a3b1a33f89f6ef9d6906))
+* **validateReqBody:** correct keys req for auth routes ([669823b](https://github.com/Nerdware-LLC/fixit-api/commit/669823b9f5b408bc7f62017fb605f6a848ab854e))
+
+
+### Features
+
+* add '@types/cors' npm package to dev-deps ([dc53194](https://github.com/Nerdware-LLC/fixit-api/commit/dc53194fa5a050fe56115a86246811cc14cb999f))
+* **apollo:** upgrade to Apollo Server v4 ([8a79211](https://github.com/Nerdware-LLC/fixit-api/commit/8a7921132df9dc9dfc2a2fb1dab6b163a7555732))
+* **auth:** mv apolloServer context-auth fn into mw/auth ([20de0ad](https://github.com/Nerdware-LLC/fixit-api/commit/20de0adb5e6c425650c9633b47e9666eadb172f9))
+* **authRouter:** add 'updateExpoPushToken' to login route ([162f9a0](https://github.com/Nerdware-LLC/fixit-api/commit/162f9a02ed5f706d6151fc31940827a4092b4c33))
+* convert ConnectRouter and some MWs from js to ts ([343cccf](https://github.com/Nerdware-LLC/fixit-api/commit/343cccf5f3d407cd96fce100f15ae1040af71e4a))
+* **Dockerfile:** change exposed port to 80 ([dfb2323](https://github.com/Nerdware-LLC/fixit-api/commit/dfb2323ca8d75f75cdb1784a47c764753bcd574a))
+* **env:** rm unused keys from ENV object ([1fcd6bb](https://github.com/Nerdware-LLC/fixit-api/commit/1fcd6bbbdb7a4edb007407c7659d7bc88cf494eb))
+* **errors:** add Gql custom errors to replace ApolloErrors ([462f816](https://github.com/Nerdware-LLC/fixit-api/commit/462f8167407855da2bf2c3c4fd5f5249ec5b4880))
+* **Expand:** ensure Date objects are not 'expanded' ([8b22a82](https://github.com/Nerdware-LLC/fixit-api/commit/8b22a824462d7ff8f3cfd855b0c3a8592b5a056c))
+* **getTypeSafeErr:** add option to override fallback err msg ([604f43a](https://github.com/Nerdware-LLC/fixit-api/commit/604f43af755bc108b78d3a37573c4b1a704d10ef))
+* **gql:** migrate 'gql' tag imports to 'graphql-tag' for apollo-v4 ([e63feb7](https://github.com/Nerdware-LLC/fixit-api/commit/e63feb78aa1d0c7106021493c48ddff20bbb2a1e))
+* **nvm:** add nvmrc config file ([4f64dff](https://github.com/Nerdware-LLC/fixit-api/commit/4f64dffd7b5618463737aa927c1b7a56f17a7feb))
+* **routes:** update Stripe Link-mw to use /api base route ([3d3d555](https://github.com/Nerdware-LLC/fixit-api/commit/3d3d5556c7ada4762abd58306e768d1c70d7ba36))
+* **server:** migrate expressApp+apolloServer to apollo-v4 ([a8f7997](https://github.com/Nerdware-LLC/fixit-api/commit/a8f79976078dfea978db9a07b66f7dd6d01da3a8))
+* **Stripe-WHs:** rm old 'secret-bucket' env var ([b07ea41](https://github.com/Nerdware-LLC/fixit-api/commit/b07ea414d677d193fc96e19b91a0483c518c2fab))
+* **Stripe-WHs:** rm s3client, update StripeWebhooksHandler ([a7f1399](https://github.com/Nerdware-LLC/fixit-api/commit/a7f13992f221b096b51056b81e6c8c31300d2c46))
+* **types:** rm unused keys from process.env ambient typedef ([c86a2f5](https://github.com/Nerdware-LLC/fixit-api/commit/c86a2f57edbe140701de298379350dec022bb28f))
+* **User:** convert 'expoPushToken' to optional create param for non-mobile ([b55620c](https://github.com/Nerdware-LLC/fixit-api/commit/b55620cac65137768cbc663883c215889173f0ac))
+
 # [1.13.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.12.1...v1.13.0) (2022-10-08)
 
 
