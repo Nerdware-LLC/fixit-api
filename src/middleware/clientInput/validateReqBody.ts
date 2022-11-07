@@ -29,11 +29,9 @@ export const validateLoginReqBody = getRequestBodyValidatorMW((body) => {
   return hasKey(body, "email") && hasValidLoginKeys(body);
 });
 
-// For req.baseUrl /auth/register --> email AND phone AND expoPushToken AND ( password OR googleAccessToken )
+// For req.baseUrl /auth/register --> email AND phone AND ( password OR googleAccessToken )
 export const validateUserRegReqBody = getRequestBodyValidatorMW((body) => {
-  return (
-    ["email", "phone", "expoPushToken"].every((key) => hasKey(body, key)) && hasValidLoginKeys(body)
-  );
+  return ["email", "phone"].every((key) => hasKey(body, key)) && hasValidLoginKeys(body);
 });
 
 // For req.baseUrl /subscriptions/submit-payment --> selectedSubscription AND promoCode AND paymentMethodID

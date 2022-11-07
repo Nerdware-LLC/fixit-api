@@ -34,7 +34,7 @@ class UserModel extends Model<typeof UserModel.schema> {
         // For relational queryies using "sk" as the hash key
         name: "Overloaded_SK_GSI",
         global: true,
-        rangeKey: "data", // TODO Double check - is any model using this GSI sk?
+        rangeKey: "data", // This GSI sk is currently not used by any model methods.
         project: true
       }
     },
@@ -47,7 +47,7 @@ class UserModel extends Model<typeof UserModel.schema> {
         // For relational queries using "data" as the hash key
         name: "Overloaded_Data_GSI",
         global: true,
-        rangeKey: "sk", // WO queryWorkOrdersAssignedToUser uses this GSI SK
+        rangeKey: "sk",
         project: true
       }
     },
@@ -56,9 +56,14 @@ class UserModel extends Model<typeof UserModel.schema> {
       required: true
     },
     expoPushToken: {
+      // TODO the push-service sets EPT to "" (empty string), as STRING attrs CANT BE SET TO NULL !
       type: "string",
-      required: false, // Required on create, but must be nullable so PushService can rm bad tokens
-      validate: (tokenValue: string) => tokenValue == null || Expo.isExpoPushToken(tokenValue)
+      required: false,
+      validate: (tokenValue: string) => tokenValue == "" || Expo.isExpoPushToken(tokenValue),
+      transformValue: {
+        // If value is "null", replace with empty string.
+        toDB: (value: string) => (value === null ? "" : value)
+      }
     },
     stripeCustomerID: {
       type: "string",

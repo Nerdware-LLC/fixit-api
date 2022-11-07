@@ -10,7 +10,7 @@ export const createOne = async function (
   {
     email,
     phone,
-    expoPushToken,
+    expoPushToken, //    Only mobile users will have this
     profile, //          Only Google logins will have this at reg time
     password, //         Only local logins will have this
     googleID, //         Only Google logins will have this
@@ -18,11 +18,11 @@ export const createOne = async function (
   }: {
     email: string;
     phone: string;
-    expoPushToken: string;
-    profile?: UserType["profile"]; //      Only Google logins will have this at reg time
-    password?: string; //          Only local logins will have this
-    googleID?: string; //          Only Google logins will have this
-    googleAccessToken?: string; // Only Google logins will have this
+    expoPushToken?: string; //        Only mobile users will have this
+    profile?: UserType["profile"]; // Only Google logins will have this at reg time
+    password?: string; //             Only local logins will have this
+    googleID?: string; //             Only Google logins will have this
+    googleAccessToken?: string; //    Only Google logins will have this
   }
 ) {
   let newUser: Expand<UserType & { sk: string }>;
