@@ -2,7 +2,7 @@ import cors from "cors";
 import { ENV } from "@server/env";
 
 const corsOptions = {
-  origin: [new RegExp(`^${ENV.CONFIG.API_FULL_URL}`), "https://studio.apollographql.com"],
+  origin: [new RegExp(`^${ENV.CONFIG.SELF_URI}`), "https://studio.apollographql.com"],
   allowedHeaders: ["Content-Type", "Authorization", "apollographql-client-name"]
 };
 
