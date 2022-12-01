@@ -2,7 +2,7 @@ import { stripe } from "@lib/stripe";
 import { ENV } from "@server/env";
 import { catchAsyncMW, type APIRequestWithAuthenticatedUserData } from "@utils/middlewareWrappers";
 
-const BASE_ONBOARDING_URL = `${ENV.CONFIG.SELF_URI}/connect`; // Goes to Fixit Web
+const BASE_ONBOARDING_URL = `${ENV.CONFIG.API_BASE_URL}/connect`;
 
 // req.originalUrl = "/connect/account-link"
 export const createAccountLink = catchAsyncMW<APIRequestWithAuthenticatedUserData>(
