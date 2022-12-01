@@ -5,7 +5,7 @@ const {
   IS_PROD,
   NODE_ENV,
   AWS: { REGION },
-  CONFIG: { TIMEZONE, OS_PLATFORM, PID, NODE_VERSION, PROJECT_VERSION, SELF_URI, PORT, CWD }
+  CONFIG: { TIMEZONE, OS_PLATFORM, PID, NODE_VERSION, PROJECT_VERSION, API_BASE_URL, PORT, CWD }
 } = ENV;
 
 if (!IS_PROD) {
@@ -17,7 +17,7 @@ if (!IS_PROD) {
     Platform ..... ${OS_PLATFORM}
     PID .......... ${PID}
     NodeJS ....... ${NODE_VERSION}
-    URI .......... ${SELF_URI}:${PORT}
+    URL .......... ${API_BASE_URL}:${PORT}
     CWD .......... ${CWD}`
   );
 }

@@ -2,7 +2,8 @@
 const {
   NODE_ENV,
   npm_package_version,
-  SELF_URI,
+  PROTOCOL,
+  DOMAIN,
   PORT,
   AWS_REGION,
   DYNAMODB_TABLE_NAME,
@@ -13,11 +14,16 @@ const {
   STRIPE_PUBLISHABLE_KEY,
   STRIPE_SECRET_KEY,
   FIXIT_SUB_PRODUCT_ID,
-  FIXIT_SUB_PRICE_ID_MONTHLY,
-  FIXIT_SUB_PRICE_ID_ANNUAL,
-  STRIPE_VIP_PROMO_CODE,
-  STRIPE_VIP_PROMO_CODE_ID
+  FIXIT_SUB_PRICES_JSON,
+  FIXIT_SUB_PROMO_CODES_JSON
 } = process.env;
+
+const FIXIT_SUB_PRICES: {
+  MONTHLY: string;
+  ANNUAL: string;
+} = JSON.parse(FIXIT_SUB_PRICES_JSON);
+
+const API_BASE_URL = `${PROTOCOL}://${DOMAIN}`;
 
 export const ENV = Object.freeze({
   NODE_ENV,
@@ -26,9 +32,11 @@ export const ENV = Object.freeze({
     PROJECT_VERSION: npm_package_version,
     // prettier-ignore
     TIMEZONE: `${new Date().toString().match(/([A-Z]+[+-][0-9]+.*)/)?.[1] ?? "FAILED_TO_OBTAIN_TIMEZONE"}`,
-    SELF_URI,
+    PROTOCOL,
+    DOMAIN,
     PORT,
-    API_FULL_URL: `${SELF_URI}:${PORT}/api`,
+    API_BASE_URL,
+    API_FULL_URL: `${API_BASE_URL}:${PORT}/api`,
     OS_PLATFORM: process.platform,
     PID: process.pid,
     NODE_VERSION: process.version,
@@ -54,13 +62,10 @@ export const ENV = Object.freeze({
       FIXIT_SUBSCRIPTION: {
         productID: FIXIT_SUB_PRODUCT_ID,
         priceIDs: {
-          TRIAL: FIXIT_SUB_PRICE_ID_MONTHLY,
-          MONTHLY: FIXIT_SUB_PRICE_ID_ANNUAL,
-          ANNUAL: FIXIT_SUB_PRICE_ID_ANNUAL
+          TRIAL: FIXIT_SUB_PRICES.MONTHLY,
+          ...FIXIT_SUB_PRICES
         },
-        promoCodes: {
-          [STRIPE_VIP_PROMO_CODE]: STRIPE_VIP_PROMO_CODE_ID
-        }
+        promoCodes: JSON.parse(FIXIT_SUB_PROMO_CODES_JSON)
       }
     }
   }
