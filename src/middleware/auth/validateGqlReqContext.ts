@@ -1,12 +1,14 @@
 import { UserSubscription } from "@models/UserSubscription";
 import { AuthToken, GqlAuthError, GqlPaymentRequiredError } from "@utils";
+import { ENV } from "@server";
 import type { Request } from "express";
+import type { ApolloServerResolverContext } from "../../apolloServer";
 
-// This MW is used to create "context" within ApolloServer
-
-export const validateGqlReqContext = async ({ req }: { req: Request }) => {
-  // TODO The below context-init checks currently break Apollo introspection
-
+const validateGqlRequest = async ({
+  req
+}: {
+  req: Request;
+}): Promise<ApolloServerResolverContext> => {
   // Authenticate the user
   const user = await AuthToken.getValidatedRequestAuthTokenPayload(req).catch((err) => {
     throw new GqlAuthError(); // If err, re-throw as Apollo 401 auth error
@@ -24,3 +26,21 @@ export const validateGqlReqContext = async ({ req }: { req: Request }) => {
     user
   };
 };
+
+const isIntrospectionQuery = ({ req }: { req: Request }) => {
+  // FIXME below does not work to allow Rover-CLI introspection queries thru
+  return /query IntrospectionQuery/.test(req?.body?.query);
+};
+
+/**
+ * This MW is used to create "context" within ApolloServer.
+ * - Permits ApolloStudio and ApolloSandbox introspection queries in the dev env.
+ */
+export const validateGqlReqContext =
+  ENV.NODE_ENV !== "development"
+    ? validateGqlRequest
+    : async ({ req }: { req: Request }) => {
+        return isIntrospectionQuery({ req })
+          ? (req as ApolloServerResolverContext)
+          : ((await validateGqlRequest({ req })) as ApolloServerResolverContext);
+      };

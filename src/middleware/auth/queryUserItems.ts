@@ -1,6 +1,7 @@
 import { ddbSingleTable } from "@lib/dynamoDB";
 import { catchAsyncMW } from "@utils/middlewareWrappers";
 import { UserSubscription, UserStripeConnectAccount, WorkOrder, Invoice, Contact } from "@models";
+import { logger, AuthError } from "@utils";
 import type {
   UserType,
   UserSubscriptionType,
@@ -20,6 +21,12 @@ import type {
  * - Work Orders
  * - Invoices
  * - Contacts
+ *
+ * Edge Case: If the User item is not found, this MW throws a 401 AuthError. This is
+ * unlikely to occur in prod, since the client would have to have sent a valid JWT
+ * auth token without existing in the db, but this *does* occur during development
+ * whenever a new empty DDB-local table is instantiated and the client has retained
+ * an auth token from previous interactions with the API.
  */
 export const queryUserItems = catchAsyncMW(async (req, res, next) => {
   if (!req?._user) next("User not found");
@@ -30,71 +37,80 @@ export const queryUserItems = catchAsyncMW(async (req, res, next) => {
   // We want the raw attributes from the DB to compare "SK" values, so we don't use a Model-instance here.
   const items = (await ddbSingleTable.ddbClient.query({
     // In utf8 byte order, tilde comes after numbers, upper+lowercase letters, #, and $.
-    KeyConditionExpression: `id = :userID AND sk BETWEEN :userSK AND ~`,
+    KeyConditionExpression: "pk = :userID AND sk BETWEEN :userSK AND :tilde",
     ExpressionAttributeValues: {
       ":userID": req._user.id,
-      ":userSK": `#DATA#${req._user.id}`
+      ":userSK": `#DATA#${req._user.id}`,
+      ":tilde": "~"
     }
   })) as Array<RawItemFromDB> | undefined;
 
-  if (Array.isArray(items) && items.length > 0) {
-    // Organize and format the items
-    const { subscription, stripeConnectAccount, workOrders, invoices, contacts } = items.reduce(
-      (accum, current) => {
-        // Grab the "sk" value, which can be used to identify the item type
-        const { sk } = current;
+  // If no items were found, the user doesn't exist, throw AuthError (see above jsdoc for details on this edge case)
+  if (!Array.isArray(items) || items.length === 0) throw new AuthError("User does not exist");
 
-        switch (true) {
-          case sk.startsWith("SUBSCRIPTION#"):
-            accum.subscription = current;
-            break;
-          case sk.startsWith("STRIPE_CONNECT_ACCOUNT#"):
-            accum.stripeConnectAccount = current;
-            break;
-          case sk.startsWith("WO#"):
-            accum.workOrders.push(current);
-            break;
-          case sk.startsWith("INV#"):
-            accum.invoices.push(current);
-            break;
-          case sk.startsWith("CONTACT#"):
-            accum.contacts.push(current);
-            break;
-          default:
-            // The User Item "sk" startsWith "#DATA", and should be the only Item to use this default case.
-            break;
-        }
+  // Organize and format the items
+  const { user, subscription, stripeConnectAccount, workOrders, invoices, contacts } = items.reduce(
+    (accum, current) => {
+      // Grab the "sk" value, which can be used to identify the item type
+      const { sk } = current;
 
-        return accum;
-      },
-      USER_ITEMS_REDUCER_ACCUM as typeof USER_ITEMS_REDUCER_ACCUM
-    );
+      switch (true) {
+        case sk.startsWith("SUBSCRIPTION#"):
+          accum.subscription = current;
+          break;
+        case sk.startsWith("STRIPE_CONNECT_ACCOUNT#"):
+          accum.stripeConnectAccount = current;
+          break;
+        case sk.startsWith("WO#"):
+          accum.workOrders.push(current);
+          break;
+        case sk.startsWith("INV#"):
+          accum.invoices.push(current);
+          break;
+        case sk.startsWith("CONTACT#"):
+          accum.contacts.push(current);
+          break;
+        case sk.startsWith("#DATA"):
+          accum.user = current;
+          break;
+        default:
+          // prettier-ignore
+          logger.warn(`[queryUserItems] The following ITEM was returned by the "queryUserItems" DDB query, but items of this type are not handled by the reducer. ${JSON.stringify(current, null, 2)}`);
+          break;
+      }
 
-    if (!!subscription) {
-      req._user.subscription = UserSubscription.processItemData.fromDB(
-        subscription
-      ) as unknown as UserSubscriptionType;
-      // TODO [queryUserItems MW] UserSubscription.processItemData.fromDB not providing desired type inference, currently casting to "unknown" first as a workaround.
-    }
+      return accum;
+    },
+    USER_ITEMS_REDUCER_ACCUM as typeof USER_ITEMS_REDUCER_ACCUM
+  );
 
-    if (!!stripeConnectAccount) {
-      req._user.stripeConnectAccount = UserStripeConnectAccount.processItemData.fromDB(
-        stripeConnectAccount
-      ) as UserStripeConnectAccountType;
-    }
+  // If user was not found, throw AuthError (see above jsdoc for details on this edge case)
+  if (!user) throw new AuthError("User does not exist");
 
-    req._userQueryItems = {
-      ...(workOrders.length > 0 && {
-        workOrders: WorkOrder.processItemData.fromDB(workOrders) as Array<WorkOrderType>
-      }),
-      ...(invoices.length > 0 && {
-        invoices: Invoice.processItemData.fromDB(invoices) as Array<InvoiceType>
-      }),
-      ...(contacts.length > 0 && {
-        contacts: Contact.processItemData.fromDB(contacts) as Array<ContactType>
-      })
-    };
+  if (!!subscription) {
+    req._user.subscription = UserSubscription.processItemData.fromDB(
+      subscription
+    ) as unknown as UserSubscriptionType;
+    // TODO [queryUserItems MW] UserSubscription.processItemData.fromDB not providing desired type inference, currently casting to "unknown" first as a workaround.
   }
+
+  if (!!stripeConnectAccount) {
+    req._user.stripeConnectAccount = UserStripeConnectAccount.processItemData.fromDB(
+      stripeConnectAccount
+    ) as UserStripeConnectAccountType;
+  }
+
+  req._userQueryItems = {
+    ...(workOrders.length > 0 && {
+      workOrders: WorkOrder.processItemData.fromDB(workOrders) as Array<WorkOrderType>
+    }),
+    ...(invoices.length > 0 && {
+      invoices: Invoice.processItemData.fromDB(invoices) as Array<InvoiceType>
+    }),
+    ...(contacts.length > 0 && {
+      contacts: Contact.processItemData.fromDB(contacts) as Array<ContactType>
+    })
+  };
 
   next();
 });
@@ -107,12 +123,14 @@ interface RawItemFromDB {
 }
 
 const USER_ITEMS_REDUCER_ACCUM: {
+  user: RawItemFromDB | null;
   subscription: RawItemFromDB | null;
   stripeConnectAccount: RawItemFromDB | null;
   workOrders: Array<RawItemFromDB>;
   invoices: Array<RawItemFromDB>;
   contacts: Array<RawItemFromDB>;
 } = {
+  user: null,
   subscription: null,
   stripeConnectAccount: null,
   workOrders: [],
