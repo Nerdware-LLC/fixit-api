@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 ---
 
 
+# [1.15.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.14.0...v1.15.0) (2022-12-01)
+
+
+### Features
+
+* **apolloServer:** add plugins and typing for apollo context ([083a267](https://github.com/Nerdware-LLC/fixit-api/commit/083a267f480be2ca131c98ec09ec70368051c0ce))
+* **apollo:** update apollo plugin config to use remote schema ([0d00129](https://github.com/Nerdware-LLC/fixit-api/commit/0d0012993a107f8b5fa8f61768196a6f2df700a7))
+* **codegen:** add GQL-codegen config+scripts ([5694dec](https://github.com/Nerdware-LLC/fixit-api/commit/5694decdf43e982d89acc0ba95d360f3ef71dc0e))
+* **cors:** add apollo+sentry related http headers and origins ([b5e4f95](https://github.com/Nerdware-LLC/fixit-api/commit/b5e4f95b2acdc5f4545b7c243ed1b5a0eddc7d40))
+* **env:** separate 'SELF_URI' into component parts PROTOCOL and DOMAIN ([967a4c7](https://github.com/Nerdware-LLC/fixit-api/commit/967a4c763622fae94e49b0674ada8fc83d8f7324))
+* **id-regex:** update Stripe-ID regexs to reflect variable length ([7ba2b48](https://github.com/Nerdware-LLC/fixit-api/commit/7ba2b48c16c1f11d609b78ea2516865464591689))
+* **mw/auth:** improve edge-case handling for gql-ctx and queryUserItems ([1121422](https://github.com/Nerdware-LLC/fixit-api/commit/11214223431e34d51e30e2d4e342ea7dc6b3007d))
+* **mw/clientInput:** rm 'promoCode' from required fields in submit-payment route ([7d404d1](https://github.com/Nerdware-LLC/fixit-api/commit/7d404d1809bfe66b678a19632a77aa1d1ef2a5e4))
+* **mw/subs:** update logic in payment-handling mw ([3c073fc](https://github.com/Nerdware-LLC/fixit-api/commit/3c073fc2053f99e92f415255ba1225e32955fade))
+* **mw/utils:** add type-safety check on req.body ([919c586](https://github.com/Nerdware-LLC/fixit-api/commit/919c586902eaeadc5e18d5002678a2366a3d0c03))
+* **paths:** add src/types path aliases ([3f60729](https://github.com/Nerdware-LLC/fixit-api/commit/3f6072952fbcd5577065588c2d34db6699798047))
+* **types:** add GQL codegen types ([0c5128d](https://github.com/Nerdware-LLC/fixit-api/commit/0c5128da2b8481d56d49c6d0c145aa467757ba7a))
+* **types:** update fields available on ProcessEnv ([3d70739](https://github.com/Nerdware-LLC/fixit-api/commit/3d70739f787cd048b3d82feb21d8464d83a8c137))
+* update ref to env var 'API_BASE_URL' ([6917fb4](https://github.com/Nerdware-LLC/fixit-api/commit/6917fb485afd5a7dd3394271d0921dc8b4efdf4a))
+
 # [1.14.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.13.0...v1.14.0) (2022-11-07)
 
 
