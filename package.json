@@ -23,12 +23,17 @@
   "scripts": {
     "start": "npm run ddb:forceNew ; nodemon ./src/index.ts dotenv_config_path=./src/server/.dev.env",
     "start:prod": "node --no-warnings --loader ./build/loader.js ./build/index.js",
+    "compose:up": "docker compose --file ./docker/docker-compose.yaml --project-directory . up",
     "build": "rm -rf ./build 2>/dev/null && tsc --project tsconfig.build.json",
     "ddb:start": "docker run -d -p 8000:8000 --rm --name fixit-api-ddb-local amazon/dynamodb-local 1>/dev/null",
     "ddb:kill": "docker container kill fixit-api-ddb-local &>/dev/null",
     "ddb:forceNew": "npm run ddb:kill ; npm run ddb:start",
     "test": "npm run ddb:forceNew ; NODE_OPTIONS='--experimental-vm-modules --no-warnings' DOTENV_CONFIG_PATH=./src/server/.test.env jest",
-    "test:watch": "npm run test -- --watch ;        # Re-run tests when associated files change"
+    "test:watch": "npm run test -- --watch ;        # Re-run tests when associated files change",
+    "rover:publish-schema-update": "rover graph introspect http://localhost:8080/api | rover graph publish fixit@current --schema -",
+    "rover:fetch": "rover graph fetch fixit@current > fixit@current.graphql",
+    "gql:codegen": "graphql-codegen --config codegen.yaml",
+    "gql:update-types": "npm run rover:fetch && npm run gql:codegen"
   },
   "dependencies": {
     "@apollo/server": "^4.0.5",
@@ -58,6 +63,10 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "2.13.11",
+    "@graphql-codegen/introspection": "2.2.1",
+    "@graphql-codegen/typescript": "2.8.1",
+    "@graphql-codegen/typescript-resolvers": "2.7.6",
     "@jest/types": "^29.1.2",
     "@types/bcryptjs": "^2.4.2",
     "@types/cors": "^2.8.12",
@@ -79,6 +88,7 @@
     "typescript": "^4.8.2"
   },
   "_moduleAliases": {
+    "@": "build/",
     "@events": "build/events",
     "@graphql": "build/graphql",
     "@lib": "build/lib",

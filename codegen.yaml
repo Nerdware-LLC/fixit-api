@@ -1,0 +1,17 @@
+# Config file for GraphQL Code Generator (@graphql-codegen), which
+# generates TypeScript typings for GQL Schema typedefs and resolvers.
+
+schema: "./fixit@current.graphql"
+generates:
+  # Codegen output target file
+  ./src/types/graphql.ts:
+    plugins:
+      - "typescript"
+      - "typescript-resolvers"
+    config:
+      # resolver Context type:
+      useIndexSignature: true
+      contextType: "../apolloServer#ApolloServerResolverContext"
+  # ./graphql.schema.json:
+  #   plugins:
+  #     - "introspection"
