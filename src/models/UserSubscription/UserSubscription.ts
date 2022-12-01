@@ -45,7 +45,7 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
     data: {
       type: "string",
       alias: "id",
-      validate: (value: string) => USER_SUB_STRIPE_ID_REGEX.test(value), // Example from Stripe docs: "sub_IiUAdsiPC26N4e"
+      validate: (value: string) => USER_SUB_STRIPE_ID_REGEX.test(value), // Example Stripe sub id: "sub_1M55RlC34C0mN67JGYSD4btX"
       required: true,
       index: {
         // For relational queries using "data" as the hash key
