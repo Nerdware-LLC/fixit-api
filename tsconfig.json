@@ -1,4 +1,5 @@
 {
+  "": "",
   "compilerOptions": {
     "target": "ES2022",
     "module": "ES2022",
@@ -17,6 +18,7 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
+      "@/*": ["src/*"],
       "@events": ["src/events"],
       "@events/*": ["src/events/*"],
       "@graphql": ["src/graphql"],
@@ -30,6 +32,8 @@
       "@server": ["src/server"],
       "@server/*": ["src/server/*"],
       "@tests/*": ["src/__tests__/*"],
+      "@types": ["src/types"],
+      "@types/*": ["src/types/*"],
       "@utils": ["src/utils"],
       "@utils/*": ["src/utils/*"]
     }
