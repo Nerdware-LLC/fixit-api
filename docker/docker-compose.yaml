@@ -1,0 +1,38 @@
+version: "3.9"
+# This docker-compose file provides quick setup for dev/test envs only.
+services:
+
+  api:
+    container_name: fixit-api
+    image: node:16.17.0
+    working_dir: /home/node/app
+    entrypoint: npx nodemon ./src/index.ts
+    networks:
+      fixit-backend:
+        aliases:
+          - api
+    ports:
+      - "8080:8080"
+    volumes:
+      - ".:/home/node/app"
+    env_file:
+      - src/server/.dev.env
+    environment:
+      - AWS_ACCESS_KEY_ID=local
+      - AWS_SECRET_ACCESS_KEY=local
+    tty: true # <-- provides colored output in console
+    depends_on:
+      - dynamodb-local
+
+  dynamodb-local:
+    container_name: dynamodb-local
+    image: "amazon/dynamodb-local:latest"
+    networks:
+      fixit-backend:
+        aliases:
+          - ddb
+    ports:
+      - "8000:8000"
+
+networks:
+  fixit-backend:

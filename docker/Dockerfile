@@ -57,6 +57,6 @@ RUN npm ci --omit=dev
 USER node
 
 # Run the API directly with node executable
-CMD ["node", "build/index.js"]
+CMD ["node", "--no-warnings", "--loader", "build/loader.js", "build/index.js"]
 
 ######################################################################
