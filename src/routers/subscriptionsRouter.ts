@@ -1,7 +1,7 @@
 import express from "express";
 import {
-  validateSubmitPaymentReqBody,
   getUserFromAuthHeaderToken,
+  validateSubmitPaymentReqBody,
   findOrCreateStripeSubscription,
   generateAuthToken,
   createCustomerPortalLink
@@ -19,4 +19,5 @@ subscriptionsRouter.post(
   findOrCreateStripeSubscription,
   generateAuthToken
 );
+
 subscriptionsRouter.get("/customer-portal", createCustomerPortalLink);
