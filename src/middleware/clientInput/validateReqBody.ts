@@ -34,7 +34,7 @@ export const validateUserRegReqBody = getRequestBodyValidatorMW((body) => {
   return ["email", "phone"].every((key) => hasKey(body, key)) && hasValidLoginKeys(body);
 });
 
-// For req.baseUrl /subscriptions/submit-payment --> selectedSubscription AND promoCode AND paymentMethodID
+// For req.baseUrl /subscriptions/submit-payment --> selectedSubscription AND paymentMethodID
 export const validateSubmitPaymentReqBody = getRequestBodyValidatorMW((body) => {
-  return ["selectedSubscription", "promoCode", "paymentMethodID"].every((key) => hasKey(body, key));
+  return ["selectedSubscription", "paymentMethodID"].every((key) => hasKey(body, key));
 });

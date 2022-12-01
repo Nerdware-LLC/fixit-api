@@ -1,5 +1,1 @@
-export {
-  validateLoginReqBody,
-  validateUserRegReqBody,
-  validateSubmitPaymentReqBody
-} from "./validateReqBody";
+export * from "./validateReqBody";
