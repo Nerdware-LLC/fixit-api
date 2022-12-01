@@ -3,6 +3,7 @@ import { getLogFnFromTemplate } from "./loggerTemplate";
 
 export const logger = {
   server: getLogFnFromTemplate("SERVER", { messageColor: colors.magenta }),
+  warn: getLogFnFromTemplate("SERVER", { messageColor: colors.yellow }),
   security: getLogFnFromTemplate("SECURITY", {
     labelColor: colors.bgRed.black.bold,
     messageColor: colors.red.bold
