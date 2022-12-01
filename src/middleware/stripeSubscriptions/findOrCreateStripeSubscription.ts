@@ -69,7 +69,7 @@ export const findOrCreateStripeSubscription = catchAsyncMW(async (req, res, next
     // If an error occurs, ensure the 402 status code is provided.
   } catch (err: ErrorLike) {
     const error = getTypeSafeErr(err);
-    logger.stripe(error, "updateCustomerPaymentMethod");
+    logger.stripe(error, "findOrCreateStripeSubscription");
     throw new PaymentRequiredError(error.message);
   }
 
