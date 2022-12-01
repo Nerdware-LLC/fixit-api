@@ -1,9 +1,8 @@
 export {};
 
-// Globally-available ambient definitions
 declare global {
   /*
-    TODO rm defs here once Apollo codegen typedefs are downloaded
+    TODO rm this once relevant refs are migrated to use the GQL codegen-generated types
   */
 
   type Location = {
