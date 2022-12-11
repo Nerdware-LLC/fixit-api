@@ -7,7 +7,7 @@ import * as fixitUser from "./fixitUser";
 import * as invoice from "./invoice";
 import * as phoneContact from "./phoneContact";
 import * as profile from "./profile";
-import * as stripeConnectAccount from "./stripeConnectAccount";
+import * as userStripeConnectAccount from "./userStripeConnectAccount";
 import * as user from "./user";
 import * as userSubscription from "./userSubscription";
 import * as workOrder from "./workOrder";
@@ -25,7 +25,7 @@ export const schema = {
     contact.typeDefs,
     invoice.typeDefs,
     profile.typeDefs,
-    stripeConnectAccount.typeDefs,
+    userStripeConnectAccount.typeDefs,
     user.typeDefs,
     userSubscription.typeDefs,
     workOrder.typeDefs,
