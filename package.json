@@ -30,7 +30,7 @@
     "ddb:forceNew": "npm run ddb:kill ; npm run ddb:start",
     "test": "npm run ddb:forceNew ; NODE_OPTIONS='--experimental-vm-modules --no-warnings' DOTENV_CONFIG_PATH=./src/server/.test.env jest",
     "test:watch": "npm run test -- --watch ;        # Re-run tests when associated files change",
-    "rover:publish-schema-update": "rover graph introspect http://localhost:8080/api | rover graph publish fixit@current --schema -",
+    "rover:manual-schema-update": "rover graph introspect http://localhost:8080/api | rover graph publish fixit@current --schema -",
     "rover:fetch": "rover graph fetch fixit@current > fixit@current.graphql",
     "gql:codegen": "graphql-codegen --config codegen.yaml",
     "gql:update-types": "npm run rover:fetch && npm run gql:codegen"
