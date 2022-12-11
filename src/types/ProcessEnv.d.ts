@@ -13,6 +13,7 @@ declare global {
       PORT: string;
       AWS_REGION: string;
       DYNAMODB_TABLE_NAME: string;
+      APOLLO_STUDIO_INTROSPECTION_AUTH_TOKEN?: string;
       JWT_PRIVATE_KEY: string;
       SENTRY_DSN: string;
       STRIPE_API_VERSION: string;
