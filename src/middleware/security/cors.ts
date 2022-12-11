@@ -16,8 +16,15 @@ const corsOptions = {
     // Apollo GraphQL http headers:
     "apollographql-client-name",
     "apollographql-client-version",
-    // Enable ApolloServerPluginInlineTrace in dev:
-    ...(ENV.NODE_ENV === "development" ? ["apollo-federation-include-trace"] : [])
+    // dev env headers:
+    ...(ENV.NODE_ENV === "development"
+      ? [
+          // Enable ApolloServerPluginInlineTrace
+          "apollo-federation-include-trace",
+          // Permit access to Apollo Studio queries
+          "Apollo-Studio-Auth-Token"
+        ]
+      : [])
   ]
 };
 
