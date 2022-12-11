@@ -1,12 +1,20 @@
-import { User } from "@models/User";
-import { getEscapedRegExp, normalizeInput } from "@utils";
+import { ddbSingleTable } from "@lib/dynamoDB";
+import { ENV } from "@server";
+import { getEscapedRegExp, normalizeInput, GqlUserInputError } from "@utils";
+import type { Resolvers, PhoneContact } from "@/types/graphql";
+import type { UserType } from "@models/User/types";
 
-export const resolvers = {
+export const resolvers: Partial<Resolvers> = {
   Query: {
     searchUsers: async (parent, { rawPhoneContacts }, { user }) => {
+      /* FIXME See below FIXME regarding this query-resolver's cache requirement. */
+      if (ENV.NODE_ENV !== "development") {
+        throw new GqlUserInputError("This query is not yet available");
+      }
+
       if (!rawPhoneContacts || rawPhoneContacts.length === 0) return null;
-      let searchPhones = [];
-      let searchEmails = [];
+      let searchPhones: Array<string> = [];
+      let searchEmails: Array<string> = [];
       const cleanedInput = rawPhoneContacts.reduce((acc, current) => {
         const cleanedFields = {
           ...current,
@@ -21,36 +29,32 @@ export const resolvers = {
         // If either phone OR email matches user ctx, return acc (exclude from search & return objects)
         if (cleanedFields?.phone !== user.phone && !cleanedFields?.emailRegExp?.test(user.email)) {
           // Append phone, if truthy
-          searchPhones = [...searchPhones, ...(cleanedFields.phone ? [cleanedFields.phone] : [])];
+          if (cleanedFields?.phone) searchPhones.push(cleanedFields.phone);
           // Append email, if truthy
-          searchEmails = [...searchEmails, ...(cleanedFields.email ? [cleanedFields.email] : [])];
+          if (cleanedFields?.email) searchEmails.push(cleanedFields.email);
           acc.push(cleanedFields);
         }
 
         return acc;
-      }, []);
+      }, [] as Array<typeof rawPhoneContacts[number] & { emailRegExp?: RegExp }>);
 
-      // const results = await User.query({  }) // FIXME might need a GSI for lookups on many emails/phones
+      // FIXME Current table design necessitates a table scan to query all users, which
+      // is never desirable. A cache needs to be implemented to cut down on DDB RCUs before
+      // this resolver is made publicly available to end users.
 
-      const results = await prisma.user.findMany({
-        where: {
-          type: user.otherUserType,
-          OR: [{ phone: { in: searchPhones } }, { email: { in: searchEmails } }],
-          [`${user.type.toLowerCase()}Contacts`]: {
-            none: {
-              [`${user.type.toLowerCase()}ID`]: user.id
-            }
-          }
-        },
-        select: prisma.SELECT.USER.PUBLIC_USER_FIELDS
-      });
+      // We want the raw attributes from the DB to compare "SK" values, so we don't use a Model-instance here.
+      const results = (await ddbSingleTable.ddbClient.scan({
+        ProjectionExpression: "pk, sk, data, phone, profile"
+        // FIXME Add FilterExpression to filter out non-User items
+      })) as unknown as Array<UserType>; // FIXME phoneContacts-resolver scan return type
 
       return cleanedInput.reduce((acc, current) => {
         let existingUser = null;
 
         const existingUserIndex = results.findIndex(
           (matchedUser) =>
-            matchedUser.phone === current.phone || current?.emailRegExp?.test(matchedUser.email)
+            matchedUser.phone === current.phone ||
+            (current?.emailRegExp?.test(matchedUser?.email ?? "") ?? false)
         );
 
         if (existingUserIndex !== -1) {
@@ -73,17 +77,11 @@ export const resolvers = {
         } else if (current.phone) {
           acc.push({
             isUser: !!existingUser,
-            ...current,
-            ...(existingUser && {
-              id: existingUser.id,
-              phone: existingUser.phone,
-              email: existingUser.email,
-              ...existingUser.profile
-            })
+            ...current
           });
         }
         return acc;
-      }, []);
+      }, [] as Array<PhoneContact>);
     }
   }
 };
