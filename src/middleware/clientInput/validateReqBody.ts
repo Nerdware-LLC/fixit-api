@@ -24,17 +24,23 @@ const hasValidLoginKeys = (req_body: Request["body"] & { type?: "LOCAL" | "GOOGL
     : false;
 };
 
-// For req.baseUrl /auth/login --> email AND ( password OR googleAccessToken )
+// For req.baseUrl /api/auth/login --> email AND ( password OR googleAccessToken )
 export const validateLoginReqBody = getRequestBodyValidatorMW((body) => {
   return hasKey(body, "email") && hasValidLoginKeys(body);
 });
 
-// For req.baseUrl /auth/register --> email AND phone AND ( password OR googleAccessToken )
+// For req.baseUrl /api/auth/register --> email AND phone AND ( password OR googleAccessToken )
 export const validateUserRegReqBody = getRequestBodyValidatorMW((body) => {
   return ["email", "phone"].every((key) => hasKey(body, key)) && hasValidLoginKeys(body);
 });
 
-// For req.baseUrl /subscriptions/submit-payment --> selectedSubscription AND paymentMethodID
+// For req.baseUrl /api/subscriptions/submit-payment --> selectedSubscription AND paymentMethodID
 export const validateSubmitPaymentReqBody = getRequestBodyValidatorMW((body) => {
   return ["selectedSubscription", "paymentMethodID"].every((key) => hasKey(body, key));
+});
+
+// For req.baseUrl /api/subscriptions/customer-portal --> returnURL
+// For req.baseUrl /api/connect/account-link          --> returnURL
+export const validateHasReturnURL = getRequestBodyValidatorMW((body) => {
+  return hasKey(body, "returnURL");
 });
