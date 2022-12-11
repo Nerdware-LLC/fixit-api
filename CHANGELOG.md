@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 ---
 
 
+# [1.16.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.15.0...v1.16.0) (2022-12-11)
+
+
+### Bug Fixes
+
+* **events:** rm destructure of possibly undefined value ([4515116](https://github.com/Nerdware-LLC/fixit-api/commit/4515116dde95b268570c37c0b4849f7eac3e4923))
+* **wo-location:** replace abstract-interface w concrete gql type ([56da52a](https://github.com/Nerdware-LLC/fixit-api/commit/56da52ad49aa475be9cb88f49e282de0664ba521))
+
+
+### Features
+
+* **AuthToken:** add 'profile' to auth token fields ([a58be2a](https://github.com/Nerdware-LLC/fixit-api/commit/a58be2a63ce0da188d2219a9615dc89e2e481e78))
+* **cors:** add headers for Apollo-Studio introspection in dev env ([7582f5b](https://github.com/Nerdware-LLC/fixit-api/commit/7582f5b2a1f26f30340c100feeee6cedb8cc6029))
+* **env:** add APOLLO_STUDIO_INTROSPECTION_AUTH_TOKEN ([3e0c557](https://github.com/Nerdware-LLC/fixit-api/commit/3e0c557e076f560232258180fd603ac667c51b2e))
+* **env:** add APOLLO_STUDIO_INTROSPECTION_AUTH_TOKEN ([068aa2e](https://github.com/Nerdware-LLC/fixit-api/commit/068aa2e51c7828ee4a40b0fc57de02dff8f212e9))
+* **errors:** add static field for status code nums ([4cf1d58](https://github.com/Nerdware-LLC/fixit-api/commit/4cf1d5815494c037d86cf94bb2f80325a42e1589))
+* **fixitUser:** add 'profile' to interface ([8210952](https://github.com/Nerdware-LLC/fixit-api/commit/821095229e106bc465dfac358001f1c21a365ef4))
+* **gql-introspection:** correct isIntrospectionQuery logic ([784eb35](https://github.com/Nerdware-LLC/fixit-api/commit/784eb3596811ab5384f175dd3c583a512d4c4c06))
+* **gql-profile:** rm field 'profile.id' ([fbdab9a](https://github.com/Nerdware-LLC/fixit-api/commit/fbdab9a678cf5fb0c65cd395e5076274b8b6caac))
+* **gql-resolvers:** convert to TS with codegen typings ([39aa52a](https://github.com/Nerdware-LLC/fixit-api/commit/39aa52a2902ea4cb490104a8ffab13ae7e7b9e74))
+* **gql-user:** rename gql-type SCA to UserSCA ([70f58a0](https://github.com/Nerdware-LLC/fixit-api/commit/70f58a0c85a33610ac2e755a25be881616c3518b))
+* **myInvoices:** correct return type to separate own/assigned invoices ([10756cd](https://github.com/Nerdware-LLC/fixit-api/commit/10756cd6115e095811d472dd58e77bae7fa9272e))
+* **userSCA:** add typedefs to schema file ([df8fb7e](https://github.com/Nerdware-LLC/fixit-api/commit/df8fb7ef122e29ae4901f2c2dd47afc2dd98b2d3))
+* **validateReqBody:** add validateHasReturnURL for link-gen endpoints ([4a6f9fa](https://github.com/Nerdware-LLC/fixit-api/commit/4a6f9fa5aaaf501fb7152963b67f1eed2ca4c4c2))
+
 # [1.15.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.14.0...v1.15.0) (2022-12-01)
 
 
