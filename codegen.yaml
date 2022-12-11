@@ -6,12 +6,18 @@ generates:
   # Codegen output target file
   ./src/types/graphql.ts:
     plugins:
-      - "typescript"
-      - "typescript-resolvers"
+      - typescript
+      - typescript-resolvers
     config:
-      # resolver Context type:
       useIndexSignature: true
+      # resolver Context type:
       contextType: "../apolloServer#ApolloServerResolverContext"
-  # ./graphql.schema.json:
-  #   plugins:
-  #     - "introspection"
+      # Map GQL types to TS types for type-resolution within resolvers:
+      mappers:
+        Contact: "../models/Contact/types#ContactType"
+        Invoice: "../models/Invoice/types#InvoiceType"
+        User: "../models/User/types#UserType"
+        Profile: "../models/User/types#UserProfile"
+        UserStripeConnectAccount: "../models/UserStripeConnectAccount/types#UserStripeConnectAccountType"
+        UserSubscription: "../models/UserSubscription/types#UserSubscriptionType"
+        WorkOrder: "../models/WorkOrder/types#WorkOrderType"
