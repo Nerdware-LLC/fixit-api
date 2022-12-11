@@ -8,12 +8,12 @@ const apolloServer = new ApolloServer<ApolloServerResolverContext>({
   typeDefs: schema.typeDefs,
   resolvers: schema.resolvers,
   csrfPrevention: true,
-
   introspection: !ENV.IS_PROD,
   plugins: [
     ...(ENV.NODE_ENV === "development"
       ? // prettier-ignore
         [
+          // Plugin to enable Schema Reporting, which keeps the schema up to date (note: does not work with Federated schemas)
           (await import("@apollo/server/plugin/schemaReporting")).ApolloServerPluginSchemaReporting(),
           (await import("@apollo/server/plugin/landingPage/default")).ApolloServerPluginLandingPageLocalDefault({ embed: true }),
           (await import("@apollo/server/plugin/inlineTrace")).ApolloServerPluginInlineTrace()
