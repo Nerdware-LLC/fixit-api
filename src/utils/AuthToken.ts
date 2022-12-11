@@ -9,6 +9,7 @@ export class AuthToken {
     id: userID,
     email,
     phone,
+    profile,
     stripeCustomerID,
     stripeConnectAccount,
     subscription
@@ -17,6 +18,7 @@ export class AuthToken {
       id: userID,
       email,
       phone,
+      profile,
       stripeCustomerID,
       stripeConnectAccount: {
         id: stripeConnectAccount.id,
@@ -65,6 +67,7 @@ export interface FixitApiAuthTokenPayload extends FixitApiJwtPayload {
   id: UserType["id"];
   email: UserType["email"];
   phone: UserType["phone"];
+  profile: UserType["profile"];
   stripeCustomerID: UserType["stripeCustomerID"];
   stripeConnectAccount: Expand<
     Pick<
