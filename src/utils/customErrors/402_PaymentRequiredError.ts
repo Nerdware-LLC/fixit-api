@@ -1,4 +1,5 @@
-import { GraphQLError } from "graphql";
+import { GraphQLError, type GraphQLErrorOptions } from "graphql";
+import merge from "lodash.merge";
 import { ENV } from "@server/env";
 import { CustomHttpErrorAbstractClass } from "./CustomHttpErrorAbstractClass";
 
@@ -7,10 +8,12 @@ export class PaymentRequiredError extends CustomHttpErrorAbstractClass {
   status: number;
   statusCode: number;
 
+  public static readonly STATUS_CODE = 402;
+
   constructor(message = "Payment required") {
     super(message);
     this.name = "PaymentRequiredError";
-    this.status = 402;
+    this.status = PaymentRequiredError.STATUS_CODE;
     this.statusCode = this.status;
   }
 }
@@ -18,13 +21,20 @@ export class PaymentRequiredError extends CustomHttpErrorAbstractClass {
 export class GqlPaymentRequiredError extends GraphQLError {
   name: string;
 
-  constructor(message = "Payment required") {
-    super(message, {
-      extensions: {
-        code: "PAYMENT_REQUIRED"
-      },
-      originalError: new PaymentRequiredError(message)
-    });
+  public static readonly STATUS_CODE = PaymentRequiredError.STATUS_CODE;
+
+  constructor(message = "Payment required", opts: GraphQLErrorOptions = {}) {
+    super(
+      message,
+      merge(
+        {
+          extensions: { code: "PAYMENT_REQUIRED" },
+          originalError: new PaymentRequiredError(message)
+        },
+        opts
+      )
+    );
+
     this.name = "GqlPaymentRequiredError";
 
     if (!ENV.IS_PROD) Error.captureStackTrace(this, GqlPaymentRequiredError);

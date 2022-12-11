@@ -1,4 +1,5 @@
-import { GraphQLError } from "graphql";
+import { GraphQLError, type GraphQLErrorOptions } from "graphql";
+import merge from "lodash.merge";
 import { ENV } from "@server/env";
 import { CustomHttpErrorAbstractClass } from "./CustomHttpErrorAbstractClass";
 
@@ -7,10 +8,12 @@ export class ForbiddenError extends CustomHttpErrorAbstractClass {
   status: number;
   statusCode: number;
 
+  public static readonly STATUS_CODE = 403;
+
   constructor(message = "Forbidden") {
     super(message);
     this.name = "ForbiddenError";
-    this.status = 403;
+    this.status = ForbiddenError.STATUS_CODE;
     this.statusCode = this.status;
   }
 }
@@ -18,13 +21,20 @@ export class ForbiddenError extends CustomHttpErrorAbstractClass {
 export class GqlForbiddenError extends GraphQLError {
   name: string;
 
-  constructor(message = "Forbidden") {
-    super(message, {
-      extensions: {
-        code: "FORBIDDEN"
-      },
-      originalError: new ForbiddenError(message)
-    });
+  public static readonly STATUS_CODE = ForbiddenError.STATUS_CODE;
+
+  constructor(message = "Forbidden", opts: GraphQLErrorOptions = {}) {
+    super(
+      message,
+      merge(
+        {
+          extensions: { code: "FORBIDDEN" },
+          originalError: new ForbiddenError(message)
+        },
+        opts
+      )
+    );
+
     this.name = "GqlForbiddenError";
 
     if (!ENV.IS_PROD) Error.captureStackTrace(this, GqlForbiddenError);

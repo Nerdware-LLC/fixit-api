@@ -5,10 +5,12 @@ export class NotFoundError extends CustomHttpErrorAbstractClass {
   status: number;
   statusCode: number;
 
+  public static readonly STATUS_CODE = 404;
+
   constructor(message = "Unable to find the requested resource") {
     super(message);
     this.name = "NotFoundError";
-    this.status = 404;
+    this.status = NotFoundError.STATUS_CODE;
     this.statusCode = this.status;
   }
 }
