@@ -17,7 +17,7 @@ export const typeDefs = gql`
     scheduledDateTime: DateTime
     contractorNotes: String
     createdAt: DateTime!
-    invoice: Invoice # FIXME need model-method / resolver for this
+    # invoice: Invoice # FIXME need model-method / resolver for this
   }
 
   enum WorkOrderStatus {
@@ -51,11 +51,11 @@ export const typeDefs = gql`
     WINDOWS
   }
 
-  interface WorkOrderLocation {
+  type WorkOrderLocation {
     country: String
-    region: String
-    city: String
-    streetLine1: String
+    region: String!
+    city: String!
+    streetLine1: String!
     streetLine2: String
   }
 
@@ -66,8 +66,8 @@ export const typeDefs = gql`
   }
 
   type MyWorkOrdersQueryReturnType {
-    createdByUser: [WorkOrder]!
-    assignedToUser: [WorkOrder]!
+    createdByUser: [WorkOrder!]!
+    assignedToUser: [WorkOrder!]!
   }
 
   extend type Query {
