@@ -3,7 +3,7 @@ import { reportCspViolation } from "@middleware";
 
 export const adminRouter = express.Router();
 
-// req.baseUrl = "/admin"
+// req.baseUrl = "/api/admin"
 
 adminRouter.use("/healthcheck", express.json(), (req, res) => {
   res.json({ message: "SUCESS" });

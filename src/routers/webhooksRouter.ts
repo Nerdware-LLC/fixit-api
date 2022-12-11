@@ -6,7 +6,7 @@ import { logger, catchAsyncMW, getTypeSafeErr, type StripeWebhookRequestObject }
 
 export const webhooksRouter = express.Router();
 
-// req.baseUrl = "/webhooks"
+// req.baseUrl = "/api/webhooks"
 
 // For any and all /webhooks requests, try to validate and log the Stripe webhook event.
 webhooksRouter.use((req: Request, res: Response, next: NextFunction) => {

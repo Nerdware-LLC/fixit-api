@@ -2,6 +2,7 @@ import express from "express";
 import {
   getUserFromAuthHeaderToken,
   validateSubmitPaymentReqBody,
+  validateHasReturnURL,
   findOrCreateStripeSubscription,
   generateAuthToken,
   createCustomerPortalLink
@@ -9,7 +10,7 @@ import {
 
 export const subscriptionsRouter = express.Router();
 
-// req.baseUrl = "/subscriptions"
+// req.baseUrl = "/api/subscriptions"
 
 subscriptionsRouter.use(getUserFromAuthHeaderToken);
 
@@ -20,4 +21,4 @@ subscriptionsRouter.post(
   generateAuthToken
 );
 
-subscriptionsRouter.get("/customer-portal", createCustomerPortalLink);
+subscriptionsRouter.post("/customer-portal", validateHasReturnURL, createCustomerPortalLink);

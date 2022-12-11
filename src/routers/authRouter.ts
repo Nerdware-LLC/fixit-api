@@ -17,7 +17,7 @@ import {
 
 export const authRouter = express.Router();
 
-// req.baseUrl = "/auth"
+// req.baseUrl = "/api/auth"
 // TODO Add route "/auth/forgot-password"
 
 authRouter.use(
