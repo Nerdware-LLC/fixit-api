@@ -22,6 +22,7 @@ export const typeDefs = gql`
   }
 
   extend type Query {
+    # This query is not yet available in prod/staging - will throw 400 error outside of dev.
     searchUsers(rawPhoneContacts: [RawPhoneContactInput!]!): [PhoneContact]
   }
 `;
