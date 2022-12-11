@@ -8,7 +8,7 @@ export const typeDefs = gql`
     profile: Profile!
     stripeCustomerID: String!
     subscription: UserSubscription
-    stripeConnectAccount: StripeConnectAccount
+    stripeConnectAccount: UserStripeConnectAccount
     createdAt: DateTime!
   }
 
