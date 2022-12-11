@@ -11,14 +11,27 @@ const validateGqlRequest = async ({
 }): Promise<ApolloServerResolverContext> => {
   // Authenticate the user
   const user = await AuthToken.getValidatedRequestAuthTokenPayload(req).catch((err) => {
-    throw new GqlAuthError(); // If err, re-throw as Apollo 401 auth error
+    /* If err, re-throw as Apollo 401 auth error. By default, errors thrown from
+    apollo context-init fn return to client with http status code 500, so an "http"
+    extension is added here to ensure the status code is properly set to 401.    */
+    throw new GqlAuthError("Authentication required", {
+      extensions: { http: { status: GqlAuthError.STATUS_CODE } }
+    });
+  });
+
+  // Rm internal AuthToken fields, if present
+  ["iat", "exp", "aud", "iss", "sub"].forEach((authTokenInternalField) => {
+    if (authTokenInternalField in user) delete user[authTokenInternalField];
   });
 
   // Ensure the User's subscription is active and not expired
   try {
     UserSubscription.validateExisting(user.subscription);
   } catch (err) {
-    throw new GqlPaymentRequiredError(); // If err, re-throw as Apollo 402 error
+    // If err, re-throw as Apollo 402 error
+    throw new GqlPaymentRequiredError("Payment required", {
+      extensions: { http: { status: GqlPaymentRequiredError.STATUS_CODE } }
+    });
   }
 
   return {
@@ -27,9 +40,27 @@ const validateGqlRequest = async ({
   };
 };
 
+/**
+ * This function tests for whether or not an incoming request is a MANUAL
+ * schema-update introspection query, submitted either via the Rover CLI or from
+ * Apollo Studio, with the former being the method usedfor updating the "staging"
+ * and "prod" variants in the CI pipeline.
+ *
+ * During development, however, the "current" variant of the Fixit schema is
+ * updated via PUSH event at server startup using the APOLLO_KEY and
+ * APOLLO_GRAPH_REF env vars.
+ */
 const isIntrospectionQuery = ({ req }: { req: Request }) => {
-  // FIXME below does not work to allow Rover-CLI introspection queries thru
-  return /query IntrospectionQuery/.test(req?.body?.query);
+  return (
+    // Manual schema-update introspection queries submitted from Apollo Studio:
+    (req.get("origin") === "https://studio.apollographql.com" &&
+      req?.body?.query &&
+      /query IntrospectionQuery/.test(req.body.query)) ||
+    // Manual schema-update introspection queries submitted via Rover CLI:
+    ((/^rover/.test(req.get("user-agent") ?? "") || req.hostname === "localhost") &&
+      req?.body?.operationName &&
+      req.body.operationName === "GraphIntrospectQuery")
+  );
 };
 
 /**
