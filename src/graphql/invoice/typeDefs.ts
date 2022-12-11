@@ -18,9 +18,14 @@ export const typeDefs = gql`
     DISPUTED
   }
 
+  type MyInvoicesQueryReturnType {
+    createdByUser: [Invoice!]!
+    assignedToUser: [Invoice!]!
+  }
+
   extend type Query {
     invoice(invoiceID: ID!): Invoice!
-    myInvoices: [Invoice!]!
+    myInvoices: MyInvoicesQueryReturnType!
   }
 
   input InvoiceInput {
