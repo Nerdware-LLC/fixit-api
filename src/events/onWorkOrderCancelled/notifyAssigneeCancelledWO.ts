@@ -8,15 +8,18 @@ export const notifyAssigneeCancelledWO = async (cancelledWO: WorkOrderType) => {
   // If new WorkOrder was UNASSIGNED, return.
   if (!assignedToUserID) return;
 
-  const { expoPushToken: assigneePushToken } = await User.getUserByID(assignedToUserID);
+  const assigneeUser = await User.getUserByID(assignedToUserID);
 
   // If assignee does not currently have a registered pushToken, return.
-  if (!assigneePushToken) return;
+  if (!assigneeUser?.expoPushToken) return;
 
   await lambdaClient.invokeEvent("PushNotificationService", [
     new WorkOrderPushNotification({
       pushEventName: "WorkOrderCancelled",
-      recipientUser: { id: assignedToUserID, expoPushToken: assigneePushToken },
+      recipientUser: {
+        id: assignedToUserID,
+        expoPushToken: assigneeUser.expoPushToken
+      },
       workOrder: cancelledWO
     })
   ]);

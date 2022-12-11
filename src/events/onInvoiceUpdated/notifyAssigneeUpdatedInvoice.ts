@@ -5,15 +5,18 @@ import { InvoicePushNotification } from "@events/pushNotifications";
 export const notifyAssigneeUpdatedInvoice = async (updatedInvoice: InvoiceType) => {
   const { assignedToUserID } = updatedInvoice;
 
-  const { expoPushToken: assigneePushToken } = await User.getUserByID(assignedToUserID);
+  const assigneeUser = await User.getUserByID(assignedToUserID);
 
   // If assignee does not currently have a registered pushToken, return.
-  if (!assigneePushToken) return;
+  if (!assigneeUser?.expoPushToken) return;
 
   await lambdaClient.invokeEvent("PushNotificationService", [
     new InvoicePushNotification({
       pushEventName: "InvoiceUpdated",
-      recipientUser: { id: assignedToUserID, expoPushToken: assigneePushToken },
+      recipientUser: {
+        id: assignedToUserID,
+        expoPushToken: assigneeUser.expoPushToken
+      },
       invoice: updatedInvoice
     })
   ]);
