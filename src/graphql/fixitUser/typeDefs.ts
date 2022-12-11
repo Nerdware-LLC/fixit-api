@@ -5,7 +5,6 @@ export const typeDefs = gql`
     id: ID!
     email: Email!
     phone: String!
-    profile: Profile!
-    createdAt: DateTime!
+    profile: Profile
   }
 `;
