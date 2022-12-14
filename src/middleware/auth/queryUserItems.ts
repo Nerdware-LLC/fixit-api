@@ -1,13 +1,16 @@
 import { ddbSingleTable } from "@lib/dynamoDB";
 import { catchAsyncMW } from "@utils/middlewareWrappers";
 import { UserSubscription, UserStripeConnectAccount, WorkOrder, Invoice, Contact } from "@models";
-import { logger, AuthError } from "@utils";
+import {
+  logger,
+  AuthError,
+  type WorkOrderDbTypeToApiResponseType,
+  type InvoiceDbTypeToApiResponseType
+} from "@utils";
 import type {
   UserType,
   UserSubscriptionType,
   UserStripeConnectAccountType,
-  WorkOrderType,
-  InvoiceType,
   ContactType
 } from "@models";
 
@@ -81,7 +84,21 @@ export const queryUserItems = catchAsyncMW(async (req, res, next) => {
 
       return accum;
     },
-    USER_ITEMS_REDUCER_ACCUM as typeof USER_ITEMS_REDUCER_ACCUM
+    {
+      user: null,
+      subscription: null,
+      stripeConnectAccount: null,
+      workOrders: [],
+      invoices: [],
+      contacts: []
+    } as {
+      user: RawItemFromDB | null;
+      subscription: RawItemFromDB | null;
+      stripeConnectAccount: RawItemFromDB | null;
+      workOrders: Array<RawItemFromDB>;
+      invoices: Array<RawItemFromDB>;
+      contacts: Array<RawItemFromDB>;
+    }
   );
 
   // If user was not found, throw AuthError (see above jsdoc for details on this edge case)
@@ -100,12 +117,43 @@ export const queryUserItems = catchAsyncMW(async (req, res, next) => {
     ) as UserStripeConnectAccountType;
   }
 
+  /* For WorkOrders and Invoices, since these pre-fetched items are being returned by a
+  REST endpoint rather than GQL query, fields which are nullable in their respective GQL
+  schema typedefs are NOT "auto" populated with a default value of null whenever the DB
+  object does not contain the property. This causes an issue when the receiving Apollo
+  client tries to write the pre-fetched items into its cache, since the returned objects
+  are missing properties and therefore don't match the schema typedefs. Therefore, fields
+  which are nullable/optional and aren't present in the DB object are explicitly set to
+  null below to emulate GQL query-resolver behavior to ensure the client receives these
+  items in the shape specified in the GQL schema.  */
+
   req._userQueryItems = {
     ...(workOrders.length > 0 && {
-      workOrders: WorkOrder.processItemData.fromDB(workOrders) as Array<WorkOrderType>
+      workOrders: (
+        WorkOrder.processItemData.fromDB(workOrders) as Array<WorkOrderDbTypeToApiResponseType>
+      ).map((workOrder) => ({
+        // Fields which are nullable/optional in GQL schema default to null:
+        category: null,
+        checklist: null,
+        dueDate: null,
+        entryContact: null,
+        entryContactPhone: null,
+        scheduledDateTime: null,
+        contractorNotes: null,
+        // DB object values override above defaults:
+        ...workOrder
+      })) as Array<WorkOrderDbTypeToApiResponseType>
     }),
     ...(invoices.length > 0 && {
-      invoices: Invoice.processItemData.fromDB(invoices) as Array<InvoiceType>
+      invoices: (
+        Invoice.processItemData.fromDB(invoices) as Array<InvoiceDbTypeToApiResponseType>
+      ).map((invoice) => ({
+        // Fields which are nullable/optional in GQL schema default to null:
+        stripePaymentIntentID: null,
+        workOrder: null,
+        // DB object values override above defaults:
+        ...invoice
+      })) as Array<InvoiceDbTypeToApiResponseType>
     }),
     ...(contacts.length > 0 && {
       contacts: Contact.processItemData.fromDB(contacts) as Array<ContactType>
@@ -121,19 +169,3 @@ interface RawItemFromDB {
   data: string;
   [keys: string]: any;
 }
-
-const USER_ITEMS_REDUCER_ACCUM: {
-  user: RawItemFromDB | null;
-  subscription: RawItemFromDB | null;
-  stripeConnectAccount: RawItemFromDB | null;
-  workOrders: Array<RawItemFromDB>;
-  invoices: Array<RawItemFromDB>;
-  contacts: Array<RawItemFromDB>;
-} = {
-  user: null,
-  subscription: null,
-  stripeConnectAccount: null,
-  workOrders: [],
-  invoices: [],
-  contacts: []
-};
