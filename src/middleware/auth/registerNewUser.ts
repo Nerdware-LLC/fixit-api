@@ -6,6 +6,7 @@ import { catchAsyncMW } from "@utils/middlewareWrappers";
 export const registerNewUser = catchAsyncMW(async (req, res, next) => {
   const {
     body: {
+      handle,
       email,
       phone,
       expoPushToken,
@@ -17,6 +18,7 @@ export const registerNewUser = catchAsyncMW(async (req, res, next) => {
   } = req;
 
   req._user = await User.createOne({
+    handle,
     email,
     phone,
     expoPushToken,

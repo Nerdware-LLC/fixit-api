@@ -2,8 +2,13 @@ import { Expo } from "expo-server-sdk";
 import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@models/_common";
 import { EMAIL_REGEX } from "@utils";
-import { USER_ID_REGEX, USER_SK_REGEX, USER_STRIPE_CUSTOMER_ID_REGEX } from "./regex";
 import { createOne } from "./createOne";
+import {
+  USER_ID_REGEX,
+  USER_SK_REGEX,
+  USER_HANDLE_REGEX,
+  USER_STRIPE_CUSTOMER_ID_REGEX
+} from "./regex";
 import type { UserType } from "./types";
 
 // TODO make sure sensitive User fields are hidden from other Users: id, stripeCustomerID, stripeConnectAccount, subscription
@@ -50,6 +55,11 @@ class UserModel extends Model<typeof UserModel.schema> {
         rangeKey: "sk",
         project: true
       }
+    },
+    handle: {
+      type: "string",
+      required: true,
+      validate: (value: string) => USER_HANDLE_REGEX.test(value)
     },
     phone: {
       ...COMMON_ATTRIBUTE_TYPES.PHONE,

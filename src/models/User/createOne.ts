@@ -8,6 +8,7 @@ import type { UserType } from "./types";
 export const createOne = async function (
   this: InstanceType<typeof Model>,
   {
+    handle,
     email,
     phone,
     expoPushToken, //    Only mobile users will have this
@@ -16,6 +17,7 @@ export const createOne = async function (
     googleID, //         Only Google logins will have this
     googleAccessToken // Only Google logins will have this
   }: {
+    handle: string;
     email: string;
     phone: string;
     expoPushToken?: string; //        Only mobile users will have this
@@ -47,6 +49,7 @@ export const createOne = async function (
     // Create User
     newUser = await this.createItem({
       id: `USER#${getUnixTimestampUUID()}`,
+      handle,
       email,
       phone,
       expoPushToken,

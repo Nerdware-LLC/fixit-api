@@ -29,9 +29,9 @@ export const validateLoginReqBody = getRequestBodyValidatorMW((body) => {
   return hasKey(body, "email") && hasValidLoginKeys(body);
 });
 
-// For req.baseUrl /api/auth/register --> email AND phone AND ( password OR googleAccessToken )
+// For req.baseUrl /api/auth/register --> handle AND email AND phone AND ( password OR googleAccessToken )
 export const validateUserRegReqBody = getRequestBodyValidatorMW((body) => {
-  return ["email", "phone"].every((key) => hasKey(body, key)) && hasValidLoginKeys(body);
+  return ["handle", "email", "phone"].every((key) => hasKey(body, key)) && hasValidLoginKeys(body);
 });
 
 // For req.baseUrl /api/subscriptions/submit-payment --> selectedSubscription AND paymentMethodID

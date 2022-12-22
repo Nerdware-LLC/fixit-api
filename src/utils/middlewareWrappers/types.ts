@@ -22,11 +22,27 @@ export type AsyncMiddlewareFn<ReqT extends UnionOfReqObjectTypes = APIRequestWit
 export interface APIRequestWithUserData extends Request {
   _user?: UserType | FixitApiAuthTokenPayload;
   _userQueryItems?: {
-    workOrders?: Array<WorkOrderType>;
-    invoices?: Array<InvoiceType>;
+    workOrders?: Array<WorkOrderDbTypeToApiResponseType>;
+    invoices?: Array<InvoiceDbTypeToApiResponseType>;
     contacts?: Array<ContactType>;
   };
 }
+
+export type WorkOrderDbTypeToApiResponseType = Omit<
+  WorkOrderType,
+  "createdByUserID" | "assignedToUserID"
+> & {
+  createdBy: { id: string; [K: string]: any };
+  assignedTo?: { id: string; [K: string]: any };
+};
+
+export type InvoiceDbTypeToApiResponseType = Omit<
+  InvoiceType,
+  "createdByUserID" | "assignedToUserID"
+> & {
+  createdBy: { id: string; [K: string]: any };
+  assignedTo: { id: string; [K: string]: any };
+};
 
 // APIRequestWithAuthenticatedUserData sets "_user" to required.
 export type APIRequestWithAuthenticatedUserData = Expand<

@@ -7,6 +7,7 @@ export class AuthToken {
 
   constructor({
     id: userID,
+    handle,
     email,
     phone,
     profile,
@@ -16,6 +17,7 @@ export class AuthToken {
   }: FixitApiAuthTokenPayload) {
     const payload: FixitApiAuthTokenPayload = {
       id: userID,
+      handle,
       email,
       phone,
       profile,
@@ -65,6 +67,7 @@ export class AuthToken {
 
 export interface FixitApiAuthTokenPayload extends FixitApiJwtPayload {
   id: UserType["id"];
+  handle: UserType["handle"];
   email: UserType["email"];
   phone: UserType["phone"];
   profile: UserType["profile"];

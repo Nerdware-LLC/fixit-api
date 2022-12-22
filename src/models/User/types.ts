@@ -4,6 +4,7 @@ import type { UserStripeConnectAccountType } from "@models/UserStripeConnectAcco
 export interface UserType {
   id: string;
   sk?: string;
+  handle: string;
   email: string;
   phone: string;
   expoPushToken?: string;
