@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 ---
 
 
+# [1.17.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.16.0...v1.17.0) (2022-12-23)
+
+
+### Bug Fixes
+
+* **gql-sca:** rm SCA, was replaced by UserSCA ([6baa1e2](https://github.com/Nerdware-LLC/fixit-api/commit/6baa1e234a5b4bf849f872cdda0790fb3ee4abe2))
+* **queryUserItems:** add nullable-field handling for client-GQL-schema matching ([f2ecbc3](https://github.com/Nerdware-LLC/fixit-api/commit/f2ecbc3938b10ec63b0dfc35eadf53fd41d4fd24))
+
+
+### Features
+
+* add GQL file used by codegen; update codegen types ([bab1ebe](https://github.com/Nerdware-LLC/fixit-api/commit/bab1ebe4674a01585e4d0459c4089842d9d58028))
+* **codegen:** add type-mappings for GQL resolver types ([bff8794](https://github.com/Nerdware-LLC/fixit-api/commit/bff8794daf99ab573aba6677f1d4a43190075a26))
+* impl new 'handle' property on User model+types+etc ([6b63e3a](https://github.com/Nerdware-LLC/fixit-api/commit/6b63e3a8f1a124145786b90c46dbc300a79f4811))
+
 # [1.16.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.15.0...v1.16.0) (2022-12-11)
 
 
