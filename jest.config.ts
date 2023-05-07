@@ -10,7 +10,7 @@ const jestConfig: JestConfigWithTsJest = {
     "src/**/*.{js,ts}",
     "!**/*.d.ts",
     "!**/node_modules/**",
-    "!**/__tests__/**"
+    "!**/__tests__/**",
   ],
   coverageDirectory: "coverage",
   extensionsToTreatAsEsm: [".ts"],
@@ -28,12 +28,12 @@ const jestConfig: JestConfigWithTsJest = {
       "ts-jest",
       {
         tsconfig: "tsconfig.json",
-        useESM: true
-      }
-    ]
+        useESM: true,
+      },
+    ],
   },
   transformIgnorePatterns: ["<rootDir>/node_modules/"],
-  verbose: true
+  verbose: true,
 };
 
 export default jestConfig;
