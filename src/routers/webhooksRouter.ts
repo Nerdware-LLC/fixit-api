@@ -1,8 +1,8 @@
 import express from "express";
-import type { Request, Response, NextFunction } from "express";
-import type Stripe from "stripe";
 import { stripe, StripeWebhooksHandler, type StripeWebhooksHandlerRoute } from "@lib/stripe";
 import { logger, catchAsyncMW, getTypeSafeErr, type StripeWebhookRequestObject } from "@utils";
+import type { Request, Response, NextFunction } from "express";
+import type Stripe from "stripe";
 
 export const webhooksRouter = express.Router();
 
@@ -32,7 +32,7 @@ webhooksRouter.use((req: Request, res: Response, next: NextFunction) => {
     (req as StripeWebhookRequestObject).event = event;
     next();
     //
-  } catch (error: ErrorLike) {
+  } catch (error: unknown) {
     const safeErr = getTypeSafeErr(error);
     logger.stripe(error, "Webhook signature verification failed");
     res.status(400).send(`Webhook Error: ${safeErr.message}`);

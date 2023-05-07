@@ -1,7 +1,8 @@
+import type { UserType, AuthenticatedUser, WorkOrderType, InvoiceType, ContactType } from "@types";
+import type { FixitApiAuthTokenPayload } from "@utils/AuthToken";
 import type { Request, Response, NextFunction } from "express";
 import type Stripe from "stripe";
-import type { UserType, AuthenticatedUser, WorkOrderType, InvoiceType, ContactType } from "@models";
-import type { FixitApiAuthTokenPayload } from "@utils/AuthToken";
+import type { Simplify } from "type-fest";
 
 // Middleware Function Types
 
@@ -45,7 +46,7 @@ export type InvoiceDbTypeToApiResponseType = Omit<
 };
 
 // APIRequestWithAuthenticatedUserData sets "_user" to required.
-export type APIRequestWithAuthenticatedUserData = Expand<
+export type APIRequestWithAuthenticatedUserData = Simplify<
   Omit<APIRequestWithUserData, "_user"> & {
     _user: AuthenticatedUser;
   }

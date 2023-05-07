@@ -1,8 +1,8 @@
 import moment from "moment";
 import { eventEmitter } from "@events";
-import type { Model } from "@lib/dynamoDB";
 import { WorkOrder } from "./WorkOrder";
-import type { WorkOrderType } from "./types";
+import type { Model } from "@lib/dynamoDB";
+import type { WorkOrderType } from "@types";
 
 // function, not arrow, bc we need "this" to be the WorkOrder model
 export const createOne = async function (
@@ -18,7 +18,7 @@ export const createOne = async function (
     dueDate,
     entryContact,
     entryContactPhone,
-    scheduledDateTime
+    scheduledDateTime,
   }: CreateWorkOrderInput
 ) {
   /* Create WorkOrder via model.create, which unlike item.save will not
@@ -40,9 +40,9 @@ export const createOne = async function (
       checklist: checklist.map((checklistItem) => ({
         ...checklistItem,
         id: `WO#${createdByUserID}#${moment().unix()}`,
-        isCompleted: false
-      }))
-    })
+        isCompleted: false,
+      })),
+    }),
   });
 
   eventEmitter.emitWorkOrderCreated(newWorkOrder);
@@ -53,9 +53,17 @@ export const createOne = async function (
 type CreateWorkOrderInput = Readonly<
   Omit<
     WorkOrderType,
-    "id" | "status" | "priority" | "checklist" | "contractorNotes" | "updatedAt" | "createdAt"
+    | "id"
+    | "assignedToUserID"
+    | "status"
+    | "priority"
+    | "checklist"
+    | "contractorNotes"
+    | "updatedAt"
+    | "createdAt"
   > & {
-    priority?: typeof WorkOrder.PRIORITIES[number]; // <-- required in base type
+    assignedToUserID?: string | null;
+    priority?: (typeof WorkOrder.PRIORITIES)[number]; // <-- required in base type
     checklist?: ReadonlyArray<{ description: string }>;
   }
 >;

@@ -1,6 +1,6 @@
-import type Stripe from "stripe";
 import { UserStripeConnectAccount } from "@models/UserStripeConnectAccount";
 import { logger } from "@utils/logger";
+import type Stripe from "stripe";
 
 /**
  * Stripe webhook handler for event: `"account.updated"`
@@ -13,7 +13,7 @@ export const connectAccountUpdated = async (rawStripeConnectAccountObj: Stripe.A
     id: stripeConnectAccountID,
     details_submitted: detailsSubmitted,
     charges_enabled: chargesEnabled,
-    payouts_enabled: payoutsEnabled
+    payouts_enabled: payoutsEnabled,
   } = rawStripeConnectAccountObj;
 
   let userID;
@@ -30,7 +30,7 @@ export const connectAccountUpdated = async (rawStripeConnectAccountObj: Stripe.A
       {
         detailsSubmitted,
         chargesEnabled,
-        payoutsEnabled
+        payoutsEnabled,
       }
     );
   } catch (err) {

@@ -2,7 +2,7 @@ import type {
   AsyncMiddlewareFn,
   MiddlewareFn,
   UnionOfReqObjectTypes,
-  APIRequestWithUserData // <-- default "req" Object type
+  APIRequestWithUserData, // <-- default "req" Object type
 } from "./types";
 
 /**

@@ -1,6 +1,7 @@
-import type { Request } from "express";
-import type { UserType } from "@models";
 import { signAndEncodeJWT, validateAndDecodeJWT, type FixitApiJwtPayload } from "./jwt";
+import type { UserType } from "@types";
+import type { Request } from "express";
+import type { Simplify } from "type-fest";
 
 export class AuthToken {
   private tokenValue;
@@ -13,7 +14,7 @@ export class AuthToken {
     profile,
     stripeCustomerID,
     stripeConnectAccount,
-    subscription
+    subscription,
   }: FixitApiAuthTokenPayload) {
     const payload: FixitApiAuthTokenPayload = {
       id: userID,
@@ -26,15 +27,15 @@ export class AuthToken {
         id: stripeConnectAccount.id,
         detailsSubmitted: !!stripeConnectAccount.detailsSubmitted,
         chargesEnabled: !!stripeConnectAccount.chargesEnabled,
-        payoutsEnabled: !!stripeConnectAccount.payoutsEnabled
+        payoutsEnabled: !!stripeConnectAccount.payoutsEnabled,
       },
       ...(subscription && {
         subscription: {
           id: subscription.id,
           status: subscription.status,
-          currentPeriodEnd: subscription.currentPeriodEnd
-        }
-      })
+          currentPeriodEnd: subscription.currentPeriodEnd,
+        },
+      }),
     };
 
     this.tokenValue = signAndEncodeJWT(payload);
@@ -72,13 +73,13 @@ export interface FixitApiAuthTokenPayload extends FixitApiJwtPayload {
   phone: UserType["phone"];
   profile: UserType["profile"];
   stripeCustomerID: UserType["stripeCustomerID"];
-  stripeConnectAccount: Expand<
+  stripeConnectAccount: Simplify<
     Pick<
       NonNullable<UserType["stripeConnectAccount"]>,
       "id" | "detailsSubmitted" | "chargesEnabled" | "payoutsEnabled"
     >
   >;
-  subscription?: Expand<
+  subscription?: Simplify<
     Pick<NonNullable<UserType["subscription"]>, "id" | "status" | "currentPeriodEnd">
   >;
 }

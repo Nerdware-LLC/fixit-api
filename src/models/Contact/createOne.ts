@@ -1,6 +1,6 @@
 import { eventEmitter } from "@events";
 import type { Model } from "@lib/dynamoDB";
-import type { ContactType } from "./types";
+import type { ContactType } from "@types";
 
 // function, not arrow, bc we need "this" to be the Contact model
 export const createOne = async function (
@@ -9,7 +9,7 @@ export const createOne = async function (
 ) {
   const newContact = await this.createItem({
     userID,
-    contactUserID
+    contactUserID,
   });
 
   // If Contact gets an event to emit for onCreate handling, that will go here.

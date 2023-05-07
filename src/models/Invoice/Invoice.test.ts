@@ -2,7 +2,7 @@ import moment from "moment";
 import { MILLISECONDS_PER_DAY } from "@tests/datetime";
 import { Invoice } from "./Invoice";
 import { INVOICE_SK_REGEX } from "./regex";
-import type { InvoiceType } from "./types";
+import type { InvoiceType } from "@types";
 
 const USER_1 = "USER#11111111-1111-1111-1111-inv111111111";
 const USER_2 = "USER#22222222-2222-2222-2222-inv222222222";
@@ -12,15 +12,15 @@ const MOCK_INPUTS = {
   INV_A: {
     createdByUserID: USER_1,
     assignedToUserID: USER_2,
-    amount: 10000 // $100.00
+    amount: 10000, // $100.00
   },
   // INV_B contains all INV properties that can be provided to Invoice.createOne
   INV_B: {
     createdByUserID: USER_2,
     assignedToUserID: USER_1,
     amount: 22222, // $222.22
-    workOrderID: `WO#${USER_1}#${(Date.now() - MILLISECONDS_PER_DAY * 10) / 1000}` // WO created 10 days ago
-  }
+    workOrderID: `WO#${USER_1}#${(Date.now() - MILLISECONDS_PER_DAY * 10) / 1000}`, // WO created 10 days ago
+  },
 } as const;
 
 // This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
@@ -98,11 +98,11 @@ describe("Invoice model R/W database operations", () => {
 
     const NEW_INV_VALUES: Record<keyof typeof createdInvoices, Partial<InvoiceType>> = {
       INV_A: {
-        amount: 9000 // $90.00 (10% discount from original INV_A amount)
+        amount: 9000, // $90.00 (10% discount from original INV_A amount)
       },
       INV_B: {
-        stripePaymentIntentID: "foo_PaymentIntentID" // FIXME Add Stripe Payment Intent to test PayInvoice flow
-      }
+        stripePaymentIntentID: "foo_PaymentIntentID", // FIXME Add Stripe Payment Intent to test PayInvoice flow
+      },
     };
 
     // Update Inv values
@@ -114,7 +114,7 @@ describe("Invoice model R/W database operations", () => {
     for (const key of MOCK_INPUT_KEYS) {
       expect(updatedInvoices[key]).toMatchObject({
         ...createdInvoices[key],
-        ...NEW_INV_VALUES[key]
+        ...NEW_INV_VALUES[key],
       });
     }
 
@@ -144,7 +144,7 @@ afterAll(async () => {
 
   const remainingMockINVs = await Invoice.ddbClient.scan({
     FilterExpression: "begins_with(sk, :skPrefix)",
-    ExpressionAttributeValues: { ":skPrefix": "INV#" }
+    ExpressionAttributeValues: { ":skPrefix": "INV#" },
   });
 
   if (Array.isArray(remainingMockINVs) && remainingMockINVs.length > 0) {

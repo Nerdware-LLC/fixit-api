@@ -1,10 +1,9 @@
-import type Stripe from "stripe";
 import { stripe } from "@lib/stripe";
-import type { Model } from "@lib/dynamoDB";
-import type { UserType } from "@models/User/types";
 import { UserInputError } from "@utils/customErrors";
 import { UserSubscription } from "./UserSubscription";
-import type { UserSubscriptionType } from "./types";
+import type { Model } from "@lib/dynamoDB";
+import type { UserType, UserSubscriptionType } from "@types";
+import type Stripe from "stripe";
 
 /**
  * `upsertOne`
@@ -19,11 +18,11 @@ export const upsertOne = async function (
     user: { id: userID, stripeCustomerID },
     selectedSubscription = "", // empty string to prevent lookup errors when missing
     priceID,
-    promoCode
+    promoCode,
   }: {
     user: { id: UserType["id"]; stripeCustomerID: UserType["stripeCustomerID"] };
     selectedSubscription?: keyof typeof UserSubscription.PRICE_IDS | "";
-    priceID?: typeof UserSubscription.PRICE_IDS[keyof typeof UserSubscription.PRICE_IDS];
+    priceID?: (typeof UserSubscription.PRICE_IDS)[keyof typeof UserSubscription.PRICE_IDS];
     promoCode?: keyof typeof UserSubscription.PROMO_CODES;
   }
 ) {
@@ -44,7 +43,7 @@ export const upsertOne = async function (
     items: [{ price: priceID }],
     expand: ["latest_invoice.payment_intent", "customer"],
     ...(promoCodeID && { promotion_code: promoCodeID }),
-    ...(selectedSubscription === "TRIAL" && { trial_period_days: 14 })
+    ...(selectedSubscription === "TRIAL" && { trial_period_days: 14 }),
   });
 
   // Get the fields needed from the returned object
@@ -58,7 +57,7 @@ export const upsertOne = async function (
     productID,
     priceID,
     status: stripeSubObject.status,
-    createdAt
+    createdAt,
   };
 
   // Upsert the sub info to ensure db is up to date and prevent duplicate user subs.
@@ -68,6 +67,6 @@ export const upsertOne = async function (
   return {
     ...stripeSubObject,
     ...userSubscription,
-    updatedAt
+    updatedAt,
   } as Stripe.Response<Stripe.Subscription> & UserSubscriptionType;
 };

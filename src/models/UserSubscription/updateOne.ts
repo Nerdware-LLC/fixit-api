@@ -1,16 +1,16 @@
 import moment from "moment";
-import type { Model } from "@lib/dynamoDB";
-import type { UserType } from "@models/User/types";
 import { InternalServerError } from "@utils/customErrors";
 import { UserSubscription } from "./UserSubscription";
-import type { UserSubscriptionType } from "./types";
+import type { Model } from "@lib/dynamoDB";
+import type { UserType, UserSubscriptionType } from "@types";
+import type { Simplify } from "type-fest";
 
 export const updateOne = async function (
   this: InstanceType<typeof Model>,
   {
     userID,
     sk,
-    createdAt
+    createdAt,
   }: {
     userID: UserType["id"];
     sk?: UserSubscriptionType["sk"];
@@ -24,6 +24,6 @@ export const updateOne = async function (
   return await UserSubscription.updateItem({ userID, sk }, mutableSubscriptionFields);
 };
 
-type MutableSubscriptionFields = Expand<
+type MutableSubscriptionFields = Simplify<
   Pick<UserSubscriptionType, "id" | "currentPeriodEnd" | "productID" | "priceID" | "status">
 >;

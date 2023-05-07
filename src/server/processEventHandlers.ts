@@ -3,7 +3,7 @@ import { logger } from "@utils/logger";
 
 Object.entries({
   uncaughtException: 1,
-  unhandledRejection: 2
+  unhandledRejection: 2,
 }).forEach(([errEvent, errExitCode]) => {
   process.on(errEvent, (error) => {
     Sentry.captureException(error);

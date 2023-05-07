@@ -29,7 +29,7 @@ export class GqlAuthError extends GraphQLError {
       merge(
         {
           extensions: { code: "AUTHENTICATION_REQUIRED" },
-          originalError: new AuthError(message)
+          originalError: new AuthError(message),
         },
         opts
       )

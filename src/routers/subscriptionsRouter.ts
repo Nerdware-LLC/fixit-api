@@ -5,7 +5,7 @@ import {
   validateHasReturnURL,
   findOrCreateStripeSubscription,
   generateAuthToken,
-  createCustomerPortalLink
+  createCustomerPortalLink,
 } from "@middleware";
 
 export const subscriptionsRouter = express.Router();

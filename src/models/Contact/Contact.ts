@@ -1,9 +1,9 @@
 import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
-import { COMMON_ATTRIBUTES } from "@models/_common";
 import { USER_ID_REGEX } from "@models/User";
-import { CONTACT_SK_REGEX } from "./regex";
+import { COMMON_ATTRIBUTES } from "@models/_common";
 import { createOne } from "./createOne";
-import type { ContactType } from "./types";
+import { CONTACT_SK_REGEX } from "./regex";
+import type { ContactType } from "@types";
 
 /**
  * Contact Model Methods:
@@ -18,7 +18,7 @@ class ContactModel extends Model<typeof ContactModel.schema> {
       alias: "userID",
       validate: (value: string) => USER_ID_REGEX.test(value),
       isHashKey: true,
-      required: true
+      required: true,
     },
     sk: {
       type: "string",
@@ -31,8 +31,8 @@ class ContactModel extends Model<typeof ContactModel.schema> {
         name: "Overloaded_SK_GSI",
         global: true,
         rangeKey: "data",
-        project: true
-      }
+        project: true,
+      },
     },
     data: {
       type: "string",
@@ -44,20 +44,20 @@ class ContactModel extends Model<typeof ContactModel.schema> {
         name: "Overloaded_Data_GSI",
         global: true,
         rangeKey: "sk",
-        project: true
-      }
+        project: true,
+      },
     },
     // "createdAt" and "updatedAt"
-    ...COMMON_ATTRIBUTES.TIMESTAMPS
+    ...COMMON_ATTRIBUTES.TIMESTAMPS,
   } as const;
 
   static readonly schemaOptions: ModelSchemaOptions = {
     transformItem: {
       toDB: (contactItem) => ({
         ...contactItem,
-        sk: `CONTACT#${contactItem.data}`
-      })
-    }
+        sk: `CONTACT#${contactItem.data}`,
+      }),
+    },
   };
 
   constructor() {
@@ -73,9 +73,9 @@ class ContactModel extends Model<typeof ContactModel.schema> {
       KeyConditionExpression: "pk = :pk AND sk = :sk",
       ExpressionAttributeValues: {
         ":pk": ownUserID,
-        ":sk": `CONTACT#${contactUserID}`
+        ":sk": `CONTACT#${contactUserID}`,
       },
-      Limit: 1
+      Limit: 1,
     });
 
     return contact as ContactType;
@@ -84,7 +84,7 @@ class ContactModel extends Model<typeof ContactModel.schema> {
   readonly queryUsersContacts = async (userID: string) => {
     return (await this.query({
       KeyConditionExpression: "pk = :userID AND begins_with(sk, :contactSKprefix)",
-      ExpressionAttributeValues: { ":userID": userID, ":contactSKprefix": "CONTACT#" }
+      ExpressionAttributeValues: { ":userID": userID, ":contactSKprefix": "CONTACT#" },
     })) as Array<ContactType>;
   };
 }

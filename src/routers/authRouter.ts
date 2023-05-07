@@ -12,7 +12,7 @@ import {
   queryUserItems,
   checkSubscriptionStatus,
   checkOnboardingStatus,
-  generateAuthToken
+  generateAuthToken,
 } from "@middleware";
 
 export const authRouter = express.Router();

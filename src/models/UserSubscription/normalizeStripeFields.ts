@@ -1,6 +1,5 @@
+import type { UserType, UserSubscriptionType } from "@types";
 import type Stripe from "stripe";
-import type { UserType } from "@models/User/types";
-import type { UserSubscriptionType } from "./types";
 
 /**
  * This function takes an object in the shape returned by the Stripe API
@@ -21,7 +20,7 @@ export const normalizeStripeFields = ({
     currentPeriodEnd: new Date(current_period_end * 1000),
     productID: items.data[0].price.product,
     priceID: items.data[0].price.id,
-    ...rest
+    ...rest,
   } as Omit<UserSubscriptionType, "updatedAt"> &
     Pick<UserType, "stripeCustomerID"> &
     Omit<

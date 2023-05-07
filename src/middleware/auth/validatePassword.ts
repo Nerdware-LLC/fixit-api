@@ -1,5 +1,5 @@
 import { catchAsyncMW, passwordHasher, AuthError } from "@utils";
-import type { UserType } from "@models";
+import type { UserType } from "@types";
 
 export const validatePassword = catchAsyncMW(async (req, res, next) => {
   if (!req?._user) next("User not found");

@@ -1,6 +1,6 @@
+import { pathToFileURL } from "url";
 import { resolve as resolveTS } from "ts-node/esm";
 import * as tsConfigPaths from "tsconfig-paths";
-import { pathToFileURL } from "url";
 
 // This loader allows tsconfig paths to work with ESM modules
 

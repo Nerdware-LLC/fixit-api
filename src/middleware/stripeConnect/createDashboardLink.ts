@@ -1,15 +1,13 @@
 import { stripe } from "@lib/stripe";
-import { catchAsyncMW, logger, type APIRequestWithAuthenticatedUserData } from "@utils";
+import { catchAsyncMW, type APIRequestWithAuthenticatedUserData } from "@utils";
 
-// req.originalUrl = "/stripe/connect/dashboard-link"
+// req.originalUrl = "/api/connect/dashboard-link"
 export const createDashboardLink = catchAsyncMW<APIRequestWithAuthenticatedUserData>(
   async (req, res) => {
-    logger.stripe("creating dashboard link...");
-
     // This link is used for sending user to their Stripe dashboard
     const stripeLink = await stripe.accounts.createLoginLink(req._user.stripeConnectAccount.id);
 
-    res.json({ stripeLink });
+    res.json({ stripeLink: stripeLink.url });
   }
 );
 

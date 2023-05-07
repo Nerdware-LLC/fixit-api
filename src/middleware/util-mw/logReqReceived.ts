@@ -1,5 +1,5 @@
-import type { Request, Response, NextFunction } from "express";
 import { logger } from "@utils/logger";
+import type { Request, Response, NextFunction } from "express";
 
 export const logReqReceived = (req: Request, res: Response, next: NextFunction) => {
   const { body, originalUrl } = req;

@@ -1,27 +1,31 @@
 import { normalizeInput, prettifyStr } from "@utils";
 import { User } from "./User";
 import { USER_ID_REGEX, USER_SK_REGEX, USER_STRIPE_CUSTOMER_ID_REGEX } from "./regex";
-import type { UserType } from "./types";
+import type { UserType } from "@types";
+import type { Simplify } from "type-fest";
 
 const MOCK_INPUTS = {
   USER_A: {
+    handle: "@user_A",
     email: "userA@gmail.com",
     phone: "888-111-1111",
     expoPushToken: "ExponentPushToken[AAAAAAAAAAAAAAAAAAAAAA]",
-    password: "foo_password_unhashed_text"
+    password: "foo_password_unhashed_text",
   },
   USER_B: {
+    handle: "@user_B",
     email: "user_B@gmail.com",
     phone: "888-222-2222",
     expoPushToken: "ExponentPushToken[BBBBBBBBBBBBBBBBBBBBBB]",
     googleID: "userB_googleID",
     googleAccessToken: "userB_gat",
     profile: {
+      displayName: "Rick Sanchez",
       givenName: "Rick",
       familyName: "Sanchez",
-      businessName: "Science Inc."
-    }
-  }
+      businessName: "Science Inc.",
+    },
+  },
 } as const;
 
 // This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
@@ -32,6 +36,7 @@ const testUserFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockUser: UserT
 
   expect(mockUser.id).toMatch(USER_ID_REGEX);
   expect(mockUser.sk).toMatch(USER_SK_REGEX);
+  expect(mockUser.handle).toMatch(mockUserInputs.handle);
   expect(mockUser.email).toMatch(mockUserInputs.email);
   expect(mockUser.phone).toMatch(prettifyStr.phone(normalizeInput.phone(mockUserInputs.phone)));
   expect(mockUser.stripeCustomerID).toMatch(USER_STRIPE_CUSTOMER_ID_REGEX);
@@ -41,21 +46,21 @@ const testUserFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockUser: UserT
     expect(mockUser?.profile).toBeUndefined();
     expect(mockUser.login).toMatchObject({
       type: "LOCAL",
-      passwordHash: expect.stringMatching(/\S{30,}/i)
+      passwordHash: expect.stringMatching(/\S{30,}/i),
     });
   } else if (mockUserInputs === MOCK_INPUTS.USER_B) {
     expect(mockUser.profile).toMatchObject(MOCK_INPUTS.USER_B.profile);
     expect(mockUser.login).toMatchObject({
       type: "GOOGLE_OAUTH",
       googleID: MOCK_INPUTS.USER_B.googleID,
-      googleAccessToken: MOCK_INPUTS.USER_B.googleAccessToken
+      googleAccessToken: MOCK_INPUTS.USER_B.googleAccessToken,
     });
   }
 };
 
 describe("User model R/W database operations", () => {
   let createdUsers = {} as {
-    -readonly [K in keyof typeof MOCK_INPUTS]: Expand<UserType & { sk: string }>;
+    -readonly [K in keyof typeof MOCK_INPUTS]: Simplify<UserType & { sk: string }>;
   };
 
   beforeAll(async () => {
@@ -116,7 +121,7 @@ afterAll(async () => {
 
   const remainingMockUsers = await User.ddbClient.scan({
     FilterExpression: "begins_with(pk, :pkPrefix)",
-    ExpressionAttributeValues: { ":pkPrefix": "USER#" }
+    ExpressionAttributeValues: { ":pkPrefix": "USER#" },
   });
 
   if (Array.isArray(remainingMockUsers) && remainingMockUsers.length > 0) {

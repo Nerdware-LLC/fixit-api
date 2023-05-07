@@ -1,7 +1,7 @@
 import { ENV } from "@server/env";
 import { connectAccountUpdated } from "./connectAccountUpdated";
-import { customerSubscriptionUpdated } from "./customerSubscriptionUpdated";
 import { customerSubscriptionDeleted } from "./customerSubscriptionDeleted";
+import { customerSubscriptionUpdated } from "./customerSubscriptionUpdated";
 import type { StripeWebhooksHandlerRoute } from "./routes";
 
 export class StripeWebhooksHandler {
@@ -9,16 +9,16 @@ export class StripeWebhooksHandler {
     "/account": {
       connect: true,
       actionableEventHandlers: {
-        "account.updated": connectAccountUpdated
+        "account.updated": connectAccountUpdated,
       },
       nonActionableEvents: [
         "account.application.authorized",
         "account.application.deauthorized",
         "account.external_account.created",
         "account.external_account.deleted",
-        "account.external_account.updated"
+        "account.external_account.updated",
       ],
-      secret: ENV.STRIPE.WEBHOOKS_SECRET
+      secret: ENV.STRIPE.WEBHOOKS_SECRET,
     },
     "/customer": {
       actionableEventHandlers: {
@@ -27,7 +27,7 @@ export class StripeWebhooksHandler {
         "customer.subscription.pending_update_applied": customerSubscriptionUpdated,
         "customer.subscription.pending_update_expired": customerSubscriptionUpdated,
         "customer.subscription.trial_will_end": customerSubscriptionUpdated,
-        "customer.subscription.deleted": customerSubscriptionDeleted
+        "customer.subscription.deleted": customerSubscriptionDeleted,
       },
       nonActionableEvents: [
         "customer.created",
@@ -42,10 +42,10 @@ export class StripeWebhooksHandler {
         "customer.source.updated",
         "customer.tax_id.created",
         "customer.tax_id.deleted",
-        "customer.tax_id.updated"
+        "customer.tax_id.updated",
       ],
-      secret: ENV.STRIPE.WEBHOOKS_SECRET
-    }
+      secret: ENV.STRIPE.WEBHOOKS_SECRET,
+    },
   };
 
   // This is used in webhooksRouter to quickly log event info

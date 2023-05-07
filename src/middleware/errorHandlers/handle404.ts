@@ -22,5 +22,5 @@ const VALID_PATHS = [
   "/connect/account-link",
   "/connect/dashboard-link",
   "/webhooks/account",
-  "/webhooks/customer"
+  "/webhooks/customer",
 ];

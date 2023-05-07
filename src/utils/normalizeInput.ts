@@ -1,7 +1,15 @@
+const currencyFmt = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 2,
+});
+
 /**
- * A utility object with helper methods for "normalizing" client input before its saved to the db.
+ * A utility object with helper methods for formatting various values.
+ * - Use these methods to normalize client input before its saved to the db.
  *
  * @method currencyStrToInt
+ * @method intToCurrencyStr
  * @method phone
  */
 export const normalizeInput = {
@@ -22,11 +30,16 @@ export const normalizeInput = {
   },
 
   /**
+   * Converts an integer to a USD currency string.
+   *
+   * Example: converts `123456` into `"$1,234.56"`
+   */
+  intToCurrencyStr: (int: number): string => currencyFmt.format(int / 100),
+
+  /**
    * Removes all non-digit characters from phone number strings.
    *
    * Example: converts `"(888) 123-4567"` into `"8881234567"`
    */
-  phone: (rawPhone: string) => {
-    return rawPhone.replace(/\D+/g, ""); // save only the digits
-  }
+  phone: (rawPhone: string) => rawPhone.replace(/\D/g, ""), // save only the digits
 };

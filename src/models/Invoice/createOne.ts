@@ -1,6 +1,6 @@
 import { eventEmitter } from "@events";
 import type { Model } from "@lib/dynamoDB";
-import type { InvoiceType } from "./types";
+import type { InvoiceType } from "@types";
 
 // function, not arrow, bc we need "this" to be the Invoice model
 export const createOne = async function (
@@ -11,7 +11,7 @@ export const createOne = async function (
     createdByUserID,
     assignedToUserID,
     amount,
-    status: "OPEN"
+    status: "OPEN",
   });
 
   eventEmitter.emitInvoiceCreated(newInvoice);

@@ -8,5 +8,5 @@ import { prettifyPhoneNum } from "./phone";
 export const prettifyStr = {
   bizName: prettifyBizName,
   capFirstLetterOnly: capitalizeFirstLetterOnly,
-  phone: prettifyPhoneNum
+  phone: prettifyPhoneNum,
 };

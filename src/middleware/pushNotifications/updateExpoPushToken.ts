@@ -1,12 +1,13 @@
-import { User, type UserType } from "@models/User";
+import { User } from "@models/User";
 import { catchAsyncMW } from "@utils/middlewareWrappers";
+import type { UserType } from "@types";
 
 export const updateExpoPushToken = catchAsyncMW(async (req, res, next) => {
   if (!req?._user) next("User not found");
 
   const {
     body: { expoPushToken },
-    _user: { id: userID }
+    _user: { id: userID },
   } = req as { body: { expoPushToken?: string }; _user: UserType };
 
   if (expoPushToken) {

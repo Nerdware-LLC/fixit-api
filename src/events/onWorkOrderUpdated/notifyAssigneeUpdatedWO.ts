@@ -1,6 +1,7 @@
-import { User, type WorkOrderType } from "@models";
-import { lambdaClient } from "@lib/lambdaClient";
 import { WorkOrderPushNotification } from "@events/pushNotifications";
+import { lambdaClient } from "@lib/lambdaClient";
+import { User } from "@models";
+import type { WorkOrderType } from "@types";
 
 /**
  * After a WorkOrder is updated by the User who created it, this event handler
@@ -44,7 +45,7 @@ export const notifyAssigneeUpdatedWO = async (
         new WorkOrderPushNotification({
           pushEventName: "WorkOrderUnassigned",
           recipientUser: { id: prevAssignedToUserID },
-          workOrder: prevWOstate
+          workOrder: prevWOstate,
         })
       );
 
@@ -53,7 +54,7 @@ export const notifyAssigneeUpdatedWO = async (
         new WorkOrderPushNotification({
           pushEventName: "WorkOrderAssigned",
           recipientUser: { id: currentAssignedToUserID },
-          workOrder: currentWOstate
+          workOrder: currentWOstate,
         })
       );
 
@@ -63,7 +64,7 @@ export const notifyAssigneeUpdatedWO = async (
       new WorkOrderPushNotification({
         pushEventName: "WorkOrderUpdated",
         recipientUser: { id: currentAssignedToUserID },
-        workOrder: currentWOstate
+        workOrder: currentWOstate,
       })
     );
   }
@@ -83,7 +84,7 @@ export const notifyAssigneeUpdatedWO = async (
       if (!!user?.expoPushToken) {
         accum.push({
           to: user.expoPushToken,
-          ...pushMsgObj
+          ...pushMsgObj,
         });
       }
 

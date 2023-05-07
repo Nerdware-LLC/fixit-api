@@ -1,11 +1,11 @@
 import moment from "moment";
 import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
-import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@models/_common";
 import { USER_ID_REGEX } from "@models/User";
-import { WORK_ORDER_ID_REGEX, LOCATION_COMPOSITE_REGEX, WO_CHECKLIST_ITEM_ID_REGEX } from "./regex";
+import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@models/_common";
 import { createOne } from "./createOne";
+import { WORK_ORDER_ID_REGEX, LOCATION_COMPOSITE_REGEX, WO_CHECKLIST_ITEM_ID_REGEX } from "./regex";
 import { updateOne } from "./updateOne";
-import type { WorkOrderType } from "./types";
+import type { WorkOrderType } from "@types";
 
 /**
  * WorkOrder Model Methods:
@@ -22,7 +22,7 @@ class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
       alias: "createdByUserID",
       validate: (value: string) => USER_ID_REGEX.test(value),
       isHashKey: true,
-      required: true
+      required: true,
     },
     sk: {
       type: "string",
@@ -35,36 +35,41 @@ class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
         name: "Overloaded_SK_GSI",
         global: true,
         rangeKey: "data",
-        project: true
-      }
+        project: true,
+      },
     },
     data: {
       type: "string",
       alias: "assignedToUserID",
       validate: (value: string) => value === "UNASSIGNED" || USER_ID_REGEX.test(value),
       required: true,
+      transformValue: {
+        /* "data" can't be null in DB, but is nullable in the GQL schema, hence the
+        placeholder "UNASSIGNED". This fn converts it to null on read fromDB.    */
+        fromDB: (value?: string) => (value === "UNASSIGNED" ? null : value),
+      },
       index: {
         // For relational queries using "data" as the hash key
         name: "Overloaded_Data_GSI",
         global: true,
         rangeKey: "sk",
-        project: true
-      }
+        project: true,
+      },
     },
     status: {
       type: "string",
       required: true,
-      validate: (value: typeof WorkOrderModel.STATUSES[number]) => {
+      validate: (value: (typeof WorkOrderModel.STATUSES)[number]) => {
         return WorkOrderModel.STATUSES.includes(value);
-      }
+      },
     },
     priority: {
       type: "string",
       required: true,
       default: "NORMAL",
-      validate: (value: typeof WorkOrderModel.PRIORITIES[number]) => {
+      validate: (value: (typeof WorkOrderModel.PRIORITIES)[number]) => {
         return WorkOrderModel.PRIORITIES.includes(value);
-      }
+      },
     },
     location: {
       type: "string", // [COUNTRY]#[STATE]#[CITY]#[STREET_LINE_1]#[STREET_LINE_2]
@@ -89,7 +94,7 @@ class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
             region: regionRawInput, // Region examples: US states, Canadian provinces
             city: cityRawInput,
             streetLine1: streetLine1RawInput,
-            streetLine2: streetLine2RawInput = null
+            streetLine2: streetLine2RawInput = null,
           } = workOrderLocation;
 
           // reduce returns the "location" composite value as a single string with "#" as the field delimeter
@@ -98,7 +103,7 @@ class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
             regionRawInput,
             cityRawInput,
             streetLine1RawInput,
-            streetLine2RawInput
+            streetLine2RawInput,
           ].reduce((accum, currentRawInput, index) => {
             // "streetLine2RawInput" is optional - skip processing if null
             if (currentRawInput === null) return accum;
@@ -126,23 +131,32 @@ class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
 
             /* All segments of the "location" composite attribute value except for the
             first one ("country") must be prefixed with "#", the delimeter.         */
-            accum = index !== 0 ? `${accum as string}#${formattedInput}` : formattedInput;
+            accum = index !== 0 ? `${accum}#${formattedInput}` : formattedInput;
 
             return accum;
           }, "" as string); // <-- reducer init accum is an empty string
         },
         fromDB: (locationValue?: string) => {
           if (!locationValue) return;
-
           // Return "location" object from db format: [COUNTRY]#[STATE]#[CITY]#[STREET_LINE_1]#[STREET_LINE_2]
 
           // Split the composite value string using the "#" delimeter
-          return locationValue.split("#").reduce((accum, dbValue, index) => {
-            // Replace "NUMSIGN" string literal with "#" (for streetLine2)
-            let formattedOutput = dbValue.replace(/NUMSIGN/g, "#");
+          let locationComponents: Array<string | null> = locationValue.split("#");
 
-            // Replace underscores with spaces
-            formattedOutput = formattedOutput.replace(/_/g, " ");
+          // If length is 4, append `null` for streetLine2
+          if (locationComponents.length === 4) locationComponents.push(null);
+
+          return locationComponents.reduce((accum, dbValue, index) => {
+            let formattedOutput = dbValue;
+
+            // Format non-null values
+            if (typeof formattedOutput === "string") {
+              // Replace "NUMSIGN" string literal with "#" (for streetLine2)
+              formattedOutput = formattedOutput.replace(/NUMSIGN/g, "#");
+
+              // Replace underscores with spaces
+              formattedOutput = formattedOutput.replace(/_/g, " ");
+            }
 
             // Get location key from array
             const locationKey = ["country", "region", "city", "streetLine1", "streetLine2"][index];
@@ -151,21 +165,21 @@ class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
             accum[locationKey] = formattedOutput;
 
             return accum;
-          }, {} as Record<string, string>); // <-- reducer init accum is an empty object
-        }
+          }, {} as Record<string, string | null>); // <-- reducer init accum is an empty object
+        },
       },
-      validate: (value: string) => LOCATION_COMPOSITE_REGEX.test(value)
+      validate: (value: string) => LOCATION_COMPOSITE_REGEX.test(value),
     },
     category: {
       type: "string",
       required: false,
-      validate: (value: typeof WorkOrderModel.CATEGORIES[number]) => {
+      validate: (value: (typeof WorkOrderModel.CATEGORIES)[number]) => {
         return WorkOrderModel.CATEGORIES.includes(value);
-      }
+      },
     },
     description: {
       type: "string",
-      required: false
+      required: false,
     },
     checklist: {
       type: "array",
@@ -177,33 +191,33 @@ class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
             // prettier-ignore
             id: { type: "string", required: true, validate: (value: string) => WO_CHECKLIST_ITEM_ID_REGEX.test(value) },
             description: { type: "string", required: true },
-            isCompleted: { type: "boolean", required: true, default: false }
-          }
-        }
-      ]
+            isCompleted: { type: "boolean", required: true, default: false },
+          },
+        },
+      ],
     },
     entryContact: {
       type: "string",
-      required: false
+      required: false,
     },
     entryContactPhone: {
       ...COMMON_ATTRIBUTE_TYPES.PHONE,
-      required: false
+      required: false,
     },
     dueDate: {
       ...COMMON_ATTRIBUTE_TYPES.DATETIME,
-      required: false
+      required: false,
     },
     scheduledDateTime: {
       ...COMMON_ATTRIBUTE_TYPES.DATETIME,
-      required: false
+      required: false,
     },
     contractorNotes: {
       type: "string",
-      required: false
+      required: false,
     },
     // "createdAt" and "updatedAt"
-    ...COMMON_ATTRIBUTES.TIMESTAMPS
+    ...COMMON_ATTRIBUTES.TIMESTAMPS,
   } as const;
 
   static readonly schemaOptions: ModelSchemaOptions = {
@@ -217,33 +231,42 @@ class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
         ...(!woItem?.sk && !!woItem?.pk && !!woItem?.createdAt && {
           sk: `WO#${woItem.pk}#${moment(woItem.createdAt).unix()}`
         })
-      })
-    }
+      }),
+      // fromDB, add fields GQL-API fields "createdBy" and "assignedTo"
+      fromDB: (woItem) => ({
+        createdBy: { id: woItem.createdByUserID },
+        assignedTo:
+          typeof woItem?.assignedToUserID === "string" ? { id: woItem.assignedToUserID } : null,
+        ...woItem,
+      }),
+    },
   };
 
   static readonly PRIORITIES = ["LOW", "NORMAL", "HIGH"] as const;
   static readonly STATUSES = [
-    "UNASSIGNED", // <-- WO has not been assigned to anyone
-    "ASSIGNED", //   <-- WO has merely been assigned to someone
-    "CANCELLED", //  <-- Assignor can not delete ASSIGNED/COMPLETE WOs, only mark them as "CANCELLED" (deleted from db after 90 days if not updated nor attached to an Invoice)
-    "COMPLETE" //    <-- Assignee notifies Assignor that WO is "COMPLETE" (may be reverted to "ASSIGNED" by either party)
+    "UNASSIGNED", //  <-- WO has not been assigned to anyone
+    "ASSIGNED", //    <-- WO has merely been assigned to someone
+    "IN_PROGRESS", // <-- Assignee has started work on WO
+    "DEFERRED", //    <-- Assignee has deferred work on WO (can't be completed yet for some reason)
+    "CANCELLED", //   <-- Assignor can not delete ASSIGNED/COMPLETE WOs, only mark them as "CANCELLED" (deleted from db after 90 days if not updated nor attached to an Invoice)
+    "COMPLETE", //     <-- Assignee notifies Assignor that WO is "COMPLETE" (may be reverted to "ASSIGNED" by either party)
   ] as const;
   static readonly CATEGORIES = [
-    "Drywall",
-    "Electrical",
-    "Flooring",
-    "General",
+    "DRYWALL",
+    "ELECTRICAL",
+    "FLOORING",
+    "GENERAL",
     "HVAC",
-    "Landscaping",
-    "Masonry",
-    "Painting",
-    "Paving",
-    "Pest",
-    "Plumbing",
-    "Roofing",
-    "Trash",
-    "Turnover",
-    "Windows"
+    "LANDSCAPING",
+    "MASONRY",
+    "PAINTING",
+    "PAVING",
+    "PEST",
+    "PLUMBING",
+    "ROOFING",
+    "TRASH",
+    "TURNOVER",
+    "WINDOWS",
   ] as const;
 
   constructor() {
@@ -274,7 +297,7 @@ class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
       IndexName: "Overloaded_SK_GSI",
       KeyConditionExpression: "id = :id",
       ExpressionAttributeValues: { ":id": workOrderID },
-      Limit: 1
+      Limit: 1,
     });
 
     /* The conversion to "unknown" below is necessary due to the "Location"
@@ -290,7 +313,7 @@ class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
   readonly queryUsersWorkOrders = async (userID: string) => {
     return (await this.query({
       KeyConditionExpression: "pk = :userID AND begins_with(sk, :woSKprefix)",
-      ExpressionAttributeValues: { ":userID": userID, ":woSKprefix": "WO#" }
+      ExpressionAttributeValues: { ":userID": userID, ":woSKprefix": "WO#" },
     })) as unknown as Array<WorkOrderType>;
     /* See note in queryWorkOrderByID regarding why these `as unknown` type
     casts are currently necessary in some WorkOrder Model methods.       */
@@ -301,7 +324,7 @@ class WorkOrderModel extends Model<typeof WorkOrderModel.schema> {
       IndexName: "Overloaded_Data_GSI",
       KeyConditionExpression: "#uid = :userID AND begins_with(sk, :skPrefix)",
       ExpressionAttributeNames: { "#uid": "data" },
-      ExpressionAttributeValues: { ":userID": userID, ":skPrefix": "WO#" }
+      ExpressionAttributeValues: { ":userID": userID, ":skPrefix": "WO#" },
     })) as unknown as Array<WorkOrderType>;
     /* See note in queryWorkOrderByID regarding why these `as unknown`
     conversions are currently necessary in WorkOrder Model methods. */

@@ -1,7 +1,7 @@
 import merge from "lodash.merge";
 import { eventEmitter } from "@events/eventEmitter";
 import type { Model } from "@lib/dynamoDB";
-import type { WorkOrderType } from "./types";
+import type { WorkOrderType } from "@types";
 
 export const updateOne = async function (
   this: InstanceType<typeof Model>,
@@ -11,7 +11,7 @@ export const updateOne = async function (
   const updateWorkOrderResult = await this.updateItem(
     {
       createdByUserID: existingWO.createdByUserID,
-      id: existingWO.id
+      id: existingWO.id,
     },
     newWorkOrderFields
   );

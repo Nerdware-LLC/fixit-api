@@ -1,5 +1,5 @@
 import moment from "moment";
-import type { UserSubscriptionType } from "./types";
+import type { UserSubscriptionType } from "@types";
 
 // sub statuses info: https://stripe.com/docs/api/subscriptions/object#subscription_object-status
 // prettier-ignore
@@ -17,7 +17,7 @@ export const SUBSCRIPTION_STATUSES = {
 
 export const validateExisting = function ({
   status,
-  currentPeriodEnd
+  currentPeriodEnd,
 }: Partial<UserSubscriptionType> = {}) {
   if (
     !status ||

@@ -3,7 +3,7 @@ import {
   getUserFromAuthHeaderToken,
   validateHasReturnURL,
   createAccountLink,
-  createDashboardLink
+  createDashboardLink,
 } from "@middleware";
 
 export const connectRouter = express.Router();

@@ -1,13 +1,13 @@
 import moment from "moment";
 import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
-import { COMMON_ATTRIBUTES } from "@models/_common";
 import { USER_ID_REGEX } from "@models/User";
 import { WORK_ORDER_ID_REGEX } from "@models/WorkOrder";
-import { INVOICE_SK_REGEX } from "./regex";
+import { COMMON_ATTRIBUTES } from "@models/_common";
 import { createOne } from "./createOne";
-import { updateOne } from "./updateOne";
 import { deleteOne } from "./deleteOne";
-import type { InvoiceType } from "./types";
+import { INVOICE_SK_REGEX } from "./regex";
+import { updateOne } from "./updateOne";
+import type { InvoiceType } from "@types";
 
 /**
  * Invoice Model Methods:
@@ -24,7 +24,7 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema> {
       alias: "createdByUserID",
       validate: (value: string) => USER_ID_REGEX.test(value),
       isHashKey: true,
-      required: true
+      required: true,
     },
     sk: {
       type: "string",
@@ -37,8 +37,8 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema> {
         name: "Overloaded_SK_GSI",
         global: true,
         rangeKey: "data",
-        project: true
-      }
+        project: true,
+      },
     },
     data: {
       type: "string",
@@ -50,32 +50,32 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema> {
         name: "Overloaded_Data_GSI",
         global: true,
         rangeKey: "sk",
-        project: true
-      }
+        project: true,
+      },
     },
     workOrderID: {
       type: "string",
-      validate: (value: string) => WORK_ORDER_ID_REGEX.test(value)
+      validate: (value: string) => WORK_ORDER_ID_REGEX.test(value),
     },
     amount: {
       type: "number",
       /* Invoice amount is a non-zero integer reflecting USD centage,
       where 100 = 100 ¢ = $1 USD. For i18n purposes, currency conversions
       will be handled through the Stripe API.  */
-      validate: (value: number) => Number.isSafeInteger(value) && value > 0
+      validate: (value: number) => Number.isSafeInteger(value) && value > 0,
     },
     status: {
       type: "string",
       validate: (value: any) => {
         return InvoiceModel.STATUSES.includes(value);
       },
-      default: "OPEN"
+      default: "OPEN",
     },
     stripePaymentIntentID: {
-      type: "string"
+      type: "string",
     },
     // "createdAt" and "updatedAt"
-    ...COMMON_ATTRIBUTES.TIMESTAMPS
+    ...COMMON_ATTRIBUTES.TIMESTAMPS,
   } as const;
 
   static readonly schemaOptions: ModelSchemaOptions = {
@@ -87,8 +87,14 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema> {
         ...(!invoiceItem?.sk && !!invoiceItem?.pk && !!invoiceItem?.createdAt && {
           sk: `INV#${invoiceItem.pk}#${moment(invoiceItem.createdAt).unix()}`
         })
-      })
-    }
+      }),
+      // fromDB, add fields GQL-API fields "createdBy" and "assignedTo"
+      fromDB: (invoiceItem) => ({
+        createdBy: { id: invoiceItem.createdByUserID },
+        assignedTo: { id: invoiceItem.assignedToUserID },
+        ...invoiceItem,
+      }),
+    },
   };
 
   static readonly STATUSES = ["OPEN", "CLOSED", "DISPUTED"] as const;
@@ -117,7 +123,7 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema> {
       IndexName: "Overloaded_SK_GSI",
       KeyConditionExpression: "id = :id",
       ExpressionAttributeValues: { ":id": invoiceID },
-      Limit: 1
+      Limit: 1,
     });
 
     return invoice as InvoiceType;
@@ -126,7 +132,7 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema> {
   readonly queryUsersInvoices = async (userID: string) => {
     return (await this.query({
       KeyConditionExpression: "pk = :userID AND begins_with(sk, :skPrefix)",
-      ExpressionAttributeValues: { ":userID": userID, ":skPrefix": "INV#" }
+      ExpressionAttributeValues: { ":userID": userID, ":skPrefix": "INV#" },
     })) as Array<InvoiceType>;
   };
 
@@ -135,7 +141,7 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema> {
       IndexName: "Overloaded_Data_GSI",
       KeyConditionExpression: "#uid = :userID AND begins_with(sk, :skPrefix)",
       ExpressionAttributeNames: { "#uid": "data" },
-      ExpressionAttributeValues: { ":userID": userID, ":skPrefix": "INV#" }
+      ExpressionAttributeValues: { ":userID": userID, ":skPrefix": "INV#" },
     })) as Array<InvoiceType>;
   };
 }

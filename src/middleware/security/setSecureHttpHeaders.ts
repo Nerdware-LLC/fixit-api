@@ -37,7 +37,7 @@ const HELMET_DEFAULT_CSP_DIRECTIVES = helmet.contentSecurityPolicy.getDefaultDir
 const STRIPE_REQUIRED_CSP_DIRECTIVES = {
   "connect-src": "https://api.stripe.com",
   "frame-src": ["https://js.stripe.com", "https://hooks.stripe.com"],
-  "script-src": "https://js.stripe.com"
+  "script-src": "https://js.stripe.com",
 };
 
 /**
@@ -51,7 +51,7 @@ const STRIPE_REQUIRED_CSP_DIRECTIVES = {
  */
 const CSP_VIOLATION_REPORTING_DIRECTIVES = {
   "report-uri": `${ENV.CONFIG.API_FULL_URL}/admin/csp-violation`,
-  "report-to": "fixit-security"
+  "report-to": "fixit-security",
 };
 
 /**
@@ -62,7 +62,7 @@ const CSP_VIOLATION_REPORTING_DIRECTIVES = {
  */
 const FIXIT_API_SRC_CSP_DIRECTIVES = {
   "default-src": `'${ENV.CONFIG.API_BASE_URL}'`,
-  "script-src": `'${ENV.CONFIG.API_BASE_URL}'`
+  "script-src": `'${ENV.CONFIG.API_BASE_URL}'`,
 };
 
 /**
@@ -98,7 +98,7 @@ const helmetMW = helmet({
       HELMET_DEFAULT_CSP_DIRECTIVES,
       FIXIT_API_SRC_CSP_DIRECTIVES,
       CSP_VIOLATION_REPORTING_DIRECTIVES,
-      STRIPE_REQUIRED_CSP_DIRECTIVES
+      STRIPE_REQUIRED_CSP_DIRECTIVES,
     ].reduce<Record<string, string[]>>((accum, cspDirectivesObject) => {
       // Deep merge each set of CSP directives
       Object.entries(cspDirectivesObject).forEach(([cspKey, cspValues]) => {
@@ -109,8 +109,8 @@ const helmetMW = helmet({
         else accum[cspKey] = cspValues;
       });
       return accum;
-    }, {})
-  }
+    }, {}),
+  },
 });
 
 /**
@@ -134,7 +134,7 @@ const helmetMW = helmet({
 export const setSecureHttpHeaders = (req: Request, res: Response, next: NextFunction) => {
   res.set({
     "Cache-Control": "no-store",
-    "Report-To": REPORT_TO_HTTP_HEADER_VALUE_JSON
+    "Report-To": REPORT_TO_HTTP_HEADER_VALUE_JSON,
   });
 
   helmetMW(req, res, next);
@@ -143,5 +143,5 @@ export const setSecureHttpHeaders = (req: Request, res: Response, next: NextFunc
 const REPORT_TO_HTTP_HEADER_VALUE_JSON = JSON.stringify({
   group: "fixit-security",
   max_age: 10886400,
-  url: CSP_VIOLATION_REPORTING_DIRECTIVES["report-uri"]
+  url: CSP_VIOLATION_REPORTING_DIRECTIVES["report-uri"],
 });

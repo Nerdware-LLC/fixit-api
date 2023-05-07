@@ -2,13 +2,13 @@ import moment from "moment";
 import { USER_ID_REGEX } from "@models/User/regex";
 import { UserStripeConnectAccount } from "./UserStripeConnectAccount";
 import { STRIPE_CONNECT_ACCOUNT_SK_REGEX, STRIPE_CONNECT_ACCOUNT_STRIPE_ID_REGEX } from "./regex";
-import type { UserStripeConnectAccountType } from "./types";
+import type { UserStripeConnectAccountType } from "@types";
 
 const MOCK_INPUTS = {
   USER_A: {
     userID: "USER#11111111-1111-1111-1111-sca111111111",
     email: "userA@gmail.com",
-    phone: "888-111-1111"
+    phone: "888-111-1111",
   },
   USER_B: {
     userID: "USER#22222222-2222-2222-2222-sca222222222",
@@ -17,9 +17,9 @@ const MOCK_INPUTS = {
     profile: {
       givenName: "Rick",
       familyName: "Sanchez",
-      businessName: "Science Inc."
-    }
-  }
+      businessName: "Science Inc.",
+    },
+  },
 } as const;
 
 // This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
@@ -81,7 +81,7 @@ afterAll(async () => {
 
   const remainingMockUserSCAs = await UserStripeConnectAccount.ddbClient.scan({
     FilterExpression: "begins_with(pk, :skPrefix)",
-    ExpressionAttributeValues: { ":skPrefix": "STRIPE_CONNECT_ACCOUNT#" }
+    ExpressionAttributeValues: { ":skPrefix": "STRIPE_CONNECT_ACCOUNT#" },
   });
 
   if (Array.isArray(remainingMockUserSCAs) && remainingMockUserSCAs.length > 0) {

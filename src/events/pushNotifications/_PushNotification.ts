@@ -1,4 +1,5 @@
 import { ENV } from "@server/env";
+import type { Location } from "@types";
 
 export class PushNotification {
   to?: string;
@@ -10,7 +11,7 @@ export class PushNotification {
     pushEventName,
     recipientUser: { id: userID, expoPushToken },
     title,
-    body
+    body,
   }: {
     pushEventName: string;
     recipientUser: { id: string; expoPushToken?: string };
@@ -25,7 +26,7 @@ export class PushNotification {
     this.data = {
       _apiEnv: ENV.NODE_ENV,
       _recipientUser: userID,
-      _pushEventName: pushEventName
+      _pushEventName: pushEventName,
     };
   }
 }

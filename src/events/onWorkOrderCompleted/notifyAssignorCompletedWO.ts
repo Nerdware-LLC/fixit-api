@@ -1,6 +1,7 @@
-import { User, type WorkOrderType } from "@models";
-import { lambdaClient } from "@lib/lambdaClient";
 import { WorkOrderPushNotification } from "@events/pushNotifications";
+import { lambdaClient } from "@lib/lambdaClient";
+import { User } from "@models";
+import type { WorkOrderType } from "@types";
 
 export const notifyAssignorCompletedWO = async (completedWO: WorkOrderType) => {
   const { createdByUserID } = completedWO;
@@ -15,9 +16,9 @@ export const notifyAssignorCompletedWO = async (completedWO: WorkOrderType) => {
       pushEventName: "WorkOrderCompleted",
       recipientUser: {
         id: createdByUserID,
-        expoPushToken: assignorUser.expoPushToken
+        expoPushToken: assignorUser.expoPushToken,
       },
-      workOrder: completedWO
-    })
+      workOrder: completedWO,
+    }),
   ]);
 };

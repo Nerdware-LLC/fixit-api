@@ -18,14 +18,14 @@ export const getLogFnFromTemplate = <Opts extends GetLogFnFromTemplateOpts>(
           Sentry.captureMessage(`${labelTxt} ${messageTxt}`);
         },
         errorReportFn: Sentry.captureException,
-        errorLogFn: Sentry.captureMessage
+        errorLogFn: Sentry.captureMessage,
       }
     : {
         messageLogFn: (labelTxt: string, messageTxt: string) => {
           console.log(`${labelColor(labelTxt)} ${messageColor(messageTxt)}`);
         },
         errorReportFn: console.error,
-        errorLogFn: console.error
+        errorLogFn: console.error,
       };
 
   const loggerTemplate: DefaultLoggerTemplateFn = (message: unknown, identifier?: string): void => {

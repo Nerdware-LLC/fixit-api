@@ -29,7 +29,7 @@ export class GqlForbiddenError extends GraphQLError {
       merge(
         {
           extensions: { code: "FORBIDDEN" },
-          originalError: new ForbiddenError(message)
+          originalError: new ForbiddenError(message),
         },
         opts
       )

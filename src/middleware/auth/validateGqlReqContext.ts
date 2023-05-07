@@ -1,11 +1,11 @@
 import { UserSubscription } from "@models/UserSubscription";
-import { AuthToken, GqlAuthError, GqlPaymentRequiredError } from "@utils";
 import { ENV } from "@server";
+import { AuthToken, GqlAuthError, GqlPaymentRequiredError } from "@utils";
 import type { Request } from "express";
 import type { ApolloServerResolverContext } from "../../apolloServer";
 
 const validateGqlRequest = async ({
-  req
+  req,
 }: {
   req: Request;
 }): Promise<ApolloServerResolverContext> => {
@@ -15,7 +15,7 @@ const validateGqlRequest = async ({
     apollo context-init fn return to client with http status code 500, so an "http"
     extension is added here to ensure the status code is properly set to 401.    */
     throw new GqlAuthError("Authentication required", {
-      extensions: { http: { status: GqlAuthError.STATUS_CODE } }
+      extensions: { http: { status: GqlAuthError.STATUS_CODE } },
     });
   });
 
@@ -30,13 +30,13 @@ const validateGqlRequest = async ({
   } catch (err) {
     // If err, re-throw as Apollo 402 error
     throw new GqlPaymentRequiredError("Payment required", {
-      extensions: { http: { status: GqlPaymentRequiredError.STATUS_CODE } }
+      extensions: { http: { status: GqlPaymentRequiredError.STATUS_CODE } },
     });
   }
 
   return {
     ...req,
-    user
+    user,
   };
 };
 

@@ -15,10 +15,7 @@ export const passwordHasher = {
       });
     });
   },
-  validate: async (
-    plainText: string,
-    passwordHash: string
-  ): Promise<boolean> => {
+  validate: async (plainText: string, passwordHash: string): Promise<boolean> => {
     return await bcrypt.compare(plainText, passwordHash);
-  }
+  },
 };

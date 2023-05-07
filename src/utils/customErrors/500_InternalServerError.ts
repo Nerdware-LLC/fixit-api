@@ -1,5 +1,5 @@
-import { GraphQLError, type GraphQLErrorOptions } from "graphql";
 import { ApolloServerErrorCode } from "@apollo/server/errors";
+import { GraphQLError, type GraphQLErrorOptions } from "graphql";
 import merge from "lodash.merge";
 import { ENV } from "@server/env";
 import { CustomHttpErrorAbstractClass } from "./CustomHttpErrorAbstractClass";
@@ -30,7 +30,7 @@ export class GqlInternalServerError extends GraphQLError {
       merge(
         {
           extensions: { code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR },
-          originalError: new InternalServerError(message)
+          originalError: new InternalServerError(message),
         },
         opts
       )

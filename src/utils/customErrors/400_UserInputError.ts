@@ -1,5 +1,5 @@
-import { GraphQLError, type GraphQLErrorOptions } from "graphql";
 import { ApolloServerErrorCode } from "@apollo/server/errors";
+import { GraphQLError, type GraphQLErrorOptions } from "graphql";
 import merge from "lodash.merge";
 import { ENV } from "@server/env";
 import { CustomHttpErrorAbstractClass } from "./CustomHttpErrorAbstractClass";
@@ -39,7 +39,7 @@ export class GqlUserInputError extends GraphQLError {
       merge(
         {
           extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT },
-          originalError: new UserInputError(message)
+          originalError: new UserInputError(message),
         },
         opts
       )

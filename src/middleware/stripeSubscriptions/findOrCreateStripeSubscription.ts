@@ -1,7 +1,8 @@
-import type Stripe from "stripe";
 import { stripe } from "@lib/stripe";
-import { UserSubscription, UserSubscriptionType, type UserType } from "@models";
+import { UserSubscription } from "@models";
 import { catchAsyncMW, logger, getTypeSafeErr, PaymentRequiredError } from "@utils";
+import type { UserType, UserSubscriptionType } from "@types";
+import type Stripe from "stripe";
 
 // req.originalUrl = "/subscriptions/submit-payment"
 
@@ -9,7 +10,7 @@ export const findOrCreateStripeSubscription = catchAsyncMW(async (req, res, next
   try {
     const {
       body: { paymentMethodID, selectedSubscription, promoCode },
-      _user
+      _user,
     } = req as {
       body: UpdateCustomerPaymentMethodReqBody;
       _user: UserType;
@@ -19,13 +20,13 @@ export const findOrCreateStripeSubscription = catchAsyncMW(async (req, res, next
 
     // Attach the payment method to the customer
     await stripe.paymentMethods.attach(paymentMethodID, {
-      customer: _user.stripeCustomerID
+      customer: _user.stripeCustomerID,
     });
 
     // Change the default invoice settings on the customer to the new payment method.
     const { subscriptions } = await stripe.customers.update(_user.stripeCustomerID, {
       invoice_settings: { default_payment_method: paymentMethodID },
-      expand: ["subscriptions.data.latest_invoice.payment_intent"]
+      expand: ["subscriptions.data.latest_invoice.payment_intent"],
     });
 
     // See if there's an existing non-expired subscription
@@ -43,13 +44,13 @@ export const findOrCreateStripeSubscription = catchAsyncMW(async (req, res, next
       productID,
       priceID,
       status,
-      latest_invoice
+      latest_invoice,
     } = !!nonExpiredSubscription
       ? UserSubscription.normalizeStripeFields(nonExpiredSubscription)
       : await UserSubscription.upsertOne({
           user: _user,
           selectedSubscription,
-          promoCode
+          promoCode,
         });
 
     // See if their latest payment succeeded, or was declined.
@@ -63,11 +64,11 @@ export const findOrCreateStripeSubscription = catchAsyncMW(async (req, res, next
       currentPeriodEnd,
       productID,
       priceID,
-      status
+      status,
     } as UserSubscriptionType;
 
     // If an error occurs, ensure the 402 status code is provided.
-  } catch (err: ErrorLike) {
+  } catch (err: unknown) {
     const error = getTypeSafeErr(err);
     logger.stripe(error, "findOrCreateStripeSubscription");
     throw new PaymentRequiredError(error.message);

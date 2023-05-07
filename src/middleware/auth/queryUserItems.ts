@@ -1,18 +1,18 @@
 import { ddbSingleTable } from "@lib/dynamoDB";
-import { catchAsyncMW } from "@utils/middlewareWrappers";
 import { UserSubscription, UserStripeConnectAccount, WorkOrder, Invoice, Contact } from "@models";
 import {
   logger,
   AuthError,
   type WorkOrderDbTypeToApiResponseType,
-  type InvoiceDbTypeToApiResponseType
+  type InvoiceDbTypeToApiResponseType,
 } from "@utils";
+import { catchAsyncMW } from "@utils/middlewareWrappers";
 import type {
   UserType,
   UserSubscriptionType,
   UserStripeConnectAccountType,
-  ContactType
-} from "@models";
+  ContactType,
+} from "@types";
 
 /**
  * This middleware function obtains a User's StripeConnectAccount and Subscription(s).
@@ -44,8 +44,8 @@ export const queryUserItems = catchAsyncMW(async (req, res, next) => {
     ExpressionAttributeValues: {
       ":userID": req._user.id,
       ":userSK": `#DATA#${req._user.id}`,
-      ":tilde": "~"
-    }
+      ":tilde": "~",
+    },
   })) as Array<RawItemFromDB> | undefined;
 
   // If no items were found, the user doesn't exist, throw AuthError (see above jsdoc for details on this edge case)
@@ -90,7 +90,7 @@ export const queryUserItems = catchAsyncMW(async (req, res, next) => {
       stripeConnectAccount: null,
       workOrders: [],
       invoices: [],
-      contacts: []
+      contacts: [],
     } as {
       user: RawItemFromDB | null;
       subscription: RawItemFromDB | null;
@@ -141,8 +141,8 @@ export const queryUserItems = catchAsyncMW(async (req, res, next) => {
         scheduledDateTime: null,
         contractorNotes: null,
         // DB object values override above defaults:
-        ...workOrder
-      })) as Array<WorkOrderDbTypeToApiResponseType>
+        ...workOrder,
+      })) as Array<WorkOrderDbTypeToApiResponseType>,
     }),
     ...(invoices.length > 0 && {
       invoices: (
@@ -152,12 +152,12 @@ export const queryUserItems = catchAsyncMW(async (req, res, next) => {
         stripePaymentIntentID: null,
         workOrder: null,
         // DB object values override above defaults:
-        ...invoice
-      })) as Array<InvoiceDbTypeToApiResponseType>
+        ...invoice,
+      })) as Array<InvoiceDbTypeToApiResponseType>,
     }),
     ...(contacts.length > 0 && {
-      contacts: Contact.processItemData.fromDB(contacts) as Array<ContactType>
-    })
+      contacts: Contact.processItemData.fromDB(contacts) as Array<ContactType>,
+    }),
   };
 
   next();

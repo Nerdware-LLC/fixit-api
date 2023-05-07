@@ -1,7 +1,8 @@
 import moment from "moment";
 import { Contact } from "./Contact";
 import { CONTACT_SK_REGEX } from "./regex";
-import type { ContactType } from "./types";
+import type { ContactType } from "@types";
+import type { Simplify } from "type-fest";
 
 const USER_1 = "USER#11111111-1111-1111-1111-contact11111";
 const USER_2 = "USER#22222222-2222-2222-2222-contact22222";
@@ -11,13 +12,13 @@ const MOCK_INPUTS = {
   // CONTACT_A contains the bare minimum inputs for Contact.createItem
   CONTACT_A: {
     userID: USER_1,
-    contactUserID: USER_2
+    contactUserID: USER_2,
   },
   // CONTACT_B contains all Contact properties that can be provided to Contact.createItem
   CONTACT_B: {
     userID: USER_2,
-    contactUserID: USER_3
-  }
+    contactUserID: USER_3,
+  },
 } as const;
 
 // This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
@@ -36,7 +37,7 @@ const testContactFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockContact:
 
 describe("Contact model R/W database operations", () => {
   let createdContacts = {} as {
-    -readonly [K in keyof typeof MOCK_INPUTS]: Expand<
+    -readonly [K in keyof typeof MOCK_INPUTS]: Simplify<
       ContactType & Required<Pick<ContactType, "sk" | "contactUserID">>
     >;
   };
@@ -97,7 +98,7 @@ afterAll(async () => {
 
   const remainingMockContacts = await Contact.ddbClient.scan({
     FilterExpression: "begins_with(sk, :skPrefix)",
-    ExpressionAttributeValues: { ":skPrefix": "CONTACT#" }
+    ExpressionAttributeValues: { ":skPrefix": "CONTACT#" },
   });
 
   if (Array.isArray(remainingMockContacts) && remainingMockContacts.length > 0) {

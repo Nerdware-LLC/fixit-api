@@ -1,7 +1,7 @@
-import type Stripe from "stripe";
 import moment from "moment";
 import { UserSubscription } from "@models/UserSubscription";
 import { logger } from "@utils/logger";
+import type Stripe from "stripe";
 
 /**
  * Stripe webhook handler for event: `"customer.subscription.deleted"`
@@ -23,7 +23,7 @@ export const customerSubscriptionDeleted = async (
     // Delete the user's subscription item
     await UserSubscription.deleteItem({
       userID,
-      sk: `SUBSCRIPTION#${userID}#${moment(createdAt).unix()}`
+      sk: `SUBSCRIPTION#${userID}#${moment(createdAt).unix()}`,
     });
   } catch (err) {
     // If err, log it, do not re-throw from here.

@@ -6,7 +6,7 @@ export const logger = {
   warn: getLogFnFromTemplate("SERVER", { messageColor: colors.yellow }),
   security: getLogFnFromTemplate("SECURITY", {
     labelColor: colors.bgRed.black.bold,
-    messageColor: colors.red.bold
+    messageColor: colors.red.bold,
   }),
   debug: getLogFnFromTemplate("DEBUG"),
   test: getLogFnFromTemplate("TEST", { messageColor: colors.bgCyan.black.bold }),
@@ -18,7 +18,7 @@ export const logger = {
     messageColor: colors.green,
     loggerArgsPreProcessor: (eventActionability, eventType, eventObject) => ({
       // prettier-ignore
-      message: `${eventActionability} type = ${eventType}, object = ${JSON.stringify(eventObject, null, 2)}`
-    })
-  })
+      message: `${eventActionability} type = ${eventType}, object = ${JSON.stringify(eventObject, null, 2)}`,
+    }),
+  }),
 };

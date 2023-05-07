@@ -13,8 +13,8 @@ export const registerNewUser = catchAsyncMW(async (req, res, next) => {
       password = null, //           Only local logins will have "password"
       profile = null, //            Only Google OAuth logins will have "profile" at reg time
       googleID = null, //           Only Google OAuth logins will have "googleID"
-      googleAccessToken = null //   Only Google OAuth logins will have "googleAccessToken"
-    }
+      googleAccessToken = null, //   Only Google OAuth logins will have "googleAccessToken"
+    },
   } = req;
 
   req._user = await User.createOne({
@@ -25,7 +25,7 @@ export const registerNewUser = catchAsyncMW(async (req, res, next) => {
     password,
     profile,
     googleID,
-    googleAccessToken
+    googleAccessToken,
   });
 
   /* Data from this endpoint is returned to the sending client, so there's no

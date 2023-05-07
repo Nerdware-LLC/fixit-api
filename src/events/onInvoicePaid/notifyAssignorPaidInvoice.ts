@@ -1,6 +1,7 @@
-import { User, type InvoiceType } from "@models";
-import { lambdaClient } from "@lib/lambdaClient";
 import { InvoicePushNotification } from "@events/pushNotifications";
+import { lambdaClient } from "@lib/lambdaClient";
+import { User } from "@models";
+import type { InvoiceType } from "@types";
 
 export const notifyAssignorPaidInvoice = async (paidInvoice: InvoiceType) => {
   const { createdByUserID } = paidInvoice;
@@ -15,9 +16,9 @@ export const notifyAssignorPaidInvoice = async (paidInvoice: InvoiceType) => {
       pushEventName: "InvoicePaid",
       recipientUser: {
         id: createdByUserID,
-        expoPushToken: assignorUser.expoPushToken
+        expoPushToken: assignorUser.expoPushToken,
       },
-      invoice: paidInvoice
-    })
+      invoice: paidInvoice,
+    }),
   ]);
 };

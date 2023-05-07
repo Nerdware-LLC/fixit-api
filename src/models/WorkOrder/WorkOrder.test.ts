@@ -2,7 +2,7 @@ import moment from "moment";
 import { MILLISECONDS_PER_DAY } from "@tests/datetime";
 import { WorkOrder } from "./WorkOrder";
 import { WORK_ORDER_ID_REGEX, WORK_ORDER_ID_REGEX_STR } from "./regex";
-import type { WorkOrderType } from "./types";
+import type { WorkOrderType } from "@types";
 
 const USER_1 = "USER#11111111-1111-1111-1111-wo1111111111";
 const USER_2 = "USER#22222222-2222-2222-2222-wo2222222222";
@@ -15,8 +15,8 @@ const MOCK_INPUTS = {
     location: {
       region: "Washington",
       city: "Redmond",
-      streetLine1: "1 Microsoft Way"
-    }
+      streetLine1: "1 Microsoft Way",
+    },
   },
   // WO_B contains all WO properties that can be provided to WorkOrder.createOne
   WO_B: {
@@ -28,20 +28,20 @@ const MOCK_INPUTS = {
       region: "California",
       city: "Mountain View",
       streetLine1: "1600 Amphitheatre Parkway",
-      streetLine2: "Attn: #Human Googlers" // <-- tests chars :#
+      streetLine2: "Attn: #Human Googlers", // <-- tests chars :#
     },
     category: "General",
     description: "Do cool things at the Googleplex",
     checklist: [
       { description: "Did a cool thing" },
       { description: "Engineer all the things" },
-      { description: "Pet a doggo" }
+      { description: "Pet a doggo" },
     ],
     dueDate: new Date(Date.now() + MILLISECONDS_PER_DAY * 10), // + 10 days
     entryContact: "Sundar Pichai",
     entryContactPhone: "(555) 123-4567",
-    scheduledDateTime: new Date(Date.now() + MILLISECONDS_PER_DAY * 2) // + 2 days
-  }
+    scheduledDateTime: new Date(Date.now() + MILLISECONDS_PER_DAY * 2), // + 2 days
+  },
 } as const;
 
 // This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
@@ -75,8 +75,8 @@ const testWorkOrderFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockWO: Wo
         expect.objectContaining({
           id: expect.stringMatching(WORK_ORDER_ID_REGEX_STR),
           description: expect.any(String),
-          isCompleted: false
-        })
+          isCompleted: false,
+        }),
       ])
     );
   }
@@ -143,13 +143,13 @@ describe("WorkOrder model R/W database operations", () => {
           country: "Canada",
           region: "Ontario",
           city: "Toronto",
-          streetLine1: "65 King East"
-        }
+          streetLine1: "65 King East",
+        },
       },
       WO_B: {
         assignedToUserID: "UNASSIGNED",
-        status: "UNASSIGNED" // <-- "status" currently added by updateWorkOrder resolver (conditionally)
-      }
+        status: "UNASSIGNED", // <-- "status" currently added by updateWorkOrder resolver (conditionally)
+      },
     };
 
     // Update WO values
@@ -161,7 +161,7 @@ describe("WorkOrder model R/W database operations", () => {
     for (const key of MOCK_INPUT_KEYS) {
       expect(updatedWOs[key]).toMatchObject({
         ...createdWOs[key],
-        ...NEW_WO_VALUES[key]
+        ...NEW_WO_VALUES[key],
       });
     }
 
@@ -188,7 +188,7 @@ afterAll(async () => {
 
   const remainingMockWOs = await WorkOrder.ddbClient.scan({
     FilterExpression: "begins_with(sk, :skPrefix)",
-    ExpressionAttributeValues: { ":skPrefix": "WO#" }
+    ExpressionAttributeValues: { ":skPrefix": "WO#" },
   });
 
   if (Array.isArray(remainingMockWOs) && remainingMockWOs.length > 0) {

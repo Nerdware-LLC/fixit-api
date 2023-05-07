@@ -12,7 +12,7 @@ adminRouter.use("/healthcheck", express.json(), (req, res) => {
 adminRouter.use(
   "/csp-violation",
   express.json({
-    type: ["application/json", "application/csp-report", "application/reports+json"]
+    type: ["application/json", "application/csp-report", "application/reports+json"],
   }),
   reportCspViolation
 );

@@ -1,6 +1,6 @@
 import { eventEmitter } from "@events/eventEmitter";
 import type { Model } from "@lib/dynamoDB";
-import type { InvoiceType } from "./types";
+import type { InvoiceType } from "@types";
 
 export const deleteOne = async function (
   this: InstanceType<typeof Model>,
@@ -8,7 +8,7 @@ export const deleteOne = async function (
 ) {
   const deletedInvoice = await this.deleteItem({
     createdByUserID: existingInvoice.createdByUserID,
-    id: existingInvoice.id
+    id: existingInvoice.id,
   });
 
   eventEmitter.emitInvoiceDeleted(deletedInvoice);

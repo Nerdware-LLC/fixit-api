@@ -1,6 +1,7 @@
-import { User, type InvoiceType } from "@models";
-import { lambdaClient } from "@lib/lambdaClient";
 import { InvoicePushNotification } from "@events/pushNotifications";
+import { lambdaClient } from "@lib/lambdaClient";
+import { User } from "@models";
+import type { InvoiceType } from "@types";
 
 export const notifyAssigneeDeletedInvoice = async (deletedInvoice: InvoiceType) => {
   const { assignedToUserID } = deletedInvoice;
@@ -15,9 +16,9 @@ export const notifyAssigneeDeletedInvoice = async (deletedInvoice: InvoiceType) 
       pushEventName: "InvoiceDeleted",
       recipientUser: {
         id: assignedToUserID,
-        expoPushToken: assigneeUser.expoPushToken
+        expoPushToken: assigneeUser.expoPushToken,
       },
-      invoice: deletedInvoice
-    })
+      invoice: deletedInvoice,
+    }),
   ]);
 };

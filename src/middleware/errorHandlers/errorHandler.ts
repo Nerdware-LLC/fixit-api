@@ -1,6 +1,6 @@
-import type { ErrorRequestHandler } from "express";
 import { ENV } from "@server/env";
 import { logger } from "@utils/logger";
+import type { ErrorRequestHandler } from "express";
 
 const { IS_PROD } = ENV;
 
@@ -21,6 +21,6 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   const errMsg = errStatusCode >= 500 && IS_PROD ? "Something failed." : err.message;
 
   res.status(errStatusCode).json({
-    error: errMsg
+    error: errMsg,
   });
 };

@@ -1,6 +1,6 @@
-import type Stripe from "stripe";
 import { UserSubscription } from "@models/UserSubscription";
 import { logger } from "@utils/logger";
+import type Stripe from "stripe";
 
 /**
  * Stripe webhook handler for events:
@@ -22,7 +22,7 @@ export const customerSubscriptionUpdated = async (
     productID,
     priceID,
     status,
-    createdAt
+    createdAt,
   } = UserSubscription.normalizeStripeFields(rawStripeSubscriptionObj);
 
   let userID;
@@ -33,14 +33,14 @@ export const customerSubscriptionUpdated = async (
     await UserSubscription.updateOne(
       {
         userID,
-        createdAt
+        createdAt,
       },
       {
         id: subscriptionID,
         currentPeriodEnd,
         productID,
         priceID,
-        status
+        status,
       }
     );
   } catch (err) {

@@ -7,9 +7,9 @@ import {
   USER_ID_REGEX,
   USER_SK_REGEX,
   USER_HANDLE_REGEX,
-  USER_STRIPE_CUSTOMER_ID_REGEX
+  USER_STRIPE_CUSTOMER_ID_REGEX,
 } from "./regex";
-import type { UserType } from "./types";
+import type { UserType } from "@types";
 
 // TODO make sure sensitive User fields are hidden from other Users: id, stripeCustomerID, stripeConnectAccount, subscription
 // TODO Make these User properties immutable: id, email, login.type, stripeCustomerID, stripeConnectAccount.id
@@ -28,7 +28,7 @@ class UserModel extends Model<typeof UserModel.schema> {
       alias: "id",
       validate: (value: string) => USER_ID_REGEX.test(value),
       isHashKey: true,
-      required: true
+      required: true,
     },
     sk: {
       type: "string",
@@ -36,12 +36,12 @@ class UserModel extends Model<typeof UserModel.schema> {
       isRangeKey: true,
       required: true,
       index: {
-        // For relational queryies using "sk" as the hash key
+        // For relational queries using "sk" as the hash key
         name: "Overloaded_SK_GSI",
         global: true,
         rangeKey: "data", // This GSI sk is currently not used by any model methods.
-        project: true
-      }
+        project: true,
+      },
     },
     data: {
       type: "string",
@@ -53,32 +53,32 @@ class UserModel extends Model<typeof UserModel.schema> {
         name: "Overloaded_Data_GSI",
         global: true,
         rangeKey: "sk",
-        project: true
-      }
+        project: true,
+      },
     },
     handle: {
       type: "string",
       required: true,
-      validate: (value: string) => USER_HANDLE_REGEX.test(value)
+      validate: (value: string) => USER_HANDLE_REGEX.test(value),
     },
     phone: {
       ...COMMON_ATTRIBUTE_TYPES.PHONE,
-      required: true
+      required: true,
     },
     expoPushToken: {
-      // TODO the push-service sets EPT to "" (empty string), as STRING attrs CANT BE SET TO NULL !
+      // TODO the push-service sets EPT to "" (empty string), as STRING attrs CAN'T BE SET TO NULL !
       type: "string",
       required: false,
       validate: (tokenValue: string) => tokenValue == "" || Expo.isExpoPushToken(tokenValue),
       transformValue: {
         // If value is "null", replace with empty string.
-        toDB: (value: string) => (value === null ? "" : value)
-      }
+        toDB: (value: string) => (value === null ? "" : value),
+      },
     },
     stripeCustomerID: {
       type: "string",
       required: true,
-      validate: (value: string) => USER_STRIPE_CUSTOMER_ID_REGEX.test(value)
+      validate: (value: string) => USER_STRIPE_CUSTOMER_ID_REGEX.test(value),
     },
     login: {
       type: "map",
@@ -88,13 +88,13 @@ class UserModel extends Model<typeof UserModel.schema> {
         type: {
           type: "string",
           required: true,
-          validate: (loginType: string) => ["LOCAL", "GOOGLE_OAUTH"].includes(loginType) // <-- emulates enum enforcement
+          validate: (loginType: string) => ["LOCAL", "GOOGLE_OAUTH"].includes(loginType), // <-- emulates enum enforcement
         },
         // For LOCAL logins:
         passwordHash: { type: "string" },
         // For GOOGLE_OAUTH logins:
         googleID: { type: "string" },
-        googleAccessToken: { type: "string" }
+        googleAccessToken: { type: "string" },
       },
       validate: (login: { type: "LOCAL" | "GOOGLE_OAUTH" }) =>
         login?.type === "LOCAL"
@@ -102,29 +102,30 @@ class UserModel extends Model<typeof UserModel.schema> {
           : login?.type === "GOOGLE_OAUTH"
           ? Object.prototype.hasOwnProperty.call(login, "googleID") &&
             Object.prototype.hasOwnProperty.call(login, "googleAccessToken")
-          : false
+          : false,
     },
     profile: {
       type: "map",
-      required: false,
+      required: true,
       schema: {
+        displayName: { type: "string" },
         givenName: { type: "string" },
         familyName: { type: "string" },
         businessName: { type: "string" },
-        photoURL: { type: "string" }
-      }
+        photoURL: { type: "string" },
+      },
     },
     // "createdAt" and "updatedAt"
-    ...COMMON_ATTRIBUTES.TIMESTAMPS
+    ...COMMON_ATTRIBUTES.TIMESTAMPS,
   } as const;
 
   static readonly schemaOptions: ModelSchemaOptions = {
     transformItem: {
       toDB: (userItem) => ({
         ...userItem,
-        sk: `#DATA#${userItem.pk}`
-      })
-    }
+        sk: `#DATA#${userItem.pk}`,
+      }),
+    },
   };
 
   constructor() {
@@ -151,7 +152,7 @@ class UserModel extends Model<typeof UserModel.schema> {
       KeyConditionExpression: "#e = :email",
       ExpressionAttributeNames: { "#e": "data" },
       ExpressionAttributeValues: { ":email": email },
-      Limit: 1
+      Limit: 1,
     });
 
     return user as UserType;

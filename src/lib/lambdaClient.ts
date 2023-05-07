@@ -6,7 +6,7 @@ const _lambdaClient = new LambdaClient({ region: ENV.AWS.REGION });
 const _invoke = async ({
   FunctionName,
   InvocationType,
-  Payload: payloadToSend
+  Payload: payloadToSend,
 }: {
   FunctionName: InvokeCommandInput["FunctionName"];
   InvocationType: InvokeCommandInput["InvocationType"];
@@ -17,12 +17,12 @@ const _invoke = async ({
     new InvokeCommand({
       FunctionName,
       InvocationType,
-      Payload: Buffer.from(JSON.stringify(payloadToSend))
+      Payload: Buffer.from(JSON.stringify(payloadToSend)),
     })
   );
   return {
     Payload: returnedPayload ? Buffer.from(returnedPayload).toString() : null,
-    ...rest
+    ...rest,
   };
 };
 
@@ -36,7 +36,7 @@ export const lambdaClient = Object.freeze({
     return _invoke({
       FunctionName: lambdaFnName,
       InvocationType: "Event",
-      Payload: lambdaFnPayload
+      Payload: lambdaFnPayload,
     });
   },
   invokeRequestResponse: async (
@@ -46,7 +46,7 @@ export const lambdaClient = Object.freeze({
     return _invoke({
       FunctionName: lambdaFnName,
       InvocationType: "RequestResponse",
-      Payload: lambdaFnPayload
+      Payload: lambdaFnPayload,
     });
-  }
+  },
 });

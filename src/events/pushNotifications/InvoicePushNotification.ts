@@ -1,30 +1,30 @@
 import { PushNotification } from "./_PushNotification";
-import type { InvoiceType } from "@models/Invoice/types";
+import type { InvoiceType } from "@types";
 
 export class InvoicePushNotification extends PushNotification {
   static PUSH_EVENTS = {
     NewInvoice: {
       title: "New Invoice",
-      body: "A new Invoice is available."
+      body: "A new Invoice is available.",
     },
     InvoiceUpdated: {
       title: "Invoice Update",
-      body: "One of your invoices has been updated."
+      body: "One of your invoices has been updated.",
     },
     InvoiceDeleted: {
       title: "Invoice Deleted",
-      body: "One of your invoices has been deleted."
+      body: "One of your invoices has been deleted.",
     },
     InvoicePaid: {
       title: "Invoice Paid",
-      body: "Payment has been submitted for one of your invoices."
-    }
+      body: "Payment has been submitted for one of your invoices.",
+    },
   } as const;
 
   constructor({
     pushEventName,
     recipientUser,
-    invoice: { id: invoiceID }
+    invoice: { id: invoiceID },
   }: {
     pushEventName: InvoicePushNotificationEventName;
     recipientUser: { id: string; expoPushToken?: string };
@@ -33,7 +33,7 @@ export class InvoicePushNotification extends PushNotification {
     super({
       pushEventName,
       recipientUser,
-      ...InvoicePushNotification.PUSH_EVENTS[pushEventName]
+      ...InvoicePushNotification.PUSH_EVENTS[pushEventName],
     });
 
     this.data.invoiceID = invoiceID;

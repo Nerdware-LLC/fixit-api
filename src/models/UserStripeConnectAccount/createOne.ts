@@ -1,7 +1,6 @@
 import { stripe } from "@lib/stripe";
 import type { Model } from "@lib/dynamoDB";
-import type { UserType } from "@models/User/types";
-import type { UserStripeConnectAccountAllFields } from "./types";
+import type { UserType, UserStripeConnectAccountAllFields } from "@types";
 
 // function, not arrow, bc we need "this" to be the UserStripeConnectAccount model
 export const createOne = async function (
@@ -10,7 +9,7 @@ export const createOne = async function (
     userID,
     email,
     phone,
-    profile
+    profile,
   }: {
     userID: UserType["id"];
     email: UserType["email"];
@@ -23,7 +22,7 @@ export const createOne = async function (
     id: stripeConnectAccountID,
     details_submitted: detailsSubmitted,
     charges_enabled: chargesEnabled,
-    payouts_enabled: payoutsEnabled
+    payouts_enabled: payoutsEnabled,
   } = await stripe.accounts.create({
     type: "express",
     country: "US",
@@ -31,32 +30,32 @@ export const createOne = async function (
     email,
     capabilities: {
       card_payments: { requested: true },
-      transfers: { requested: true }
+      transfers: { requested: true },
     },
     business_type: "individual",
     company: {
       ...(profile?.businessName && { name: profile.businessName }),
-      phone
+      phone,
     },
     individual: {
       email,
       phone,
       ...(profile?.givenName && { first_name: profile.givenName }),
-      ...(profile?.familyName && { last_name: profile.familyName })
+      ...(profile?.familyName && { last_name: profile.familyName }),
     },
     business_profile: {
       ...(profile?.businessName && { name: profile.businessName }),
       support_email: email,
-      support_phone: phone
+      support_phone: phone,
     },
     tos_acceptance: {
-      service_agreement: "full"
+      service_agreement: "full",
     },
     settings: {
       payouts: {
-        debit_negative_balances: true
-      }
-    }
+        debit_negative_balances: true,
+      },
+    },
   });
 
   // Create UserStripeConnectAccount in DynamoDB
@@ -65,6 +64,6 @@ export const createOne = async function (
     id: stripeConnectAccountID,
     detailsSubmitted,
     chargesEnabled,
-    payoutsEnabled
+    payoutsEnabled,
   });
 };

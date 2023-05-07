@@ -22,7 +22,7 @@ export const checkOnboardingStatus = catchAsyncMW<APIRequestWithAuthenticatedUse
         {
           detailsSubmitted: !!details_submitted,
           chargesEnabled: !!charges_enabled,
-          payoutsEnabled: !!payouts_enabled
+          payoutsEnabled: !!payouts_enabled,
         }
       );
 

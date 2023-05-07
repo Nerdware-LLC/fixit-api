@@ -2,13 +2,13 @@ import { EventEmitter } from "events";
 import { ENV } from "@server/env";
 import { logger } from "@utils/logger";
 import { notifyAssigneeNewInvoice } from "./onInvoiceCreated";
-import { notifyAssigneeUpdatedInvoice } from "./onInvoiceUpdated";
 import { notifyAssigneeDeletedInvoice } from "./onInvoiceDeleted";
 import { notifyAssignorPaidInvoice } from "./onInvoicePaid";
-import { notifyAssigneeNewWO } from "./onWorkOrderCreated";
-import { notifyAssigneeUpdatedWO } from "./onWorkOrderUpdated";
+import { notifyAssigneeUpdatedInvoice } from "./onInvoiceUpdated";
 import { notifyAssigneeCancelledWO } from "./onWorkOrderCancelled";
 import { notifyAssignorCompletedWO } from "./onWorkOrderCompleted";
+import { notifyAssigneeNewWO } from "./onWorkOrderCreated";
+import { notifyAssigneeUpdatedWO } from "./onWorkOrderUpdated";
 
 /**
  * FixitEventEmitter is a simple wrapper around EventEmitter which
@@ -30,7 +30,7 @@ class FixitEventEmitter extends EventEmitter {
     WorkOrderCreated: [notifyAssigneeNewWO],
     WorkOrderUpdated: [notifyAssigneeUpdatedWO],
     WorkOrderCancelled: [notifyAssigneeCancelledWO],
-    WorkOrderCompleted: [notifyAssignorCompletedWO]
+    WorkOrderCompleted: [notifyAssignorCompletedWO],
   } as const;
 
   constructor() {
@@ -43,7 +43,7 @@ class FixitEventEmitter extends EventEmitter {
         },
         writable: false,
         enumerable: false,
-        configurable: false
+        configurable: false,
       });
 
       // Register the event's handler fns

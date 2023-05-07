@@ -29,7 +29,7 @@ export class GqlPaymentRequiredError extends GraphQLError {
       merge(
         {
           extensions: { code: "PAYMENT_REQUIRED" },
-          originalError: new PaymentRequiredError(message)
+          originalError: new PaymentRequiredError(message),
         },
         opts
       )

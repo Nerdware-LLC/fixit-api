@@ -1,17 +1,16 @@
 import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
-import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@models/_common";
 import { USER_ID_REGEX } from "@models/User";
+import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@models/_common";
 import { ENV } from "@server/env";
+import { normalizeStripeFields } from "./normalizeStripeFields";
 import { USER_SUBSCRIPTION_SK_REGEX, USER_SUB_STRIPE_ID_REGEX } from "./regex";
 import { updateOne } from "./updateOne";
 import { upsertOne } from "./upsertOne";
-import { SUBSCRIPTION_STATUSES } from "./validateExisting";
-import { normalizeStripeFields } from "./normalizeStripeFields";
-import { validateExisting } from "./validateExisting";
-import type { UserSubscriptionType } from "./types";
+import { SUBSCRIPTION_STATUSES, validateExisting } from "./validateExisting";
+import type { UserSubscriptionType } from "@types";
 
 const {
-  FIXIT_SUBSCRIPTION: { productID, priceIDs, promoCodes }
+  FIXIT_SUBSCRIPTION: { productID, priceIDs, promoCodes },
 } = ENV.STRIPE.BILLING;
 
 /**
@@ -27,7 +26,7 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
       alias: "userID",
       validate: (value: string) => USER_ID_REGEX.test(value),
       isHashKey: true,
-      required: true
+      required: true,
     },
     sk: {
       type: "string",
@@ -39,8 +38,8 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
         name: "Overloaded_SK_GSI",
         global: true,
         rangeKey: "data",
-        project: true
-      }
+        project: true,
+      },
     },
     data: {
       type: "string",
@@ -52,32 +51,32 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
         name: "Overloaded_Data_GSI",
         global: true,
         rangeKey: "sk",
-        project: true
-      }
+        project: true,
+      },
     },
     currentPeriodEnd: {
       ...COMMON_ATTRIBUTE_TYPES.DATETIME, // TODO Make sure client gets a NUMBER, unix time in milliseconds (not a Date object)
-      required: true
+      required: true,
     },
     productID: {
       type: "string",
       required: true,
-      validate: (value: string) => Object.values(UserSubscriptionModel.PRODUCT_IDS).includes(value)
+      validate: (value: string) => Object.values(UserSubscriptionModel.PRODUCT_IDS).includes(value),
       /* Fixit currently only uses 1 productID for its subscription, but more products
       and tiers will be added in the future, so `validate` emulates "enum".         */
     },
     priceID: {
       type: "string",
       required: true,
-      validate: (value: string) => Object.values(UserSubscriptionModel.PRICE_IDS).includes(value)
+      validate: (value: string) => Object.values(UserSubscriptionModel.PRICE_IDS).includes(value),
     },
     status: {
       type: "string",
       required: true,
-      validate: (value: string) => Object.keys(SUBSCRIPTION_STATUSES).includes(value)
+      validate: (value: string) => Object.keys(SUBSCRIPTION_STATUSES).includes(value),
     },
     // "createdAt" and "updatedAt"
-    ...COMMON_ATTRIBUTES.TIMESTAMPS
+    ...COMMON_ATTRIBUTES.TIMESTAMPS,
   } as const;
 
   static readonly schemaOptions: ModelSchemaOptions = {
@@ -85,9 +84,9 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
       toDB: (userSubItem) => ({
         ...userSubItem,
         // prettier-ignore
-        sk: `SUBSCRIPTION#${userSubItem.pk}#${Math.floor(new Date(userSubItem.createdAt).getTime() / 1000)}`
-      })
-    }
+        sk: `SUBSCRIPTION#${userSubItem.pk}#${Math.floor(new Date(userSubItem.createdAt).getTime() / 1000)}`,
+      }),
+    },
   };
 
   static readonly PRODUCT_IDS = { FIXIT_SUBSCRIPTION: productID };
@@ -130,7 +129,7 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
       KeyConditionExpression: "#subID = :subID AND begins_with(sk, :skPrefix)",
       ExpressionAttributeNames: { "#subID": "data" },
       ExpressionAttributeValues: { ":subID": subID, ":skPrefix": "SUBSCRIPTION#" },
-      Limit: 1
+      Limit: 1,
     });
 
     return userSubscription as Required<UserSubscriptionType>;
@@ -139,7 +138,7 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
   readonly queryUserSubscriptions = async (userID: string) => {
     return (await this.query({
       KeyConditionExpression: "pk = :userID AND begins_with(sk, :skPrefix)",
-      ExpressionAttributeValues: { ":userID": userID, ":skPrefix": "SUBSCRIPTION#" }
+      ExpressionAttributeValues: { ":userID": userID, ":skPrefix": "SUBSCRIPTION#" },
     })) as Array<UserSubscriptionType>;
   };
 }

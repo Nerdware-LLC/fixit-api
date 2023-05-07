@@ -1,10 +1,11 @@
 import moment from "moment";
-import { ENV } from "@server/env";
 import { USER_ID_REGEX } from "@models/User/regex";
+import { ENV } from "@server/env";
 import { MILLISECONDS_PER_DAY } from "@tests/datetime";
 import { UserSubscription } from "./UserSubscription";
 import { USER_SUBSCRIPTION_SK_REGEX, USER_SUB_STRIPE_ID_REGEX } from "./regex";
-import type { UserSubscriptionType } from "./types";
+import type { UserSubscriptionType } from "@types";
+import type { Simplify } from "type-fest";
 
 const USER_1 = "USER#11111111-1111-1111-1111-sub111111111";
 const USER_2 = "USER#22222222-2222-2222-2222-sub222222222";
@@ -18,7 +19,7 @@ const MOCK_INPUTS = {
     priceID: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.priceIDs.MONTHLY,
     status: "active",
     currentPeriodEnd: new Date(Date.now() + MILLISECONDS_PER_DAY * 30), // + 30 days
-    createdAt: new Date(Date.now() - MILLISECONDS_PER_DAY * 30) //         - 30 days
+    createdAt: new Date(Date.now() - MILLISECONDS_PER_DAY * 30), //         - 30 days
   },
   SUB_B: {
     userID: USER_2,
@@ -27,7 +28,7 @@ const MOCK_INPUTS = {
     priceID: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.priceIDs.TRIAL,
     status: "trialing",
     currentPeriodEnd: new Date(Date.now() + MILLISECONDS_PER_DAY * 10), // + 10 days
-    createdAt: new Date()
+    createdAt: new Date(),
   },
   SUB_C: {
     userID: USER_3,
@@ -36,8 +37,8 @@ const MOCK_INPUTS = {
     priceID: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.priceIDs.TRIAL,
     status: "incomplete_expired",
     currentPeriodEnd: new Date(Date.now() - MILLISECONDS_PER_DAY), // - 10 days (expired)
-    createdAt: new Date(Date.now() - MILLISECONDS_PER_DAY * 30) //    - 30 days
-  }
+    createdAt: new Date(Date.now() - MILLISECONDS_PER_DAY * 30), //    - 30 days
+  },
 } as const;
 
 // This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
@@ -59,7 +60,7 @@ const testSubFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockSub: UserSub
 
 describe("UserSubscription model R/W database operations", () => {
   let createdSubs = {} as {
-    -readonly [K in keyof typeof MOCK_INPUTS]: Expand<
+    -readonly [K in keyof typeof MOCK_INPUTS]: Simplify<
       UserSubscriptionType & Required<Pick<UserSubscriptionType, "userID" | "sk">>
     >;
   };
@@ -126,7 +127,7 @@ afterAll(async () => {
 
   const remainingMockSubs = await UserSubscription.ddbClient.scan({
     FilterExpression: "begins_with(sk, :skPrefix)",
-    ExpressionAttributeValues: { ":skPrefix": "SUBSCRIPTION#" }
+    ExpressionAttributeValues: { ":skPrefix": "SUBSCRIPTION#" },
   });
 
   if (Array.isArray(remainingMockSubs) && remainingMockSubs.length > 0) {

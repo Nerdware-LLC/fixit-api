@@ -1,8 +1,8 @@
 import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
-import { COMMON_ATTRIBUTES } from "@models/_common";
 import { USER_ID_REGEX } from "@models/User/regex";
-import { STRIPE_CONNECT_ACCOUNT_SK_REGEX, STRIPE_CONNECT_ACCOUNT_STRIPE_ID_REGEX } from "./regex";
+import { COMMON_ATTRIBUTES } from "@models/_common";
 import { createOne } from "./createOne";
+import { STRIPE_CONNECT_ACCOUNT_SK_REGEX, STRIPE_CONNECT_ACCOUNT_STRIPE_ID_REGEX } from "./regex";
 import { updateOne } from "./updateOne";
 
 /**
@@ -18,7 +18,7 @@ class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccoun
       alias: "userID",
       validate: (value: string) => USER_ID_REGEX.test(value),
       isHashKey: true,
-      required: true
+      required: true,
     },
     sk: {
       type: "string",
@@ -30,8 +30,8 @@ class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccoun
         name: "Overloaded_SK_GSI",
         global: true,
         rangeKey: "data",
-        project: true
-      }
+        project: true,
+      },
     },
     data: {
       type: "string",
@@ -43,23 +43,23 @@ class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccoun
         name: "Overloaded_Data_GSI",
         global: true,
         rangeKey: "sk",
-        project: true
-      }
+        project: true,
+      },
     },
     detailsSubmitted: {
       type: "boolean",
-      required: true
+      required: true,
     },
     chargesEnabled: {
       type: "boolean",
-      required: true
+      required: true,
     },
     payoutsEnabled: {
       type: "boolean",
-      required: true
+      required: true,
     },
     // "createdAt" and "updatedAt"
-    ...COMMON_ATTRIBUTES.TIMESTAMPS
+    ...COMMON_ATTRIBUTES.TIMESTAMPS,
   } as const;
 
   static readonly schemaOptions: ModelSchemaOptions = {
@@ -70,8 +70,8 @@ class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccoun
         ...(!userStripeConnectAccountItem.sk && !!userStripeConnectAccountItem.pk && {
           sk: `STRIPE_CONNECT_ACCOUNT#${userStripeConnectAccountItem.pk}`
         })
-      })
-    }
+      }),
+    },
   };
 
   constructor() {
@@ -98,9 +98,9 @@ class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccoun
       ExpressionAttributeNames: { "#scaID": "data" },
       ExpressionAttributeValues: {
         ":scaID": stripeConnectAccountID,
-        ":skPrefix": "STRIPE_CONNECT_ACCOUNT#"
+        ":skPrefix": "STRIPE_CONNECT_ACCOUNT#",
       },
-      Limit: 1
+      Limit: 1,
     });
 
     return userSCA;

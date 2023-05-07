@@ -1,7 +1,7 @@
 import { stripe } from "@lib/stripe";
 import { UserSubscription } from "@models/UserSubscription";
 import { catchAsyncMW } from "@utils/middlewareWrappers";
-import type { UserType, UserSubscriptionType } from "@models";
+import type { UserType, UserSubscriptionType } from "@types";
 
 export const checkSubscriptionStatus = catchAsyncMW(async (req, res, next) => {
   if (!req?._user) next("User not found");
@@ -12,7 +12,7 @@ export const checkSubscriptionStatus = catchAsyncMW(async (req, res, next) => {
     const {
       id: subID,
       status: status_inDB,
-      currentPeriodEnd: currentPeriodEnd_inDB
+      currentPeriodEnd: currentPeriodEnd_inDB,
     } = subscription;
 
     // Fetch fresh data from Stripe
@@ -29,11 +29,11 @@ export const checkSubscriptionStatus = catchAsyncMW(async (req, res, next) => {
       const updatedSub = await UserSubscription.updateItem(
         {
           userID,
-          sk: `SUBSCRIPTION#${userID}#${upToDateSubInfo.createdAt}`
+          sk: `SUBSCRIPTION#${userID}#${upToDateSubInfo.createdAt}`,
         },
         {
           status: upToDateSubInfo.status,
-          currentPeriodEnd: upToDateSubInfo.currentPeriodEnd
+          currentPeriodEnd: upToDateSubInfo.currentPeriodEnd,
         }
       );
 

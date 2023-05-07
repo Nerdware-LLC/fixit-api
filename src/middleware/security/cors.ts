@@ -5,7 +5,7 @@ const corsOptions = {
   origin: [
     new RegExp(`^${ENV.CONFIG.API_BASE_URL}`),
     "https://studio.apollographql.com",
-    ...(/^(dev|test)/.test(ENV.NODE_ENV) ? [/localhost/] : [])
+    ...(/^(dev|test)/.test(ENV.NODE_ENV) ? [/localhost/] : []),
   ],
   allowedHeaders: [
     "Content-Type",
@@ -22,10 +22,10 @@ const corsOptions = {
           // Enable ApolloServerPluginInlineTrace
           "apollo-federation-include-trace",
           // Permit access to Apollo Studio queries
-          "Apollo-Studio-Auth-Token"
+          "Apollo-Studio-Auth-Token",
         ]
-      : [])
-  ]
+      : []),
+  ],
 };
 
 export const corsMW = cors(corsOptions);
