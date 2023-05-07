@@ -18,9 +18,9 @@ const apolloServer = new ApolloServer<ApolloServerResolverContext>({
           (await import("@apollo/server/plugin/landingPage/default")).ApolloServerPluginLandingPageLocalDefault({ embed: true }),
           (await import("@apollo/server/plugin/inlineTrace")).ApolloServerPluginInlineTrace()
         ]
-      : [(await import("@apollo/server/plugin/disabled")).ApolloServerPluginLandingPageDisabled()])
+      : [(await import("@apollo/server/plugin/disabled")).ApolloServerPluginLandingPageDisabled()]),
   ],
-  ...(ENV.NODE_ENV === "test" && (await import("@graphql/__tests__/utils/mocks"))) // { mocks, mockEntireSchema }
+  ...(ENV.NODE_ENV === "test" && (await import("@/graphql/__tests__/utils/mocks"))), // { mocks, mockEntireSchema }
 });
 
 // Run required init logic for integrating with Express
