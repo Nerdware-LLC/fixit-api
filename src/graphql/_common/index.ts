@@ -1,2 +1,2 @@
-export * from "./deleteMutationResponse";
-export * from "./root";
+export * from "./DeleteMutationResponse";
+export * from "./GenericSuccessResponse";
