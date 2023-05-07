@@ -3,9 +3,9 @@ export * from "./customErrors";
 export * from "./logger";
 export * from "./middlewareWrappers";
 export * from "./prettifyStr";
+export * from "./typeSafety";
 // util files:
 export * from "./AuthToken";
-export * from "./getObjValuesByKeys";
 export * from "./jwt";
 export * from "./normalizeInput";
 export * from "./passwordHasher";
