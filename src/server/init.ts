@@ -2,16 +2,22 @@ import "./env";
 import "./sentry";
 import "./processEventHandlers";
 import "./logStartupInfo";
-import "./ensureDDBTableIsActive";
 import "@events";
+
+import("./ensureDDBTableIsActive").then(() => {
+  import("./initCacheForUsersSearch");
+});
 
 /* The imports in this file achieve the following:
 
-  env                     Initialize the ENV object
-  sentry                  Initialize Sentry
-  processHandlers         Initialize NodeJS process event handlers
-  logStartupInfo          Logs fixit-api version and other runtime info
-  ensureDDBTableIsActive  Ensures the target DDB table is connected and configured
-  @events                 Initialize EventEmitter and attach event listeners
+  env                      Initialize the ENV object
+  sentry                   Initialize Sentry
+  processHandlers          Initialize NodeJS process event handlers
+  logStartupInfo           Logs fixit-api version and other runtime info
+  @events                  Initialize EventEmitter and attach event listeners
+  ensureDDBTableIsActive   Ensures the target DDB table is connected and configured
+  initCacheForUsersSearch  Initialize the usersCache with all users from the DDB table
+
+  NOTE: Dynamic import used to avoid resource-not-found DDB client errors.
 
 */
