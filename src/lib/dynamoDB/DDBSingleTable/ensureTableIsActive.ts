@@ -1,10 +1,12 @@
 import { logger } from "@utils/logger";
 import { DDBSingleTable } from "./DDBSingleTable";
 import { DDBSingleTableError } from "./customErrors";
+import type { SetNonNullable, SetRequired, Simplify } from "type-fest";
+import type { CreateTableCommandParameters } from "./types";
 
 export const ensureTableIsActive = async function (this: InstanceType<typeof DDBSingleTable>) {
-  // Skip execution if waitForActive is disabled.
-  if (this.waitForActive.enabled !== true) return;
+  // Skip execution if waitForActive is disabled or isTableActive was initialized as true.
+  if (this.waitForActive.enabled !== true || this.isTableActive) return;
 
   // Start timeout timer that throws error if not cleared within the timeframe.
   const timeoutTimerID = setTimeout(() => {
@@ -24,6 +26,7 @@ export const ensureTableIsActive = async function (this: InstanceType<typeof DDB
 
       if (TableStatus === "ACTIVE") {
         clearTimeout(timeoutTimerID);
+        this.isTableActive = true;
         break;
       }
 
@@ -35,7 +38,7 @@ export const ensureTableIsActive = async function (this: InstanceType<typeof DDB
       await new Promise((resolve) => {
         setTimeout(resolve, this.waitForActive.frequency);
       });
-    } catch (err: ErrorLike) {
+    } catch (err: unknown) {
       // If `e` is a "ResourceNotFoundException", Table doesn't exist - see if it should be created.
       if (!(err instanceof Error) || err?.name !== "ResourceNotFoundException") throw err;
 
@@ -55,24 +58,19 @@ export const ensureTableIsActive = async function (this: InstanceType<typeof DDB
       // Else attempt to create the Table.
       logger.dynamodb(`Creating Table "${this.tableName}" ...`);
 
-      type ReducerAccum = NonNullableKeys<
-        Parameters<typeof this.ddbClient.createTable>[0],
-        "AttributeDefinitions" | "KeySchema" | "GlobalSecondaryIndexes" | "LocalSecondaryIndexes"
-      >; // These keys are NonNullable because they're included the the reducer's initial accum object.
-
       // Make `CreateTable` args from the provided schema
-      const createTableArgsFromSchema = Object.entries(this.tableKeysSchema).reduce<ReducerAccum>(
-        (accum, [keyAttrName, keyAttrConfig]) => {
+      const createTableArgsFromSchema = Object.entries(this.tableKeysSchema).reduce(
+        (accum: CreateTableArgsReducerAccumulator, [keyAttrName, keyAttrConfig]) => {
           const {
             type: keyAttrType,
             isHashKey: isTableHashKey = false,
             isRangeKey: isTableRangeKey = false,
-            index
+            index,
           } = keyAttrConfig;
 
           accum.AttributeDefinitions.push({
             AttributeName: keyAttrName,
-            AttributeType: keyAttrType === "string" ? "S" : keyAttrType === "number" ? "N" : "B"
+            AttributeType: keyAttrType === "string" ? "S" : keyAttrType === "number" ? "N" : "B",
             // keys can only be strings, numbers, or binary
           });
 
@@ -80,7 +78,7 @@ export const ensureTableIsActive = async function (this: InstanceType<typeof DDB
           if (isTableHashKey || isTableRangeKey) {
             accum.KeySchema.push({
               AttributeName: keyAttrName,
-              KeyType: isTableHashKey === true ? "HASH" : "RANGE"
+              KeyType: isTableHashKey === true ? "HASH" : "RANGE",
             });
           }
 
@@ -100,9 +98,9 @@ export const ensureTableIsActive = async function (this: InstanceType<typeof DDB
               KeySchema: [
                 {
                   AttributeName: keyAttrName,
-                  KeyType: "HASH"
+                  KeyType: "HASH",
                 },
-                ...(index?.rangeKey ? [{ AttributeName: index.rangeKey, KeyType: "RANGE" }] : [])
+                ...(index?.rangeKey ? [{ AttributeName: index.rangeKey, KeyType: "RANGE" }] : []),
               ],
               Projection: {
                 ProjectionType: !index?.project // if undefined or false, default "KEYS_ONLY"
@@ -110,14 +108,14 @@ export const ensureTableIsActive = async function (this: InstanceType<typeof DDB
                   : index.project === true
                   ? "ALL"
                   : "INCLUDE",
-                ...(Array.isArray(index.project) && { NonKeyAttributes: index.project })
+                ...(Array.isArray(index.project) && { NonKeyAttributes: index.project }),
               },
               ...(!!index?.throughput && {
                 ProvisionedThroughput: {
                   ReadCapacityUnits: index.throughput.read,
-                  WriteCapacityUnits: index.throughput.write
-                }
-              })
+                  WriteCapacityUnits: index.throughput.write,
+                },
+              }),
             });
           }
 
@@ -130,15 +128,15 @@ export const ensureTableIsActive = async function (this: InstanceType<typeof DDB
       // Create the table (TableName is provided to the CreateTable cmd by the SingleTable client)
       const { TableStatus } = await this.ddbClient.createTable({
         ...(this.tableConfigs?.billingMode && {
-          BillingMode: this.tableConfigs.billingMode
+          BillingMode: this.tableConfigs.billingMode,
         }),
         ...(this.tableConfigs?.provisionedThroughput && {
           ProvisionedThroughput: {
             ReadCapacityUnits: this.tableConfigs.provisionedThroughput.read,
-            WriteCapacityUnits: this.tableConfigs.provisionedThroughput.write
-          }
+            WriteCapacityUnits: this.tableConfigs.provisionedThroughput.write,
+          },
         }),
-        ...createTableArgsFromSchema
+        ...createTableArgsFromSchema,
       });
 
       // Update this bool flag so ensure CreateTable is only ever called once.
@@ -151,8 +149,30 @@ export const ensureTableIsActive = async function (this: InstanceType<typeof DDB
       // TableStatus is possibly already ACTIVE if using ddb-local.
       if (TableStatus === "ACTIVE") {
         clearTimeout(timeoutTimerID);
+        this.isTableActive = true;
         break;
       }
     }
   }
 };
+
+/**
+ * This union reflects the keys of the initial accumulator object provided to the
+ * reduce method that's used to derive `createTableArgsFromSchema`.
+ */
+type CreateTableArgsReducerAccumKeys = Extract<
+  keyof CreateTableCommandParameters,
+  "AttributeDefinitions" | "KeySchema" | "GlobalSecondaryIndexes" | "LocalSecondaryIndexes"
+>;
+
+/**
+ * This type reflects the initial accumulator object provided to the reduce method
+ * that's used to derive `createTableArgsFromSchema`.
+ *
+ * Since the keys in `CreateTableArgsReducerAccumKeys` are hard-coded, they're provided
+ * to both `SetRequired` and `SetNonNullable` so TS knows they're definitely there.
+ */
+type CreateTableArgsReducerAccumulator = SetRequired<
+  SetNonNullable<CreateTableCommandParameters, CreateTableArgsReducerAccumKeys>,
+  CreateTableArgsReducerAccumKeys
+>;

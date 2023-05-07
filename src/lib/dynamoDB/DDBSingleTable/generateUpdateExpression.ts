@@ -30,7 +30,7 @@ export const generateUpdateExpression = (itemAttributes: { [k: string]: any }) =
   return {
     UpdateExpression: UpdateExpression.slice(0, -1), // <-- removes last comma
     ExpressionAttributeNames,
-    ExpressionAttributeValues
+    ExpressionAttributeValues,
   };
 };
 

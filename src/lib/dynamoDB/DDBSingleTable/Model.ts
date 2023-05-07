@@ -1,5 +1,5 @@
-import moment from "moment";
 import merge from "lodash.merge";
+import moment from "moment";
 import { SchemaValidationError, ItemInputError } from "./customErrors";
 import type { DDBSingleTable as DDBSingleTableClass } from "./DDBSingleTable";
 import type { DDBSingleTableClient } from "./DDBSingleTableClient";
@@ -9,11 +9,11 @@ import type {
   AliasedModelSchemaType,
   ModelSchemaOptions,
   // Item types:
-  ItemTypeFromSchema, //              base item generic type
-  AliasedItemTypeFromSchema, //       base aliased item generic type
-  AnySingleItemType, //               union of all single item types
-  AnyBatchItemsType, //               union of all item-array types
-  AnyItemOrBatchItemsType, //         union of all item/item-array types
+  ItemTypeFromSchema /*          base item generic type */,
+  AliasedItemTypeFromSchema /*   base aliased item generic type */,
+  AnySingleItemType /*           union of all single item types */,
+  AnyBatchItemsType /*           union of all item-array types */,
+  AnyItemOrBatchItemsType /*     union of all item/item-array types */,
   // Item attribute types:
   ItemPrimaryKeys,
   ItemNonKeyAttributes,
@@ -23,7 +23,19 @@ import type {
   ReturnFromItemAliasing,
   AliasMappingItemKey,
   AliasMappingItemValue,
-  ReturnFromIOHookActionsSet
+  ReturnFromIOHookActionsSet,
+  // Client-method parameter types:
+  GetItemOpts,
+  BatchGetItemsOpts,
+  CreateItemOpts,
+  UpsertItemOpts,
+  BatchUpsertItemsOpts,
+  UpdateItemOpts,
+  DeleteItemOpts,
+  BatchDeleteItemsOpts,
+  BatchUpsertAndDeleteItemsOpts,
+  QueryOpts,
+  ScanOpts,
 } from "./types";
 
 /**
@@ -97,7 +109,7 @@ export class Model<
 > {
   // STATIC PROPERTIES
   private static readonly DEFAULT_MODEL_SCHEMA_OPTS: ModelSchemaOptions = {
-    allowUnknownAttributes: false
+    allowUnknownAttributes: false,
   };
 
   // INSTANCE PROPERTIES
@@ -133,7 +145,7 @@ export class Model<
     this.schema = modelSchema;
     this.schemaOptions = {
       ...Model.DEFAULT_MODEL_SCHEMA_OPTS,
-      ...modelSchemaOptions
+      ...modelSchemaOptions,
     };
 
     /*   Validate Model schema:
@@ -161,7 +173,7 @@ export class Model<
 
       accum[alias] = {
         ...attrConfig,
-        attributeName: attrName
+        attributeName: attrName,
       } as AliasedSchema[keyof AliasedSchema];
 
       return accum;
@@ -172,7 +184,7 @@ export class Model<
 
   readonly getItem = async (
     primaryKeys: AliasedItemPrimaryKeys<Schema>,
-    getItemOpts?: Parameters<typeof this.ddbClient.getItem>[1]
+    getItemOpts?: GetItemOpts
   ) => {
     const toDBpks = this.aliasMapping(primaryKeys, this.aliasedSchema) as ItemPrimaryKeys<Schema>;
     const item = await this.ddbClient.getItem<Schema>(toDBpks, getItemOpts);
@@ -181,7 +193,7 @@ export class Model<
 
   readonly batchGetItems = async (
     primaryKeys: Array<AliasedItemPrimaryKeys<Schema>>,
-    batchGetItemsOpts?: Parameters<typeof this.ddbClient.batchGetItems>[1]
+    batchGetItemsOpts?: BatchGetItemsOpts
   ) => {
     // prettier-ignore
     const toDBpks = primaryKeys.map((pks) => this.aliasMapping(pks, this.aliasedSchema)) as Array<ItemPrimaryKeys<Schema>>;
@@ -189,10 +201,7 @@ export class Model<
     return this.processItemData.fromDB(items) as Array<Partial<AliasedItem>>;
   };
 
-  readonly createItem = async (
-    item: AliasedItem,
-    createItemOpts?: Parameters<typeof this.ddbClient.createItem>[1]
-  ) => {
+  readonly createItem = async (item: AliasedItem, createItemOpts?: CreateItemOpts) => {
     const toDBitem = this.processItemData.toDB(
       { ...item, createdAt: new Date() }, // <-- add "createdAt" timestamp
       { shouldCheckRequired: true }
@@ -207,10 +216,7 @@ export class Model<
     return this.processItemData.fromDB(toDBitem) as AliasedItem;
   };
 
-  readonly upsertItem = async (
-    item: Partial<AliasedItem>,
-    upsertItemOpts?: Parameters<typeof this.ddbClient.upsertItem>[1]
-  ) => {
+  readonly upsertItem = async (item: Partial<AliasedItem>, upsertItemOpts?: UpsertItemOpts) => {
     // prettier-ignore
     const toDBitem = this.processItemData.toDB(item, { shouldCheckRequired: true }) as Partial<ItemType>;
     const itemAttributes = await this.ddbClient.upsertItem<Schema>(toDBitem, upsertItemOpts);
@@ -222,7 +228,7 @@ export class Model<
 
   readonly batchUpsertItems = async (
     items: Array<Partial<AliasedItem>>,
-    batchUpsertItemsOpts?: Parameters<typeof this.ddbClient.batchUpsertItems>[1]
+    batchUpsertItemsOpts?: BatchUpsertItemsOpts
   ) => {
     // prettier-ignore
     const toDBitems = this.processItemData.toDB(items, { shouldCheckRequired: true }) as Array<Partial<ItemType>>;
@@ -233,13 +239,13 @@ export class Model<
   readonly updateItem = async (
     primaryKeys: AliasedItemPrimaryKeys<Schema>,
     attributesToUpdate: Partial<AliasedItem>,
-    updateItemOpts?: Parameters<typeof this.ddbClient.updateItem>[1]
+    updateItemOpts?: UpdateItemOpts
   ) => {
     const toDBpks = this.aliasMapping(primaryKeys, this.aliasedSchema) as ItemPrimaryKeys<Schema>;
 
     const toDBitem = this.processItemData.toDB(attributesToUpdate, {
       shouldSetDefaults: false,
-      shouldTransformItem: false
+      shouldTransformItem: false,
     }) as Partial<ItemNonKeyAttributes<Schema>>;
     const itemAttributes = await this.ddbClient.updateItem<Schema>(
       toDBpks,
@@ -251,7 +257,7 @@ export class Model<
 
   readonly deleteItem = async (
     primaryKeys: AliasedItemPrimaryKeys<Schema>,
-    deleteItemOpts?: Parameters<typeof this.ddbClient.deleteItem>[1]
+    deleteItemOpts?: DeleteItemOpts
   ) => {
     const toDBpks = this.aliasMapping(primaryKeys, this.aliasedSchema) as ItemPrimaryKeys<Schema>;
     const itemAttributes = await this.ddbClient.deleteItem<Schema>(toDBpks, deleteItemOpts);
@@ -260,7 +266,7 @@ export class Model<
 
   readonly batchDeleteItems = async (
     primaryKeys: Array<AliasedItemPrimaryKeys<Schema>>,
-    batchDeleteItemsOpts?: Parameters<typeof this.ddbClient.batchDeleteItems>[1]
+    batchDeleteItemsOpts?: BatchDeleteItemsOpts
   ) => {
     // prettier-ignore
     const toDBpks = primaryKeys.map((pks) => this.aliasMapping(pks, this.aliasedSchema)) as Array<ItemPrimaryKeys<Schema>>;
@@ -271,12 +277,12 @@ export class Model<
   readonly batchUpsertAndDeleteItems = async (
     {
       upsertItems,
-      deleteItems
+      deleteItems,
     }: {
       upsertItems: Array<Partial<AliasedItem>>;
       deleteItems: Array<AliasedItemPrimaryKeys<Schema>>;
     },
-    batchUpsertAndDeleteItemsOpts?: Parameters<typeof this.ddbClient.batchUpsertAndDeleteItems>[1]
+    batchUpsertAndDeleteItemsOpts?: BatchUpsertAndDeleteItemsOpts
   ) => {
     // prettier-ignore
     const itemsToDB = {
@@ -290,17 +296,14 @@ export class Model<
     // BatchWrite does not return items, so the input params are formatted for return.
     return {
       upsertItems: this.processItemData.fromDB(itemsToDB.upsertItems),
-      deleteItems
+      deleteItems,
     } as {
       upsertItems: Array<Partial<AliasedItem>>;
       deleteItems: Array<AliasedItemPrimaryKeys<Schema>>;
     };
   };
 
-  readonly query = async ({
-    KeyConditionExpression,
-    ...otherQueryOpts
-  }: Parameters<typeof this.ddbClient.query>[0]) => {
+  readonly query = async ({ KeyConditionExpression, ...otherQueryOpts }: QueryOpts) => {
     // Replace any aliases in KeyConditionExpression with their attribute names.
     if (KeyConditionExpression && typeof KeyConditionExpression === "string") {
       KeyConditionExpression = Object.entries(this.aliasedSchema).reduce(
@@ -324,7 +327,7 @@ export class Model<
     return this.processItemData.fromDB(items as Array<Partial<ItemType>>) as Array<Partial<AliasedItem>>;
   };
 
-  readonly scan = async (scanOpts: Parameters<typeof this.ddbClient.scan>[0] = {}) => {
+  readonly scan = async (scanOpts: ScanOpts = {}) => {
     const items = await this.ddbClient.scan(scanOpts);
     // prettier-ignore
     return this.processItemData.fromDB(items as Array<Partial<ItemType>>) as Array<Partial<AliasedItem>>;
@@ -341,12 +344,12 @@ export class Model<
       return this.applyActionSetToItemData("toDB", itemInput, {
         shouldSetDefaults,
         shouldTransformItem,
-        shouldCheckRequired
+        shouldCheckRequired,
       });
     },
     fromDB: (itemOutput?: AnyItemOrBatchItemsType<Schema>) => {
       return itemOutput && this.applyActionSetToItemData("fromDB", itemOutput);
-    }
+    },
   };
 
   private readonly applyActionSetToItemData = (
@@ -358,15 +361,15 @@ export class Model<
     const ioActions = this.getActionsSet[actionSet]({
       shouldSetDefaults,
       shouldTransformItem,
-      shouldCheckRequired
+      shouldCheckRequired,
     });
 
     // Define fn for applying ioActions to item/items
     const itemDataReducer = !Array.isArray(itemData)
-      ? (itemAccum: AnySingleItemType<Schema>, ioAction: typeof ioActions[number]) => {
+      ? (itemAccum: AnySingleItemType<Schema>, ioAction: (typeof ioActions)[number]) => {
           return ioAction(itemAccum as any);
         }
-      : (batchItemsAccum: AnyBatchItemsType<Schema>, ioAction: typeof ioActions[number]) => {
+      : (batchItemsAccum: AnyBatchItemsType<Schema>, ioAction: (typeof ioActions)[number]) => {
           return batchItemsAccum.map((item) => ioAction(item as any));
         };
 
@@ -454,7 +457,7 @@ export class Model<
       if (attrConfig?.default && !Model.doesHaveDefinedProperty(item, schemaKey)) {
         // "default" values are validated upon Model init at runtime to ensure defaults comply with "type"
         item[schemaKey as keyof typeof item] =
-          attrConfig.default as unknown as typeof item[keyof typeof item];
+          attrConfig.default as unknown as (typeof item)[keyof typeof item];
       }
     });
 
@@ -480,7 +483,8 @@ export class Model<
         const transformedValue = transformValue!(item[schemaKey]);
 
         if (transformedValue !== undefined) {
-          item[schemaKey as keyof typeof item] = transformedValue as typeof item[keyof typeof item];
+          item[schemaKey as keyof typeof item] =
+            transformedValue as (typeof item)[keyof typeof item];
         }
       }
     });
@@ -536,7 +540,7 @@ export class Model<
     Buffer: (input: unknown) => Buffer.isBuffer(input),
     Date: (input: unknown) => !!input && moment(input).isValid(),
     map: (input: unknown) => typeof input === "object" && !Array.isArray(input) && input !== null,
-    array: (input: unknown) => Array.isArray(input)
+    array: (input: unknown) => Array.isArray(input),
   };
 
   private readonly convertJsTypes = <Item extends AnySingleItemType<Schema>>(
