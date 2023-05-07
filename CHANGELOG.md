@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 ---
 
 
+# [1.18.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.17.0...v1.18.0) (2023-05-07)
+
+
+### Bug Fixes
+
+* **types:** correct DDBST Model method typings ([54b54d1](https://github.com/Nerdware-LLC/fixit-api/commit/54b54d1d7b1fe9142b28c32cc6412d18b251d6d1))
+
+
+### Features
+
+* add exports of typeSafety/ ([e178857](https://github.com/Nerdware-LLC/fixit-api/commit/e17885722adb9895958276904406934779c999dd))
+* add GenericSuccessResponse gql response type ([58de70e](https://github.com/Nerdware-LLC/fixit-api/commit/58de70e4f82139f152c816d96d63ae1b77b6d5fd))
+* add init UsersCache side-effect import ([e34143b](https://github.com/Nerdware-LLC/fixit-api/commit/e34143b472b15ec09d64990abf0424a443e6182f))
+* add UsersCache to min SearchUsers query RCUs ([efefc98](https://github.com/Nerdware-LLC/fixit-api/commit/efefc98ad186c1f61e0c4122187a26912816f7eb))
+* improve phone+email identifying regex patterns ([5897393](https://github.com/Nerdware-LLC/fixit-api/commit/5897393b3c6d68daa2253d5bcb0f6d871dce249e))
+* rm unused *.d.ts files ([00bbe79](https://github.com/Nerdware-LLC/fixit-api/commit/00bbe7905978ea4278204a5033e4be15c7815f7f))
+* split scalars into own typedefs+resolvers, add helpers ([f65b93b](https://github.com/Nerdware-LLC/fixit-api/commit/f65b93b13e3896830145f15f80a9ba091f685238))
+* update codegen config ([788e29d](https://github.com/Nerdware-LLC/fixit-api/commit/788e29d4f76169cb867efd3287c9372292a2cc7a))
+* update codegen'd types to reflect GQL changes ([e6af041](https://github.com/Nerdware-LLC/fixit-api/commit/e6af04121863ba75e8336d0110e4ae0b2cd3c3b8))
+* update exports from _common ([edd1fb5](https://github.com/Nerdware-LLC/fixit-api/commit/edd1fb5d632ac0b800c7e1d95141e49b1f502b77))
+* update GQL schema for API changes ([4f33178](https://github.com/Nerdware-LLC/fixit-api/commit/4f33178d0b4dec888666681049cf9c2029ed3101))
+
 # [1.17.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.16.0...v1.17.0) (2022-12-23)
 
 
