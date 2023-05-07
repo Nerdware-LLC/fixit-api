@@ -1,12 +1,13 @@
+import { ItemPrimaryKeys, AliasedItemPrimaryKeys } from "./clientTypes";
+import type { ConditionalPick } from "type-fest";
 import type {
   ModelSchemaType,
   ModelSchemaAttributeConfig,
   ModelSchemaNestedAttributes,
   ModelSchemaNestedMap,
   ModelSchemaNestedArray,
-  ModelSchemaNestedAttributeConfig
-} from "./schema.types";
-import { ItemPrimaryKeys, AliasedItemPrimaryKeys } from "./client.types";
+  ModelSchemaNestedAttributeConfig,
+} from "./schemaTypes";
 
 /**
  * `ItemOrAliasedItem` yields a union of Item types defined by the Model
@@ -269,10 +270,11 @@ export type GetMappedItemWithAccessMods<
   T extends Record<string, ModelSchemaAttributeConfig | ModelSchemaNestedAttributeConfig>,
   NestDepth extends ModelSchemaNestDepth = 0,
   Opts extends { aliasKeys?: boolean } = { aliasKeys: false }
-> = Intersection<
-  { -readonly [K in keyof T as GetItemKey<T, K, Opts>]+?: GetTypeFromAttributeConfig<T[K], NestDepth, Opts> },
-  { -readonly [K in keyof PickMatching<T, { required: true }> as GetItemKey<T, K, Opts>]-?: GetTypeFromAttributeConfig<T[K], NestDepth, Opts> }
->;
+> = {
+  -readonly [K in keyof T as GetItemKey<T, K, Opts>]+?: GetTypeFromAttributeConfig<T[K], NestDepth, Opts>;
+} & {
+  -readonly [K in keyof ConditionalPick<T, { required: true }> as GetItemKey<T, K, Opts>]-?: GetTypeFromAttributeConfig<T[K], NestDepth, Opts>;
+};
 
 /**
  * `GetItemKey` returns "alias" if Opts.aliasKeys is true AND an alias exists, else key.
