@@ -1,4 +1,4 @@
-import "module-alias/register"; // Ensures TS path aliases work from build/
+import "module-alias/register";
 import "@server/init";
 import { ENV } from "@server";
 import { logger } from "@utils";
