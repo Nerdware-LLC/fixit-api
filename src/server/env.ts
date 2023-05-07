@@ -16,7 +16,7 @@ const {
   STRIPE_SECRET_KEY,
   FIXIT_SUB_PRODUCT_ID,
   FIXIT_SUB_PRICES_JSON,
-  FIXIT_SUB_PROMO_CODES_JSON
+  FIXIT_SUB_PROMO_CODES_JSON,
 } = process.env;
 
 const FIXIT_SUB_PRICES: {
@@ -41,15 +41,15 @@ export const ENV = Object.freeze({
     OS_PLATFORM: process.platform,
     PID: process.pid,
     NODE_VERSION: process.version,
-    CWD: process.cwd()
+    CWD: process.cwd(),
   },
   AWS: {
     REGION: AWS_REGION,
-    DYNAMODB_TABLE_NAME
+    DYNAMODB_TABLE_NAME,
   },
   SECURITY: {
     JWT_PRIVATE_KEY,
-    ...(NODE_ENV === "development" && { APOLLO_STUDIO_INTROSPECTION_AUTH_TOKEN })
+    ...(NODE_ENV === "development" && { APOLLO_STUDIO_INTROSPECTION_AUTH_TOKEN }),
   },
   SENTRY_DSN,
   STRIPE: {
@@ -65,10 +65,10 @@ export const ENV = Object.freeze({
         productID: FIXIT_SUB_PRODUCT_ID,
         priceIDs: {
           TRIAL: FIXIT_SUB_PRICES.MONTHLY,
-          ...FIXIT_SUB_PRICES
+          ...FIXIT_SUB_PRICES,
         },
-        promoCodes: JSON.parse(FIXIT_SUB_PROMO_CODES_JSON)
-      }
-    }
-  }
+        promoCodes: JSON.parse(FIXIT_SUB_PROMO_CODES_JSON),
+      },
+    },
+  },
 });
