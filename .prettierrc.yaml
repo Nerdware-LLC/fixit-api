@@ -1,0 +1,40 @@
+##################################################
+# PRETTIER BASE CONFIGS
+
+printWidth: 100
+tabWidth: 2
+useTabs: false
+semi: true
+singleQuote: false
+quoteProps: "as-needed"
+trailingComma: "es5"
+bracketSpacing: true
+arrowParens: "always"
+endOfLine: "lf"
+##################################################
+# PRETTIER PLUGIN CONFIGS
+
+# PLUGIN: @serverless-guru/prettier-plugin-import-order
+importOrderMergeDuplicateImports: true
+importOrderBuiltinModulesToTop: true
+importOrderTypeImportsToBottom: true
+# Note: this plugin will not move side-effect imports
+importOrder: [
+    # Below keyword applies to any imports that don't match an explicitly-provided pattern
+    "<THIRD_PARTY_MODULES>",
+    # Project path aliases:
+    "^@events/?(.*)$",
+    "^@graphql/?(.*)$",
+    "^@lib/?(.*)$",
+    "^@middleware/?(.*)$",
+    "^@models/?(.*)$",
+    "^@server/?(.*)$",
+    "^@tests/?(.*)$",
+    "^@types/?(.*)$",
+    "^@utils/?(.*)$",
+    "^@/",
+    # Relative imports at the bottom
+    "^./",
+    "^../",
+  ]
+##################################################
