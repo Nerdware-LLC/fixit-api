@@ -1,20 +1,14 @@
 {
   "compilerOptions": {
+    // Language and Environment:
     "target": "ES2022",
-    "module": "ES2022",
     "lib": ["ES2022"],
-    "allowJs": true,
-    "sourceMap": true,
-    "outDir": "./build",
-    "rootDir": "./src",
-    "removeComments": true,
-    "strict": true,
-    "noImplicitAny": true,
+
+    // Modules:
+    "module": "ES2022",
     "moduleResolution": "node",
-    "esModuleInterop": true,
     "resolveJsonModule": true,
-    "skipLibCheck": false,
-    "forceConsistentCasingInFileNames": true,
+    "rootDir": "./src",
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
@@ -35,10 +29,26 @@
       "@types/*": ["src/types/*"],
       "@utils": ["src/utils"],
       "@utils/*": ["src/utils/*"]
-    }
+    },
+
+    // "Completeness" Configs:
+    "skipLibCheck": false,
+
+    // Emit Configs:
+    "outDir": "./build",
+    "removeComments": true,
+    "sourceMap": true,
+
+    // Interop Constraints:
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // Type Checking:
+    "noImplicitAny": true,
+    "strict": true
   },
-  "include": ["src/**/*"],
-  "exclude": [".*/**/*", "node_modules/**/*", "build/**/*"],
+  "include": ["src"],
+  "exclude": [".*/**/*", "node_modules", "build"],
   "ts-node": {
     "files": true,
     "esm": true,
