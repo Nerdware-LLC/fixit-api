@@ -1,6 +1,6 @@
-import express from "express";
-import * as Sentry from "@sentry/node";
 import { expressMiddleware } from "@apollo/server/express4";
+import * as Sentry from "@sentry/node";
+import express from "express";
 import { ENV } from "@server/env";
 import { apolloServer } from "./apolloServer";
 import {
@@ -9,14 +9,14 @@ import {
   logReqReceived,
   validateGqlReqContext,
   errorHandler,
-  handle404
+  handle404,
 } from "./middleware";
 import {
   adminRouter,
   authRouter,
   connectRouter,
   subscriptionsRouter,
-  webhooksRouter
+  webhooksRouter,
 } from "./routers";
 
 export const expressApp = express();
@@ -55,7 +55,7 @@ expressApp.use(
   "/api",
   express.json(),
   expressMiddleware(apolloServer, {
-    context: validateGqlReqContext
+    context: validateGqlReqContext,
   })
 );
 
