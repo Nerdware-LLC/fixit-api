@@ -1,9 +1,9 @@
 import { WorkOrderPushNotification } from "@events/pushNotifications";
 import { lambdaClient } from "@lib/lambdaClient";
 import { User } from "@models";
-import type { WorkOrderType } from "@types";
+import type { InternalDbWorkOrder } from "@types";
 
-export const notifyAssignorCompletedWO = async (completedWO: WorkOrderType) => {
+export const notifyAssignorCompletedWO = async (completedWO: InternalDbWorkOrder) => {
   const { createdByUserID } = completedWO;
 
   const assignorUser = await User.getUserByID(createdByUserID);

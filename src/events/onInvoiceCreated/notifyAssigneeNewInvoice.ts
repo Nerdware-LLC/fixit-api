@@ -1,9 +1,9 @@
 import { InvoicePushNotification } from "@events/pushNotifications";
 import { lambdaClient } from "@lib/lambdaClient";
 import { User } from "@models";
-import type { InvoiceType } from "@types";
+import type { InternalDbInvoice } from "@types";
 
-export const notifyAssigneeNewInvoice = async (newInvoice: InvoiceType) => {
+export const notifyAssigneeNewInvoice = async (newInvoice: InternalDbInvoice) => {
   const { assignedToUserID } = newInvoice;
 
   const assigneeUser = await User.getUserByID(assignedToUserID);

@@ -1,9 +1,9 @@
 import { WorkOrderPushNotification } from "@events/pushNotifications";
 import { lambdaClient } from "@lib/lambdaClient";
 import { User } from "@models";
-import type { WorkOrderType } from "@types";
+import type { InternalDbWorkOrder } from "@types";
 
-export const notifyAssigneeNewWO = async (newWO: WorkOrderType) => {
+export const notifyAssigneeNewWO = async (newWO: InternalDbWorkOrder) => {
   const { assignedToUserID } = newWO;
 
   // If new WorkOrder is UNASSIGNED, return.

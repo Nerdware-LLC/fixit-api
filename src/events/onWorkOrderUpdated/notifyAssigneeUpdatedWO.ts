@@ -1,7 +1,7 @@
 import { WorkOrderPushNotification } from "@events/pushNotifications";
 import { lambdaClient } from "@lib/lambdaClient";
 import { User } from "@models";
-import type { WorkOrderType } from "@types";
+import type { InternalDbWorkOrder } from "@types";
 
 /**
  * After a WorkOrder is updated by the User who created it, this event handler
@@ -29,8 +29,8 @@ import type { WorkOrderType } from "@types";
  * |      Yes      |      Yes      |       No       | Notify previous: UNASSIGNMENT, AND Notify new: ASSIGNMENT |
  */
 export const notifyAssigneeUpdatedWO = async (
-  currentWOstate: WorkOrderType,
-  prevWOstate: WorkOrderType
+  currentWOstate: InternalDbWorkOrder,
+  prevWOstate: InternalDbWorkOrder
 ) => {
   const pushNotificationsToSend = [];
 
