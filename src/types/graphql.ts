@@ -1,17 +1,10 @@
 import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
-import type { ContactType } from './Contact';
-import type { InvoiceType } from './Invoice';
-import type { UserType, UserProfile } from './User';
-import type { UserStripeConnectAccountType } from './UserStripeConnectAccount';
-import type { UserSubscriptionType } from './UserSubscription';
-import type { WorkOrderType } from './WorkOrder';
 import type { ApolloServerResolverContext } from '../apolloServer';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
-export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = Omit<T, K> & { [P in K]-?: NonNullable<T[P]> };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
@@ -21,9 +14,9 @@ export type Scalars = {
   Int: number;
   Float: number;
   /** Custom DateTime scalar; pass a string or js date instance obj */
-  DateTime: any;
+  DateTime: Date;
   /** Custom Email scalar; validates using regex */
-  Email: any;
+  Email: string;
 };
 
 export type CancelWorkOrderResponse = DeleteMutationResponse | WorkOrder;
@@ -585,12 +578,12 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping of union types */
 export type ResolversUnionTypes = ResolversObject<{
-  CancelWorkOrderResponse: ( DeleteMutationResponse ) | ( WorkOrderType );
+  CancelWorkOrderResponse: ( DeleteMutationResponse ) | ( WorkOrder );
 }>;
 
 /** Mapping of union parent types */
 export type ResolversUnionParentTypes = ResolversObject<{
-  CancelWorkOrderResponse: ( DeleteMutationResponse ) | ( WorkOrderType );
+  CancelWorkOrderResponse: ( DeleteMutationResponse ) | ( WorkOrder );
 }>;
 
 /** Mapping between all available schema types and the resolvers types */
@@ -598,7 +591,7 @@ export type ResolversTypes = ResolversObject<{
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   CancelWorkOrderResponse: ResolverTypeWrapper<ResolversUnionTypes['CancelWorkOrderResponse']>;
   ChecklistItem: ResolverTypeWrapper<ChecklistItem>;
-  Contact: ResolverTypeWrapper<ContactType>;
+  Contact: ResolverTypeWrapper<Contact>;
   CreateChecklistItemInput: CreateChecklistItemInput;
   CreateLocationInput: CreateLocationInput;
   CreateWorkOrderInput: CreateWorkOrderInput;
@@ -609,15 +602,15 @@ export type ResolversTypes = ResolversObject<{
   GenericSuccessResponse: ResolverTypeWrapper<GenericSuccessResponse>;
   ID: ResolverTypeWrapper<Scalars['ID']>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
-  Invoice: ResolverTypeWrapper<InvoiceType>;
+  Invoice: ResolverTypeWrapper<Invoice>;
   InvoiceInput: InvoiceInput;
   InvoiceStatus: InvoiceStatus;
   Location: ResolverTypeWrapper<Location>;
   Mutation: ResolverTypeWrapper<{}>;
-  MyInvoicesQueryReturnType: ResolverTypeWrapper<Omit<MyInvoicesQueryReturnType, 'assignedToUser' | 'createdByUser'> & { assignedToUser: Array<ResolversTypes['Invoice']>, createdByUser: Array<ResolversTypes['Invoice']> }>;
-  MyWorkOrdersQueryReturnType: ResolverTypeWrapper<Omit<MyWorkOrdersQueryReturnType, 'assignedToUser' | 'createdByUser'> & { assignedToUser: Array<ResolversTypes['WorkOrder']>, createdByUser: Array<ResolversTypes['WorkOrder']> }>;
-  PhoneContact: ResolverTypeWrapper<Omit<PhoneContact, 'profile'> & { profile: ResolversTypes['Profile'] }>;
-  Profile: ResolverTypeWrapper<UserProfile>;
+  MyInvoicesQueryReturnType: ResolverTypeWrapper<MyInvoicesQueryReturnType>;
+  MyWorkOrdersQueryReturnType: ResolverTypeWrapper<MyWorkOrdersQueryReturnType>;
+  PhoneContact: ResolverTypeWrapper<PhoneContact>;
+  Profile: ResolverTypeWrapper<Profile>;
   ProfileInput: ProfileInput;
   Query: ResolverTypeWrapper<{}>;
   RawPhoneContactInput: RawPhoneContactInput;
@@ -626,10 +619,10 @@ export type ResolversTypes = ResolversObject<{
   UpdateChecklistItemInput: UpdateChecklistItemInput;
   UpdateLocationInput: UpdateLocationInput;
   UpdateWorkOrderInput: UpdateWorkOrderInput;
-  User: ResolverTypeWrapper<UserType>;
-  UserStripeConnectAccount: ResolverTypeWrapper<UserStripeConnectAccountType>;
-  UserSubscription: ResolverTypeWrapper<UserSubscriptionType>;
-  WorkOrder: ResolverTypeWrapper<WorkOrderType>;
+  User: ResolverTypeWrapper<User>;
+  UserStripeConnectAccount: ResolverTypeWrapper<UserStripeConnectAccount>;
+  UserSubscription: ResolverTypeWrapper<UserSubscription>;
+  WorkOrder: ResolverTypeWrapper<WorkOrder>;
   WorkOrderCategory: WorkOrderCategory;
   WorkOrderPriority: WorkOrderPriority;
   WorkOrderStatus: WorkOrderStatus;
@@ -640,7 +633,7 @@ export type ResolversParentTypes = ResolversObject<{
   Boolean: Scalars['Boolean'];
   CancelWorkOrderResponse: ResolversUnionParentTypes['CancelWorkOrderResponse'];
   ChecklistItem: ChecklistItem;
-  Contact: ContactType;
+  Contact: Contact;
   CreateChecklistItemInput: CreateChecklistItemInput;
   CreateLocationInput: CreateLocationInput;
   CreateWorkOrderInput: CreateWorkOrderInput;
@@ -651,14 +644,14 @@ export type ResolversParentTypes = ResolversObject<{
   GenericSuccessResponse: GenericSuccessResponse;
   ID: Scalars['ID'];
   Int: Scalars['Int'];
-  Invoice: InvoiceType;
+  Invoice: Invoice;
   InvoiceInput: InvoiceInput;
   Location: Location;
   Mutation: {};
-  MyInvoicesQueryReturnType: Omit<MyInvoicesQueryReturnType, 'assignedToUser' | 'createdByUser'> & { assignedToUser: Array<ResolversParentTypes['Invoice']>, createdByUser: Array<ResolversParentTypes['Invoice']> };
-  MyWorkOrdersQueryReturnType: Omit<MyWorkOrdersQueryReturnType, 'assignedToUser' | 'createdByUser'> & { assignedToUser: Array<ResolversParentTypes['WorkOrder']>, createdByUser: Array<ResolversParentTypes['WorkOrder']> };
-  PhoneContact: Omit<PhoneContact, 'profile'> & { profile: ResolversParentTypes['Profile'] };
-  Profile: UserProfile;
+  MyInvoicesQueryReturnType: MyInvoicesQueryReturnType;
+  MyWorkOrdersQueryReturnType: MyWorkOrdersQueryReturnType;
+  PhoneContact: PhoneContact;
+  Profile: Profile;
   ProfileInput: ProfileInput;
   Query: {};
   RawPhoneContactInput: RawPhoneContactInput;
@@ -666,10 +659,10 @@ export type ResolversParentTypes = ResolversObject<{
   UpdateChecklistItemInput: UpdateChecklistItemInput;
   UpdateLocationInput: UpdateLocationInput;
   UpdateWorkOrderInput: UpdateWorkOrderInput;
-  User: UserType;
-  UserStripeConnectAccount: UserStripeConnectAccountType;
-  UserSubscription: UserSubscriptionType;
-  WorkOrder: WorkOrderType;
+  User: User;
+  UserStripeConnectAccount: UserStripeConnectAccount;
+  UserSubscription: UserSubscription;
+  WorkOrder: WorkOrder;
 }>;
 
 export type CancelWorkOrderResponseResolvers<ContextType = ApolloServerResolverContext, ParentType extends ResolversParentTypes['CancelWorkOrderResponse'] = ResolversParentTypes['CancelWorkOrderResponse']> = ResolversObject<{
