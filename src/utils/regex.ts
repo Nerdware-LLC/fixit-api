@@ -26,41 +26,42 @@ export const EMAIL_REGEX =
   /([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|"([!]#-[^-~ \t]|(\\[\t -~]))+")@([0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?(\.[0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?)*|\[((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}|IPv6:((((0|[1-9A-Fa-f][0-9A-Fa-f]{0,3}):){6}|::((0|[1-9A-Fa-f][0-9A-Fa-f]{0,3}):){5}|[0-9A-Fa-f]{0,4}::((0|[1-9A-Fa-f][0-9A-Fa-f]{0,3}):){4}|(((0|[1-9A-Fa-f][0-9A-Fa-f]{0,3}):)?(0|[1-9A-Fa-f][0-9A-Fa-f]{0,3}))?::((0|[1-9A-Fa-f][0-9A-Fa-f]{0,3}):){3}|(((0|[1-9A-Fa-f][0-9A-Fa-f]{0,3}):){0,2}(0|[1-9A-Fa-f][0-9A-Fa-f]{0,3}))?::((0|[1-9A-Fa-f][0-9A-Fa-f]{0,3}):){2}|(((0|[1-9A-Fa-f][0-9A-Fa-f]{0,3}):){0,3}(0|[1-9A-Fa-f][0-9A-Fa-f]{0,3}))?::(0|[1-9A-Fa-f][0-9A-Fa-f]{0,3}):|(((0|[1-9A-Fa-f][0-9A-Fa-f]{0,3}):){0,4}(0|[1-9A-Fa-f][0-9A-Fa-f]{0,3}))?::)((0|[1-9A-Fa-f][0-9A-Fa-f]{0,3}):(0|[1-9A-Fa-f][0-9A-Fa-f]{0,3})|(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3})|(((0|[1-9A-Fa-f][0-9A-Fa-f]{0,3}):){0,5}(0|[1-9A-Fa-f][0-9A-Fa-f]{0,3}))?::(0|[1-9A-Fa-f][0-9A-Fa-f]{0,3})|(((0|[1-9A-Fa-f][0-9A-Fa-f]{0,3}):){0,6}(0|[1-9A-Fa-f][0-9A-Fa-f]{0,3}))?::)|(?!IPv6:)[0-9A-Za-z-]*[0-9A-Za-z]:[!-Z^-~]+)])/;
 
 /**
- * Global phone number regex pattern. Valid examples:
- * - `(123) 456-7890`
- * - `(123)456-7890`
- * - `123-456-7890`
- * - `123-4567890`
- * - `1234567890`
- *
- * // TODO add to this jsdoc info regarding IRL global max phone length is 15
- */
-export const PHONE_REGEX = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
-
-/**
  * Regex pattern for validating US phone numbers.
- * - The value must be a string of 10 digit characters.
- * - The first digit must be between 1 and 9 (US area codes never begin with 0).
- * - The value must not contain any non-digit characters.
+ * - The value must be a string of 10 digit characters
+ * - The first digit must be between 1 and 9 (US area codes never begin with 0)
+ * - The value must not contain any non-digit characters
  *
- * For example, instead of "(123) 456-7890", the value should be "1234567890".
+ * For validation purposes, all non-digit characters must first be stripped from the
+ * string (first convert this --> `"(123) 456-7890"` into this --> `"1234567890"`).
  */
 export const US_PHONE_DIGITS_REGEX = /^[1-9]\d{9}$/;
 
-// Unix timestamps will be 10 digits until Nov 20 2286
+/**
+ * Regex pattern for validating Unix timestamps.
+ *
+ * > Unix timestamps will be 10 digits until Nov 20 2286
+ */
 export const UNIX_TIMESTAMP_REGEX_STR = "\\d{10}";
 
-// Example v1 UUID: 2c5ea4c0-4067-11e9-8bad-9b1deb4d3b7d
+/**
+ * Regex pattern for validating UUID v1
+ *
+ * Example v1 UUID: `2c5ea4c0-4067-11e9-8bad-9b1deb4d3b7d`
+ */
 export const UUID_V1_REGEX_STR = "[a-z0-9]{8}(-[a-z0-9]{4}){3}-[a-z0-9]{12}";
 
-/* Location components are stored separately, despite some having patterns which are
-currently the exact same and therefore duplicative. This is due to the fact that they
-may differ when converted into unicode-based patterns to support i18n. Note that these
-patterns all assume spaces have been replaced with underscores.  */
+/**
+ * Regex patterns for validating `Location` components.
+ *
+ * Location components are stored separately, despite some having patterns which are
+ * currently the exact same and therefore duplicative. This is due to the fact that they
+ * may differ when converted into unicode-based patterns to support i18n. Note that these
+ * patterns all assume spaces have been replaced with underscores.
+ */
 export const LOCATION_REGEX_STRS = {
-  COUNTRY: "[a-z-_]{2,}", //            Two or more letters/hyphens/underscores
-  REGION: "[a-z-_]{2,}", //             Two or more letters/hyphens/underscores
-  CITY: "[a-z-_]{2,}", //               Two or more letters/hyphens/underscores
-  STREET_LINE_1: "[a-z0-9-_.]{2,}", //  Two or more letters/hyphens/underscores/numbers/periods
+  COUNTRY: "[a-z-_]{2,}", //             Two or more letters/hyphens/underscores
+  REGION: "[a-z-_]{2,}", //              Two or more letters/hyphens/underscores
+  CITY: "[a-z-_]{2,}", //                Two or more letters/hyphens/underscores
+  STREET_LINE_1: "[a-z0-9-_.]{2,}", //   Two or more letters/hyphens/underscores/numbers/periods
   STREET_LINE_2: "[a-z0-9-_.:#]{2,}", // Two or more letters/hyphens/underscores/numbers/periods/:/#
 };
