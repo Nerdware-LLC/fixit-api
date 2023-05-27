@@ -1,5 +1,5 @@
 import "./env";
-import "./sentry";
+import "./initSentry";
 import "./processEventHandlers";
 import "./logStartupInfo";
 import "@events";
