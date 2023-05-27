@@ -1,5 +1,10 @@
-import { signAndEncodeJWT, validateAndDecodeJWT, type FixitApiJwtPayload } from "./jwt";
-import type { UserType } from "@types";
+import {
+  signAndEncodeJWT,
+  validateAndDecodeJWT,
+  INTERNAL_JWT_PAYLOAD_FIELDS,
+  type FixitApiJwtPayload,
+} from "./jwt";
+import type { InternalDbUser } from "@types";
 import type { Request } from "express";
 import type { Simplify } from "type-fest";
 
@@ -15,8 +20,10 @@ export class AuthToken {
     stripeCustomerID,
     stripeConnectAccount,
     subscription,
-  }: FixitApiAuthTokenPayload) {
-    const payload: FixitApiAuthTokenPayload = {
+    createdAt,
+    updatedAt,
+  }: FixitApiAuthTokenPayloadUserData) {
+    const payload: FixitApiAuthTokenPayloadUserData = {
       id: userID,
       handle,
       email,
@@ -36,19 +43,31 @@ export class AuthToken {
           currentPeriodEnd: subscription.currentPeriodEnd,
         },
       }),
+      createdAt,
+      updatedAt,
     };
 
     this.tokenValue = signAndEncodeJWT(payload);
   }
 
+  /**
+   * This method returns the encoded auth token string.
+   */
   toString() {
     return this.tokenValue;
   }
 
+  /**
+   * This method is called to validate and decode an encoded auth token.
+   */
   static validateAndDecodeAuthToken = async (encodedAuthToken: string) => {
     return (await validateAndDecodeJWT(encodedAuthToken)) as FixitApiAuthTokenPayload;
   };
 
+  /**
+   * This method validates the request's "Authorization" header, and returns the
+   * decoded payload if valid.
+   */
   static getValidatedRequestAuthTokenPayload = async (request: Request) => {
     // Get token from "Authorization" header
     let token = request.get("Authorization");
@@ -64,22 +83,42 @@ export class AuthToken {
 
     return authTokenPayload;
   };
+
+  /**
+   * This methods strips the following fields from the JWT payload (if present):
+   * - `iss`
+   * - `sub`
+   * - `aud`
+   * - `iat`
+   * - `exp`
+   * - `nbf`
+   * - `jti`
+   */
+  static stripInternalJwtPayloadFields = (payload: FixitApiAuthTokenPayload) => {
+    return Object.fromEntries(
+      Object.entries(payload).filter(([key]) => !INTERNAL_JWT_PAYLOAD_FIELDS.includes(key))
+    ) as FixitApiAuthTokenPayloadUserData;
+  };
 }
 
-export interface FixitApiAuthTokenPayload extends FixitApiJwtPayload {
-  id: UserType["id"];
-  handle: UserType["handle"];
-  email: UserType["email"];
-  phone: UserType["phone"];
-  profile: UserType["profile"];
-  stripeCustomerID: UserType["stripeCustomerID"];
+export type FixitApiAuthTokenPayload = FixitApiJwtPayload & FixitApiAuthTokenPayloadUserData;
+
+export type FixitApiAuthTokenPayloadUserData = {
+  id: InternalDbUser["id"];
+  handle: InternalDbUser["handle"];
+  email: InternalDbUser["email"];
+  phone: InternalDbUser["phone"];
+  profile: InternalDbUser["profile"];
+  stripeCustomerID: InternalDbUser["stripeCustomerID"];
   stripeConnectAccount: Simplify<
     Pick<
-      NonNullable<UserType["stripeConnectAccount"]>,
+      NonNullable<InternalDbUser["stripeConnectAccount"]>,
       "id" | "detailsSubmitted" | "chargesEnabled" | "payoutsEnabled"
     >
   >;
   subscription?: Simplify<
-    Pick<NonNullable<UserType["subscription"]>, "id" | "status" | "currentPeriodEnd">
+    Pick<NonNullable<InternalDbUser["subscription"]>, "id" | "status" | "currentPeriodEnd">
   >;
-}
+  createdAt: InternalDbUser["createdAt"];
+  updatedAt: InternalDbUser["updatedAt"];
+};
