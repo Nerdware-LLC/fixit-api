@@ -1,7 +1,6 @@
 // util dirs:
 export * from "./customErrors";
 export * from "./logger";
-export * from "./middlewareWrappers";
 export * from "./prettifyStr";
 export * from "./typeSafety";
 // util files:
