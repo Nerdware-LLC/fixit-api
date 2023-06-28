@@ -16,6 +16,15 @@ export class Cache<StoredDataType = any, CacheKeyType = string> {
   }
 
   /**
+   * Checks the cache for the existence of a key.
+   * @param {CacheKeyType} key - The cache key to check.
+   * @returns Boolean indicating whether an element with the specified key exists or not.
+   */
+  has(key: CacheKeyType): boolean {
+    return this._cache.has(key);
+  }
+
+  /**
    * Retrieves data from the cache.
    * @param {CacheKeyType} key - The cache key under which the data will be stored.
    * @returns {StoredDataType|undefined} The data stored under the provided key, or undefined if no unexpired data is found.
