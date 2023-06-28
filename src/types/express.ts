@@ -1,11 +1,10 @@
-import type {
-  InternalDbWorkOrder,
-  InternalDbInvoice,
-  InternalDbContact,
-  InternalDbUser,
-} from "@types";
+import type { InvoiceModelItem } from "@models/Invoice";
+import type { UserModelItem } from "@models/User";
+import type { UserSubscriptionModelItem } from "@models/UserSubscription";
+import type { WorkOrderModelItem } from "@models/WorkOrder";
+import type { WorkOrder, Invoice, Contact } from "@types";
 import type { FixitApiAuthTokenPayload } from "@utils/AuthToken";
-import type { Stripe } from "stripe";
+import type { OverrideProperties, SetOptional } from "type-fest";
 
 /**
  * A User's pre-fetched WorkOrders, Invoices, and Contacts (used on logins).
@@ -13,9 +12,11 @@ import type { Stripe } from "stripe";
  * as `req._userQueryItems`.
  */
 export type PreFetchedUserQueryItems = {
-  workOrders?: Array<InternalDbWorkOrder>;
-  invoices?: Array<InternalDbInvoice>;
-  contacts?: Array<InternalDbContact>;
+  workOrders?: Array<
+    OverrideProperties<WorkOrder, Pick<WorkOrderModelItem, "createdBy" | "assignedTo">>
+  >;
+  invoices?: Array<OverrideProperties<Invoice, Pick<InvoiceModelItem, "createdBy" | "assignedTo">>>;
+  contacts?: Array<Contact>;
 };
 
 /**
@@ -27,20 +28,20 @@ export type CustomRequestProperties = {
   /**
    * A User object as extracted from the database.
    */
-  _user?: InternalDbUser;
+  _user?: UserModelItem;
+
+  /**
+   * A UserSubscription object as extracted from the database (e.g., for sub-updating mw)
+   */
+  _userSubscription?: UserSubscriptionModelItem;
 
   /**
    * An AuthToken payload object as extracted from the request's auth token.
    */
-  _authenticatedUser?: FixitApiAuthTokenPayload;
+  _authenticatedUser?: SetOptional<FixitApiAuthTokenPayload, "stripeConnectAccount">;
 
   /**
    * A User's pre-fetched WorkOrders, Invoices, and Contacts (used on logins).
    */
   _userQueryItems?: PreFetchedUserQueryItems;
-
-  /**
-   * A Stripe-Webhook Event object.
-   */
-  event?: Stripe.Event;
 };
