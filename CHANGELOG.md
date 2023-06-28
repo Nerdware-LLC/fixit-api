@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 ---
 
 
+# [1.19.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.18.0...v1.19.0) (2023-06-28)
+
+
+### Bug Fixes
+
+* ensure coverage is not collected on mock-related files ([bd6682b](https://github.com/Nerdware-LLC/fixit-api/commit/bd6682b6401e6fd024ddd8b156e8f4e8782abe1a))
+* get err 'message' property in err-log message ([60b7cdc](https://github.com/Nerdware-LLC/fixit-api/commit/60b7cdca26db4638114b603a8325d3405b1a7133))
+* implement new Model types in relevant event handlers ([9a6d338](https://github.com/Nerdware-LLC/fixit-api/commit/9a6d3383a6912687a87f4ee75a36f308693c5af7))
+* implement safeJsonStringify ([0131b74](https://github.com/Nerdware-LLC/fixit-api/commit/0131b74c5d9ac4881da0a093c55bd5e1108e8278))
+* update to reflect new Model types ([8454a23](https://github.com/Nerdware-LLC/fixit-api/commit/8454a2385ffa9ac2aa82ecbedef3d2b5e73c6338))
+* update to reflect new Model types ([36dce95](https://github.com/Nerdware-LLC/fixit-api/commit/36dce9579a14f49cb152621bdd4b98b735fc84f9))
+* update to use ddbst instance ([15e48df](https://github.com/Nerdware-LLC/fixit-api/commit/15e48df1ef50e9da9d72059570baf7d95ac33374))
+* update to use top-level await ([1accc1a](https://github.com/Nerdware-LLC/fixit-api/commit/1accc1acc81ce19c2acbab95b41b8e662b2cf581))
+
+
+### Features
+
+* add '_userSubscription' key to express Request type dec ([20ce133](https://github.com/Nerdware-LLC/fixit-api/commit/20ce1333ac062a2f26d84083cac17d70fe4ac281))
+* add 'has' method to Cache class ([bd634c6](https://github.com/Nerdware-LLC/fixit-api/commit/bd634c606a94148be3a838ad02222bcca8c23470))
+* add handling for internal jwt fields like 'iss' ([20ca6f7](https://github.com/Nerdware-LLC/fixit-api/commit/20ca6f7a216e655af6b390b6f879ca06359ac816))
+* add modded types which fix/improve codegen types like the troublesome Maybe type ([35c0543](https://github.com/Nerdware-LLC/fixit-api/commit/35c05432ba9ff6a8b006e8d8cc1e14c8f455e822))
+* add utils hasKey,safeJsonStringify,isType ([d2bd47e](https://github.com/Nerdware-LLC/fixit-api/commit/d2bd47ecb7b199d721dd6a3645c26a7126482f0e))
+* **eslint:** add 'ignore' for codegen'd files ([7fe7dab](https://github.com/Nerdware-LLC/fixit-api/commit/7fe7dab30d340e60055153acac2cc3ff3c596987))
+* implement new Model types in gql resolvers, add helpers+AuthTokenPayload type ([704dd4c](https://github.com/Nerdware-LLC/fixit-api/commit/704dd4cf0ce61123fbb6d10743ace9446b2ad882))
+* implement new Model types, add mw helpers ([360d79c](https://github.com/Nerdware-LLC/fixit-api/commit/360d79c7ef4e9cba9474e932457b11d06a055327))
+* overhaul DdbSingleTable ([1fb9072](https://github.com/Nerdware-LLC/fixit-api/commit/1fb9072e5cb4b55cac52a87321326666e5e99b99))
+* rm old type-mappings, add scalar-configs ([9ee0498](https://github.com/Nerdware-LLC/fixit-api/commit/9ee049802d649579993e864decda22798c0d886e))
+* rm unused 'getKey' util fns ([7b6872e](https://github.com/Nerdware-LLC/fixit-api/commit/7b6872e2ee33a906157bee1f6af326087532d266))
+* update GQL schema for API changes ([89b683a](https://github.com/Nerdware-LLC/fixit-api/commit/89b683a92ef49d1c5db2ece2a3e920409619fd4c))
+* update index file to reflect utils dir changes ([26d903b](https://github.com/Nerdware-LLC/fixit-api/commit/26d903bb8591d1bf2700e71699a23fe25b761c6b))
+* update Models w new DdbSingleTable usage ([5682beb](https://github.com/Nerdware-LLC/fixit-api/commit/5682beb332d27ba01adf5b3e4d9674448be6c57d))
+
 # [1.18.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.17.0...v1.18.0) (2023-05-07)
 
 
