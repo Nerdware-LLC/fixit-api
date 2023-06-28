@@ -1,5 +1,5 @@
 import { UserSubscription } from "@models/UserSubscription";
-import { logger } from "@utils/logger";
+import { logger, getTypeSafeError } from "@utils";
 import type Stripe from "stripe";
 
 /**
@@ -44,12 +44,14 @@ export const customerSubscriptionUpdated = async (
       }
     );
   } catch (err) {
+    const error = getTypeSafeError(err);
+
     // If err, log it, do not re-throw from here.
     logger.error(
-      `Failed to update User Subscription.
+      `Failed to update UserSubscription.
         Subscription ID: "${subscriptionID}"
         User ID:         "${userID ?? "unknown"}"
-        Error:           ${err}`,
+        Error:           ${error.message}`,
       "StripeWebhookHandler.customerSubscriptionUpdated"
     );
   }

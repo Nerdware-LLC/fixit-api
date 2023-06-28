@@ -1,6 +1,6 @@
 import moment from "moment";
 import { UserSubscription } from "@models/UserSubscription";
-import { logger } from "@utils/logger";
+import { logger, getTypeSafeError } from "@utils";
 import type Stripe from "stripe";
 
 /**
@@ -26,12 +26,14 @@ export const customerSubscriptionDeleted = async (
       sk: `SUBSCRIPTION#${userID}#${moment(createdAt).unix()}`,
     });
   } catch (err) {
+    const error = getTypeSafeError(err);
+
     // If err, log it, do not re-throw from here.
     logger.error(
-      `Failed to delete User Subscription.
+      `Failed to delete UserSubscription.
         Subscription ID: "${subID}"
         User ID:         "${userID ?? "unknown"}"
-        Error:           ${err}`,
+        Error:           ${error.message}`,
       "StripeWebhookHandler.customerSubscriptionDeleted"
     );
   }

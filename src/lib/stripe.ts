@@ -2,7 +2,7 @@ import Stripe from "stripe";
 import { ENV } from "@server/env";
 
 if (!ENV?.STRIPE?.SECRET_KEY) {
-  throw new Error("Unable to initialize Stripe API client");
+  throw new Error("Unable to initialize Stripe client");
 }
 
 export const stripe = new Stripe(ENV.STRIPE.SECRET_KEY, {

@@ -1,5 +1,5 @@
 import { UserStripeConnectAccount } from "@models/UserStripeConnectAccount";
-import { logger } from "@utils/logger";
+import { logger, getTypeSafeError } from "@utils";
 import type Stripe from "stripe";
 
 /**
@@ -20,7 +20,7 @@ export const connectAccountUpdated = async (rawStripeConnectAccountObj: Stripe.A
 
   try {
     // Get "userID" needed for the primary key
-    let { userID } = await UserStripeConnectAccount.queryByStripeConnectAccountID(
+    const { userID } = await UserStripeConnectAccount.queryByStripeConnectAccountID(
       stripeConnectAccountID
     );
 
@@ -34,12 +34,13 @@ export const connectAccountUpdated = async (rawStripeConnectAccountObj: Stripe.A
       }
     );
   } catch (err) {
+    const error = getTypeSafeError(err);
     // If err, log it, do not re-throw from here.
     logger.error(
-      `Failed to update Stripe Connect Account.
+      `Failed to update UserStripeConnectAccount.
         StripeConnectAccount ID: "${stripeConnectAccountID}"
         User ID:                 "${userID ?? "unknown"}"
-        Error:                   ${err}`,
+        Error:                   ${error.message}`,
       "StripeWebhookHandler.connectAccountUpdated"
     );
   }
