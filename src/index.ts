@@ -1,6 +1,6 @@
 import "module-alias/register";
 import "@server/init";
-import { ENV } from "@server";
+import { ENV } from "@server/env";
 import { logger } from "@utils";
 import { expressApp } from "./expressApp";
 
