@@ -17,6 +17,7 @@ export default [
   // ALL FILES
   {
     files: ["src/**/*.[tj]s", "./*.[tj]s"],
+    ignores: ["src/types/graphql.ts"], // don't lint generated code
     linterOptions: {
       reportUnusedDisableDirectives: true,
     },
