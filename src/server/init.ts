@@ -4,9 +4,8 @@ import "./processEventHandlers";
 import "./logStartupInfo";
 import "@events";
 
-import("./ensureDDBTableIsActive").then(() => {
-  import("./initCacheForUsersSearch");
-});
+await import("./ensureDdbTableIsActive");
+await import("./initCacheForUsersSearch");
 
 /* The imports in this file achieve the following:
 
