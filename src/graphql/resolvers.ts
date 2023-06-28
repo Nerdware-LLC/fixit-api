@@ -3,7 +3,6 @@ import { logger } from "@utils/logger";
 import * as contact from "./Contact/resolvers";
 import * as fixitUser from "./FixitUser/resolvers";
 import * as invoice from "./Invoice/resolvers";
-import * as phoneContact from "./PhoneContact/resolvers";
 import * as profile from "./Profile/resolvers";
 import * as user from "./User/resolvers";
 import * as userSubscription from "./UserSubscription/resolvers";
@@ -29,9 +28,7 @@ export const resolvers = Object.fromEntries(
       profile.resolvers,
       user.resolvers,
       userSubscription.resolvers,
-      workOrder.resolvers,
-      // CLIENT-SPECIFIC
-      phoneContact.resolvers
+      workOrder.resolvers
     )
   ).map(([resolverType, resolversOfType]) => {
     // resolverType is either "Query" or "Mutation"
@@ -45,23 +42,23 @@ export const resolvers = Object.fromEntries(
           // Resolver ID example: "QUERY:WorkOrder"
           const resolverLogID = `${resolverType.toUpperCase()}:${resolverName}`;
 
+          /* eslint-disable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call */
+
           /* Note: none of the sync resolver functions use `return new Promise...`, so this
             logic using the resolver's constructor.name property works for this use case.  */
           const wrappedResolverFn =
             resolver.constructor.name === "AsyncFunction"
-              ? async (...args: any[]) => {
+              ? async (...args: unknown[]) => {
                   return await resolver(...args).catch((err: unknown) => {
-                    // Log error and re-throw as-is
-                    logger.error(err, resolverLogID);
+                    logger.error(err, resolverLogID); // Log error and re-throw as-is
                     throw err;
                   });
                 }
-              : (...args: any[]) => {
+              : (...args: unknown[]) => {
                   try {
                     return resolver(...args);
                   } catch (err: unknown) {
-                    // Log error and re-throw as-is
-                    logger.error(err, resolverLogID);
+                    logger.error(err, resolverLogID); // Log error and re-throw as-is
                     throw err;
                   }
                 };

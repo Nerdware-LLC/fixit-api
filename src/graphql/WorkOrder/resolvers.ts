@@ -1,123 +1,177 @@
 import { DeleteMutationResponse } from "@graphql/_common";
-import { User, USER_ID_REGEX } from "@models/User";
+import { verifyUserCanPerformThisUpdate, getFixitUser } from "@graphql/_helpers";
+import { USER_ID_REGEX } from "@models/User";
 import { WorkOrder } from "@models/WorkOrder";
-import { GqlUserInputError, GqlForbiddenError } from "@utils/customErrors";
-import type { Resolvers } from "@types";
-
-// TODO create updateWO_Checklist mutation resolver
-// TODO create updateWO_ContractorNotes mutation resolver
+import type { WorkOrderModelItem } from "@models/WorkOrder";
+import type { Resolvers, WorkOrder as GqlWorkOrder } from "@types";
+import type { FixitApiAuthTokenPayload } from "@utils";
 
 export const resolvers: Partial<Resolvers> = {
   Query: {
-    workOrder: async (parent, { workOrderID }) => {
-      return await WorkOrder.queryWorkOrderByID(workOrderID);
+    workOrder: async (parent, { workOrderID }, { user }) => {
+      const [queriedWO] = await WorkOrder.query({
+        where: { id: workOrderID },
+        limit: 1,
+      });
+      return await getWorkOrderCreatedByAndAssignedTo(queriedWO, user);
     },
     myWorkOrders: async (parent, args, { user }) => {
       return {
-        createdByUser: await WorkOrder.queryUsersWorkOrders(user.id),
-        assignedToUser: await WorkOrder.queryWorkOrdersAssignedToUser(user.id),
+        createdByUser: await Promise.all(
+          (
+            await WorkOrder.query({
+              where: {
+                createdByUserID: user.id,
+                id: { beginsWith: WorkOrder.SK_PREFIX },
+              },
+            })
+          ).map(async (wo) => ({
+            ...wo,
+            createdBy: { ...user },
+            assignedTo: !wo?.assignedTo?.id ? null : await getFixitUser(wo.assignedTo, user),
+          }))
+        ),
+        assignedToUser: await Promise.all(
+          (
+            await WorkOrder.query({
+              where: {
+                assignedToUserID: user.id,
+                id: { beginsWith: WorkOrder.SK_PREFIX },
+              },
+            })
+          ).map(async (wo) => ({
+            ...wo,
+            createdBy: await getFixitUser(wo.createdBy, user),
+            assignedTo: { ...user },
+          }))
+        ),
       };
     },
   },
   Mutation: {
     createWorkOrder: async (parent, { workOrder: woInput }, { user }) => {
-      return await WorkOrder.createOne({
+      const { assignedTo, ...createWorkOrderInput } = woInput;
+
+      const createdWO = await WorkOrder.createOne({
         createdByUserID: user.id,
-        assignedToUserID: woInput.assignedTo,
-        ...woInput,
-      } as any); // FIXME the codegen generic `InputMaybe` requires null-ability, not just `string | undefined` (so `string | null | undefined`)
+        ...(!!assignedTo && { assignedToUserID: assignedTo }),
+        ...createWorkOrderInput,
+      });
+
+      return await getWorkOrderCreatedByAndAssignedTo(createdWO, user);
     },
     updateWorkOrder: async (parent, { workOrderID, workOrder: woInput }, { user }) => {
-      const existingWO = await WorkOrder.queryWorkOrderByID(workOrderID);
+      const [existingWO] = await WorkOrder.query({
+        where: { id: workOrderID },
+        limit: 1,
+      });
 
-      if (!existingWO) throw new GqlUserInputError("Work Order not found.");
-      if (existingWO.createdByUserID !== user.id) throw new GqlForbiddenError("Access denied.");
-      if (["COMPLETE", "CANCELLED"].includes(existingWO.status))
-        throw new GqlForbiddenError(`Cannot modify ${existingWO.status} work orders.`);
+      verifyUserCanPerformThisUpdate(existingWO, {
+        idOfUserWhoCanPerformThisUpdate: existingWO.createdBy.id,
+        authenticatedUserID: user.id,
+        forbiddenStatuses: {
+          CANCELLED: "This work order has been canceled and can not be updated.",
+        },
+      });
 
-      // Check if WO went from ASSIGNED to UNASSIGNED, or vice versa.
-      if (existingWO.status === "ASSIGNED" && woInput?.assignedToUserID === "UNASSIGNED") {
-        Object.defineProperty(woInput, "status", { value: "UNASSIGNED" });
-      } else if (
-        existingWO.status === "UNASSIGNED" &&
-        typeof woInput?.assignedToUserID === "string" &&
-        USER_ID_REGEX.test(existingWO?.assignedToUserID ?? "")
-      ) {
-        Object.defineProperty(woInput, "status", { value: "ASSIGNED" });
-        // FIXME account for IN_PROGRESS,DEFERRED wo statuses
-      }
+      /* Check if woInput args necessitate updating the STATUS:
 
-      return await WorkOrder.updateOne(existingWO, woInput as any); // FIXME the codegen generic `InputMaybe` requires null-ability, not just `string | undefined` (so `string | null | undefined`)
+        - If the existingWO.status is ASSIGNED and woInput.assignedToUserID is UNASSIGNED,
+          then the status should be updated to UNASSIGNED.
+
+        - If the existingWO.status is UNASSIGNED and woInput.assignedToUserID is a valid
+          User/Contact ID, then the status should be updated to ASSIGNED.
+
+        - Otherwise, the status should remain unchanged.
+      */
+
+      const upToDateStatus =
+        existingWO.status === "ASSIGNED" && woInput?.assignedToUserID === "UNASSIGNED"
+          ? "UNASSIGNED"
+          : existingWO.status === "UNASSIGNED" &&
+            typeof woInput?.assignedToUserID === "string" &&
+            USER_ID_REGEX.test(woInput.assignedToUserID.replace(/CONTACT#/, ""))
+          ? "ASSIGNED"
+          : existingWO.status;
+
+      const { location, ...woFieldsToUpdate } = woInput;
+
+      const updatedWO = await WorkOrder.updateOne(existingWO, {
+        ...woFieldsToUpdate,
+        ...(!!location && { location }),
+        status: upToDateStatus,
+      });
+
+      return await getWorkOrderCreatedByAndAssignedTo(updatedWO, user);
     },
     cancelWorkOrder: async (parent, { workOrderID }, { user }) => {
-      const existingWO = await WorkOrder.queryWorkOrderByID(workOrderID);
+      const [existingWO] = await WorkOrder.query({
+        where: { id: workOrderID },
+        limit: 1,
+      });
 
-      if (!existingWO) throw new GqlUserInputError("Work Order not found.");
-      if (existingWO.createdByUserID !== user.id) throw new GqlForbiddenError("Access denied.");
+      verifyUserCanPerformThisUpdate(existingWO, {
+        idOfUserWhoCanPerformThisUpdate: existingWO.createdBy.id,
+        authenticatedUserID: user.id,
+        forbiddenStatuses: {
+          CANCELLED: "This work order has already been cancelled.",
+          COMPLETE: "Sorry, this work order has already been completed and cannot be canceled.",
+        },
+      });
 
-      // FIXME account for IN_PROGRESS,DEFERRED wo statuses
+      /* If status is UNASSIGNED, delete it and return a DeleteMutationResponse.
+      Otherwise, update WO status to CANCELLED and return the updated WorkOrder.*/
 
-      // Ensure status isn't COMPLETE/CANCELLED
-      if (["COMPLETE", "CANCELLED"].includes(existingWO.status)) {
-        throw new GqlForbiddenError(`Cannot modify ${existingWO.status} work orders.`);
-        // If status is UNASSIGNED, delete it
-      } else if (existingWO.status === "UNASSIGNED") {
+      if (existingWO.status === "UNASSIGNED") {
         await WorkOrder.deleteItem({ createdByUserID: user.id, id: workOrderID });
-        // Return type: DeleteMutationResponse (of union "CancelWorkOrderResponse")
         return new DeleteMutationResponse({ id: workOrderID, wasDeleted: true });
-        // If status is ASSIGNED, update WO status to CANCELLED
-      } else if (existingWO.status === "ASSIGNED") {
-        // Return type: WorkOrder (of union "CancelWorkOrderResponse")
-        return (await WorkOrder.updateOne(existingWO, { status: "CANCELLED" })) as any; // FIXME
+      } else {
+        const canceledWO = await WorkOrder.updateOne(existingWO, { status: "CANCELLED" });
+        return await getWorkOrderCreatedByAndAssignedTo(canceledWO, user);
       }
     },
     setWorkOrderStatusComplete: async (parent, { workOrderID }, { user }) => {
-      const existingWO = await WorkOrder.queryWorkOrderByID(workOrderID);
+      const [existingWO] = await WorkOrder.query({
+        where: { id: workOrderID },
+        limit: 1,
+      });
 
-      // FIXME account for IN_PROGRESS,DEFERRED wo statuses
+      verifyUserCanPerformThisUpdate(existingWO, {
+        idOfUserWhoCanPerformThisUpdate: existingWO?.assignedTo?.id ?? "",
+        authenticatedUserID: user.id,
+        forbiddenStatuses: {
+          UNASSIGNED: "Sorry, only the work order's assignee may perform this update.",
+          CANCELLED: "Sorry, this work order was cancelled and cannot be marked as complete.",
+          COMPLETE: "This work order is already marked as complete.",
+        },
+      });
 
-      if (!existingWO) throw new GqlUserInputError("Work Order not found.");
-      if (existingWO.assignedToUserID !== user.id) throw new GqlForbiddenError("Access denied.");
-      if (!["ASSIGNED", "IN_PROGRESS"].includes(existingWO.status))
-        throw new GqlUserInputError(
-          `Cannot set ${existingWO.status.replace(/_/, " ")} work orders to COMPLETE.`
-        );
+      const updatedWO = await WorkOrder.updateOne(existingWO, { status: "COMPLETE" });
 
-      return await WorkOrder.updateOne(existingWO, { status: "COMPLETE" });
-    },
-  },
-  WorkOrder: {
-    createdBy: async (parent, args, { user }) => {
-      return parent.createdByUserID === user.id
-        ? { __typename: "User", ...user }
-        : ({
-            __typename: "Contact",
-            ...(await User.getUserByID(parent.createdByUserID)),
-          } as any); // FIXME
-    },
-    assignedTo: async (parent, args, { user }) => {
-      return parent.assignedToUserID === null || !parent.assignedToUserID
-        ? null
-        : parent.assignedToUserID === user.id
-        ? { __typename: "User", ...user }
-        : ({
-            __typename: "Contact",
-            ...(await User.getUserByID(parent.assignedToUserID)),
-          } as any); // FIXME
+      return await getWorkOrderCreatedByAndAssignedTo(updatedWO, user);
     },
   },
   CancelWorkOrderResponse: {
-    __resolveType({
-      createdByUserID,
-      id,
-      wasDeleted,
-    }: {
-      createdByUserID?: string;
-      id?: string;
-      wasDeleted?: boolean;
-    }) {
-      // Only WorkOrder has fields other than "id" like "createdByUserID" (null: GraphQLError is thrown)
-      return createdByUserID ? "WorkOrder" : id && wasDeleted ? "DeleteMutationResponse" : null;
+    __resolveType(parent) {
+      return "createdBy" in parent
+        ? "WorkOrder"
+        : parent.id && "wasDeleted" in parent
+        ? "DeleteMutationResponse"
+        : null; // null --> GraphQLError is thrown
     },
   },
 };
+
+/**
+ * This function gets the WorkOrder `createdBy` and `assignedTo` FixitUser fields.
+ */
+const getWorkOrderCreatedByAndAssignedTo = async (
+  workOrder: WorkOrderModelItem | GqlWorkOrder,
+  userAuthToken: FixitApiAuthTokenPayload
+) => ({
+  ...workOrder,
+  createdBy: await getFixitUser(workOrder.createdBy, userAuthToken),
+  assignedTo: !workOrder?.assignedTo?.id
+    ? null
+    : await getFixitUser(workOrder.assignedTo, userAuthToken),
+});

@@ -5,9 +5,9 @@ import type { Resolvers } from "@types";
 
 export const resolvers: Partial<Resolvers> = {
   Mutation: {
-    createInvite: async (parent, { phoneOrEmail }, { user }) => {
+    createInvite: (parent, { phoneOrEmail }) => {
       if (typeof phoneOrEmail !== "string" || phoneOrEmail.length === 0)
-        throw new GqlUserInputError("Unable to create invite with the provided value.");
+        throw new GqlUserInputError("Unable to create invite with the provided input.");
 
       // Determine if arg is a valid US phone or email address
       const argType = US_PHONE_DIGITS_REGEX.test(phoneOrEmail)
@@ -17,11 +17,11 @@ export const resolvers: Partial<Resolvers> = {
         : null;
 
       if (argType === "phone") {
-        // FIXME text SMS invite
+        // Send text SMS invite
       } else if (argType === "email") {
-        // FIXME email invite
+        // Send email invite
       } else {
-        throw new GqlUserInputError("Unable to create invite with the provided value.");
+        throw new GqlUserInputError("Unable to create invite with the provided input.");
       }
 
       return new GenericSuccessResponse({ wasSuccessful: true });

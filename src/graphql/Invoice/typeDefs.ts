@@ -1,8 +1,6 @@
-import gql from "graphql-tag";
+import { gql } from "graphql-tag";
 
 export const typeDefs = gql`
-  # FIXME need model-method / resolver for Invoice.workOrder, unless we leave it at ID
-
   type Invoice {
     "(Immutable) Invoice ID, in the format of 'INV#{createdBy.id}#{unixTimestamp(createdAt)}'"
     id: ID!

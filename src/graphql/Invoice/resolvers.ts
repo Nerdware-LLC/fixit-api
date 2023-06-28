@@ -1,92 +1,141 @@
+import { eventEmitter } from "@events";
 import { DeleteMutationResponse } from "@graphql/_common";
+import { getFixitUser } from "@graphql/_helpers";
 import { stripe } from "@lib/stripe";
 import { Invoice } from "@models/Invoice";
-import { User } from "@models/User";
-import { GqlUserInputError, GqlForbiddenError, normalizeInput } from "@utils";
-import type { Resolvers } from "@types";
+import { GqlUserInputError, GqlForbiddenError } from "@utils";
+import type { InvoiceModelItem } from "@models/Invoice";
+import type { Resolvers, Invoice as GqlInvoice } from "@types";
+import type { FixitApiAuthTokenPayload } from "@utils";
 
 export const resolvers: Partial<Resolvers> = {
   Query: {
-    invoice: async (parent, { invoiceID }) => {
-      return await Invoice.queryInvoiceByID(invoiceID);
+    invoice: async (parent, { invoiceID }, { user }) => {
+      const [queriedInvoice] = await Invoice.query({
+        where: { id: invoiceID },
+        limit: 1,
+      });
+
+      if (!queriedInvoice) throw new GqlUserInputError("Invoice not found.");
+
+      return await getInvoiceCreatedByAndAssignedTo(queriedInvoice, user);
     },
     myInvoices: async (parent, args, { user }) => {
       return {
-        createdByUser: await Invoice.queryUsersInvoices(user.id),
-        assignedToUser: await Invoice.queryInvoicesAssignedToUser(user.id),
+        createdByUser: await Promise.all(
+          (
+            await Invoice.query({
+              where: {
+                createdByUserID: user.id,
+                id: { beginsWith: Invoice.SK_PREFIX },
+              },
+            })
+          ).map(async (inv) => ({
+            ...inv,
+            createdBy: { ...user },
+            assignedTo: await getFixitUser(inv.assignedTo, user),
+          }))
+        ),
+        assignedToUser: await Promise.all(
+          (
+            await Invoice.query({
+              where: {
+                assignedToUserID: user.id,
+                id: { beginsWith: Invoice.SK_PREFIX },
+              },
+            })
+          ).map(async (inv) => ({
+            ...inv,
+            createdBy: await getFixitUser(inv.createdBy, user),
+            assignedTo: { ...user },
+          }))
+        ),
       };
     },
   },
   Mutation: {
     createInvoice: async (parent, { invoice: invoiceInput }, { user }) => {
-      return await Invoice.createOne({
+      const createdInvoice = await Invoice.createItem({
         createdByUserID: user.id,
         assignedToUserID: invoiceInput.assignedTo,
         amount: invoiceInput.amount,
-        workOrderID: invoiceInput?.workOrderID ?? null,
-      } as any); // FIXME
+        status: "OPEN",
+        ...(invoiceInput?.workOrderID && {
+          workOrderID: invoiceInput.workOrderID,
+        }),
+      });
+
+      eventEmitter.emitInvoiceCreated(createdInvoice);
+
+      return await getInvoiceCreatedByAndAssignedTo(createdInvoice, user);
     },
     updateInvoiceAmount: async (parent, { invoiceID, amount }, { user }) => {
-      const existingInv = await Invoice.queryInvoiceByID(invoiceID);
+      const [existingInv] = await Invoice.query({ where: { id: invoiceID }, limit: 1 });
 
-      if (!existingInv) throw new GqlUserInputError("Invoice not found.");
-      if (existingInv.createdByUserID !== user.id) throw new GqlForbiddenError("Access denied.");
-      if (existingInv.status !== "OPEN")
-        throw new GqlForbiddenError(`Cannot modify a ${existingInv.status} invoice.`);
+      verifyUserCanPerformThisUpdate(existingInv, {
+        idOfUserWhoCanPerformThisUpdate: existingInv.createdBy.id,
+        authenticatedUserID: user.id,
+      });
 
-      return await Invoice.updateOne(existingInv, { amount });
+      const updatedInvoice = await Invoice.updateOne(existingInv, { amount });
+
+      return await getInvoiceCreatedByAndAssignedTo(updatedInvoice, user);
     },
     payInvoice: async (parent, { invoiceID }, { user }) => {
-      // TODO Maybe add "assigneeUserDefaultPaymentMethodID" to Invoice - reduce queries.
-      const existingInv = await Invoice.queryInvoiceByID(invoiceID);
+      // IDEA Adding "assigneeUserDefaultPaymentMethodID" to Invoice would reduce queries.
+      const [existingInv] = await Invoice.query({ where: { id: invoiceID }, limit: 1 });
 
-      if (!existingInv) throw new GqlUserInputError("Invoice not found.");
-      if (existingInv.assignedToUserID !== user.id) throw new GqlForbiddenError("Access denied.");
-      if (existingInv.status !== "OPEN")
-        throw new GqlForbiddenError(`Cannot pay a ${existingInv.status} invoice.`);
+      verifyUserCanPerformThisUpdate(existingInv, {
+        idOfUserWhoCanPerformThisUpdate: existingInv.assignedTo.id,
+        authenticatedUserID: user.id,
+      });
 
-      // TODO after default_payment_method is added to db, remove 1 or both of these lines.
-      const payingUser = await User.getUserByID(existingInv.assignedToUserID);
-      const stripeCustomer = await stripe.customers.retrieve(payingUser.stripeCustomerID);
+      // IDEA After default_payment_method is added to db, consider rm'ing this
+      const stripeCustomer = await stripe.customers.retrieve(user.stripeCustomerID);
 
-      if (!payingUser.stripeConnectAccount?.id) {
-        throw new GqlForbiddenError(
-          "Invalid Stripe Connect account - please review your payment settings and try again."
-        );
-      }
-
+      // Ensure the user hasn't removed themselves as a Stripe Customer
       if (stripeCustomer.deleted) {
         throw new GqlForbiddenError(
-          "Invalid Stripe Customer - please review your payment settings and try again."
+          "Invalid Stripe Customer - please review your payment settings in your Stripe Dashboard and try again."
         );
       }
 
       const paymentIntent = await stripe.paymentIntents.create({
-        customer: payingUser.stripeCustomerID,
+        customer: user.stripeCustomerID,
         payment_method: stripeCustomer.invoice_settings.default_payment_method as string, // Cast from Stripe.StripePaymentMethod, which is only an object when expanded.
         amount: existingInv.amount,
         currency: "usd", // <-- Note: would need to be paramaterized for i18n
         confirm: true,
-        on_behalf_of: payingUser.stripeConnectAccount.id,
+        on_behalf_of: user.stripeConnectAccount.id,
         transfer_data: {
-          destination: payingUser.stripeConnectAccount.id,
+          destination: user.stripeConnectAccount.id,
         },
       });
 
-      return await Invoice.updateOne(existingInv, {
+      const updatedInvoice = await Invoice.updateOne(existingInv, {
         ...(paymentIntent.status === "succeeded" && { status: "CLOSED" }),
         stripePaymentIntentID: paymentIntent.id,
       });
+
+      return await getInvoiceCreatedByAndAssignedTo(updatedInvoice, user);
     },
     deleteInvoice: async (parent, { invoiceID }, { user }) => {
-      const existingInv = await Invoice.queryInvoiceByID(invoiceID);
+      const [existingInv] = await Invoice.query({
+        where: { id: invoiceID },
+        limit: 1,
+      });
 
-      if (!existingInv) throw new GqlUserInputError("Invoice not found.");
-      if (existingInv.createdByUserID !== user.id) throw new GqlForbiddenError("Access denied.");
-      if (existingInv.status !== "OPEN")
-        throw new GqlForbiddenError(`Cannot delete a ${existingInv.status} invoice.`);
+      verifyUserCanPerformThisUpdate(existingInv, {
+        idOfUserWhoCanPerformThisUpdate: existingInv.createdBy.id,
+        authenticatedUserID: user.id,
+      });
 
-      const deletedInvoice = await Invoice.deleteOne(existingInv);
+      const deletedInvoice = await Invoice.deleteItem({
+        createdByUserID: existingInv.createdBy.id,
+        id: existingInv.id,
+      });
+
+      eventEmitter.emitInvoiceDeleted(deletedInvoice);
 
       return new DeleteMutationResponse({
         id: deletedInvoice.id,
@@ -94,24 +143,50 @@ export const resolvers: Partial<Resolvers> = {
       });
     },
   },
-  Invoice: {
-    createdBy: async (parent, args, { user }) => {
-      return parent.createdByUserID === user.id
-        ? { __typename: "User", ...user }
-        : ({
-            __typename: "Contact",
-            ...(await User.getUserByID(parent.createdByUserID)),
-          } as any); // FIXME
-    },
-    assignedTo: async (parent, args, { user }) => {
-      return parent.assignedToUserID === null || !parent.assignedToUserID
-        ? null
-        : parent.assignedToUserID === user.id
-        ? { __typename: "User", ...user }
-        : ({
-            __typename: "Contact",
-            ...(await User.getUserByID(parent.assignedToUserID)),
-          } as any); // FIXME
-    },
-  },
 };
+
+/**
+ * This function performs the following common validation checks for Invoice
+ * update-mutations:
+ *
+ * 1. Ensures the Invoice exists
+ * 2. Ensures the authenticated user is allowed to perform the update
+ * 3. Ensures the Invoice's `status` is "OPEN"
+ */
+const verifyUserCanPerformThisUpdate = (
+  invoice: InvoiceModelItem,
+  {
+    idOfUserWhoCanPerformThisUpdate: allowedID,
+    authenticatedUserID: userID,
+  }: {
+    idOfUserWhoCanPerformThisUpdate: string;
+    authenticatedUserID: string;
+  }
+) => {
+  // Ensure the Invoice exists
+  if (!invoice) throw new GqlUserInputError("Invoice not found.");
+  // Ensure the authenticated user is the creator of the Invoice
+  if (allowedID !== userID) throw new GqlForbiddenError("Access denied.");
+  // Ensure the Invoice's `status` is "OPEN"
+  if (invoice.status !== "OPEN") {
+    throw new GqlForbiddenError(
+      `Sorry, changes cannot be made to ${invoice.status} invoices.${
+        invoice.status === "DISPUTED"
+          ? " Please contact the invoice's recipient for details and further assistance."
+          : ""
+      }`
+    );
+  }
+};
+
+/**
+ * This function gets the Invoice `createdBy` and `assignedTo` FixitUser fields.
+ */
+const getInvoiceCreatedByAndAssignedTo = async (
+  invoice: InvoiceModelItem | GqlInvoice,
+  userAuthToken: FixitApiAuthTokenPayload
+) => ({
+  ...invoice,
+  createdBy: await getFixitUser(invoice.createdBy, userAuthToken),
+  assignedTo: await getFixitUser(invoice.assignedTo, userAuthToken),
+});

@@ -1,38 +1,40 @@
+import { Profile } from "@models/Profile";
 import { User } from "@models/User";
-import { prettifyStr, getNonNullObjValuesByKeys } from "@utils";
 import type { Resolvers } from "@types";
 
 export const resolvers: Partial<Resolvers> = {
   Query: {
     myProfile: async (parent, args, { user }) => {
-      return (await User.getItem(
-        { id: user.id, sk: `#DATA#${user.id}` },
-        { ProjectionExpression: "profile" }
-      )) as any; // FIXME
+      const getItemResult = await User.getItem({
+        id: user.id,
+        sk: User.getFormattedSK(user.id),
+      });
+
+      // The user's token fields are used as a fallback if User.getItem fails for some reason
+      return getItemResult?.profile ?? user.profile;
     },
   },
   Mutation: {
     updateProfile: async (parent, { profile: profileInput }, { user }) => {
-      const { profile } = await User.updateItem(
-        { id: user.id, sk: `#DATA#${user.id}` },
+      const { profile: updatedProfile } = await User.updateItem(
+        { id: user.id, sk: User.getFormattedSK(user.id) },
         {
-          profile: getNonNullObjValuesByKeys(
-            ["displayName", "givenName", "familyName", "businessName", "photoUrl"],
-            profileInput
+          profile: Object.fromEntries(
+            Object.entries(profileInput).filter((entry) => typeof entry[1] === "string")
           ),
         }
       );
-      return { ...user.profile, ...profile };
+      return { ...user.profile, ...updatedProfile };
     },
   },
   Profile: {
     displayName: ({ givenName, familyName, businessName }, _, { user: { handle } }) => {
-      return businessName
-        ? prettifyStr.bizName(businessName)
-        : givenName
-        ? // prettier-ignore
-          `${prettifyStr.capFirstLetterOnly(givenName)}${familyName ? ` ${prettifyStr.capFirstLetterOnly(familyName)}` : ""}`
-        : handle;
+      return Profile.getDisplayNameFromArgs({
+        handle,
+        businessName,
+        givenName,
+        familyName,
+      });
     },
   },
 };

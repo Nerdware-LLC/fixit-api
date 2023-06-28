@@ -1,10 +1,10 @@
+import * as authToken from "./AuthToken/typeDefs";
 import * as checklist from "./Checklist/typeDefs";
 import * as contact from "./Contact/typeDefs";
 import * as fixitUser from "./FixitUser/typeDefs";
 import * as invite from "./Invite/typeDefs";
 import * as invoice from "./Invoice/typeDefs";
 import * as location from "./Location/typeDefs";
-import * as phoneContact from "./PhoneContact/typeDefs";
 import * as profile from "./Profile/typeDefs";
 import * as user from "./User/typeDefs";
 import * as userStripeConnectAccount from "./UserStripeConnectAccount/typeDefs";
@@ -42,6 +42,6 @@ export const typeDefs = [
   workOrder.typeDefs,
   // SIDE-EFFECT MUTATIONS
   invite.typeDefs,
-  // CLIENT-SPECIFIC TYPES
-  phoneContact.typeDefs,
+  // OTHER TYPES SHARED WITH CLIENT
+  authToken.typeDefs,
 ];

@@ -1,8 +1,8 @@
-import gql from "graphql-tag";
+import { gql } from "graphql-tag";
+
+// IDEA Rename field WorkOrder.contractorNotes to WorkOrder.recipientNotes
 
 export const typeDefs = gql`
-  # TODO implement renaming of WorkOrder field "contractorNotes" to "recipientNotes"
-
   "A WorkOrder is a request one User submits to another for work to be performed at a location"
   type WorkOrder {
     "(Immutable) WorkOrder ID, in the format of 'WO#{createdBy.id}#{unixTimestamp(createdAt)}'"
@@ -108,7 +108,7 @@ export const typeDefs = gql`
     location: CreateLocationInput!
     category: WorkOrderCategory
     description: String
-    checklist: [CreateChecklistItemInput]
+    checklist: [CreateChecklistItemInput!]
     dueDate: DateTime
     entryContact: String
     entryContactPhone: String
@@ -121,7 +121,7 @@ export const typeDefs = gql`
     location: UpdateLocationInput
     category: WorkOrderCategory
     description: String
-    checklist: [UpdateChecklistItemInput]
+    checklist: [UpdateChecklistItemInput!]
     dueDate: DateTime
     entryContact: String
     entryContactPhone: String

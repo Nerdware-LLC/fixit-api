@@ -1,4 +1,4 @@
-import gql from "graphql-tag";
+import { gql } from "graphql-tag";
 
 export const typeDefs = gql`
   type ChecklistItem {
@@ -14,7 +14,7 @@ export const typeDefs = gql`
 
   input UpdateChecklistItemInput {
     id: ID!
-    description: String
+    description: String!
     isCompleted: Boolean
   }
 `;

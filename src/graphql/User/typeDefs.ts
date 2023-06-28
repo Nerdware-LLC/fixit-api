@@ -1,7 +1,7 @@
-import gql from "graphql-tag";
+import { gql } from "graphql-tag";
 
 /*
-  TODO Refactor User.stripeCustomerID into a `stripeCustomer` object with below properties
+  IDEA Refactor User.stripeCustomerID into a `stripeCustomer` object with below properties
     - id
     - defaultPaymentMethodID                                <-- simple structure
       OR
@@ -95,6 +95,6 @@ export const typeDefs = gql`
            excluded from the results.
       """
       offset: Int = 0
-    ): [Contact!]
+    ): [Contact!]!
   }
 `;

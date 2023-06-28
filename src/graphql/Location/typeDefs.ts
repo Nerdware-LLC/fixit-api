@@ -1,4 +1,4 @@
-import gql from "graphql-tag";
+import { gql } from "graphql-tag";
 
 export const typeDefs = gql`
   type Location {
@@ -18,10 +18,10 @@ export const typeDefs = gql`
   }
 
   input UpdateLocationInput {
-    streetLine1: String
+    streetLine1: String!
     streetLine2: String
-    city: String
-    region: String
+    city: String!
+    region: String!
     country: String
   }
 `;

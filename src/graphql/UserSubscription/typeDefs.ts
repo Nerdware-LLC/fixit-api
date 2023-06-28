@@ -1,4 +1,4 @@
-import gql from "graphql-tag";
+import { gql } from "graphql-tag";
 
 export const typeDefs = gql`
   type UserSubscription {
@@ -19,6 +19,12 @@ export const typeDefs = gql`
     past_due
     canceled
     unpaid
+  }
+
+  enum SubscriptionPriceLabel {
+    ANNUAL
+    MONTHLY
+    TRIAL
   }
 
   extend type Query {
