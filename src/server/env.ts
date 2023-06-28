@@ -1,4 +1,3 @@
-/* eslint-disable node/no-process-env */
 const {
   NODE_ENV,
   npm_package_version,
@@ -17,18 +16,18 @@ const {
   FIXIT_SUB_PRODUCT_ID,
   FIXIT_SUB_PRICES_JSON,
   FIXIT_SUB_PROMO_CODES_JSON,
-} = process.env;
+} = process.env; // eslint-disable-line node/no-process-env
 
-const FIXIT_SUB_PRICES: {
+const FIXIT_SUB_PRICES = JSON.parse(FIXIT_SUB_PRICES_JSON) as {
   MONTHLY: string;
   ANNUAL: string;
-} = JSON.parse(FIXIT_SUB_PRICES_JSON);
+};
 
 const API_BASE_URL = `${PROTOCOL}://${DOMAIN}`;
 
 export const ENV = Object.freeze({
   NODE_ENV,
-  IS_PROD: NODE_ENV === "production",
+  IS_PROD: /^prod/i.test(NODE_ENV),
   CONFIG: {
     PROJECT_VERSION: npm_package_version,
     // prettier-ignore
@@ -67,7 +66,7 @@ export const ENV = Object.freeze({
           TRIAL: FIXIT_SUB_PRICES.MONTHLY,
           ...FIXIT_SUB_PRICES,
         },
-        promoCodes: JSON.parse(FIXIT_SUB_PROMO_CODES_JSON),
+        promoCodes: JSON.parse(FIXIT_SUB_PROMO_CODES_JSON) as Record<string, string>,
       },
     },
   },
