@@ -4,7 +4,7 @@ import { ENV } from "@server/env";
 import { MILLISECONDS_PER_DAY } from "@tests/datetime";
 import { UserSubscription } from "./UserSubscription";
 import { USER_SUBSCRIPTION_SK_REGEX, USER_SUB_STRIPE_ID_REGEX } from "./regex";
-import type { UserSubscriptionType } from "@types";
+import type { UserSubscriptionModelItem } from "@types";
 import type { Simplify } from "type-fest";
 
 const USER_1 = "USER#11111111-1111-1111-1111-sub111111111";
@@ -44,7 +44,10 @@ const MOCK_INPUTS = {
 // This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
 const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<keyof typeof MOCK_INPUTS>;
 
-const testSubFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockSub: UserSubscriptionType) => {
+const testSubFields = (
+  mockInputsKey: keyof typeof MOCK_INPUTS,
+  mockSub: UserSubscriptionModelItem
+) => {
   expect(mockSub.userID).toMatch(USER_ID_REGEX);
   expect(mockSub.sk).toMatch(USER_SUBSCRIPTION_SK_REGEX);
   expect(mockSub.id).toMatch(USER_SUB_STRIPE_ID_REGEX);
@@ -61,7 +64,7 @@ const testSubFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockSub: UserSub
 describe("UserSubscription model R/W database operations", () => {
   let createdSubs = {} as {
     -readonly [K in keyof typeof MOCK_INPUTS]: Simplify<
-      UserSubscriptionType & Required<Pick<UserSubscriptionType, "userID" | "sk">>
+      UserSubscriptionModelItem & Required<Pick<UserSubscriptionModelItem, "userID" | "sk">>
     >;
   };
 
@@ -70,7 +73,7 @@ describe("UserSubscription model R/W database operations", () => {
     for (const key of MOCK_INPUT_KEYS) {
       createdSubs[key] = (await UserSubscription.upsertItem(
         MOCK_INPUTS[key]
-      )) as Required<UserSubscriptionType>;
+      )) as Required<UserSubscriptionModelItem>;
     }
   });
 

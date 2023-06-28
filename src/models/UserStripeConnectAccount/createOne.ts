@@ -1,22 +1,31 @@
 import { stripe } from "@lib/stripe";
-import type { Model } from "@lib/dynamoDB";
-import type { UserType, UserStripeConnectAccountAllFields } from "@types";
+import {
+  UserStripeConnectAccount,
+  type UserStripeConnectAccountModelItem,
+} from "@models/UserStripeConnectAccount";
+import type { UserModelItem } from "@models/User";
 
-// function, not arrow, bc we need "this" to be the UserStripeConnectAccount model
+/**
+ * This method creates a `UserStripeConnectAccount` item in both the DB and
+ * Stripe's API (via `stripe.accounts.create`).
+ *
+ * Note: this function does not use arrow syntax because `this` is the
+ * UserStripeConnectAccount Model.
+ */
 export const createOne = async function (
-  this: InstanceType<typeof Model>,
+  this: typeof UserStripeConnectAccount,
   {
     userID,
     email,
     phone,
     profile,
   }: {
-    userID: UserType["id"];
-    email: UserType["email"];
-    phone: UserType["phone"];
-    profile?: UserType["profile"];
+    userID: UserModelItem["id"];
+    email: UserModelItem["email"];
+    phone: UserModelItem["phone"];
+    profile?: UserModelItem["profile"];
   }
-): Promise<UserStripeConnectAccountAllFields> {
+): Promise<Required<UserStripeConnectAccountModelItem>> {
   // Create Stripe Connect Account via Stripe API
   const {
     id: stripeConnectAccountID,

@@ -2,12 +2,12 @@ import moment from "moment";
 import { MILLISECONDS_PER_DAY } from "@tests/datetime";
 import { Invoice } from "./Invoice";
 import { INVOICE_SK_REGEX } from "./regex";
-import type { InvoiceType } from "@types";
+import type { InvoiceModelItem, InvoiceModelInput } from "./Invoice";
 
 const USER_1 = "USER#11111111-1111-1111-1111-inv111111111";
 const USER_2 = "USER#22222222-2222-2222-2222-inv222222222";
 
-const MOCK_INPUTS = {
+const MOCK_INPUTS: Record<"INV_A" | "INV_B", Partial<InvoiceModelInput>> = {
   // INV_A contains the bare minimum inputs for Invoice.createOne
   INV_A: {
     createdByUserID: USER_1,
@@ -21,16 +21,17 @@ const MOCK_INPUTS = {
     amount: 22222, // $222.22
     workOrderID: `WO#${USER_1}#${(Date.now() - MILLISECONDS_PER_DAY * 10) / 1000}`, // WO created 10 days ago
   },
-} as const;
+};
 
+type MockInputKey = keyof typeof MOCK_INPUTS;
 // This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
-const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<keyof typeof MOCK_INPUTS>;
+const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<MockInputKey>;
 
-const testInvoiceFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockInv: InvoiceType) => {
+const testInvoiceFields = (mockInputsKey: MockInputKey, mockInv: InvoiceModelItem) => {
   const mockInvInputs = MOCK_INPUTS[mockInputsKey];
 
-  expect(mockInv.createdByUserID).toEqual(mockInvInputs.createdByUserID);
-  expect(mockInv.assignedToUserID).toEqual(mockInvInputs.assignedToUserID);
+  expect(mockInv.createdBy.id).toEqual(mockInvInputs.createdByUserID);
+  expect(mockInv.assignedTo.id).toEqual(mockInvInputs.assignedToUserID);
   expect(mockInv.id).toMatch(INVOICE_SK_REGEX);
   expect(mockInv.amount).toEqual(mockInvInputs.amount);
 
@@ -39,12 +40,12 @@ const testInvoiceFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockInv: Inv
 };
 
 describe("Invoice model R/W database operations", () => {
-  let createdInvoices = {} as { -readonly [K in keyof typeof MOCK_INPUTS]: InvoiceType };
+  const createdInvoices = {} as { [K in MockInputKey]: InvoiceModelItem };
 
   beforeAll(async () => {
     // Write mock Invoices to Table
     for (const key of MOCK_INPUT_KEYS) {
-      createdInvoices[key] = await Invoice.createOne(MOCK_INPUTS[key]);
+      createdInvoices[key] = await Invoice.createItem(MOCK_INPUTS[key] as any);
     }
   });
 
@@ -52,10 +53,8 @@ describe("Invoice model R/W database operations", () => {
 
   test("Invoice.createOne returns expected keys and values", () => {
     Object.entries(createdInvoices).forEach(([mockInputsKey, createdInv]) => {
-      testInvoiceFields(mockInputsKey as keyof typeof MOCK_INPUTS, createdInv);
+      testInvoiceFields(mockInputsKey as MockInputKey, createdInv);
     });
-
-    // TODO Ensure FixitEventEmitter triggered onInvoiceCreated event handlers
   });
 
   // QUERIES:
@@ -67,10 +66,14 @@ describe("Invoice model R/W database operations", () => {
     }
   });
 
-  test("Invoice.queryUsersInvoices returns expected keys and values", async () => {
+  test("Invoice.query User's Invoices returns expected keys and values", async () => {
     for (const key of MOCK_INPUT_KEYS) {
       // Should be an array of 1 Invoice
-      const invoices = await Invoice.queryUsersInvoices(createdInvoices[key].createdByUserID);
+      const invoices = await Invoice.query({
+        where: {
+          createdByUserID: createdInvoices[key].createdBy.id,
+        },
+      });
 
       invoices.forEach((inv) => {
         testInvoiceFields(key, inv);
@@ -78,12 +81,14 @@ describe("Invoice model R/W database operations", () => {
     }
   });
 
-  test("Invoice.queryInvoicesAssignedToUser returns expected keys and values", async () => {
+  test("Invoice.query Invoices AssignedToUser returns expected keys and values", async () => {
     for (const key of MOCK_INPUT_KEYS) {
       // Should be an array of 1 Invoice
-      const invoices = await Invoice.queryInvoicesAssignedToUser(
-        createdInvoices[key].assignedToUserID
-      );
+      const invoices = await Invoice.query({
+        where: {
+          assignedToUserID: createdInvoices[key].assignedTo.id,
+        },
+      });
 
       invoices.forEach((inv) => {
         testInvoiceFields(key, inv);
@@ -94,14 +99,14 @@ describe("Invoice model R/W database operations", () => {
   // UPDATE:
 
   test("Invoice.updateOne returns expected keys and values", async () => {
-    let updatedInvoices = { ...createdInvoices };
+    const updatedInvoices = { ...createdInvoices };
 
-    const NEW_INV_VALUES: Record<keyof typeof createdInvoices, Partial<InvoiceType>> = {
+    const NEW_INV_VALUES: Record<MockInputKey, Partial<InvoiceModelItem>> = {
       INV_A: {
         amount: 9000, // $90.00 (10% discount from original INV_A amount)
       },
       INV_B: {
-        stripePaymentIntentID: "foo_PaymentIntentID", // FIXME Add Stripe Payment Intent to test PayInvoice flow
+        stripePaymentIntentID: "foo_PaymentIntentID", // IDEA Add Stripe Payment Intent to test PayInvoice flow
       },
     };
 
@@ -117,22 +122,22 @@ describe("Invoice model R/W database operations", () => {
         ...NEW_INV_VALUES[key],
       });
     }
-
-    // TODO Ensure FixitEventEmitter triggered onInvoice{Updated,Paid} event handlers
   });
 
   // DELETE:
 
-  test("Invoice.deleteOne returns expected keys and values", async () => {
+  test("Invoice.deleteItem returns expected keys and values", async () => {
     for (const key of MOCK_INPUT_KEYS) {
-      const invToDelete = createdInvoices[key] as InvoiceType;
+      const invToDelete = createdInvoices[key];
 
-      const { id: deletedInvoiceID } = await Invoice.deleteOne(invToDelete);
+      const { id: deletedInvoiceID } = await Invoice.deleteItem({
+        createdByUserID: invToDelete.createdBy.id,
+        id: invToDelete.id,
+      });
+
       // If deleteOne did not error out, the delete succeeded, check ID.
       expect(deletedInvoiceID).toEqual(invToDelete.id);
     }
-
-    // TODO Ensure FixitEventEmitter triggered onInvoiceDeleted event handlers
   });
 });
 
@@ -142,12 +147,17 @@ afterAll(async () => {
   /* After all tests are complete, ensure all mock Items created here have been deleted.
   Note: DDB methods are called from the ddbClient to circumvent toDB IO hook actions. */
 
-  const remainingMockINVs = await Invoice.ddbClient.scan({
+  const remainingMockINVs = await Invoice.scan({
     FilterExpression: "begins_with(sk, :skPrefix)",
-    ExpressionAttributeValues: { ":skPrefix": "INV#" },
+    ExpressionAttributeValues: { ":skPrefix": Invoice.SK_PREFIX },
   });
 
   if (Array.isArray(remainingMockINVs) && remainingMockINVs.length > 0) {
-    await Invoice.ddbClient.batchDeleteItems(remainingMockINVs.map(({ pk, sk }) => ({ pk, sk })));
+    await Invoice.batchDeleteItems(
+      remainingMockINVs.map(({ id, createdBy }) => ({
+        id,
+        createdByUserID: createdBy.id,
+      }))
+    );
   }
 });

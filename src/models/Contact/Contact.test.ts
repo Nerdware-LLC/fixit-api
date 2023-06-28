@@ -1,34 +1,32 @@
 import moment from "moment";
 import { Contact } from "./Contact";
 import { CONTACT_SK_REGEX } from "./regex";
-import type { ContactType } from "@types";
-import type { Simplify } from "type-fest";
+import type { ContactModelItem, ContactModelInput } from "./Contact";
 
 const USER_1 = "USER#11111111-1111-1111-1111-contact11111";
 const USER_2 = "USER#22222222-2222-2222-2222-contact22222";
 const USER_3 = "USER#33333333-3333-3333-3333-contact33333";
 
-const MOCK_INPUTS = {
-  // CONTACT_A contains the bare minimum inputs for Contact.createItem
+const MOCK_INPUTS: Record<"CONTACT_A" | "CONTACT_B", Partial<ContactModelInput>> = {
   CONTACT_A: {
     userID: USER_1,
     contactUserID: USER_2,
   },
-  // CONTACT_B contains all Contact properties that can be provided to Contact.createItem
   CONTACT_B: {
     userID: USER_2,
     contactUserID: USER_3,
   },
 } as const;
 
+type MockInputKey = keyof typeof MOCK_INPUTS;
 // This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
-const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<keyof typeof MOCK_INPUTS>;
+const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<MockInputKey>;
 
-const testContactFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockContact: ContactType) => {
+const testContactFields = (mockInputsKey: MockInputKey, mockContact: ContactModelItem) => {
   const mockContactInputs = MOCK_INPUTS[mockInputsKey];
 
   expect(mockContact.userID).toEqual(mockContactInputs.userID);
-  expect(mockContact.sk).toMatch(CONTACT_SK_REGEX);
+  expect(mockContact.id).toMatch(CONTACT_SK_REGEX);
   expect(mockContact.contactUserID).toEqual(mockContactInputs.contactUserID);
 
   expect(moment(mockContact.createdAt).isValid()).toEqual(true);
@@ -36,22 +34,18 @@ const testContactFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockContact:
 };
 
 describe("Contact model R/W database operations", () => {
-  let createdContacts = {} as {
-    -readonly [K in keyof typeof MOCK_INPUTS]: Simplify<
-      ContactType & Required<Pick<ContactType, "sk" | "contactUserID">>
-    >;
-  };
+  const createdContacts = {} as { [K in MockInputKey]: ContactModelItem };
 
   // Write mock Contacts to Table
   beforeAll(async () => {
     for (const key of MOCK_INPUT_KEYS) {
-      createdContacts[key] = await Contact.createOne(MOCK_INPUTS[key]);
+      createdContacts[key] = await Contact.createItem(MOCK_INPUTS[key] as any);
     }
   });
 
   // CREATE:
 
-  test("Contact.createOne returns expected keys and values", () => {
+  test("Contact.createItem returns expected keys and values", () => {
     Object.entries(createdContacts).forEach(([mockInputsKey, createdContact]) => {
       testContactFields(mockInputsKey as keyof typeof MOCK_INPUTS, createdContact);
     });
@@ -59,18 +53,29 @@ describe("Contact model R/W database operations", () => {
 
   // QUERIES:
 
-  test("Contact.queryContactByID returns expected keys and values", async () => {
+  test("Contact.query Contact by ID returns expected keys and values", async () => {
     for (const key of MOCK_INPUT_KEYS) {
       const { userID, contactUserID } = createdContacts[key];
-      const result = await Contact.queryContactByID(userID, contactUserID);
+      const [result] = await Contact.query({
+        where: {
+          userID,
+          id: Contact.getFormattedID(contactUserID),
+        },
+        limit: 1,
+      });
       testContactFields(key, result);
     }
   });
 
-  test("Contact.queryUsersContacts returns expected keys and values", async () => {
+  test("Contact.query User's Contacts returns expected keys and values", async () => {
     for (const key of MOCK_INPUT_KEYS) {
       // Should be an array of 1 Contact
-      const contacts = await Contact.queryUsersContacts(createdContacts[key].userID);
+      const contacts = await Contact.query({
+        where: {
+          userID: createdContacts[key].userID,
+          id: { beginsWith: Contact.SK_PREFIX },
+        },
+      });
 
       contacts.forEach((contact) => {
         testContactFields(key, contact);
@@ -82,9 +87,9 @@ describe("Contact model R/W database operations", () => {
 
   test("Contact.deleteItem returns expected keys and values", async () => {
     for (const key of MOCK_INPUT_KEYS) {
-      const { userID, sk } = createdContacts[key];
+      const { userID, id } = createdContacts[key];
       // If deleteOne did not error out, the delete succeeded - test returned ID.
-      const { userID: userIDofDeletedContactItem } = await Contact.deleteItem({ userID, sk });
+      const { userID: userIDofDeletedContactItem } = await Contact.deleteItem({ userID, id });
       expect(userIDofDeletedContactItem).toEqual(userID);
     }
   });

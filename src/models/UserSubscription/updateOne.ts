@@ -1,29 +1,27 @@
-import moment from "moment";
 import { InternalServerError } from "@utils/customErrors";
-import { UserSubscription } from "./UserSubscription";
-import type { Model } from "@lib/dynamoDB";
-import type { UserType, UserSubscriptionType } from "@types";
-import type { Simplify } from "type-fest";
+import { UserSubscription, type UserSubscriptionModelItem } from "./UserSubscription";
+import type { UserModelItem } from "@models/User";
 
 export const updateOne = async function (
-  this: InstanceType<typeof Model>,
+  this: typeof UserSubscription,
   {
     userID,
     sk,
     createdAt,
   }: {
-    userID: UserType["id"];
-    sk?: UserSubscriptionType["sk"];
-    createdAt?: UserSubscriptionType["createdAt"];
+    userID: UserModelItem["id"];
+    sk?: UserSubscriptionModelItem["sk"];
+    createdAt?: UserSubscriptionModelItem["createdAt"];
   },
-  mutableSubscriptionFields: MutableSubscriptionFields
+  mutableSubscriptionFields: Pick<
+    UserSubscriptionModelItem,
+    "id" | "currentPeriodEnd" | "productID" | "priceID" | "status"
+  >
 ) {
-  if (!sk && !createdAt) throw new InternalServerError();
-  else if (!sk) sk = `SUBSCRIPTION#${userID}#${moment(createdAt).unix()}`;
+  if (!sk) {
+    if (!createdAt) throw new InternalServerError();
+    sk = UserSubscription.getFormattedSK(userID, createdAt);
+  }
 
   return await UserSubscription.updateItem({ userID, sk }, mutableSubscriptionFields);
 };
-
-type MutableSubscriptionFields = Simplify<
-  Pick<UserSubscriptionType, "id" | "currentPeriodEnd" | "productID" | "priceID" | "status">
->;

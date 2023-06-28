@@ -1,16 +1,15 @@
 import merge from "lodash.merge";
 import { eventEmitter } from "@events/eventEmitter";
-import type { Model } from "@lib/dynamoDB";
-import type { InvoiceType } from "@types";
+import { Invoice, type InvoiceModelItem } from "@models/Invoice";
 
 export const updateOne = async function (
-  this: InstanceType<typeof Model>,
-  existingInvoice: InvoiceType,
-  newInvoiceFields: Partial<InvoiceType>
+  this: typeof Invoice,
+  existingInvoice: InvoiceModelItem,
+  newInvoiceFields: Partial<InvoiceModelItem>
 ) {
   const updateInvoiceResult = await this.updateItem(
     {
-      createdByUserID: existingInvoice.createdByUserID,
+      createdByUserID: existingInvoice.createdBy.id,
       id: existingInvoice.id,
     },
     newInvoiceFields
@@ -25,5 +24,5 @@ export const updateOne = async function (
 
   emitEventFn(updatedInvoice);
 
-  return updatedInvoice as InvoiceType;
+  return updatedInvoice;
 };

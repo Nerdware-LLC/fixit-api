@@ -1,7 +1,8 @@
 import { Expo } from "expo-server-sdk";
-import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
+import { Model, type ItemTypeFromSchema, type ItemInputType } from "@lib/dynamoDB";
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@models/_common";
-import { EMAIL_REGEX } from "@utils";
+import { ddbSingleTable } from "@models/ddbSingleTable";
+import { EMAIL_REGEX, getUnixTimestampUUID, hasKey } from "@utils";
 import { createOne } from "./createOne";
 import {
   USER_ID_REGEX,
@@ -9,154 +10,133 @@ import {
   USER_HANDLE_REGEX,
   USER_STRIPE_CUSTOMER_ID_REGEX,
 } from "./regex";
-import type { UserType } from "@types";
-
-// TODO make sure sensitive User fields are hidden from other Users: id, stripeCustomerID, stripeConnectAccount, subscription
-// TODO Make these User properties immutable: id, email, login.type, stripeCustomerID, stripeConnectAccount.id
+import type { UserLoginU } from "@models/UserLogin";
+import type { OverrideProperties } from "type-fest";
 
 /**
- * User Model Methods:
- * @method `createOne()`
- * @method `getUserByID()`
- * @method `batchGetUsersByID()`
- * @method `queryUserByEmail()`
+ * User DdbSingleTable Model
  */
-class UserModel extends Model<typeof UserModel.schema> {
+class UserModel extends Model<typeof UserModel.schema, UserModelItem, UserModelInput> {
+  static readonly SK_PREFIX = `#DATA`;
+  static readonly getFormattedSK = (userID: string) => `#DATA#${userID}`;
+
   static readonly schema = {
     pk: {
       type: "string",
       alias: "id",
+      default: () => `USER#${getUnixTimestampUUID()}`,
       validate: (value: string) => USER_ID_REGEX.test(value),
-      isHashKey: true,
       required: true,
     },
     sk: {
       type: "string",
+      default: (userItem: { pk: string }) => UserModel.getFormattedSK(userItem.pk),
       validate: (value: string) => USER_SK_REGEX.test(value),
-      isRangeKey: true,
       required: true,
-      index: {
-        // For relational queries using "sk" as the hash key
-        name: "Overloaded_SK_GSI",
-        global: true,
-        rangeKey: "data", // This GSI sk is currently not used by any model methods.
-        project: true,
-      },
     },
     data: {
       type: "string",
       alias: "email",
       validate: (value: string) => EMAIL_REGEX.test(value),
       required: true,
-      index: {
-        // For relational queries using "data" as the hash key
-        name: "Overloaded_Data_GSI",
-        global: true,
-        rangeKey: "sk",
-        project: true,
-      },
     },
     handle: {
       type: "string",
-      required: true,
       validate: (value: string) => USER_HANDLE_REGEX.test(value),
+      required: true,
     },
     phone: {
       ...COMMON_ATTRIBUTE_TYPES.PHONE,
       required: true,
     },
     expoPushToken: {
-      // TODO the push-service sets EPT to "" (empty string), as STRING attrs CAN'T BE SET TO NULL !
-      type: "string",
+      type: "string", // The push-service sets EPT to "" (empty string)
+      default: "",
+      validate: (tokenValue: string) => tokenValue === "" || Expo.isExpoPushToken(tokenValue),
       required: false,
-      validate: (tokenValue: string) => tokenValue == "" || Expo.isExpoPushToken(tokenValue),
-      transformValue: {
-        // If value is "null", replace with empty string.
-        toDB: (value: string) => (value === null ? "" : value),
-      },
     },
     stripeCustomerID: {
       type: "string",
-      required: true,
       validate: (value: string) => USER_STRIPE_CUSTOMER_ID_REGEX.test(value),
+      required: true,
     },
     login: {
       type: "map",
       required: true,
       schema: {
-        // user.login.type --> type of login
-        type: {
-          type: "string",
-          required: true,
-          validate: (loginType: string) => ["LOCAL", "GOOGLE_OAUTH"].includes(loginType), // <-- emulates enum enforcement
-        },
-        // For LOCAL logins:
+        // login type
+        type: { type: "enum", oneOf: ["LOCAL", "GOOGLE_OAUTH"], required: true },
+        // LOCAL login properties:
         passwordHash: { type: "string" },
-        // For GOOGLE_OAUTH logins:
+        // GOOGLE_OAUTH login properties:
         googleID: { type: "string" },
         googleAccessToken: { type: "string" },
       },
-      validate: (login: { type: "LOCAL" | "GOOGLE_OAUTH" }) =>
-        login?.type === "LOCAL"
-          ? Object.prototype.hasOwnProperty.call(login, "passwordHash")
+      validate: (login: unknown) =>
+        !!login &&
+        hasKey(login, "type") &&
+        (login?.type === "LOCAL"
+          ? hasKey(login, "passwordHash")
           : login?.type === "GOOGLE_OAUTH"
-          ? Object.prototype.hasOwnProperty.call(login, "googleID") &&
-            Object.prototype.hasOwnProperty.call(login, "googleAccessToken")
-          : false,
+          ? hasKey(login, "googleID") && hasKey(login, "googleAccessToken")
+          : false),
     },
     profile: {
       type: "map",
       required: true,
       schema: {
-        displayName: { type: "string" },
+        displayName: { type: "string", required: true },
         givenName: { type: "string" },
         familyName: { type: "string" },
         businessName: { type: "string" },
         photoURL: { type: "string" },
       },
     },
-    // "createdAt" and "updatedAt"
-    ...COMMON_ATTRIBUTES.TIMESTAMPS,
+    ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
   } as const;
 
-  static readonly schemaOptions: ModelSchemaOptions = {
-    transformItem: {
-      toDB: (userItem) => ({
-        ...userItem,
-        sk: `#DATA#${userItem.pk}`,
-      }),
-    },
-  };
-
   constructor() {
-    super(ddbSingleTable, "User", UserModel.schema, UserModel.schemaOptions);
+    super("User", UserModel.schema, ddbSingleTable);
   }
 
   // USER MODEL — Instance methods:
 
+  readonly getFormattedSK = UserModel.getFormattedSK;
   readonly createOne = createOne;
 
+  // TODO This method can be rm'd
   readonly getUserByID = async (userID: string) => {
-    return (await this.getItem({ id: userID, sk: `#DATA#${userID}` })) as UserType;
+    return await this.getItem({ id: userID, sk: UserModel.getFormattedSK(userID) });
   };
 
+  // TODO This method can be rm'd
   readonly batchGetUsersByID = async (userIDs: Array<string>) => {
-    return (await this.batchGetItems(
-      userIDs.map((id) => ({ id, sk: `#DATA#${id}` }))
-    )) as Array<UserType>;
+    return await this.batchGetItems(
+      userIDs.map((userID) => ({ id: userID, sk: UserModel.getFormattedSK(userID) }))
+    );
   };
 
+  // TODO This method can be rm'd
   readonly queryUserByEmail = async (email: string) => {
     const [user] = await this.query({
-      IndexName: "Overloaded_Data_GSI",
-      KeyConditionExpression: "#e = :email",
-      ExpressionAttributeNames: { "#e": "data" },
-      ExpressionAttributeValues: { ":email": email },
-      Limit: 1,
+      where: { email },
+      limit: 1,
+      // IndexName: DDB_INDEXES.Overloaded_Data_GSI.name,
+      // KeyConditionExpression: "#e = :email",
+      // ExpressionAttributeNames: { "#e": DDB_INDEXES.Overloaded_Data_GSI.primaryKey },
+      // ExpressionAttributeValues: { ":email": email },
     });
-
-    return user as UserType;
+    return user;
   };
 }
 
 export const User = new UserModel();
+
+export type UserModelItem = OverrideProperties<
+  ItemTypeFromSchema<typeof UserModel.schema>,
+  { login: UserLoginU }
+>;
+export type UserModelInput = OverrideProperties<
+  ItemInputType<typeof UserModel.schema>,
+  { login: UserLoginU }
+>;

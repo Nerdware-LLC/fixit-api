@@ -1,8 +1,11 @@
 import { stripe } from "@lib/stripe";
 import { UserInputError } from "@utils/customErrors";
-import { UserSubscription } from "./UserSubscription";
-import type { Model } from "@lib/dynamoDB";
-import type { UserType, UserSubscriptionType } from "@types";
+import {
+  UserSubscription,
+  type UserSubscriptionModelItem,
+  type UserSubscriptionPriceLabels,
+} from "./UserSubscription";
+import type { UserModelItem } from "@models/User";
 import type Stripe from "stripe";
 
 /**
@@ -13,24 +16,22 @@ import type Stripe from "stripe";
  * the **selectedSubscription** property.
  */
 export const upsertOne = async function (
-  this: InstanceType<typeof Model>,
+  this: typeof UserSubscription,
   {
     user: { id: userID, stripeCustomerID },
-    selectedSubscription = "", // empty string to prevent lookup errors when missing
+    selectedSubscription,
     priceID,
     promoCode,
   }: {
-    user: { id: UserType["id"]; stripeCustomerID: UserType["stripeCustomerID"] };
-    selectedSubscription?: keyof typeof UserSubscription.PRICE_IDS | "";
-    priceID?: (typeof UserSubscription.PRICE_IDS)[keyof typeof UserSubscription.PRICE_IDS];
-    promoCode?: keyof typeof UserSubscription.PROMO_CODES;
+    user: Pick<UserModelItem, "id" | "stripeCustomerID">;
+    selectedSubscription?: UserSubscriptionPriceLabels;
+    priceID?: string;
+    promoCode?: string;
   }
-) {
+): Promise<Stripe.Response<Stripe.Subscription> & UserSubscriptionModelItem> {
   // Ascertain the subscription's Stripe price ID
-  if (!priceID) {
-    // prettier-ignore
-    priceID = UserSubscription.PRICE_IDS?.[selectedSubscription as keyof typeof UserSubscription.PRICE_IDS];
-  }
+  if (!priceID && !!selectedSubscription)
+    priceID = UserSubscription.PRICE_IDS[selectedSubscription];
 
   if (!priceID) throw new UserInputError("Invalid subscription");
 
@@ -52,6 +53,7 @@ export const upsertOne = async function (
 
   const userSubscription = {
     userID,
+    sk: UserSubscription.getFormattedSK(userID, createdAt),
     id: stripeSubObject.id,
     currentPeriodEnd,
     productID,
@@ -68,5 +70,5 @@ export const upsertOne = async function (
     ...stripeSubObject,
     ...userSubscription,
     updatedAt,
-  } as Stripe.Response<Stripe.Subscription> & UserSubscriptionType;
+  };
 };

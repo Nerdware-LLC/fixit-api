@@ -1,50 +1,39 @@
-import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
+import { Model, type ItemTypeFromSchema, type ItemInputType } from "@lib/dynamoDB";
 import { USER_ID_REGEX } from "@models/User/regex";
 import { COMMON_ATTRIBUTES } from "@models/_common";
+import { ddbSingleTable } from "@models/ddbSingleTable";
 import { createOne } from "./createOne";
-import { STRIPE_CONNECT_ACCOUNT_SK_REGEX, STRIPE_CONNECT_ACCOUNT_STRIPE_ID_REGEX } from "./regex";
+import {
+  STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR as SCA_SK_PREFIX,
+  STRIPE_CONNECT_ACCOUNT_SK_REGEX as SCA_SK_REGEX,
+  STRIPE_CONNECT_ACCOUNT_STRIPE_ID_REGEX as SCA_ID_REGEX,
+} from "./regex";
 import { updateOne } from "./updateOne";
 
 /**
- * UserStripeConnectAccount Model Methods:
- * @method `createOne()`
- * @method `updateOne()`
- * @method `queryByStripeConnectAccountID()`
+ * UserStripeConnectAccount DdbSingleTable Model
  */
 class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccountModel.schema> {
+  static readonly SK_PREFIX = SCA_SK_PREFIX;
+
   static readonly schema = {
     pk: {
       type: "string",
+      required: true,
       alias: "userID",
       validate: (value: string) => USER_ID_REGEX.test(value),
-      isHashKey: true,
-      required: true,
     },
     sk: {
       type: "string",
-      validate: (value: string) => STRIPE_CONNECT_ACCOUNT_SK_REGEX.test(value),
-      isRangeKey: true,
+      default: (scaItem: { pk: string }) => `${SCA_SK_PREFIX}#${scaItem.pk}`,
+      validate: (value: string) => SCA_SK_REGEX.test(value),
       required: true,
-      index: {
-        // For relational queryies using "sk" as the hash key
-        name: "Overloaded_SK_GSI",
-        global: true,
-        rangeKey: "data",
-        project: true,
-      },
     },
     data: {
       type: "string",
       alias: "id",
-      validate: (value: string) => STRIPE_CONNECT_ACCOUNT_STRIPE_ID_REGEX.test(value), // Example from Stripe docs: "acct_1GpaAGC34C0mN67J"
+      validate: (value: string) => SCA_ID_REGEX.test(value),
       required: true,
-      index: {
-        // For relational queries using "data" as the hash key
-        name: "Overloaded_Data_GSI",
-        global: true,
-        rangeKey: "sk",
-        project: true,
-      },
     },
     detailsSubmitted: {
       type: "boolean",
@@ -58,53 +47,44 @@ class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccoun
       type: "boolean",
       required: true,
     },
-    // "createdAt" and "updatedAt"
-    ...COMMON_ATTRIBUTES.TIMESTAMPS,
+    ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
   } as const;
 
-  static readonly schemaOptions: ModelSchemaOptions = {
-    transformItem: {
-      // prettier-ignore
-      toDB: (userStripeConnectAccountItem) => ({
-        ...userStripeConnectAccountItem,
-        ...(!userStripeConnectAccountItem.sk && !!userStripeConnectAccountItem.pk && {
-          sk: `STRIPE_CONNECT_ACCOUNT#${userStripeConnectAccountItem.pk}`
-        })
-      }),
-    },
-  };
-
   constructor() {
-    super(
-      ddbSingleTable,
-      "UserStripeConnectAccount",
-      UserStripeConnectAccountModel.schema,
-      UserStripeConnectAccountModel.schemaOptions
-    );
+    super("UserStripeConnectAccount", UserStripeConnectAccountModel.schema, ddbSingleTable);
   }
 
-  // USER STRIPE CONNECT ACCOUNT MODEL — Instance methods:
-
+  // USER STRIPE CONNECT ACCOUNT MODEL — Instance properties and methods:
+  readonly SK_PREFIX = UserStripeConnectAccountModel.SK_PREFIX;
   readonly createOne = createOne;
-
-  // TODO Add test for this method
   readonly updateOne = updateOne;
 
-  // TODO Add test for this method
   readonly queryByStripeConnectAccountID = async (stripeConnectAccountID: string) => {
     const [userSCA] = await this.query({
-      IndexName: "Overloaded_Data_GSI",
-      KeyConditionExpression: "#scaID = :scaID AND begins_with(sk, :skPrefix)",
-      ExpressionAttributeNames: { "#scaID": "data" },
-      ExpressionAttributeValues: {
-        ":scaID": stripeConnectAccountID,
-        ":skPrefix": "STRIPE_CONNECT_ACCOUNT#",
+      where: {
+        id: stripeConnectAccountID,
+        sk: { beginsWith: this.SK_PREFIX },
       },
-      Limit: 1,
+      limit: 1,
+      // IndexName: DDB_INDEXES.Overloaded_Data_GSI.name,
+      // KeyConditionExpression: "#scaID = :scaID AND begins_with(sk, :scaSKprefix)",
+      // ExpressionAttributeNames: {
+      //   "#scaID": DDB_INDEXES.Overloaded_Data_GSI.primaryKey,
+      // },
+      // ExpressionAttributeValues: {
+      //   ":scaID": stripeConnectAccountID,
+      //   ":scaSKprefix": `${SCA_SK_PREFIX}#`,
+      // },
     });
-
     return userSCA;
   };
 }
 
 export const UserStripeConnectAccount = new UserStripeConnectAccountModel();
+
+export type UserStripeConnectAccountModelItem = ItemTypeFromSchema<
+  typeof UserStripeConnectAccountModel.schema
+>;
+export type UserStripeConnectAccountModelInput = ItemInputType<
+  typeof UserStripeConnectAccountModel.schema
+>;

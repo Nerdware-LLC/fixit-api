@@ -1,4 +1,4 @@
-import type { FixitUser, Profile as ProfileType } from "@types";
+import type { FixitUser, Profile as NullableProfile, NonNullableProfile } from "@types";
 
 /**
  * Ideas for potential profile fields:
@@ -20,41 +20,20 @@ import type { FixitUser, Profile as ProfileType } from "@types";
  * - businessW9Notes
  * - businessNotes
  */
-export class Profile implements ProfileType {
+export class Profile implements NonNullableProfile {
   displayName: string;
-  givenName: string | null;
-  familyName: string | null;
-  businessName: string | null;
-  photoUrl: string | null;
+  givenName?: string;
+  familyName?: string;
+  businessName?: string;
+  photoUrl?: string;
 
-  constructor({
+  static readonly getDisplayNameFromArgs = ({
     handle,
     displayName,
     givenName,
     familyName,
     businessName,
-    photoUrl,
-  }: ProfileCtorArgs) {
-    this.givenName = givenName || null;
-    this.familyName = familyName || null;
-    this.businessName = businessName || null;
-    this.photoUrl = photoUrl || null;
-    this.displayName = Profile.getDisplayNameFromArgs({
-      handle,
-      displayName,
-      givenName,
-      familyName,
-      businessName,
-    });
-  }
-
-  public static readonly getDisplayNameFromArgs = ({
-    handle,
-    displayName,
-    givenName,
-    familyName,
-    businessName,
-  }: ProfileCtorArgs) => {
+  }: ProfileParams) => {
     return displayName
       ? displayName
       : businessName
@@ -63,8 +42,31 @@ export class Profile implements ProfileType {
       ? `${givenName}${familyName ? ` ${familyName}` : ""}`
       : handle;
   };
+
+  static readonly createProfile = (params: ProfileParams) => new Profile(params);
+
+  constructor({
+    handle,
+    displayName,
+    givenName,
+    familyName,
+    businessName,
+    photoUrl,
+  }: ProfileParams) {
+    if (givenName) this.givenName = givenName;
+    if (familyName) this.familyName = familyName;
+    if (businessName) this.businessName = businessName;
+    if (photoUrl) this.photoUrl = photoUrl;
+
+    this.displayName = Profile.getDisplayNameFromArgs({
+      handle,
+      displayName,
+      givenName,
+      familyName,
+      businessName,
+    });
+  }
 }
 
-export type ProfileCtorArgs = Partial<ProfileType> & {
-  handle: FixitUser["handle"];
-};
+/** The parameters that go into creating a new `Profile` object. */
+export type ProfileParams = Partial<NullableProfile> & Pick<FixitUser, "handle">;

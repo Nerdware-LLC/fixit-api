@@ -2,7 +2,7 @@ import moment from "moment";
 import { USER_ID_REGEX } from "@models/User/regex";
 import { UserStripeConnectAccount } from "./UserStripeConnectAccount";
 import { STRIPE_CONNECT_ACCOUNT_SK_REGEX, STRIPE_CONNECT_ACCOUNT_STRIPE_ID_REGEX } from "./regex";
-import type { UserStripeConnectAccountType } from "@types";
+import type { UserStripeConnectAccountModelItem } from "@types";
 
 const MOCK_INPUTS = {
   USER_A: {
@@ -25,7 +25,7 @@ const MOCK_INPUTS = {
 // This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
 const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<keyof typeof MOCK_INPUTS>;
 
-const testUserFields = (mockUserSCA: UserStripeConnectAccountType) => {
+const testUserFields = (mockUserSCA: UserStripeConnectAccountModelItem) => {
   expect(mockUserSCA.userID).toMatch(USER_ID_REGEX);
   expect(mockUserSCA.sk).toMatch(STRIPE_CONNECT_ACCOUNT_SK_REGEX);
   expect(mockUserSCA.id).toMatch(STRIPE_CONNECT_ACCOUNT_STRIPE_ID_REGEX);

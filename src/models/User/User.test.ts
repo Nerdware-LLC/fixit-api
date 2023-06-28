@@ -1,8 +1,6 @@
 import { normalizeInput, prettifyStr } from "@utils";
-import { User } from "./User";
+import { User, type UserModelItem } from "./User";
 import { USER_ID_REGEX, USER_SK_REGEX, USER_STRIPE_CUSTOMER_ID_REGEX } from "./regex";
-import type { UserType } from "@types";
-import type { Simplify } from "type-fest";
 
 const MOCK_INPUTS = {
   USER_A: {
@@ -31,7 +29,10 @@ const MOCK_INPUTS = {
 // This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
 const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<keyof typeof MOCK_INPUTS>;
 
-const testUserFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockUser: UserType) => {
+const testUserFields = (
+  mockInputsKey: keyof typeof MOCK_INPUTS,
+  mockUser: Partial<UserModelItem>
+) => {
   const mockUserInputs = MOCK_INPUTS[mockInputsKey];
 
   expect(mockUser.id).toMatch(USER_ID_REGEX);
@@ -46,7 +47,7 @@ const testUserFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockUser: UserT
     expect(mockUser?.profile).toBeUndefined();
     expect(mockUser.login).toMatchObject({
       type: "LOCAL",
-      passwordHash: expect.stringMatching(/\S{30,}/i),
+      passwordHash: expect.stringMatching(/\S{30,}/i) as unknown,
     });
   } else if (mockUserInputs === MOCK_INPUTS.USER_B) {
     expect(mockUser.profile).toMatchObject(MOCK_INPUTS.USER_B.profile);
@@ -59,8 +60,8 @@ const testUserFields = (mockInputsKey: keyof typeof MOCK_INPUTS, mockUser: UserT
 };
 
 describe("User model R/W database operations", () => {
-  let createdUsers = {} as {
-    -readonly [K in keyof typeof MOCK_INPUTS]: Simplify<UserType & { sk: string }>;
+  const createdUsers = {} as {
+    -readonly [K in keyof typeof MOCK_INPUTS]: Partial<UserModelItem>;
   };
 
   beforeAll(async () => {
@@ -76,25 +77,36 @@ describe("User model R/W database operations", () => {
     });
   });
 
-  test("User.getUserByID returns expected keys and values", async () => {
+  test("User.getItem returns expected keys and values", async () => {
     for (const key of MOCK_INPUT_KEYS) {
-      const result = await User.getUserByID(createdUsers[key].id);
-      testUserFields(key, result);
+      const createdByUserID = createdUsers[key].id || "";
+
+      const result = await User.getItem({
+        id: createdByUserID,
+        sk: User.getFormattedSK(createdByUserID),
+      });
+
+      testUserFields(key, result as UserModelItem);
     }
   });
 
-  test("User.batchGetUsersByID returns expected keys and values", async () => {
-    const users = await User.batchGetUsersByID([createdUsers.USER_A!.id, createdUsers.USER_B!.id]);
+  test("User.batchGetItems returns expected keys and values", async () => {
+    const users = await User.batchGetItems(
+      [createdUsers.USER_A.id || "", createdUsers.USER_B.id || ""].map((userID) => ({
+        id: userID,
+        sk: User.getFormattedSK(userID),
+      }))
+    );
 
     users.forEach((user) => {
       testUserFields(user.id === createdUsers.USER_A.id ? "USER_A" : "USER_B", user);
     });
   });
 
-  test("User.queryUserByEmail returns expected keys and values", async () => {
+  test("User.query User by email returns expected keys and values", async () => {
     for (const key of MOCK_INPUT_KEYS) {
       // Get mock Users by email
-      const result = await User.queryUserByEmail(MOCK_INPUTS[key].email);
+      const [result] = await User.query({ where: { email: MOCK_INPUTS[key].email }, limit: 1 });
       testUserFields(key, result);
     }
   });
@@ -105,10 +117,10 @@ describe("User model R/W database operations", () => {
 
   test("User.deleteItem returns expected keys and values", async () => {
     for (const key of MOCK_INPUT_KEYS) {
-      const { id, sk } = createdUsers[key];
-      const { id: deletedUserID } = await User.deleteItem({ id, sk });
+      const { id = "", sk = "" } = createdUsers[key];
+      const deletedUserItem = await User.deleteItem({ id, sk });
       // If deleteItem did not error out, the delete succeeded, check ID.
-      expect(deletedUserID).toEqual(id);
+      expect(deletedUserItem?.id).toEqual(id);
     }
   });
 });
@@ -125,6 +137,8 @@ afterAll(async () => {
   });
 
   if (Array.isArray(remainingMockUsers) && remainingMockUsers.length > 0) {
-    await User.ddbClient.batchDeleteItems(remainingMockUsers.map(({ pk, sk }) => ({ pk, sk })));
+    await User.ddbClient.batchDeleteItems(
+      remainingMockUsers.map(({ pk, sk }) => ({ pk: pk as string, sk: sk as string }))
+    );
   }
 });

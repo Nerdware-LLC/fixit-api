@@ -1,16 +1,16 @@
 import merge from "lodash.merge";
 import { eventEmitter } from "@events/eventEmitter";
-import type { Model } from "@lib/dynamoDB";
-import type { WorkOrderType } from "@types";
+import { WorkOrder, type WorkOrderModelItem, type WorkOrderModelInput } from "@models/WorkOrder";
+import type { PartialDeep } from "type-fest";
 
 export const updateOne = async function (
-  this: InstanceType<typeof Model>,
-  existingWO: WorkOrderType,
-  newWorkOrderFields: Partial<WorkOrderType>
+  this: typeof WorkOrder,
+  existingWO: WorkOrderModelItem,
+  newWorkOrderFields: PartialDeep<WorkOrderModelInput>
 ) {
   const updateWorkOrderResult = await this.updateItem(
     {
-      createdByUserID: existingWO.createdByUserID,
+      createdByUserID: existingWO.createdBy.id,
       id: existingWO.id,
     },
     newWorkOrderFields
@@ -27,5 +27,5 @@ export const updateOne = async function (
 
   emitEventFn(updatedWO, existingWO);
 
-  return updatedWO as WorkOrderType;
+  return updatedWO;
 };

@@ -1,69 +1,27 @@
-import moment from "moment";
 import { eventEmitter } from "@events";
-import { WorkOrder } from "./WorkOrder";
-import type { Model } from "@lib/dynamoDB";
-import type { WorkOrderType } from "@types";
+import { WorkOrder, type WorkOrderModelInput } from "./WorkOrder";
+import type { SetOptional } from "type-fest";
 
-// function, not arrow, bc we need "this" to be the WorkOrder model
+/**
+ * WorkOrder.createOne function (not arrow, bc `this` must be WorkOrder model)
+ */
 export const createOne = async function (
-  this: InstanceType<typeof Model>,
+  this: typeof WorkOrder,
   {
-    createdByUserID,
-    assignedToUserID = "UNASSIGNED", // <-- Default placeholder, since "data" Attr is required
-    priority,
-    location,
-    category,
-    description,
-    checklist,
-    dueDate,
-    entryContact,
-    entryContactPhone,
-    scheduledDateTime,
-  }: CreateWorkOrderInput
+    assignedToUserID = "UNASSIGNED", // <-- Default placeholder, since "data" is an index-pk
+    ...workOrderInputs
+  }: SetOptional<WorkOrderModelInput, "assignedToUserID" | "status">
 ) {
   /* Create WorkOrder via model.create, which unlike item.save will not
   overwrite an existing item. newWorkOrder is re-assigned to the return
   value to capture "createdAt" and "updatedAt" generated fields.     */
   const newWorkOrder = await this.createItem({
-    createdByUserID,
     assignedToUserID,
-    status: assignedToUserID === "UNASSIGNED" ? "UNASSIGNED" : "ASSIGNED",
-    priority,
-    location,
-    category,
-    description,
-    dueDate,
-    entryContact,
-    entryContactPhone,
-    scheduledDateTime,
-    ...(checklist && {
-      checklist: checklist.map((checklistItem) => ({
-        ...checklistItem,
-        id: `WO#${createdByUserID}#${moment().unix()}`,
-        isCompleted: false,
-      })),
-    }),
+    status: assignedToUserID === "UNASSIGNED" ? "UNASSIGNED" : "ASSIGNED", // <-- Default status
+    ...workOrderInputs,
   });
 
   eventEmitter.emitWorkOrderCreated(newWorkOrder);
 
-  return newWorkOrder as WorkOrderType;
+  return newWorkOrder;
 };
-
-type CreateWorkOrderInput = Readonly<
-  Omit<
-    WorkOrderType,
-    | "id"
-    | "assignedToUserID"
-    | "status"
-    | "priority"
-    | "checklist"
-    | "contractorNotes"
-    | "updatedAt"
-    | "createdAt"
-  > & {
-    assignedToUserID?: string | null;
-    priority?: (typeof WorkOrder.PRIORITIES)[number]; // <-- required in base type
-    checklist?: ReadonlyArray<{ description: string }>;
-  }
->;

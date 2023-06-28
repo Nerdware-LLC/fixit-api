@@ -1,146 +1,153 @@
-import { ddbSingleTable, Model, type ModelSchemaOptions } from "@lib/dynamoDB";
+import moment from "moment";
+import { Model, type ItemTypeFromSchema } from "@lib/dynamoDB";
 import { USER_ID_REGEX } from "@models/User";
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@models/_common";
+import { ddbSingleTable } from "@models/ddbSingleTable";
 import { ENV } from "@server/env";
+import { hasKey } from "@utils";
 import { normalizeStripeFields } from "./normalizeStripeFields";
-import { USER_SUBSCRIPTION_SK_REGEX, USER_SUB_STRIPE_ID_REGEX } from "./regex";
+import {
+  USER_SUBSCRIPTION_SK_PREFIX_STR as SUB_SK_PREFIX,
+  USER_SUBSCRIPTION_SK_REGEX as SUB_SK_REGEX,
+  USER_SUB_STRIPE_ID_REGEX as SUB_ID_REGEX,
+} from "./regex";
 import { updateOne } from "./updateOne";
 import { upsertOne } from "./upsertOne";
-import { SUBSCRIPTION_STATUSES, validateExisting } from "./validateExisting";
-import type { UserSubscriptionType } from "@types";
-
-const {
-  FIXIT_SUBSCRIPTION: { productID, priceIDs, promoCodes },
-} = ENV.STRIPE.BILLING;
+import { validateExisting, SUBSCRIPTION_STATUS_METADATA } from "./validateExisting";
+import type { SubscriptionStatus } from "@types";
 
 /**
- * UserSubscription Model Methods:
- * @method `normalizeStripeFields()`
- * @method `validateExisting()`
- * @method `queryUserSubscriptions()`
+ * UserSubscription DdbSingleTable Model
  */
 class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
+  static readonly PRODUCT_IDS = { FIXIT_SUBSCRIPTION: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.productID }; // prettier-ignore
+  static readonly PRICE_IDS = ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.priceIDs;
+  static readonly PROMO_CODES = ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.promoCodes;
+  static readonly SK_PREFIX = SUB_SK_PREFIX;
+
+  static readonly getFormattedSK = (userID: string, createdAt: Date) => {
+    return `${SUB_SK_PREFIX}#${userID}#${moment(createdAt).unix()}`;
+  };
+
+  static readonly normalizeStripeFields = normalizeStripeFields;
+
   static readonly schema = {
     pk: {
       type: "string",
       alias: "userID",
       validate: (value: string) => USER_ID_REGEX.test(value),
-      isHashKey: true,
       required: true,
     },
     sk: {
       type: "string",
-      validate: (value: string) => USER_SUBSCRIPTION_SK_REGEX.test(value),
-      isRangeKey: true,
+      default: (subItem: { pk: string; createdAt: Date }) => UserSubscriptionModel.getFormattedSK(subItem.pk, subItem.createdAt), // prettier-ignore
+      validate: (value: string) => SUB_SK_REGEX.test(value),
       required: true,
-      index: {
-        // For relational queryies using "sk" as the hash key
-        name: "Overloaded_SK_GSI",
-        global: true,
-        rangeKey: "data",
-        project: true,
-      },
     },
     data: {
       type: "string",
-      alias: "id",
-      validate: (value: string) => USER_SUB_STRIPE_ID_REGEX.test(value), // Example Stripe sub id: "sub_1M55RlC34C0mN67JGYSD4btX"
+      alias: "id", // Sub IDs comes from Stripe
+      validate: (value: string) => SUB_ID_REGEX.test(value),
       required: true,
-      index: {
-        // For relational queries using "data" as the hash key
-        name: "Overloaded_Data_GSI",
-        global: true,
-        rangeKey: "sk",
-        project: true,
-      },
     },
     currentPeriodEnd: {
-      ...COMMON_ATTRIBUTE_TYPES.DATETIME, // TODO Make sure client gets a NUMBER, unix time in milliseconds (not a Date object)
+      ...COMMON_ATTRIBUTE_TYPES.DATETIME,
       required: true,
     },
     productID: {
       type: "string",
       required: true,
       validate: (value: string) => Object.values(UserSubscriptionModel.PRODUCT_IDS).includes(value),
-      /* Fixit currently only uses 1 productID for its subscription, but more products
-      and tiers will be added in the future, so `validate` emulates "enum".         */
+      /* productID is not using type=enum at this time for two reasons:
+        1, PRODUCT_IDS is env-dependent and not "known" until runtime, and
+        2, Provided values may be either a key OR value from PRODUCT_IDS */
+      transformValue: {
+        // This toDB allows the value to be an actual product-id OR a key from PRODUCT_IDS
+        toDB: (value: string) =>
+          hasKey(UserSubscriptionModel.PRODUCT_IDS, value)
+            ? (UserSubscriptionModel.PRODUCT_IDS[value] as string)
+            : value,
+      },
     },
     priceID: {
       type: "string",
       required: true,
       validate: (value: string) => Object.values(UserSubscriptionModel.PRICE_IDS).includes(value),
+      /* priceID is not using type=enum at this time for two reasons:
+        1, PRICE_IDS is env-dependent and not "known" until runtime, and
+        2, Provided values may be either a key OR value from PRICE_IDS */
+      transformValue: {
+        // This toDB allows the value to be an actual price-id OR a key from PRICE_IDS
+        toDB: (value: string) =>
+          hasKey(UserSubscriptionModel.PRICE_IDS, value)
+            ? (UserSubscriptionModel.PRICE_IDS[value] as string)
+            : value,
+      },
     },
     status: {
-      type: "string",
+      type: "enum",
+      oneOf: Object.keys(SUBSCRIPTION_STATUS_METADATA) as ReadonlyArray<SubscriptionStatus>,
       required: true,
-      validate: (value: string) => Object.keys(SUBSCRIPTION_STATUSES).includes(value),
     },
-    // "createdAt" and "updatedAt"
-    ...COMMON_ATTRIBUTES.TIMESTAMPS,
+    ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
   } as const;
 
-  static readonly schemaOptions: ModelSchemaOptions = {
-    transformItem: {
-      toDB: (userSubItem) => ({
-        ...userSubItem,
-        // prettier-ignore
-        sk: `SUBSCRIPTION#${userSubItem.pk}#${Math.floor(new Date(userSubItem.createdAt).getTime() / 1000)}`,
-      }),
-    },
-  };
-
-  static readonly PRODUCT_IDS = { FIXIT_SUBSCRIPTION: productID };
-  static readonly PRICE_IDS = priceIDs;
-  static readonly PROMO_CODES = promoCodes;
-
   constructor() {
-    // prettier-ignore
-    super(ddbSingleTable, "UserSubscription", UserSubscriptionModel.schema, UserSubscriptionModel.schemaOptions);
+    super("UserSubscription", UserSubscriptionModel.schema, ddbSingleTable);
   }
 
   // USER SUBSCRIPTION MODEL — Instance property getters
   // The below getters allow static enums to be read from the model instance (for convenience)
 
-  get PRODUCT_IDS() {
-    return UserSubscriptionModel.PRODUCT_IDS;
-  }
-  get PRICE_IDS() {
-    return UserSubscriptionModel.PRICE_IDS;
-  }
-  get PROMO_CODES() {
-    return UserSubscriptionModel.PROMO_CODES;
-  }
+  readonly PRODUCT_IDS = UserSubscriptionModel.PRODUCT_IDS;
+  readonly PRICE_IDS = UserSubscriptionModel.PRICE_IDS;
+  readonly PROMO_CODES = UserSubscriptionModel.PROMO_CODES;
+  readonly SK_PREFIX = UserSubscriptionModel.SK_PREFIX;
 
   // USER SUBSCRIPTION MODEL — Instance methods:
 
-  // TODO Add test for this method
+  readonly getFormattedSK = UserSubscriptionModel.getFormattedSK;
+  readonly normalizeStripeFields = UserSubscriptionModel.normalizeStripeFields;
   readonly updateOne = updateOne;
-
   readonly upsertOne = upsertOne;
-
-  readonly normalizeStripeFields = normalizeStripeFields; // <-- utility for normalizing sub objects returned from Stripe API
-
   readonly validateExisting = validateExisting;
 
-  // TODO Add test for this method
   readonly queryBySubscriptionID = async (subID: string) => {
     const [userSubscription] = await this.query({
-      IndexName: "Overloaded_Data_GSI",
-      KeyConditionExpression: "#subID = :subID AND begins_with(sk, :skPrefix)",
-      ExpressionAttributeNames: { "#subID": "data" },
-      ExpressionAttributeValues: { ":subID": subID, ":skPrefix": "SUBSCRIPTION#" },
+      where: {
+        id: subID,
+        sk: { beginsWith: this.SK_PREFIX },
+      },
+      // IndexName: DDB_INDEXES.Overloaded_Data_GSI.name,
+      // KeyConditionExpression: "#subID = :subID AND begins_with(sk, :subSKprefix)",
+      // ExpressionAttributeNames: {
+      //   "#subID": DDB_INDEXES.Overloaded_Data_GSI.primaryKey,
+      // },
+      // ExpressionAttributeValues: {
+      //   ":subID": subID,
+      //   ":subSKprefix": `${SUB_SK_PREFIX}#`,
+      // },
       Limit: 1,
     });
-
-    return userSubscription as Required<UserSubscriptionType>;
+    return userSubscription;
   };
 
   readonly queryUserSubscriptions = async (userID: string) => {
-    return (await this.query({
-      KeyConditionExpression: "pk = :userID AND begins_with(sk, :skPrefix)",
-      ExpressionAttributeValues: { ":userID": userID, ":skPrefix": "SUBSCRIPTION#" },
-    })) as Array<UserSubscriptionType>;
+    return await this.query({
+      where: {
+        userID,
+        sk: { beginsWith: this.SK_PREFIX },
+      },
+      // KeyConditionExpression: "pk = :userID AND begins_with(sk, :subSKprefix)",
+      // ExpressionAttributeValues: {
+      //   ":userID": userID,
+      //   ":subSKprefix": `${SUB_SK_PREFIX}#`,
+      // },
+    });
   };
 }
 
 export const UserSubscription = new UserSubscriptionModel();
+
+export type UserSubscriptionModelItem = ItemTypeFromSchema<typeof UserSubscriptionModel.schema>;
+export type UserSubscriptionPriceLabels = keyof typeof UserSubscriptionModel.PRICE_IDS;

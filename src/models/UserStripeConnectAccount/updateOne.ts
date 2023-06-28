@@ -1,20 +1,30 @@
-import type { Model } from "@lib/dynamoDB";
-import type { UserStripeConnectAccountType, UserStripeConnectAccountMutableFields } from "@types";
+import {
+  UserStripeConnectAccount,
+  STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR as SK_PREFIX,
+  type UserStripeConnectAccountModelItem,
+} from "@models/UserStripeConnectAccount";
 
-// function, not arrow, bc we need "this" to be the UserStripeConnectAccount model
+/**
+ * This method updates a `UserStripeConnectAccount` item in both the DB and
+ * Stripe's API (via `stripe.accounts.create`).
+ *
+ * Note: this function does not use arrow syntax because `this` is the
+ * UserStripeConnectAccount Model.
+ */
 export const updateOne = async function (
-  this: InstanceType<typeof Model>,
-  existingUserStripeConnectAccount: {
-    userID: UserStripeConnectAccountType["userID"];
-  },
-  mutableFieldsToUpdate: UserStripeConnectAccountMutableFields
+  this: typeof UserStripeConnectAccount,
+  /** An existing UserStripeConnectAccount object */
+  { userID }: Pick<UserStripeConnectAccountModelItem, "userID">,
+  mutableFieldsToUpdate: Partial<
+    Pick<
+      UserStripeConnectAccountModelItem,
+      "detailsSubmitted" | "chargesEnabled" | "payoutsEnabled"
+    >
+  >
 ) {
   // Update UserStripeConnectAccount in DynamoDB
   return await this.updateItem(
-    {
-      userID: existingUserStripeConnectAccount.userID,
-      sk: `STRIPE_CONNECT_ACCOUNT#${existingUserStripeConnectAccount.userID}`,
-    },
+    { userID, sk: `${SK_PREFIX}#${userID}` },
     mutableFieldsToUpdate // <-- detailsSubmitted, chargesEnabled, and/or payoutsEnabled
   );
 };
