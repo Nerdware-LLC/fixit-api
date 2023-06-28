@@ -10,9 +10,13 @@ export class UserInputError extends CustomHttpErrorAbstractClass {
   statusCode: number;
 
   public static readonly STATUS_CODE = 400;
+  public static readonly DEFAULT_MSG = "Invalid user input";
 
-  constructor(message = "Invalid user input") {
-    super(message);
+  constructor(message?: unknown) {
+    const messageStr: string =
+      typeof message === "string" && message.length > 0 ? message : UserInputError.DEFAULT_MSG;
+
+    super(messageStr);
     this.name = "UserInputError";
     this.status = UserInputError.STATUS_CODE;
     this.statusCode = this.status;
@@ -33,13 +37,16 @@ export class GqlUserInputError extends GraphQLError {
 
   public static readonly STATUS_CODE = UserInputError.STATUS_CODE;
 
-  constructor(message = "Invalid user input", opts: Gql400ErrorOptsWithInvalidArgsKey = {}) {
+  constructor(message?: unknown, opts: Gql400ErrorOptsWithInvalidArgsKey = {}) {
+    const messageStr: string =
+      typeof message === "string" && message.length > 0 ? message : UserInputError.DEFAULT_MSG;
+
     super(
-      message,
+      messageStr,
       merge(
         {
           extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT },
-          originalError: new UserInputError(message),
+          originalError: new UserInputError(messageStr),
         },
         opts
       )

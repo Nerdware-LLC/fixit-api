@@ -9,9 +9,13 @@ export class ForbiddenError extends CustomHttpErrorAbstractClass {
   statusCode: number;
 
   public static readonly STATUS_CODE = 403;
+  public static readonly DEFAULT_MSG = "Forbidden";
 
-  constructor(message = "Forbidden") {
-    super(message);
+  constructor(message?: unknown) {
+    const messageStr: string =
+      typeof message === "string" && message.length > 0 ? message : ForbiddenError.DEFAULT_MSG;
+
+    super(messageStr);
     this.name = "ForbiddenError";
     this.status = ForbiddenError.STATUS_CODE;
     this.statusCode = this.status;
@@ -23,13 +27,16 @@ export class GqlForbiddenError extends GraphQLError {
 
   public static readonly STATUS_CODE = ForbiddenError.STATUS_CODE;
 
-  constructor(message = "Forbidden", opts: GraphQLErrorOptions = {}) {
+  constructor(message?: unknown, opts: GraphQLErrorOptions = {}) {
+    const messageStr: string =
+      typeof message === "string" && message.length > 0 ? message : ForbiddenError.DEFAULT_MSG;
+
     super(
-      message,
+      messageStr,
       merge(
         {
           extensions: { code: "FORBIDDEN" },
-          originalError: new ForbiddenError(message),
+          originalError: new ForbiddenError(messageStr),
         },
         opts
       )

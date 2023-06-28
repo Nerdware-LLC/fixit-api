@@ -8,10 +8,12 @@ export abstract class CustomHttpErrorAbstractClass extends Error {
   abstract status: number;
   abstract statusCode?: number;
 
-  constructor(message = "An unknown error occurred") {
-    super(message);
+  constructor(message?: unknown) {
+    super(
+      typeof message === "string" && message.length > 0 ? message : "An unknown error occurred"
+    );
 
-    // Set the prototype explicitly.
+    // Explicitly set the prototype
     Object.setPrototypeOf(this, CustomHttpErrorAbstractClass.prototype);
 
     if (!ENV.IS_PROD) Error.captureStackTrace(this, CustomHttpErrorAbstractClass);

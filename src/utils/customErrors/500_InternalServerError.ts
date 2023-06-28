@@ -10,9 +10,13 @@ export class InternalServerError extends CustomHttpErrorAbstractClass {
   statusCode: number;
 
   public static readonly STATUS_CODE = 500;
+  public static readonly DEFAULT_MSG = "An unexpected error occurred";
 
-  constructor(message = "An unexpected error occurred") {
-    super(message);
+  constructor(message?: unknown) {
+    const messageStr: string =
+      typeof message === "string" && message.length > 0 ? message : InternalServerError.DEFAULT_MSG;
+
+    super(messageStr);
     this.name = "InternalServerError";
     this.status = InternalServerError.STATUS_CODE;
     this.statusCode = this.status;
@@ -24,13 +28,16 @@ export class GqlInternalServerError extends GraphQLError {
 
   public static readonly STATUS_CODE = InternalServerError.STATUS_CODE;
 
-  constructor(message = "An unexpected error occurred", opts: GraphQLErrorOptions = {}) {
+  constructor(message?: unknown, opts: GraphQLErrorOptions = {}) {
+    const messageStr: string =
+      typeof message === "string" && message.length > 0 ? message : InternalServerError.DEFAULT_MSG;
+
     super(
-      message,
+      messageStr,
       merge(
         {
           extensions: { code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR },
-          originalError: new InternalServerError(message),
+          originalError: new InternalServerError(messageStr),
         },
         opts
       )

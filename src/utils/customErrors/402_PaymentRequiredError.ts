@@ -9,9 +9,15 @@ export class PaymentRequiredError extends CustomHttpErrorAbstractClass {
   statusCode: number;
 
   public static readonly STATUS_CODE = 402;
+  public static readonly DEFAULT_MSG = "Payment required";
 
-  constructor(message = "Payment required") {
-    super(message);
+  constructor(message?: unknown) {
+    const messageStr: string =
+      typeof message === "string" && message.length > 0
+        ? message
+        : PaymentRequiredError.DEFAULT_MSG;
+
+    super(messageStr);
     this.name = "PaymentRequiredError";
     this.status = PaymentRequiredError.STATUS_CODE;
     this.statusCode = this.status;
@@ -23,13 +29,18 @@ export class GqlPaymentRequiredError extends GraphQLError {
 
   public static readonly STATUS_CODE = PaymentRequiredError.STATUS_CODE;
 
-  constructor(message = "Payment required", opts: GraphQLErrorOptions = {}) {
+  constructor(message?: unknown, opts: GraphQLErrorOptions = {}) {
+    const messageStr: string =
+      typeof message === "string" && message.length > 0
+        ? message
+        : PaymentRequiredError.DEFAULT_MSG;
+
     super(
-      message,
+      messageStr,
       merge(
         {
           extensions: { code: "PAYMENT_REQUIRED" },
-          originalError: new PaymentRequiredError(message),
+          originalError: new PaymentRequiredError(messageStr),
         },
         opts
       )
