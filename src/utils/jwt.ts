@@ -3,16 +3,27 @@ import { ENV } from "@server/env";
 
 export const validateAndDecodeJWT = async (token: string): Promise<FixitApiJwtPayload> => {
   return new Promise((resolve, reject) => {
-    jwt.verify(token, JWT_PRIVATE_KEY, JWT_VERIFICATION_PARAMS, (err, decoded) => {
-      if (err || !decoded) reject(new Error("Invalid token."));
-      resolve(decoded as FixitApiJwtPayload);
-    });
+    jwt.verify(
+      token,
+      JWT_PRIVATE_KEY,
+      {
+        ...SHARED_JWT_PARAMS,
+        algorithms: ["HS256"],
+        maxAge: "10h",
+      },
+      (err, decoded) => {
+        if (err || !decoded) reject(new Error("Invalid token."));
+        resolve(decoded as FixitApiJwtPayload);
+      }
+    );
   });
 };
 
 export const signAndEncodeJWT = (payload: FixitApiJwtPayload) => {
   return jwt.sign(payload, JWT_PRIVATE_KEY, {
-    ...JWT_SIGNING_PARAMS,
+    ...SHARED_JWT_PARAMS,
+    algorithm: "HS256",
+    expiresIn: "10h",
     subject: `${payload.id}`,
   });
 };
@@ -22,22 +33,10 @@ const {
   SECURITY: { JWT_PRIVATE_KEY },
 } = ENV;
 
+/** JWT params used for both signing and verifying tokens. */
 const SHARED_JWT_PARAMS = {
   audience: API_FULL_URL,
   issuer: "fixit",
-};
-
-const JWT_SIGNING_PARAMS: jwt.SignOptions = {
-  ...SHARED_JWT_PARAMS,
-  algorithm: "HS256",
-  expiresIn: "10h",
-  // subject is payload-dependent
-};
-
-const JWT_VERIFICATION_PARAMS: jwt.VerifyOptions = {
-  ...SHARED_JWT_PARAMS,
-  algorithms: ["HS256"],
-  maxAge: "10h",
 };
 
 export const INTERNAL_JWT_PAYLOAD_FIELDS: ReadonlyArray<keyof jwt.JwtPayload> = Object.freeze(
