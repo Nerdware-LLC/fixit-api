@@ -1,5 +1,5 @@
 import { PushNotification } from "./_PushNotification";
-import type { InternalDbWorkOrder } from "@types";
+import type { WorkOrderModelItem } from "@models/WorkOrder";
 
 export class WorkOrderPushNotification extends PushNotification {
   static PUSH_EVENTS = {
@@ -32,7 +32,7 @@ export class WorkOrderPushNotification extends PushNotification {
   }: {
     pushEventName: WorkOrderPushNotificationEventName;
     recipientUser: { id: string; expoPushToken?: string };
-    workOrder: InternalDbWorkOrder;
+    workOrder: WorkOrderModelItem;
   }) {
     super({
       pushEventName,

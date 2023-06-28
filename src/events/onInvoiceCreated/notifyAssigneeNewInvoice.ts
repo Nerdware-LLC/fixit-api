@@ -1,12 +1,17 @@
 import { InvoicePushNotification } from "@events/pushNotifications";
 import { lambdaClient } from "@lib/lambdaClient";
 import { User } from "@models";
-import type { InternalDbInvoice } from "@types";
+import type { InvoiceModelItem } from "@models/Invoice";
 
-export const notifyAssigneeNewInvoice = async (newInvoice: InternalDbInvoice) => {
-  const { assignedToUserID } = newInvoice;
+export const notifyAssigneeNewInvoice = async (newInvoice: InvoiceModelItem) => {
+  const {
+    assignedTo: { id: assignedToUserID },
+  } = newInvoice;
 
-  const assigneeUser = await User.getUserByID(assignedToUserID);
+  const assigneeUser = await User.getItem({
+    id: assignedToUserID,
+    sk: User.getFormattedSK(assignedToUserID),
+  });
 
   // If assignee does not currently have a registered pushToken, return.
   if (!assigneeUser?.expoPushToken) return;

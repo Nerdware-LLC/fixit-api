@@ -1,5 +1,5 @@
 import { PushNotification } from "./_PushNotification";
-import type { InternalDbInvoice } from "@types";
+import type { InvoiceModelItem } from "@models/Invoice";
 
 export class InvoicePushNotification extends PushNotification {
   static PUSH_EVENTS = {
@@ -28,7 +28,7 @@ export class InvoicePushNotification extends PushNotification {
   }: {
     pushEventName: InvoicePushNotificationEventName;
     recipientUser: { id: string; expoPushToken?: string };
-    invoice: InternalDbInvoice;
+    invoice: InvoiceModelItem;
   }) {
     super({
       pushEventName,

@@ -1,7 +1,7 @@
 import { WorkOrderPushNotification } from "@events/pushNotifications";
 import { lambdaClient } from "@lib/lambdaClient";
 import { User } from "@models";
-import type { InternalDbWorkOrder } from "@types";
+import type { WorkOrderModelItem } from "@models/WorkOrder";
 
 /**
  * After a WorkOrder is updated by the User who created it, this event handler
@@ -29,41 +29,41 @@ import type { InternalDbWorkOrder } from "@types";
  * |      Yes      |      Yes      |       No       | Notify previous: UNASSIGNMENT, AND Notify new: ASSIGNMENT |
  */
 export const notifyAssigneeUpdatedWO = async (
-  currentWOstate: InternalDbWorkOrder,
-  prevWOstate: InternalDbWorkOrder
+  currentWOstate: WorkOrderModelItem,
+  prevWOstate: WorkOrderModelItem
 ) => {
   const pushNotificationsToSend = [];
 
-  const { assignedToUserID: currentAssignedToUserID } = currentWOstate;
-  const { assignedToUserID: prevAssignedToUserID } = prevWOstate;
+  const { assignedTo: currentAssignedTo } = currentWOstate;
+  const { assignedTo: prevAssignedTo } = prevWOstate;
 
   /* If the current and previous assignments are not the same, then
   the possible notifications to send are UNASSIGNED / ASSIGNED.  */
-  if (currentAssignedToUserID !== prevAssignedToUserID) {
-    !!prevAssignedToUserID &&
+  if (currentAssignedTo !== prevAssignedTo) {
+    !!prevAssignedTo &&
       pushNotificationsToSend.push(
         new WorkOrderPushNotification({
           pushEventName: "WorkOrderUnassigned",
-          recipientUser: { id: prevAssignedToUserID },
+          recipientUser: { id: prevAssignedTo.id },
           workOrder: prevWOstate,
         })
       );
 
-    !!currentAssignedToUserID &&
+    !!currentAssignedTo &&
       pushNotificationsToSend.push(
         new WorkOrderPushNotification({
           pushEventName: "WorkOrderAssigned",
-          recipientUser: { id: currentAssignedToUserID },
+          recipientUser: { id: currentAssignedTo.id },
           workOrder: currentWOstate,
         })
       );
 
     // If there's been no re-assignment, see if an UPDATE notification needs to be sent
-  } else if (currentAssignedToUserID) {
+  } else if (currentAssignedTo) {
     pushNotificationsToSend.push(
       new WorkOrderPushNotification({
         pushEventName: "WorkOrderUpdated",
-        recipientUser: { id: currentAssignedToUserID },
+        recipientUser: { id: currentAssignedTo.id },
         workOrder: currentWOstate,
       })
     );
@@ -71,8 +71,11 @@ export const notifyAssigneeUpdatedWO = async (
 
   if (pushNotificationsToSend.length > 0) {
     // Get the users push notification tokens
-    const usersToNotify = await User.batchGetUsersByID(
-      pushNotificationsToSend.map(({ data }) => data._recipientUser)
+    const usersToNotify = await User.batchGetItems(
+      pushNotificationsToSend.map(({ data }) => ({
+        id: data._recipientUser,
+        sk: User.getFormattedSK(data._recipientUser),
+      }))
     );
 
     // Remove push notifications for users without valid push tokens (bad tokens are rm'd by push service).
@@ -81,7 +84,7 @@ export const notifyAssigneeUpdatedWO = async (
       const user = usersToNotify.find((user) => user.id === pushMsgObj.data._recipientUser);
 
       // If the User has a valid push token, add it to pushMsgObj, else msg must be discarded.
-      if (!!user?.expoPushToken) {
+      if (user?.expoPushToken) {
         accum.push({
           to: user.expoPushToken,
           ...pushMsgObj,

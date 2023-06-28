@@ -1,15 +1,18 @@
 import { WorkOrderPushNotification } from "@events/pushNotifications";
 import { lambdaClient } from "@lib/lambdaClient";
 import { User } from "@models";
-import type { InternalDbWorkOrder } from "@types";
+import type { WorkOrderModelItem } from "@models/WorkOrder";
 
-export const notifyAssigneeCancelledWO = async (cancelledWO: InternalDbWorkOrder) => {
-  const { assignedToUserID } = cancelledWO;
+export const notifyAssigneeCancelledWO = async (cancelledWO: WorkOrderModelItem) => {
+  const { assignedTo } = cancelledWO;
 
   // If new WorkOrder was UNASSIGNED, return.
-  if (!assignedToUserID) return;
+  if (!assignedTo) return;
 
-  const assigneeUser = await User.getUserByID(assignedToUserID);
+  const assigneeUser = await User.getItem({
+    id: assignedTo.id,
+    sk: User.getFormattedSK(assignedTo.id),
+  });
 
   // If assignee does not currently have a registered pushToken, return.
   if (!assigneeUser?.expoPushToken) return;
@@ -18,7 +21,7 @@ export const notifyAssigneeCancelledWO = async (cancelledWO: InternalDbWorkOrder
     new WorkOrderPushNotification({
       pushEventName: "WorkOrderCancelled",
       recipientUser: {
-        id: assignedToUserID,
+        id: assignedTo.id,
         expoPushToken: assigneeUser.expoPushToken,
       },
       workOrder: cancelledWO,
