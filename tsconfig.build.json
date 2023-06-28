@@ -1,5 +1,9 @@
 {
   "extends": "./tsconfig.json",
-  // Exclude test files
-  "exclude": ["src/**/*.test.ts", "src/**/*.test.js", "src/**/__tests__/**/*"]
+  // Exclude test files from build:
+  "exclude": ["src/**/*.{test,spec}.[tj]s", "src/**/__{tests,mocks}__/**/*"],
+  // Set "rootDir" to src (// TODO maybe rm this rootDir config)
+  "compilerOptions": {
+    "rootDir": "./src"
+  }
 }

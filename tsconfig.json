@@ -1,4 +1,12 @@
 {
+  "include": ["src/**/*"],
+  "ts-node": {
+    "files": true,
+    "esm": true,
+    "experimentalSpecifierResolution": "node",
+    "require": ["tsconfig-paths/register"]
+  },
+
   "compilerOptions": {
     // Language and Environment:
     "target": "ES2022",
@@ -8,7 +16,6 @@
     "module": "ES2022",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "rootDir": "./src",
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
@@ -39,6 +46,9 @@
     "removeComments": true,
     "sourceMap": true,
 
+    // Output Formatting:
+    "noErrorTruncation": true,
+
     // Interop Constraints:
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -46,13 +56,5 @@
     // Type Checking:
     "noImplicitAny": true,
     "strict": true
-  },
-  "include": ["src"],
-  "exclude": [".*/**/*", "node_modules", "build"],
-  "ts-node": {
-    "files": true,
-    "esm": true,
-    "experimentalSpecifierResolution": "node",
-    "require": ["tsconfig-paths/register"]
   }
 }
