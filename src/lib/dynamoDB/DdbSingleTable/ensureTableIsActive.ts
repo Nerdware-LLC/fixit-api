@@ -1,16 +1,18 @@
 import { logger } from "@utils/logger";
-import { DDBSingleTable } from "./DDBSingleTable";
-import { DDBSingleTableError } from "./customErrors";
-import type { SetNonNullable, SetRequired, Simplify } from "type-fest";
-import type { CreateTableCommandParameters } from "./types";
+import { DdbSingleTable } from "./DdbSingleTable";
+import { DdbSingleTableError } from "./utils";
+import type { SetNonNullable, SetRequired } from "type-fest";
+import type { TableKeysSchemaType, CreateTableOpts } from "./types";
 
-export const ensureTableIsActive = async function (this: InstanceType<typeof DDBSingleTable>) {
+export const ensureTableIsActive = async function <TableKeysSchema extends TableKeysSchemaType>(
+  this: InstanceType<typeof DdbSingleTable<TableKeysSchema>>
+) {
   // Skip execution if waitForActive is disabled or isTableActive was initialized as true.
   if (this.waitForActive.enabled !== true || this.isTableActive) return;
 
   // Start timeout timer that throws error if not cleared within the timeframe.
   const timeoutTimerID = setTimeout(() => {
-    throw new DDBSingleTableError(
+    throw new DdbSingleTableError(
       `ensureTableIsActive has timed out after ${this.waitForActive.timeout} seconds.`
     );
   }, this.waitForActive.timeout);
@@ -47,7 +49,7 @@ export const ensureTableIsActive = async function (this: InstanceType<typeof DDB
 
       // If Table doesn't exist AND tableConfigs.createIfNotExists != true, throw error.
       if (this.tableConfigs.createIfNotExists !== true) {
-        throw new DDBSingleTableError(
+        throw new DdbSingleTableError(
           `Invalid tableConfigs: createIfNotExists is "false" and Table does not exist.`
         );
       }
@@ -86,7 +88,7 @@ export const ensureTableIsActive = async function (this: InstanceType<typeof DDB
           if (index) {
             // Ensure index name was provided, else throw error.
             if (!index?.name) {
-              throw new DDBSingleTableError("Invalid keys schema: every index must have a name");
+              throw new DdbSingleTableError("Invalid keys schema: every index must have a name");
             }
 
             // Determine GSI or LSI, then push to the respective array in the accum.
@@ -161,7 +163,7 @@ export const ensureTableIsActive = async function (this: InstanceType<typeof DDB
  * reduce method that's used to derive `createTableArgsFromSchema`.
  */
 type CreateTableArgsReducerAccumKeys = Extract<
-  keyof CreateTableCommandParameters,
+  keyof CreateTableOpts,
   "AttributeDefinitions" | "KeySchema" | "GlobalSecondaryIndexes" | "LocalSecondaryIndexes"
 >;
 
@@ -173,6 +175,6 @@ type CreateTableArgsReducerAccumKeys = Extract<
  * to both `SetRequired` and `SetNonNullable` so TS knows they're definitely there.
  */
 type CreateTableArgsReducerAccumulator = SetRequired<
-  SetNonNullable<CreateTableCommandParameters, CreateTableArgsReducerAccumKeys>,
+  SetNonNullable<CreateTableOpts, CreateTableArgsReducerAccumKeys>,
   CreateTableArgsReducerAccumKeys
 >;

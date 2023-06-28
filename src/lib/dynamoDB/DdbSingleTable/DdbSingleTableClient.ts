@@ -17,14 +17,12 @@ import {
   ScanCommand,
   type TranslateConfig,
 } from "@aws-sdk/lib-dynamodb";
+import { generateKeyConditionExpression } from "./generateKeyConditionExpression";
 import { generateUpdateExpression } from "./generateUpdateExpression";
+import { ItemInputError } from "./utils";
 import type { Simplify } from "type-fest";
 import type {
-  ModelSchemaType,
-  ItemTypeFromSchema,
-  ItemPrimaryKeys,
-  ItemNonKeyAttributes,
-  // Client method option-types (extensions of AWS SDK cmd param types):
+  DdbTableIndexes,
   GetItemOpts,
   BatchGetItemsOpts,
   CreateItemOpts,
@@ -43,21 +41,28 @@ import type {
  * A DynamoDB CRUD utility for single-table designs. All methods wrap DDB API
  * commands to provide a simplified DDB API interface to consuming modules.
  */
-export class DDBSingleTableClient {
+export class DdbSingleTableClient {
   // STATIC PROPERTIES
   private static readonly DEFAULTS = {
     marshallOptions: {
-      convertEmptyValues: false, // Whether to automatically convert empty strings, blobs, and sets to `null` (false by default).
-      removeUndefinedValues: true, // Whether to remove undefined values while marshalling (false by default).
-      convertClassInstanceToMap: true, // Whether to convert typeof object to map attribute (false by default).
+      /** Whether to automatically convert empty strings, blobs, and sets to `null` (client default: false). */
+      convertEmptyValues: false,
+      /** Whether to remove undefined values while marshalling (client default: false). */
+      removeUndefinedValues: true,
+      /** Whether to convert typeof object to map attribute (client default: false). */
+      convertClassInstanceToMap: true,
     },
     unmarshallOptions: {
-      wrapNumbers: false, // Whether to return numbers as a string instead of converting them to native JavaScript numbers (false by default).
+      /** Whether to return numbers as a string instead of converting them to native JavaScript numbers (client default: false). */
+      wrapNumbers: false,
     },
   };
 
   // INSTANCE PROPERTIES
   readonly tableName: string;
+  readonly tableHashKey: string;
+  readonly tableRangeKey: string;
+  readonly indexes: DdbTableIndexes;
 
   // PRIVATE INSTANCE PROPERTIES
   private readonly ddbClient: DynamoDBClient;
@@ -65,16 +70,25 @@ export class DDBSingleTableClient {
 
   constructor({
     tableName,
+    tableHashKey,
+    tableRangeKey,
+    indexes,
     ddbClientConfigs: {
-      marshallOptions = DDBSingleTableClient.DEFAULTS.marshallOptions,
-      unmarshallOptions = DDBSingleTableClient.DEFAULTS.unmarshallOptions,
+      marshallOptions = DdbSingleTableClient.DEFAULTS.marshallOptions,
+      unmarshallOptions = DdbSingleTableClient.DEFAULTS.unmarshallOptions,
       ...ddbClientConfigs
     },
   }: {
     tableName: string;
+    tableHashKey: string;
+    tableRangeKey: string;
+    indexes: DdbTableIndexes;
     ddbClientConfigs: Simplify<DynamoDBClientConfig & TranslateConfig>;
   }) {
     this.tableName = tableName;
+    this.tableHashKey = tableHashKey;
+    this.tableRangeKey = tableRangeKey;
+    this.indexes = indexes;
 
     // Initialize ddbClient and attach proc exit handler which calls destroy method.
     this.ddbClient = new DynamoDBClient(ddbClientConfigs);
@@ -89,11 +103,9 @@ export class DDBSingleTableClient {
 
   // INSTANCE METHODS:
 
-  /**
-   * `GetItem` command wrapper.
-   */
-  readonly getItem = async <Schema extends ModelSchemaType>(
-    primaryKeys: ItemPrimaryKeys<Schema>,
+  /** `GetItem` command wrapper. */
+  readonly getItem = async (
+    primaryKeys: Record<string, unknown>,
     getItemOpts: GetItemOpts = {}
   ) => {
     const { Item } = await this.ddbDocClient.send(
@@ -104,14 +116,12 @@ export class DDBSingleTableClient {
       })
     );
 
-    return Item as Partial<ItemTypeFromSchema<Schema>>;
+    return Item;
   };
 
-  /**
-   * `BatchGetItem` command wrapper.
-   */
-  readonly batchGetItems = async <Schema extends ModelSchemaType>(
-    primaryKeys: Array<ItemPrimaryKeys<Schema>>,
+  /** `BatchGetItem` command wrapper. */
+  readonly batchGetItems = async (
+    primaryKeys: Array<Record<string, unknown>>,
     batchGetItemsOpts: BatchGetItemsOpts = {}
   ) => {
     const result = await this.ddbDocClient.send(
@@ -125,18 +135,18 @@ export class DDBSingleTableClient {
       })
     );
 
-    // TODO Add handling to batchGetItems for `result.UnprocessedKeys`
+    // IDEA Add handling to batchGetItems for `result.UnprocessedKeys`
     const { [this.tableName]: items } = result?.Responses ?? {};
 
-    return items as Array<Partial<ItemTypeFromSchema<Schema>>>;
+    return items;
   };
 
   /**
    * An aliased form of the `PutItem` command which always includes the
-   * ConditionExpression `attribute_not_exists(pk)`.
+   * ConditionExpression `"attribute_not_exists([tableHashKey])"`.
    */
-  readonly createItem = async <Schema extends ModelSchemaType>(
-    item: ItemTypeFromSchema<Schema>,
+  readonly createItem = async (
+    item: Record<string, unknown>,
     createItemOpts: CreateItemOpts = {}
   ) => {
     await this.ddbDocClient.send(
@@ -144,7 +154,7 @@ export class DDBSingleTableClient {
         ...createItemOpts,
         TableName: this.tableName,
         Item: item,
-        ConditionExpression: "attribute_not_exists(pk)",
+        ConditionExpression: `attribute_not_exists(${this.tableHashKey})`,
         /* Note that appending "AND attribute_not_exists(sk)" to the
         above expression would be extraneous, since DDB PutItem first
         looks for an Item with the specified item's keys, and THEN it
@@ -156,14 +166,11 @@ export class DDBSingleTableClient {
   };
 
   /**
-   * An aliased form of the PutItem command. It can return an updated Item's old
+   * An aliased form of the `PutItem` command. It can return an updated Item's old
    * values if `opts.ReturnValues` is set to "ALL_OLD", otherwise it returns
    * undefined. If not provided, `opts.ReturnValues` is set to "ALL_OLD".
    */
-  readonly upsertItem = async <Schema extends ModelSchemaType>(
-    item: Partial<ItemTypeFromSchema<Schema>>,
-    upsertItemOpts: UpsertItemOpts = {}
-  ) => {
+  readonly upsertItem = async (item: Record<string, any>, upsertItemOpts: UpsertItemOpts = {}) => {
     // Set ReturnValues default to "ALL_OLD"
     const { ReturnValues = "ALL_OLD", ...otherUpsertItemOpts } = upsertItemOpts;
 
@@ -176,7 +183,7 @@ export class DDBSingleTableClient {
       })
     );
 
-    return Attributes as Partial<ItemTypeFromSchema<Schema>>;
+    return Attributes;
   };
 
   /**
@@ -185,11 +192,11 @@ export class DDBSingleTableClient {
    *
    * > Note: `BatchWriteItem` does not support condition expressions.
    */
-  readonly batchUpsertItems = async <Schema extends ModelSchemaType>(
-    items: Array<ItemTypeFromSchema<Schema> | Partial<ItemTypeFromSchema<Schema>>>,
+  readonly batchUpsertItems = async (
+    items: Array<Record<string, unknown>>,
     batchUpsertItemsOpts: BatchUpsertItemsOpts = {}
   ) => {
-    // TODO Add handling to batchUpsertItems for `result.UnprocessedItems`
+    // IDEA Add handling to batchUpsertItems for `result.UnprocessedItems`
     await this.ddbDocClient.send(
       new BatchWriteCommand({
         ...batchUpsertItemsOpts,
@@ -201,19 +208,20 @@ export class DDBSingleTableClient {
   };
 
   /**
-   * `UpdateItem` command wrapper. If an UpdateExpression is not provided, this
+   * `UpdateItem` command wrapper. If an `UpdateExpression` is not provided, this
    * method will auto-generate one for you using the provided item's keys+values to
-   * form SET actions. The fn which generates the UpdateExpression also creates a
-   * map for ExpressionAttributeValues, so at this time, providing an EAV arg without
-   * an UpdateExpression will result in an error (e.g., if you provide an EAV for a
-   * ConditionExpression without also providing an UpdateExpression). In the future,
-   * the auto-gen'd EAV object may be merged with the caller's EAV, with any existing
-   * EAV key placeholders regex-swapped in the ConditionExpression (if provided).
+   * form SET and REMOVE clauses. To disable the auto-gen behavior, set the param
+   * `autogenUpdateExpressionOpts.enabled` to false.
+   *
+   * The function which generates the `UpdateExpression` also creates a map for
+   * `ExpressionAttributeValues`, therefore providing an EAV arg without an
+   * `UpdateExpression` currently will result in an error (e.g., if you provide an
+   * EAV for a `ConditionExpression` without also providing an `UpdateExpression`).
    */
-  readonly updateItem = async <Schema extends ModelSchemaType>(
-    primaryKeys: ItemPrimaryKeys<Schema>,
-    attributesToUpdate: Partial<ItemNonKeyAttributes<Schema>>,
-    updateItemOpts: UpdateItemOpts = {}
+  readonly updateItem = async (
+    primaryKeys: Record<string, unknown>,
+    attributesToUpdate: Record<string, any>,
+    { autogenUpdateExpressionOpts, ...updateItemOpts }: UpdateItemOpts = {}
   ) => {
     // Destructure constants from updateItemOpts to set default ReturnValues
     const { ReturnValues = "ALL_NEW", ...otherUpdateItemOpts } = updateItemOpts;
@@ -221,22 +229,16 @@ export class DDBSingleTableClient {
     // Destructure updateItemOpts which may be updated
     let { UpdateExpression, ExpressionAttributeNames, ExpressionAttributeValues } = updateItemOpts;
 
-    if (!UpdateExpression) {
-      /* For now, ensure the caller hasn't provided "ExpressionAttributeValues"
-      /"ExpressionAttributeValues". In the future, however, the auto-gen'd EA
-      Names/Values objects could be merged with the caller's EA Names/Values args,
-      with any existing key-placeholders regex-swapped in the ConditionExpression
-      (if provided). Support could also be added for nested value updates (right
-        now it just uses top-level keys and values).      */
+    if (!UpdateExpression && autogenUpdateExpressionOpts?.enabled !== false) {
+      // Auto-gen will overwrite EA-Names/Values, so ensure the caller hasn't provided them
       if (ExpressionAttributeNames || ExpressionAttributeValues) {
-        throw new Error(
-          `(ddbTable.updateItem) For auto-generated "UpdateExpression"s, params "ExpressionAttribute{Names,Values}" must not be provided.`
+        throw new ItemInputError(
+          `[updateItem] For auto-generated "UpdateExpression"s, params "ExpressionAttribute{Names,Values}" must not be provided.`
         );
       }
 
-      // Auto-gen UpdateExpression if not provided (and ExprAttrValues)
-      // prettier-ignore
-      ({ UpdateExpression, ExpressionAttributeNames, ExpressionAttributeValues } = generateUpdateExpression(attributesToUpdate));
+      ({ UpdateExpression, ExpressionAttributeNames, ExpressionAttributeValues } =
+        generateUpdateExpression(attributesToUpdate, autogenUpdateExpressionOpts));
     }
 
     const { Attributes } = await this.ddbDocClient.send(
@@ -251,14 +253,12 @@ export class DDBSingleTableClient {
       })
     );
 
-    return Attributes as Partial<ItemTypeFromSchema<Schema>>;
+    return Attributes;
   };
 
-  /**
-   * `DeleteItem` command wrapper.
-   */
-  readonly deleteItem = async <Schema extends ModelSchemaType>(
-    primaryKeys: ItemPrimaryKeys<Schema>,
+  /** `DeleteItem` command wrapper. */
+  readonly deleteItem = async (
+    primaryKeys: Record<string, unknown>,
     deleteItemOpts: DeleteItemOpts = {}
   ) => {
     // Destructure constants from deleteItemOpts to set default ReturnValues (DeleteItem API default: "NONE")
@@ -273,7 +273,7 @@ export class DDBSingleTableClient {
       })
     );
 
-    return Attributes as Partial<ItemTypeFromSchema<Schema>>;
+    return Attributes;
   };
 
   /**
@@ -282,11 +282,11 @@ export class DDBSingleTableClient {
    *
    * > Note: `BatchWriteItem` does not support condition expressions.
    */
-  readonly batchDeleteItems = async <Schema extends ModelSchemaType>(
-    primaryKeys: Array<ItemPrimaryKeys<Schema>>,
+  readonly batchDeleteItems = async (
+    primaryKeys: Array<Record<string, unknown>>,
     batchDeleteItemsOpts: BatchDeleteItemsOpts = {}
   ) => {
-    // TODO Add handling to batchDeleteItems for `result.UnprocessedItems`
+    // IDEA Add handling to batchDeleteItems for `result.UnprocessedItems`
     await this.ddbDocClient.send(
       new BatchWriteCommand({
         ...batchDeleteItemsOpts,
@@ -303,17 +303,17 @@ export class DDBSingleTableClient {
    * Note that while each individual underlying command operation is atomic, they're
    * not atomic as a a whole, despite occurring within the same call.
    */
-  readonly batchUpsertAndDeleteItems = async <Schema extends ModelSchemaType>(
+  readonly batchUpsertAndDeleteItems = async (
     {
       upsertItems,
       deleteItems,
     }: {
-      upsertItems: Array<Partial<ItemTypeFromSchema<Schema>>>;
-      deleteItems: Array<ItemPrimaryKeys<Schema>>;
+      upsertItems: Array<Record<string, any>>;
+      deleteItems: Array<Record<string, unknown>>;
     },
     batchUpsertAndDeleteItemsOpts: BatchUpsertAndDeleteItemsOpts = {}
   ) => {
-    // TODO Add handling to batchUpsertAndDeleteItems for `result.UnprocessedItems`
+    // IDEA Add handling to batchUpsertAndDeleteItems for `result.UnprocessedItems`
     await this.ddbDocClient.send(
       new BatchWriteCommand({
         ...batchUpsertAndDeleteItemsOpts,
@@ -327,24 +327,58 @@ export class DDBSingleTableClient {
     );
   };
 
-  /**
-   * `Query` command wrapper.
-   */
-  readonly query = async <Schema extends ModelSchemaType>(queryOpts: QueryOpts) => {
+  /** `Query` command wrapper. */
+  readonly query = async ({
+    where,
+    limit, // lower-cased alias for "Limit"
+    KeyConditionExpression,
+    ExpressionAttributeNames,
+    ExpressionAttributeValues,
+    IndexName,
+    ...otherQueryOpts
+  }: QueryOpts) => {
+    // Check if Where-API object is provided (unaliased by Model.query wrapper method)
+    if (where) {
+      const [pkAttrName, skAttrName] = Object.keys(where);
+      // Generate the KeyConditionExpression and related values
+      ({ KeyConditionExpression, ExpressionAttributeNames, ExpressionAttributeValues } =
+        generateKeyConditionExpression({ where }));
+
+      // See if IndexName needs to be set by testing if `where` contains the table's PK+SK
+      if (
+        !IndexName && // skAttrName may be undefined if the `where` only contains the PK
+        (pkAttrName !== this.tableHashKey || (!!skAttrName && skAttrName !== this.tableRangeKey))
+      ) {
+        // Get IndexName by searching table's indexes for matching PK+SK
+        for (const indexName in this.indexes) {
+          if (
+            pkAttrName === this.indexes[indexName].indexPK &&
+            (!skAttrName || skAttrName === this.indexes[indexName]?.indexSK)
+          ) {
+            IndexName = indexName;
+            break;
+          }
+        }
+      }
+    }
+
     const { Items } = await this.ddbDocClient.send(
       new QueryCommand({
-        ...queryOpts,
+        KeyConditionExpression,
+        ExpressionAttributeNames,
+        ExpressionAttributeValues,
+        ...(IndexName && { IndexName }),
+        ...(limit && { Limit: limit }),
+        ...otherQueryOpts,
         TableName: this.tableName,
       })
     );
 
-    return Items as Array<Partial<ItemTypeFromSchema<Schema>>>;
+    return Items;
   };
 
-  /**
-   * `Scan` command wrapper.
-   */
-  readonly scan = async <Schema extends ModelSchemaType>(scanOpts: ScanOpts = {}) => {
+  /** `Scan` command wrapper. */
+  readonly scan = async (scanOpts: ScanOpts = {}) => {
     const { Items } = await this.ddbDocClient.send(
       new ScanCommand({
         ...scanOpts,
@@ -352,14 +386,12 @@ export class DDBSingleTableClient {
       })
     );
 
-    return Items as Array<Partial<ItemTypeFromSchema<Schema>>>;
+    return Items;
   };
 
   // UTILITY METHODS:
 
-  /**
-   * `DescribeTable` command wrapper.
-   */
+  /** `DescribeTable` command wrapper. */
   readonly describeTable = async (tableName?: string) => {
     const { Table } = await this.ddbClient.send(
       new DescribeTableCommand({ TableName: tableName ?? this.tableName })
@@ -368,9 +400,7 @@ export class DDBSingleTableClient {
     return Table ?? {};
   };
 
-  /**
-   * `CreateTable` command wrapper.
-   */
+  /** `CreateTable` command wrapper. */
   readonly createTable = async (createTableArgs: CreateTableOpts) => {
     const { TableDescription } = await this.ddbClient.send(
       new CreateTableCommand({
@@ -382,9 +412,7 @@ export class DDBSingleTableClient {
     return TableDescription ?? {};
   };
 
-  /**
-   * `ListTables` command wrapper.
-   */
+  /** `ListTables` command wrapper. */
   readonly listTables = async () => {
     const { TableNames } = await this.ddbClient.send(new ListTablesCommand({}));
 
