@@ -18,19 +18,13 @@ generates:
       - typescript-resolvers
     # Plugin configs
     config:
-      useTypeImports: true
-      skipTypename: true
       enumsAsTypes: true
+      skipTypename: true
       useIndexSignature: true
+      useTypeImports: true
       # resolver Context type:
       contextType: "../apolloServer#ApolloServerResolverContext"
-      # TODO ditch the mapped types, old non-codegen types should be internal/db-facing only
-      # Map GQL types to TS types for type-resolution within resolvers:
-      mappers:
-        Contact: "./Contact#ContactType"
-        Invoice: "./Invoice#InvoiceType"
-        User: "./User#UserType"
-        Profile: "./User#UserProfile"
-        UserStripeConnectAccount: "./UserStripeConnectAccount#UserStripeConnectAccountType"
-        UserSubscription: "./UserSubscription#UserSubscriptionType"
-        WorkOrder: "./WorkOrder#WorkOrderType"
+      scalars:
+        ID: string
+        DateTime: Date
+        Email: string
