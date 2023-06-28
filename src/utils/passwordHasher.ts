@@ -10,7 +10,7 @@ export const passwordHasher = {
     // No await - let the promise resolve/reject to caller.
     return new Promise((resolve, reject) => {
       bcrypt.hash(plainText, 10, (err, hash) => {
-        if (err) reject(`AUTH ERROR: ${err}`);
+        if (err) reject(`AUTH ERROR: ${err.message}`);
         resolve(hash);
       });
     });
