@@ -1,18 +1,23 @@
-import { logger } from "@utils/logger";
-import type { Request, Response, NextFunction } from "express";
+import { logger } from "@utils";
+import type { RequestHandler } from "express";
 
-export const logReqReceived = (req: Request, res: Response, next: NextFunction) => {
-  const { body, originalUrl } = req;
-
-  // The operationName check ensures console-cluttering introspection queries aren't logged here
-  if (
-    originalUrl === "/api" &&
-    body &&
-    Object.prototype.hasOwnProperty.call(body, "operationName")
-  ) {
-    logger.gql(`request received (${new Date().toLocaleString()}) OPERATION ${body.operationName}`);
+/**
+ * This middleware is used in non-prod envs to log GraphQL and REST requests
+ * received by the server. If `req.body` contains `operationName`, a request
+ * is logged as a GraphQL request, otherwise it's logged as a REST request.
+ */
+export const logReqReceived: RequestHandler<
+  unknown,
+  unknown,
+  { operationName?: string } | undefined
+> = ({ originalUrl, body }, res, next) => {
+  if (originalUrl === "/api") {
+    // Only log GQL /api requests if req.body.operationName exists
+    if (!!body && !!body?.operationName) {
+      logger.gql(`request received, OPERATION: ${body.operationName}`);
+    }
   } else {
-    logger.server(`request received (${new Date().toLocaleString()}) PATH: ${originalUrl}`);
+    logger.server(`request received, PATH: ${originalUrl}`);
   }
 
   next();

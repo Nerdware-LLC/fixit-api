@@ -1,2 +1,2 @@
-export { errorHandler } from "./errorHandler";
-export { handle404 } from "./handle404";
+export * from "./errorHandler";
+export * from "./handle404";

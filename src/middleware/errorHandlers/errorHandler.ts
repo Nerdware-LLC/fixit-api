@@ -1,26 +1,24 @@
 import { ENV } from "@server/env";
-import { logger } from "@utils/logger";
+import { logger, getTypeSafeError, InternalServerError, safeJsonStringify } from "@utils";
 import type { ErrorRequestHandler } from "express";
 
-const { IS_PROD } = ENV;
-
-export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
-  const errStatusCode = err.status || err.statusCode || 500;
+/**
+ * This is the default error-handling middleware which captures errors and sends a
+ * JSON response to the client.
+ */
+export const errorHandler: ErrorRequestHandler = (err: unknown, req, res, next) => {
+  const { statusCode: errorStatusCode = 500, ...error } = getTypeSafeError(err);
 
   // LOG SERVER ERRORS, NOT 4xx CLIENT ERRORS
-  if (errStatusCode >= 500) {
-    logger.error(
-      `[SERVER ERROR] On route "${req.originalUrl}": ${err.message} \n\n ${err.stack}`,
-      "MW:errorHandler"
-    );
+  if (errorStatusCode >= 500) {
+    logger.error(`[SERVER ERROR] On route "${req.originalUrl}": ${safeJsonStringify(err)}`);
   }
+
   // If streaming back to the client has already been initiated, just delegate to the default built-in error handler.
   if (res.headersSent) return next(err);
 
-  // prettier-ignore
-  const errMsg = errStatusCode >= 500 && IS_PROD ? "Something failed." : err.message;
-
-  res.status(errStatusCode).json({
-    error: errMsg,
+  // Send JSON response to client; mask 500 error-messages in production
+  res.status(errorStatusCode).json({
+    error: errorStatusCode >= 500 && ENV.IS_PROD ? InternalServerError.DEFAULT_MSG : error.message,
   });
 };

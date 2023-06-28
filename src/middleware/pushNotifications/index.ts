@@ -1,1 +1,1 @@
-export { updateExpoPushToken } from "./updateExpoPushToken";
+export * from "./updateExpoPushToken";

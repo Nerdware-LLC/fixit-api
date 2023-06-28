@@ -1,20 +1,25 @@
-import { catchAsyncMW, passwordHasher, AuthError } from "@utils";
-import type { UserType } from "@types";
+import { mwAsyncCatchWrapper } from "@middleware/helpers";
+import { passwordHasher, AuthError } from "@utils";
 
-export const validatePassword = catchAsyncMW(async (req, res, next) => {
-  if (!req?._user) next("User not found");
+export const validatePassword = mwAsyncCatchWrapper<{ body: { password: string } }>(
+  async (req, res, next) => {
+    if (!req?._user) return next("User not found");
 
-  // Cast type to UserType, TS not recognizing that "req._user" can't be undefined after above if-clause.
-  req._user = req._user as UserType;
+    if (req._user.login.type === "LOCAL") {
+      const isValidPassword = await passwordHasher.validate(
+        req.body.password,
+        req._user.login.passwordHash
+      );
 
-  if (req._user.login.type === "LOCAL") {
-    const validPassword = await passwordHasher.validate(
-      req.body.password,
-      req._user.login.passwordHash
-    );
+      if (isValidPassword === true) {
+        /* Note: req._user does not have `subscription`/`stripeConnectAccount` fields.
+        For `generateAuthToken`, these fields are obtained from `queryUserItems`.   */
+        req._authenticatedUser = req._user;
+      } else {
+        next(new AuthError("Invalid email or password"));
+      }
+    }
 
-    if (!validPassword) next(new AuthError("Invalid email or password"));
+    next();
   }
-
-  next();
-});
+);

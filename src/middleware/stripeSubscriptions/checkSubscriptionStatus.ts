@@ -1,12 +1,11 @@
 import { stripe } from "@lib/stripe";
+import { mwAsyncCatchWrapper } from "@middleware/helpers";
 import { UserSubscription } from "@models/UserSubscription";
-import { catchAsyncMW } from "@utils/middlewareWrappers";
-import type { UserType, UserSubscriptionType } from "@types";
 
-export const checkSubscriptionStatus = catchAsyncMW(async (req, res, next) => {
-  if (!req?._user) next("User not found");
+export const checkSubscriptionStatus = mwAsyncCatchWrapper(async (req, res, next) => {
+  if (!req?._authenticatedUser) return next("User not found");
 
-  const { subscription, id: userID } = req._user as UserType;
+  const { subscription, id: userID } = req._authenticatedUser;
 
   if (subscription) {
     const {
@@ -26,10 +25,15 @@ export const checkSubscriptionStatus = catchAsyncMW(async (req, res, next) => {
       upToDateSubInfo.status !== status_inDB ||
       upToDateSubInfo.currentPeriodEnd.getTime() !== new Date(currentPeriodEnd_inDB).getTime()
     ) {
+      /* Do NOT use Stripe's `createdAt` value for the Sub-SK, because it may not
+      match the value in the DB. Instead, use the value from req._userSubscription
+      (should always be present here).  */
+      if (!req?._userSubscription?.createdAt) return next("Invalid subscription details");
+
       const updatedSub = await UserSubscription.updateItem(
         {
           userID,
-          sk: `SUBSCRIPTION#${userID}#${upToDateSubInfo.createdAt}`,
+          sk: UserSubscription.getFormattedSK(userID, req._userSubscription.createdAt),
         },
         {
           status: upToDateSubInfo.status,
@@ -37,7 +41,10 @@ export const checkSubscriptionStatus = catchAsyncMW(async (req, res, next) => {
         }
       );
 
-      (req._user as UserType).subscription = updatedSub as UserSubscriptionType;
+      req._authenticatedUser.subscription = {
+        ...req._authenticatedUser.subscription,
+        ...updatedSub,
+      };
     }
   }
 

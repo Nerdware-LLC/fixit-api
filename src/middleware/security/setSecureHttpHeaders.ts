@@ -1,6 +1,6 @@
 import helmet from "helmet";
 import { ENV } from "@server/env";
-import type { Request, Response, NextFunction } from "express";
+import type { RequestHandler } from "express";
 
 /**
  * HELMET'S DEFAULT CSP DIRECTIVES:
@@ -131,7 +131,7 @@ const helmetMW = helmet({
  *    }
  *    ```
  */
-export const setSecureHttpHeaders = (req: Request, res: Response, next: NextFunction) => {
+export const setSecureHttpHeaders: RequestHandler = (req, res, next) => {
   res.set({
     "Cache-Control": "no-store",
     "Report-To": REPORT_TO_HTTP_HEADER_VALUE_JSON,

@@ -1,3 +1,3 @@
-export { checkOnboardingStatus } from "./checkOnboardingStatus";
-export { createAccountLink } from "./createAccountLink";
-export { createDashboardLink } from "./createDashboardLink";
+export * from "./checkOnboardingStatus";
+export * from "./createAccountLink";
+export * from "./createDashboardLink";

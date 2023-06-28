@@ -1,6 +1,7 @@
 import { UserSubscription } from "@models/UserSubscription";
-import { ENV } from "@server";
-import { AuthToken, GqlAuthError, GqlPaymentRequiredError } from "@utils";
+import { ENV } from "@server/env";
+import { AuthToken } from "@utils/AuthToken";
+import { GqlAuthError, GqlPaymentRequiredError } from "@utils/customErrors";
 import type { Request } from "express";
 import type { ApolloServerResolverContext } from "../../apolloServer";
 
@@ -10,7 +11,7 @@ const validateGqlRequest = async ({
   req: Request;
 }): Promise<ApolloServerResolverContext> => {
   // Authenticate the user
-  const user = await AuthToken.getValidatedRequestAuthTokenPayload(req).catch((err) => {
+  const tokenPayload = await AuthToken.getValidatedRequestAuthTokenPayload(req).catch(() => {
     /* If err, re-throw as Apollo 401 auth error. By default, errors thrown from
     apollo context-init fn return to client with http status code 500, so an "http"
     extension is added here to ensure the status code is properly set to 401.    */
@@ -19,14 +20,9 @@ const validateGqlRequest = async ({
     });
   });
 
-  // Rm internal AuthToken fields, if present
-  ["iat", "exp", "aud", "iss", "sub"].forEach((authTokenInternalField) => {
-    if (authTokenInternalField in user) delete user[authTokenInternalField];
-  });
-
   // Ensure the User's subscription is active and not expired
   try {
-    UserSubscription.validateExisting(user.subscription);
+    UserSubscription.validateExisting(tokenPayload.subscription);
   } catch (err) {
     // If err, re-throw as Apollo 402 error
     throw new GqlPaymentRequiredError("Payment required", {
@@ -36,7 +32,7 @@ const validateGqlRequest = async ({
 
   return {
     ...req,
-    user,
+    user: AuthToken.stripInternalJwtPayloadFields(tokenPayload),
   };
 };
 
@@ -50,17 +46,24 @@ const validateGqlRequest = async ({
  * updated via PUSH event at server startup using the APOLLO_KEY and
  * APOLLO_GRAPH_REF env vars.
  */
-const isIntrospectionQuery = ({ req }: { req: Request }) => {
-  return (
-    // Manual schema-update introspection queries submitted from Apollo Studio:
-    (req.get("origin") === "https://studio.apollographql.com" &&
-      req?.body?.query &&
-      /query IntrospectionQuery/.test(req.body.query)) ||
-    // Manual schema-update introspection queries submitted via Rover CLI:
-    ((/^rover/.test(req.get("user-agent") ?? "") || req.hostname === "localhost") &&
-      req?.body?.operationName &&
-      req.body.operationName === "GraphIntrospectQuery")
-  );
+const isIntrospectionQuery = ({
+  req,
+}: {
+  req: Request<unknown, unknown, { operationName?: string; query?: string }>;
+}): boolean => {
+  // Manual schema-update introspection queries submitted from Apollo Studio:
+  const isIntrospectionQueryFromApolloStudio =
+    req.get("origin") === "https://studio.apollographql.com" &&
+    !!req?.body?.query &&
+    /query IntrospectionQuery/.test(req.body.query);
+
+  // Manual schema-update introspection queries submitted via Rover CLI:
+  const isIntrospectionQueryFromRoverCLI =
+    (/^rover/.test(req.get("user-agent") ?? "") || req.hostname === "localhost") &&
+    !!req?.body?.operationName &&
+    req.body.operationName === "GraphIntrospectQuery";
+
+  return isIntrospectionQueryFromApolloStudio || isIntrospectionQueryFromRoverCLI;
 };
 
 /**
@@ -68,10 +71,10 @@ const isIntrospectionQuery = ({ req }: { req: Request }) => {
  * - Permits ApolloStudio and ApolloSandbox introspection queries in the dev env.
  */
 export const validateGqlReqContext =
-  ENV.NODE_ENV !== "development"
+  /^dev/i.test(ENV.NODE_ENV) === false
     ? validateGqlRequest
     : async ({ req }: { req: Request }) => {
         return isIntrospectionQuery({ req })
           ? (req as ApolloServerResolverContext)
-          : ((await validateGqlRequest({ req })) as ApolloServerResolverContext);
+          : await validateGqlRequest({ req });
       };

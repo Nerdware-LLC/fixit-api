@@ -1,18 +1,19 @@
+import { mwAsyncCatchWrapper } from "@middleware/helpers";
 import { User } from "@models/User";
-import { catchAsyncMW } from "@utils/middlewareWrappers";
-import type { UserType } from "@types";
 
-export const updateExpoPushToken = catchAsyncMW(async (req, res, next) => {
-  if (!req?._user) next("User not found");
+export const updateExpoPushToken = mwAsyncCatchWrapper<{ body: { expoPushToken?: string } }>(
+  async (req, res, next) => {
+    if (!req?._authenticatedUser) return next("User not found");
 
-  const {
-    body: { expoPushToken },
-    _user: { id: userID },
-  } = req as { body: { expoPushToken?: string }; _user: UserType };
+    const {
+      body: { expoPushToken },
+      _authenticatedUser: { id: userID },
+    } = req;
 
-  if (expoPushToken) {
-    await User.updateItem({ id: userID, sk: `#DATA#${userID}` }, { expoPushToken });
+    if (expoPushToken) {
+      await User.updateItem({ id: userID, sk: User.getFormattedSK(userID) }, { expoPushToken });
+    }
+
+    next();
   }
-
-  next();
-});
+);
