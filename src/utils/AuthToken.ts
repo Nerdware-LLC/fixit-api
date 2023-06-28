@@ -4,7 +4,9 @@ import {
   INTERNAL_JWT_PAYLOAD_FIELDS,
   type FixitApiJwtPayload,
 } from "./jwt";
-import type { InternalDbUser } from "@types";
+import type { UserModelItem } from "@models/User";
+import type { UserStripeConnectAccountModelItem } from "@models/UserStripeConnectAccount";
+import type { UserSubscriptionModelItem } from "@models/UserSubscription";
 import type { Request } from "express";
 import type { Simplify } from "type-fest";
 
@@ -103,22 +105,18 @@ export class AuthToken {
 
 export type FixitApiAuthTokenPayload = FixitApiJwtPayload & FixitApiAuthTokenPayloadUserData;
 
-export type FixitApiAuthTokenPayloadUserData = {
-  id: InternalDbUser["id"];
-  handle: InternalDbUser["handle"];
-  email: InternalDbUser["email"];
-  phone: InternalDbUser["phone"];
-  profile: InternalDbUser["profile"];
-  stripeCustomerID: InternalDbUser["stripeCustomerID"];
-  stripeConnectAccount: Simplify<
-    Pick<
-      NonNullable<InternalDbUser["stripeConnectAccount"]>,
+export type FixitApiAuthTokenPayloadUserData = Simplify<
+  Pick<
+    UserModelItem,
+    "id" | "handle" | "email" | "phone" | "profile" | "stripeCustomerID" | "createdAt" | "updatedAt"
+  > & {
+    subscription?: Pick<
+      UserSubscriptionModelItem,
+      "id" | "status" | "currentPeriodEnd" // prettier-ignore
+    >;
+    stripeConnectAccount: Pick<
+      UserStripeConnectAccountModelItem,
       "id" | "detailsSubmitted" | "chargesEnabled" | "payoutsEnabled"
-    >
-  >;
-  subscription?: Simplify<
-    Pick<NonNullable<InternalDbUser["subscription"]>, "id" | "status" | "currentPeriodEnd">
-  >;
-  createdAt: InternalDbUser["createdAt"];
-  updatedAt: InternalDbUser["updatedAt"];
-};
+    >;
+  }
+>;
