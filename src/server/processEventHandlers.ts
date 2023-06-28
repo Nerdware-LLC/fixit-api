@@ -13,6 +13,7 @@ Object.entries({
 });
 
 ["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signalType) => {
+  // eslint-disable-next-line no-process-exit
   process.once(signalType, () => process.exit(process?.exitCode ?? 0));
 });
 
