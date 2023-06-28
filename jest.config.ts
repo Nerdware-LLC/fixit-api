@@ -1,8 +1,9 @@
 import { JestConfigWithTsJest, pathsToModuleNameMapper } from "ts-jest";
 import { compilerOptions } from "./tsconfig.json";
 
-// Jest config file docs: https://jestjs.io/docs/configuration
-
+/**
+ * @docs https://jestjs.io/docs/configuration
+ */
 const jestConfig: JestConfigWithTsJest = {
   clearMocks: true,
   collectCoverage: true,
@@ -11,6 +12,7 @@ const jestConfig: JestConfigWithTsJest = {
     "!**/*.d.ts",
     "!**/node_modules/**",
     "!**/__tests__/**",
+    "!**/__mocks__/**",
   ],
   coverageDirectory: "coverage",
   extensionsToTreatAsEsm: [".ts"],
