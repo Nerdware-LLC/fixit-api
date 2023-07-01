@@ -1,0 +1,15 @@
+name: Test Workflow
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      CODECOV_TOKEN:
+        required: true
+
+jobs:
+  test:
+    name: Test
+    uses: Nerdware-LLC/reusable-action-workflows/.github/workflows/node_test.yaml@main
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

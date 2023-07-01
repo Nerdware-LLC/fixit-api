@@ -1,0 +1,39 @@
+name: Production Pipeline
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "**/*.[jt]s"
+      - "package*.json"
+  push:
+    branches:
+      - main
+    paths:
+      - "**/*.[jt]s"
+      - "package*.json"
+
+jobs:
+  test:
+    uses: ./.github/workflows/workflow_test.yaml
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  release:
+    needs: test
+    if: ${{ success() }}
+    uses: ./.github/workflows/workflow_release.yaml
+    secrets:
+      SEMANTIC_RELEASE_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
+  deploy:
+    needs: release
+    if: ${{ success() }}
+    uses: ./.github/workflows/workflow_ecr_image_push.yaml
+    secrets:
+      OIDC_GITHUB_ROLE_ARN: ${{ secrets.OIDC_GITHUB_ROLE_ARN }}
+      AWS_ECR_PRIVATE_REPO: ${{ secrets.AWS_ECR_PRIVATE_REPO }}
+      AWS_ECR_REGION: ${{ secrets.AWS_ECR_REGION }}
+    permissions:
+      id-token: write
+      contents: read
