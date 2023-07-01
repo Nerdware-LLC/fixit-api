@@ -11,6 +11,8 @@ Author: [Trevor Anderson](https://github.com/trevor-anderson), Founder of [Nerdw
 
 [<img src="./.github/assets/powered_by_Stripe_blurple.svg" height="26" style="position:relative;top:3px;"/>](https://stripe.com/)
 &nbsp;
+![test_workflow_status](https://github.com/Nerdware-LLC/fixit-api/actions/workflows/test.yaml/badge.svg?branch=main)
+&nbsp;
 [![graphql][graphql-shield]](https://graphql.org/)
 &nbsp;
 [![apollo][apollo-shield]](https://www.apollographql.com/)
@@ -32,6 +34,9 @@ Author: [Trevor Anderson](https://github.com/trevor-anderson), Founder of [Nerdw
 - [🗄️ DynamoDB Database](#️-dynamodb-database)
   - [Fixit-API Access Patterns](#fixit-api-access-patterns)
   - [Single Table Design](#single-table-design)
+- [📦 CI/CD Pipeline](#-cicd-pipeline)
+  - [Codegen](#codegen)
+  - [GitHub Actions](#github-actions)
 - [📝 License](#-license)
 - [💬 Contact](#-contact)
 
@@ -41,22 +46,20 @@ Author: [Trevor Anderson](https://github.com/trevor-anderson), Founder of [Nerdw
 
 ```bash
 .
-├── .github                         # GitHub Actions and other GitHub-related files
-└── src                             # Source code files
-    ├── __tests__                   # Jest test-env setup files for all tests
-    ├── events                      # Event emitter and handlers
-    ├── graphql                     # GraphQL typedefs and resolvers
-    ├── lib                         # Third-party client configs
-    │   ├── dynamoDBclient          # AWS SDK DynamoDB and dynamoose client configs
-    │   ├── lambdaClient            # AWS SDK Lambda client configs and related utils/types
-    │   ├── s3client                # AWS SDK S3 client configuration
-    │   └── stripe                  # Stripe client and handlers for Stripe Webhooks
-    ├── middleware                  # Middleware functions used by routers/
-    ├── models                      # Data-defining classes which implement DynamoDB CRUD operations
-    ├── routers                     # Express routers
-    ├── server                      # Server init logic and process handlers
-    ├── types                       # Ambient Typescript type definitions
-    └── utils                       # Utility functions
+├── .github/                # GitHub Actions workflows and other GitHub-related files
+├── docker/                 # API Dockerfile and docker-compose.yaml
+├── fixit@current.graphql   # The Fixit API GraphQL schema
+└── src/                    # Source code files
+    ├── __tests__/          # Jest setup files and test utils
+    ├── events/             # Event emitter and handlers
+    ├── graphql/            # GraphQL typedefs and resolvers
+    ├── lib/                # Third-party client configs and internal cache
+    ├── middleware/         # Middleware functions used by routers/
+    ├── models/             # Data-defining classes which implement DB CRUD operations
+    ├── routers/            # Express routers
+    ├── server/             # Server init logic and process handlers
+    ├── types/              # Global type definitions, including codegen'd types
+    └── utils/              # Utility functions
 ```
 
 ## 🛣️ API Routes
@@ -87,8 +90,8 @@ flowchart LR
   connect --> dashboardLink("/api/connect/dashboard-link \n\n • Creates link to Stripe Dashboard \n for existing users")
   subs --> pay("/api/subscriptions/submit-payment \n\n • Handles payments for \n Fixit subscriptions")
   subs --> portal("/api/subscriptions/customer-portal \n\n • Provides subscription \n management portal for users")
-  webhooks --> whAccount("/api/webhooks/account \n\n • Stripe Accounts \n webhooks handler")
-  webhooks --> whCustomer("/api/webhooks/customer \n\n • Stripe Customers \n webhooks handler")
+  webhooks --> whStripe("/api/webhooks/stripe \n\n • Stripe webhooks handler")
+  webhooks --> whCustomer("/api/webhooks/* \n\n • Other webhooks")
   end
 
   classDef default fill:#1f2020,stroke:#7aa4c9,stroke-width:1px
@@ -119,28 +122,22 @@ The table below lists currently available Fixit SaaS products. Subscription mana
 
 ## 🗄️ DynamoDB Database
 
-<!-- TODO Talk about migrating from MySQL -->
-
 This API uses a single DynamoDB table with primary keys `pk` and `sk`, along with an overloaded `data` index attribute which supports a range of flexible queries using two GSIs: `Overloaded_SK_GSI` and `Overloaded_Data_GSI`.
+
+<!-- TODO Talk about migrating from MySQL (use details/summary elements) -->
 
 ### Fixit-API Access Patterns
 
-<!-- TODO clean up below commentary re: DynamoDB Access Patterns -->
+<!-- TODO add commentary here re: DynamoDB Access Patterns -->
 
 - **USERS**
-  - Find a User by their email for logins and createContact resolver.
-  - Find a User by their user ID (Query.user resolver, not sure how much this is used).
-  - Find a User by their phone (createNewConnection resolver)
-  - Update a User's Subscription by sub ID (stripeCustomerWebhookHandler)
-  - Find a User's StripeConnectAccount by its ID (update its details via webhook handler)
+  - Find a User by their email
+  - Find a User by their user ID
+  - Find a User by their phone
+  - Update a User's Subscription by sub ID
+  - Find a User's StripeConnectAccount by its ID
   - Find a User's Subscription by its ID
   - Find a User's Profile by its ID
-- **PHONE CONTACTS**
-  - Find existing Users by phone OR email
-- **INVITES**
-  - Find an Invite by "receiverPhone" (convertInvitesIntoContacts).
-    - In MySQL the searched table was "invites", which stored "receiverPhone".
-    - The returned Invite/Invites would be converted into new User Contacts.
 - **CONTACTS**
   - Find a Contact by contact ID
   - Find a User's Contacts using their user ID
@@ -153,8 +150,6 @@ This API uses a single DynamoDB table with primary keys `pk` and `sk`, along wit
   - Find a WorkOrder by ID
   - Find a User's WorkOrders using their user ID
   - Find WorkOrders within a given date range
-- **PUSH NOTIFICATIONS**
-  <!-- TODO Add PN access patterns -->
 
 <!-- TODO talk more about
   - the DB generally
@@ -174,9 +169,27 @@ This API uses a single DynamoDB table with primary keys `pk` and `sk`, along wit
 | Contact                     | \<userID>             | CONTACT#\<contact_userID>            | \<contact_userID>         |
 | Push Notification           | \<recipient_userID>   | PUSH_RECEIPT#\<userID>#\<timestamp>  | \<pushReceiptID>          |
 
+## 📦 CI/CD Pipeline
+
+<!-- An outline of this process is below. -->
+
+<!-- TODO Add screenshot image of pipeline_production workflow in action -->
+
+### Codegen
+
+TypeScript types are generated using [GraphQL Code Generator](https://graphql-code-generator.com/) and the [Fixit GraphQL schema](./fixit%40current.graphql). The same generated types are used throughout the entire Fixit stack.
+
+When the [Fixit GraphQL schema](./fixit%40current.graphql) is updated during development, changes are automatically pushed to [Apollo Studio](https://www.apollographql.com/), thereby enabling every component of the stack to use the latest version of the schema (or any particular previous version, if necessary). The schema changes are pulled into other Fixit repos using [Rover GitHub Actions](https://www.apollographql.com/docs/rover/ci-cd/#github-actions), but can also be pulled imperatively using the [Rover CLI](https://www.apollographql.com/docs/rover/).
+
+### GitHub Actions
+
+This project's CI/CD pipeline uses GitHub Actions to test, release, and deploy staging and production environments. For each environment, a "pipeline workflow" calls three _**local**_ reusable workflows: Test, Release, and ECR Image Push. Each of these _**local**_ reusable workflows call other reusable workflows defined in the Nerdware reusable-workflows repo.
+
+Keeping each job as a separate callable workflow allows the staging and production pipelines to simply provide different inputs to shared workflows, and each build step is also provided with a `workflow_dispatch` trigger, thereby enabling imperative on-demand execution of any job in the pipeline should the need arise.
+
 ## 📝 License
 
-All files and/or source code contained herein are for commercial use only by Nerdware, LLC.
+All files, scripts, and source code contained herein are for commercial use only by Nerdware, LLC.
 
 See [LICENSE](/LICENSE) for more information.
 
