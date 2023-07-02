@@ -1,8 +1,10 @@
 import moment from "moment";
 import { USER_ID_REGEX } from "@models/User/regex";
-import { UserStripeConnectAccount } from "./UserStripeConnectAccount";
+import {
+  UserStripeConnectAccount,
+  type UserStripeConnectAccountModelItem,
+} from "./UserStripeConnectAccount";
 import { STRIPE_CONNECT_ACCOUNT_SK_REGEX, STRIPE_CONNECT_ACCOUNT_STRIPE_ID_REGEX } from "./regex";
-import type { UserStripeConnectAccountModelItem } from "@types";
 
 const MOCK_INPUTS = {
   USER_A: {
@@ -22,8 +24,9 @@ const MOCK_INPUTS = {
   },
 } as const;
 
+type MockInputKey = keyof typeof MOCK_INPUTS;
 // This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
-const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<keyof typeof MOCK_INPUTS>;
+const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<MockInputKey>;
 
 const testUserFields = (mockUserSCA: UserStripeConnectAccountModelItem) => {
   expect(mockUserSCA.userID).toMatch(USER_ID_REGEX);
@@ -37,17 +40,15 @@ const testUserFields = (mockUserSCA: UserStripeConnectAccountModelItem) => {
 };
 
 describe("UserStripeConnectAccount model R/W database operations", () => {
-  let createdUserSCAs = {} as {
-    -readonly [K in keyof typeof MOCK_INPUTS]: Awaited<
-      ReturnType<typeof UserStripeConnectAccount.createOne>
-    >;
+  const createdUserSCAs = {} as {
+    [K in MockInputKey]: Awaited<ReturnType<typeof UserStripeConnectAccount.createOne>>;
   };
 
   // Write mock UserStripeConnectAccounts to Table
   beforeAll(async () => {
     for (const key of MOCK_INPUT_KEYS) {
       // prettier-ignore
-      const createdUser = await UserStripeConnectAccount.createOne(MOCK_INPUTS[key])
+      const createdUser = await UserStripeConnectAccount.createOne(MOCK_INPUTS[key] as any);
       createdUserSCAs[key] = createdUser;
     }
   });

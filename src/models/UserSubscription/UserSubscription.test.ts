@@ -2,9 +2,8 @@ import moment from "moment";
 import { USER_ID_REGEX } from "@models/User/regex";
 import { ENV } from "@server/env";
 import { MILLISECONDS_PER_DAY } from "@tests/datetime";
-import { UserSubscription } from "./UserSubscription";
+import { UserSubscription, type UserSubscriptionModelItem } from "./UserSubscription";
 import { USER_SUBSCRIPTION_SK_REGEX, USER_SUB_STRIPE_ID_REGEX } from "./regex";
-import type { UserSubscriptionModelItem } from "@types";
 import type { Simplify } from "type-fest";
 
 const USER_1 = "USER#11111111-1111-1111-1111-sub111111111";
@@ -41,13 +40,11 @@ const MOCK_INPUTS = {
   },
 } as const;
 
+type MockInputKey = keyof typeof MOCK_INPUTS;
 // This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
-const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<keyof typeof MOCK_INPUTS>;
+const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<MockInputKey>;
 
-const testSubFields = (
-  mockInputsKey: keyof typeof MOCK_INPUTS,
-  mockSub: UserSubscriptionModelItem
-) => {
+const testSubFields = (mockInputsKey: MockInputKey, mockSub: UserSubscriptionModelItem) => {
   expect(mockSub.userID).toMatch(USER_ID_REGEX);
   expect(mockSub.sk).toMatch(USER_SUBSCRIPTION_SK_REGEX);
   expect(mockSub.id).toMatch(USER_SUB_STRIPE_ID_REGEX);
@@ -62,8 +59,8 @@ const testSubFields = (
 };
 
 describe("UserSubscription model R/W database operations", () => {
-  let createdSubs = {} as {
-    -readonly [K in keyof typeof MOCK_INPUTS]: Simplify<
+  const createdSubs = {} as {
+    [K in MockInputKey]: Simplify<
       UserSubscriptionModelItem & Required<Pick<UserSubscriptionModelItem, "userID" | "sk">>
     >;
   };
@@ -79,7 +76,7 @@ describe("UserSubscription model R/W database operations", () => {
 
   test("UserSubscription.upsertItem returns expected keys and values", () => {
     Object.entries(createdSubs).forEach(([mockInputsKey, createdSub]) => {
-      testSubFields(mockInputsKey as keyof typeof MOCK_INPUTS, createdSub);
+      testSubFields(mockInputsKey as MockInputKey, createdSub);
     });
   });
 
@@ -95,7 +92,7 @@ describe("UserSubscription model R/W database operations", () => {
     }
   });
 
-  test("UserSubscription.validateExisting only throws on invalid/expired subscription", async () => {
+  test("UserSubscription.validateExisting only throws on invalid/expired subscription", () => {
     expect(() => {
       // Valid subs
       UserSubscription.validateExisting(createdSubs.SUB_A);
