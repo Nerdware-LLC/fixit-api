@@ -44,7 +44,7 @@
     // Emit Configs:
     "outDir": "./build",
     "removeComments": true,
-    "sourceMap": true,
+    // "sourceMap": true,
 
     // Output Formatting:
     "noErrorTruncation": true,
