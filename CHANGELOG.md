@@ -4,14 +4,6 @@ All notable changes to this project will be documented in this file.
 
 ---
 
-
-# [1.20.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.19.0...v1.20.0) (2023-07-02)
-
-
-### Features
-
-* add route '/stripe' to webhooksRouter ([6b0d6d4](https://github.com/Nerdware-LLC/fixit-api/commit/6b0d6d475f9ef0098e75829956b6b448efd48950))
-
 # [1.20.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.19.0...v1.20.0) (2023-07-01)
 
 
