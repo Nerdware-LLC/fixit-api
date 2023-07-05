@@ -7,11 +7,11 @@
 
 Fixit API services built on NodeJS and Apollo GraphQL.
 
-Author: [Trevor Anderson](https://github.com/trevor-anderson), Founder of [Nerdware](https://github.com/Nerdware-LLC)
+Author: [Trevor Anderson](https://github.com/trevor-anderson), Solopreneur & Founder of [Nerdware](https://github.com/Nerdware-LLC)
 
 [<img src="./.github/assets/powered_by_Stripe_blurple.svg" height="26" style="position:relative;top:3px;"/>](https://stripe.com/)
 &nbsp;
-![test_workflow_status](https://github.com/Nerdware-LLC/fixit-api/actions/workflows/test.yaml/badge.svg?branch=main)
+![test_workflow_status](https://github.com/Nerdware-LLC/fixit-api/actions/workflows/cicd_pipeline.yaml/badge.svg?branch=main)
 &nbsp;
 [![graphql][graphql-shield]](https://graphql.org/)
 &nbsp;
@@ -35,8 +35,8 @@ Author: [Trevor Anderson](https://github.com/trevor-anderson), Founder of [Nerdw
   - [Fixit-API Access Patterns](#fixit-api-access-patterns)
   - [Single Table Design](#single-table-design)
 - [📦 CI/CD Pipeline](#-cicd-pipeline)
-  - [Codegen](#codegen)
   - [GitHub Actions](#github-actions)
+  - [Codegen](#codegen)
 - [📝 License](#-license)
 - [💬 Contact](#-contact)
 
@@ -44,23 +44,20 @@ Author: [Trevor Anderson](https://github.com/trevor-anderson), Founder of [Nerdw
 
 ## 🗺 Project Layout
 
-```bash
-.
-├── .github/                # GitHub Actions workflows and other GitHub-related files
-├── docker/                 # API Dockerfile and docker-compose.yaml
-├── fixit@current.graphql   # The Fixit API GraphQL schema
-└── src/                    # Source code files
-    ├── __tests__/          # Jest setup files and test utils
-    ├── events/             # Event emitter and handlers
-    ├── graphql/            # GraphQL typedefs and resolvers
-    ├── lib/                # Third-party client configs and internal cache
-    ├── middleware/         # Middleware functions used by routers/
-    ├── models/             # Data-defining classes which implement DB CRUD operations
-    ├── routers/            # Express routers
-    ├── server/             # Server init logic and process handlers
-    ├── types/              # Global type definitions, including codegen'd types
-    └── utils/              # Utility functions
-```
+- [**`.github/`**](/.github) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; GitHub Actions workflows and other GitHub-related files
+- [**`docker`**](/docker) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; API Dockerfile and docker-compose.yaml
+- [**`fixit@current.graphql`**](/fixit%40current.graphql) &nbsp; The Fixit API GraphQL schema
+- [**`src/`**](/src) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Source code files
+  - [**`__tests__/`**](/src/__tests__/README.md) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Jest setup files and test utils
+  - [**`events/`**](/src/events) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Event emitter and handlers
+  - [**`graphql/`**](/src/graphql) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; GraphQL typedefs and resolvers
+  - [**`lib/`**](/src/lib) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Third-party clients and internal cache
+  - [**`middleware/`**](/src/middleware) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Middleware functions used by routers/
+  - [**`models/`**](/src/models) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Data-defining classes which implement DB CRUD operations
+  - [**`routers/`**](/src/routers) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Express routers
+  - [**`server/`**](/src/server) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Server init logic and process handlers
+  - [**`types/`**](/src/types) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Global type definitions and codegen'd types
+  - [**`utils/`**](/src/utils) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Utility functions
 
 ## 🛣️ API Routes
 
@@ -175,17 +172,26 @@ This API uses a single DynamoDB table with primary keys `pk` and `sk`, along wit
 
 <!-- TODO Add screenshot image of pipeline_production workflow in action -->
 
+### GitHub Actions
+
+This project's CI/CD pipeline uses GitHub Actions to [test](/.github/workflows/test.yaml), [release](/.github/workflows/release.yaml), and [deploy](/.github/workflows/deploy.yaml) staging and production environments. Both environments are associated with a protected Git branch:
+
+| Environment | Git Branch | Permits `git push` |
+| :---------- | :--------: | :----------------: |
+| production  |    main    |         NO         |
+| staging     |    next    |        YES         |
+
+For each environment, the [CI/CD pipeline workflow](/.github/workflows/cicd_pipeline.yaml) calls three workflows from the [Nerdware reusable-workflows repo](https://github.com/Nerdware-LLC/reusable-action-workflows):
+
+1. [`Node Test`](https://github.com/Nerdware-LLC/reusable-action-workflows/tree/main#node-test) - Runs test suites, adds test and coverage info to PRs, and updates [CodeCov](https://about.codecov.io/).
+2. [`Release`](https://github.com/Nerdware-LLC/reusable-action-workflows/tree/main#release) - Creates a new GitHub release using [Semantic Release](https://github.com/semantic-release/semantic-release#readme).
+3. [`ECR Image Push`](https://github.com/Nerdware-LLC/reusable-action-workflows/tree/main#ecr-image-push) - Builds a Docker image and pushes it to [Amazon ECR](https://aws.amazon.com/ecr/).
+
 ### Codegen
 
 TypeScript types are generated using [GraphQL Code Generator](https://graphql-code-generator.com/) and the [Fixit GraphQL schema](./fixit%40current.graphql). The same generated types are used throughout the entire Fixit stack.
 
 When the [Fixit GraphQL schema](./fixit%40current.graphql) is updated during development, changes are automatically pushed to [Apollo Studio](https://www.apollographql.com/), thereby enabling every component of the stack to use the latest version of the schema (or any particular previous version, if necessary). The schema changes are pulled into other Fixit repos using [Rover GitHub Actions](https://www.apollographql.com/docs/rover/ci-cd/#github-actions), but can also be pulled imperatively using the [Rover CLI](https://www.apollographql.com/docs/rover/).
-
-### GitHub Actions
-
-This project's CI/CD pipeline uses GitHub Actions to test, release, and deploy staging and production environments. For each environment, a "pipeline workflow" calls three _**local**_ reusable workflows: Test, Release, and ECR Image Push. Each of these _**local**_ reusable workflows call other reusable workflows defined in the Nerdware reusable-workflows repo.
-
-Keeping each job as a separate callable workflow allows the staging and production pipelines to simply provide different inputs to shared workflows, and each build step is also provided with a `workflow_dispatch` trigger, thereby enabling imperative on-demand execution of any job in the pipeline should the need arise.
 
 ## 📝 License
 
@@ -225,7 +231,7 @@ Trevor Anderson - [@TeeRevTweets](https://twitter.com/teerevtweets) - [Trevor@Ne
 <!-- LINKS -->
 
 [graphql-shield]: https://img.shields.io/badge/GraphQL-E10098.svg?logo=graphql&logoColor=E10098&labelColor=454545
-[apollo-shield]: https://img.shields.io/badge/Apollo_Server_v3-311C87.svg?logo=apollo-graphql&labelColor=454545
+[apollo-shield]: https://img.shields.io/badge/Apollo_Server_v4-311C87.svg?logo=apollo-graphql&labelColor=454545
 [express-shield]: https://img.shields.io/badge/Express_v4-7B7B7B.svg?logo=express&logoColor=FFF&labelColor=454545
 [pre-commit-shield]: https://img.shields.io/badge/pre--commit-33A532.svg?logo=pre-commit&logoColor=F8B424&labelColor=454545
 [semantic-shield]: https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-E10098.svg
