@@ -1,0 +1,69 @@
+name: Test Workflow
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, reopened, synchronize] # default PR types
+    branches: [main, next]
+    paths: ["src/**/*", "package*.json"]
+  push:
+    branches: [main, next]
+    paths: ["src/**/*", "package*.json"]
+
+jobs:
+  test:
+    name: Run Tests
+    uses: Nerdware-LLC/reusable-action-workflows/.github/workflows/node_test.yaml@main
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    with:
+      test-script: "test"
+      # The node_test workflow masks these "env-vars" values and makes them
+      # available as environment variables for the test script. This serves as
+      # a workaround for the fact that GitHub Actions does not propagate the
+      # env context to called workflows.
+      env-vars: >-
+        NODE_ENV=test
+        PROTOCOL=http
+        DOMAIN=localhost
+        PORT=8080
+        AWS_REGION=local
+        DYNAMODB_TABLE_NAME=fixit-db-test
+        SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+        JWT_PRIVATE_KEY=${{ secrets.JWT_TEST_KEY }}
+        JWT_ALGORITHM=${{ secrets.JWT_ALGORITHM }}
+        STRIPE_PUBLISHABLE_KEY=${{ secrets.STRIPE_TEST_PUBLISHABLE_KEY }}
+        STRIPE_SECRET_KEY=${{ secrets.STRIPE_TEST_SECRET_KEY }}
+        STRIPE_WEBHOOKS_SECRET=${{ secrets.STRIPE_TEST_WEBHOOKS_SECRET }}
+        FIXIT_SUB_PRODUCT_ID=${{ secrets.STRIPE_TEST_FIXIT_SUB_PRODUCT_ID }}
+        FIXIT_SUB_PRICES_JSON=${{ secrets.STRIPE_TEST_FIXIT_SUB_PRICES_JSON }}
+        FIXIT_SUB_PROMO_CODES_JSON=${{ secrets.STRIPE_TEST_FIXIT_SUB_PROMO_CODES_JSON }}
+
+  update_pr:
+    name: Update PR with Coverage Reports
+    needs: test
+    if: github.event_name == "pull_request" # only run on PRs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # Required to checkout the code
+      pull-requests: write # Required to put a comment into the PR
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: coverage-reports
+      - uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          skip-step: all # Use existing reports, no need to re-run tests
+          coverage-file: coverage/coverage-final.json
+          base-coverage-file: coverage/coverage-final.json
+          annotations: none # <-- Can change this value to add code annotations
+          # https://github.com/marketplace/actions/jest-coverage-report#change-annotations
+
+  release:
+    name: Release (push-only)
+    needs: test
+    if: | # only run on push events when tests pass
+      github.event_name == "push" && needs.test.outputs.did-tests-succeed == true
+    uses: ./release.yaml
+    secrets:
+      SEMANTIC_RELEASE_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}

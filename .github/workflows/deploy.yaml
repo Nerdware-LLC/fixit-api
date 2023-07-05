@@ -1,0 +1,29 @@
+name: Deploy Workflow
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    name: Deploy
+    uses: Nerdware-LLC/reusable-action-workflows/.github/workflows/upload_to_s3.yaml@main
+    with:
+      # github.ref_name will be the release tag name, e.g. 'v1.0.0' or 'v1.0.0-next.1'.
+      # If the ref_name contains 'next', then the S3 bucket target destination will be
+      # '<bucket-name>/staging', otherwise it will be '<bucket-name>/production'. The
+      # CloudFront distributions are configured to serve the 'staging' or 'production'
+      # S3 bucket paths based on the origin subdomain (e.g. 'staging.example.com' or
+      # 'example.com'). For a real-world production app, you'd want to use the ref_tag
+      # as the target, and set rules in the distribution to select the appropriate
+      # version/environment, but this setup is sufficient for a demo application.
+      s3-target-dest: |
+        ${{ secrets.S3_BUCKET_NAME }}/${{ contains(github.ref_name, 'next') && 'production' || 'staging' }}
+      s3-sync-command-params: "--acl bucket-owner-full-control --sse AES256 --delete"
+    secrets:
+      OIDC_GITHUB_ROLE_ARN: ${{ secrets.OIDC_GITHUB_ROLE_ARN }}
+      S3_BUCKET_REGION: ${{ secrets.S3_BUCKET_REGION }}
+    # permissions required to use aws-actions/configure-aws-credentials@v1
+    permissions:
+      id-token: write
+      contents: read
