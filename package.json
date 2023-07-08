@@ -17,7 +17,7 @@
     "url": "https://github.com/Nerdware-LLC/fixit-api/issues"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": "16.17.0"
   },
   "type": "module",
   "scripts": {

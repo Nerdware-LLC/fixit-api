@@ -9,6 +9,9 @@ on:
     types: [closed]
     branches: [main, next]
     paths: ["src/**/*", "package*.json"]
+  push:
+    branches: [main, next]
+    paths: ["src/**/*", "package*.json"]
 
 jobs:
   release:
