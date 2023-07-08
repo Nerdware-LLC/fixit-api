@@ -16,7 +16,7 @@ services:
     volumes:
       - ".:/home/node/app"
     env_file:
-      - src/server/.dev.env
+      - .env.dev
     environment:
       - AWS_ACCESS_KEY_ID=local
       - AWS_SECRET_ACCESS_KEY=local

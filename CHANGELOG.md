@@ -4,7 +4,6 @@ All notable changes to this project will be documented in this file.
 
 ---
 
-
 # [1.20.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.19.0...v1.20.0) (2023-07-01)
 
 

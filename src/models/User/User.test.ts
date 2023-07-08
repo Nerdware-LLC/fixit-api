@@ -26,13 +26,11 @@ const MOCK_INPUTS = {
   },
 } as const;
 
+type MockInputKey = keyof typeof MOCK_INPUTS;
 // This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
-const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<keyof typeof MOCK_INPUTS>;
+const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<MockInputKey>;
 
-const testUserFields = (
-  mockInputsKey: keyof typeof MOCK_INPUTS,
-  mockUser: Partial<UserModelItem>
-) => {
+const testUserFields = (mockInputsKey: MockInputKey, mockUser: Partial<UserModelItem>) => {
   const mockUserInputs = MOCK_INPUTS[mockInputsKey];
 
   expect(mockUser.id).toMatch(USER_ID_REGEX);
@@ -60,9 +58,7 @@ const testUserFields = (
 };
 
 describe("User model R/W database operations", () => {
-  const createdUsers = {} as {
-    -readonly [K in keyof typeof MOCK_INPUTS]: Partial<UserModelItem>;
-  };
+  const createdUsers = {} as { [K in MockInputKey]: UserModelItem };
 
   beforeAll(async () => {
     // Write mock Users to Table
@@ -73,7 +69,7 @@ describe("User model R/W database operations", () => {
 
   test("User.createOne returns expected keys and values", () => {
     Object.entries(createdUsers).forEach(([mockInputsKey, createdUser]) => {
-      testUserFields(mockInputsKey as keyof typeof MOCK_INPUTS, createdUser);
+      testUserFields(mockInputsKey as MockInputKey, createdUser);
     });
   });
 

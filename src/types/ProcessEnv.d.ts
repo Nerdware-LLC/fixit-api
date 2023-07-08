@@ -1,3 +1,5 @@
+import type { Algorithm } from "jsonwebtoken";
+
 export {};
 
 declare global {
@@ -15,6 +17,7 @@ declare global {
       DYNAMODB_TABLE_NAME: string;
       APOLLO_STUDIO_INTROSPECTION_AUTH_TOKEN?: string;
       JWT_PRIVATE_KEY: string;
+      JWT_ALGORITHM: Algorithm;
       SENTRY_DSN: string;
       STRIPE_API_VERSION: string;
       STRIPE_WEBHOOKS_SECRET: string;

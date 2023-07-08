@@ -5,10 +5,10 @@ export const validateAndDecodeJWT = async (token: string): Promise<FixitApiJwtPa
   return new Promise((resolve, reject) => {
     jwt.verify(
       token,
-      JWT_PRIVATE_KEY,
+      ENV.SECURITY.JWT_PRIVATE_KEY,
       {
         ...SHARED_JWT_PARAMS,
-        algorithms: ["HS256"],
+        algorithms: [ENV.SECURITY.JWT_ALGORITHM],
         maxAge: "10h",
       },
       (err, decoded) => {
@@ -20,22 +20,17 @@ export const validateAndDecodeJWT = async (token: string): Promise<FixitApiJwtPa
 };
 
 export const signAndEncodeJWT = (payload: FixitApiJwtPayload) => {
-  return jwt.sign(payload, JWT_PRIVATE_KEY, {
+  return jwt.sign(payload, ENV.SECURITY.JWT_PRIVATE_KEY, {
     ...SHARED_JWT_PARAMS,
-    algorithm: "HS256",
+    algorithm: ENV.SECURITY.JWT_ALGORITHM,
     expiresIn: "10h",
-    subject: `${payload.id}`,
+    subject: payload.id,
   });
 };
 
-const {
-  CONFIG: { API_FULL_URL },
-  SECURITY: { JWT_PRIVATE_KEY },
-} = ENV;
-
 /** JWT params used for both signing and verifying tokens. */
 const SHARED_JWT_PARAMS = {
-  audience: API_FULL_URL,
+  audience: ENV.CONFIG.API_FULL_URL,
   issuer: "fixit",
 };
 
