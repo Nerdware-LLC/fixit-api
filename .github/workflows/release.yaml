@@ -12,9 +12,9 @@ on:
 
 jobs:
   release:
-    name: Release
-    if: | # If event is a closed PR, only run if PR was merged
-      startsWith(github.event_name, 'workflow') ||
+    name: Release # if event is a closed PR, only run if PR was merged
+    if: |
+      github.event_name != 'pull_request' ||
         github.event.pull_request.merged == true
     uses: Nerdware-LLC/reusable-action-workflows/.github/workflows/release.yaml@main
     secrets:
