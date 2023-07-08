@@ -14,8 +14,6 @@ jobs:
   test:
     name: Run Tests
     uses: Nerdware-LLC/reusable-action-workflows/.github/workflows/node_test.yaml@main
-    secrets:
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     with:
       test-script: "test"
       # The node_test workflow masks these "env-vars" values and makes them
@@ -29,6 +27,9 @@ jobs:
         PORT=8080
         AWS_REGION=local
         DYNAMODB_TABLE_NAME=fixit-db-test
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      env-vars: >-
         SENTRY_DSN=${{ secrets.SENTRY_DSN }}
         JWT_PRIVATE_KEY=${{ secrets.JWT_TEST_KEY }}
         JWT_ALGORITHM=${{ secrets.JWT_ALGORITHM }}
@@ -41,8 +42,8 @@ jobs:
 
   update_pr:
     name: Update PR with Coverage Reports
-    needs: test
-    if: github.event_name == "pull_request" # only run on PRs
+    needs: test # only run on PRs
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read # Required to checkout the code
@@ -61,9 +62,8 @@ jobs:
 
   release:
     name: Release (push-only)
-    needs: test
-    if: | # only run on push events when tests pass
-      github.event_name == "push" && needs.test.outputs.did-tests-succeed == true
-    uses: ./release.yaml
+    needs: test # only run on push events when tests pass
+    if: github.event_name == 'push' && needs.test.outputs.did-tests-succeed == true
+    uses: ./.github/workflows/release.yaml
     secrets:
       SEMANTIC_RELEASE_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
