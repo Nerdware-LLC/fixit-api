@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+# [1.21.0-next.1](https://github.com/Nerdware-LLC/fixit-api/compare/v1.20.0...v1.21.0-next.1) (2023-07-08)
+
+
+### Features
+
+* add 'jwt-algorithm' to env vars to parameterize algo by env ([6c3056d](https://github.com/Nerdware-LLC/fixit-api/commit/6c3056d2135d47cdc4bdedd6a5ba13745b1b65c7))
+* add 'push' event to release workflow ([29a9247](https://github.com/Nerdware-LLC/fixit-api/commit/29a92472c0c5dcb64c9978fc33f0c388d143e36e))
+* set engines.node to 16.17.0 ([78db912](https://github.com/Nerdware-LLC/fixit-api/commit/78db9129d4ed6b713b6e67d056ed20de0b6d6924))
+
 # [1.20.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.19.0...v1.20.0) (2023-07-01)
 
 
