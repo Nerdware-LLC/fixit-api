@@ -15,6 +15,7 @@ jobs:
     name: Run Tests
     uses: Nerdware-LLC/reusable-action-workflows/.github/workflows/node_test.yaml@main
     with:
+      node-version: "16.17.0"
       test-script: "test"
       # The node_test workflow masks these "env-vars" values and makes them
       # available as environment variables for the test script. This serves as
