@@ -46,13 +46,15 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
-      contents: read # Required to checkout the code
-      pull-requests: write # Required to put a comment into the PR
+      contents: read # required to checkout the code
+      pull-requests: write # required to put a comment into the PR
     steps:
-      - uses: actions/download-artifact@v3
+      - name: Download Artifact "coverage-reports"
+        uses: actions/download-artifact@v3
         with:
           name: coverage-reports
-      - uses: ArtiomTr/jest-coverage-report-action@v2
+      - name: Update PR Using "coverage-reports" Artifact
+        uses: ArtiomTr/jest-coverage-report-action@v2
         with:
           skip-step: all # Use existing reports, no need to re-run tests
           coverage-file: coverage/coverage-final.json
