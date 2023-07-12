@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+# [1.22.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.21.0...v1.22.0) (2023-07-12)
+
+
+### Features
+
+* **ci:** add 'dockerfile-path' input to ecr_image_push ([c94a508](https://github.com/Nerdware-LLC/fixit-api/commit/c94a508a1bbc63bb7ec464c1d27273273870d694))
+* **ci:** ensure codegen'd files are ignore by pre-commit hooks ([2332247](https://github.com/Nerdware-LLC/fixit-api/commit/2332247a5321267ce5483f629c3d90184797b7b1))
+* **ci:** rm PR from events triggering Release Workflow ([3918e94](https://github.com/Nerdware-LLC/fixit-api/commit/3918e94c2ff86b0ad029c5465cf2e44606c92c57))
+* **ci:** set engines.node to '>=16.0.0', set explicit node-version in Test Workflow ([d2c102c](https://github.com/Nerdware-LLC/fixit-api/commit/d2c102cdf258587aeb2629f4589e2a5b24e5f705))
+
 # [1.22.0-next.1](https://github.com/Nerdware-LLC/fixit-api/compare/v1.21.0...v1.22.0-next.1) (2023-07-09)
 
 
