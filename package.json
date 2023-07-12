@@ -1,6 +1,6 @@
 {
   "name": "fixit-api",
-  "version": "1.21.0",
+  "version": "1.22.0-next.1",
   "description": "Fixit API services built on NodeJS and Apollo GraphQL.",
   "author": {
     "name": "Trevor Anderson",
@@ -17,7 +17,7 @@
     "url": "https://github.com/Nerdware-LLC/fixit-api/issues"
   },
   "engines": {
-    "node": "16.17.0"
+    "node": ">=16.0.0"
   },
   "type": "module",
   "scripts": {

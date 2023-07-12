@@ -14,7 +14,9 @@ repos:
       - id: check-executables-have-shebangs
       - id: check-yaml # validate yaml file syntax
       - id: end-of-file-fixer # ensure files end in newline char
+        exclude: src/types/graphql # don't modify codegen'd content
       - id: trailing-whitespace # trim superfluous whitespace from eol
+        exclude: src/types/graphql # don't modify codegen'd content
         args: [--markdown-linebreak-ext=md]
 
       # Security
