@@ -205,8 +205,13 @@ export type MergeModelAndTableKeysSchema<
 
 /** Model config options to define item-level transformations and validations. */
 export interface ModelSchemaOptions {
-  /** Whether the Model allows unknown attributes on create/upsert operations (default: `false`). */
-  readonly allowUnknownAttributes?: boolean;
+  /**
+   * Whether the Model allows items to include properties which aren't defined in its
+   * schema on create/upsert operations (default: `false`). This may also be set to
+   * an array of strings to only allow certain attributes - this can be useful if the
+   * Model includes a `transformItem` function which adds properties to the item.
+   */
+  readonly allowUnknownAttributes?: boolean | Array<string>;
   /** Item-level transformations to/from the DB. */
   readonly transformItem?: {
     /** Fn to modify entire Item before `validate` fn is called. */

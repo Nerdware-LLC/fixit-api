@@ -56,9 +56,11 @@ export const ioHookActions: Readonly<
         accum[aliasMap[itemKey]] = value;
       } else if (
         hasDefinedProperty(schema, itemKey) ||
-        schemaOptions.allowUnknownAttributes === true
+        schemaOptions.allowUnknownAttributes === true ||
+        (Array.isArray(schemaOptions.allowUnknownAttributes) &&
+          schemaOptions.allowUnknownAttributes.includes(itemKey))
       ) {
-        // Else if itemKey is an attribute OR schema allows unknown attributes, simply add K-V as-is
+        // Else if itemKey is an attribute OR schema allows the unknown attribute, simply add K-V as-is
         accum[itemKey] = value;
       } else {
         const keyTypeLabel = ioDirection === "toDB" ? "Attribute alias" : "Key";
