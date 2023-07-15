@@ -25,13 +25,16 @@ export const ioHookActions: Readonly<
     /* See if nested schema is an array or an object. Nested values can only be set if
     parent already exists, so itemValue is also checked (if !exists, do nothing).  */
     if (isType.array(nestedSchema) && isType.array(itemValue)) {
-      /* If schema.length === 1, apply that config to all elements in the array.
-      Note that since `IOHookActionMethod`s require `item` to be an object, array
-      elements and their nested attrConfigs are given an arbitrary key of "_". */
+      /* If schema.length === 1, apply that config to all elements in the array. Note that
+      since `IOHookActionMethod`s require `item` to be an object, array elements and their
+      nested attrConfigs are provided as the value to a wrapper object with an arbitrary
+      key of "_". Regardless, the ioAction is called using the `call` prototype method to
+      ensure the function doesn't lose its this context.  */
+      // prettier-ignore
       itemValue = itemValue.map(
         nestedSchema.length === 1
-          ? (el) => ioAction({ _: el }, { schema: { _: nestedSchema[0] } as ModelSchemaType, ...ctx })._
-          : (el, i) => ioAction({ _: el }, { schema: { _: nestedSchema[i] } as ModelSchemaType, ...ctx })._ // prettier-ignore
+          ? (el) => ioAction.call(this, { _: el }, { schema: { _: nestedSchema[0] } as ModelSchemaType, ...ctx })._
+          : (el, i) => ioAction.call(this, { _: el }, { schema: { _: nestedSchema[i] } as ModelSchemaType, ...ctx })._
       );
     } else if (isType.map(nestedSchema) && isType.map(itemValue)) {
       itemValue = ioAction(itemValue, { schema: nestedSchema, ...ctx });
