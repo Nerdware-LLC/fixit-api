@@ -5,8 +5,8 @@ import {
   type ItemInputType,
   type ModelSchemaOptions,
 } from "@lib/dynamoDB";
-import { USER_ID_REGEX } from "@models/User";
-import { WORK_ORDER_ID_REGEX } from "@models/WorkOrder";
+import { USER_ID_REGEX } from "@models/User/regex";
+import { WORK_ORDER_ID_REGEX } from "@models/WorkOrder/regex";
 import { COMMON_ATTRIBUTES, type FixitUserFields } from "@models/_common";
 import { ddbSingleTable } from "@models/ddbSingleTable";
 import { INVOICE_SK_PREFIX_STR as INV_SK_PREFIX, INVOICE_SK_REGEX as INV_SK_REGEX } from "./regex";
@@ -21,6 +21,10 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema, InvoiceModelItem, I
 
   static readonly getFormattedID = (createdByUserID: string, createdAt: Date) => {
     return `${INV_SK_PREFIX}#${createdByUserID}#${moment(createdAt).unix()}`;
+  };
+
+  static readonly isValidID = (value?: unknown) => {
+    return typeof value === "string" && INV_SK_REGEX.test(value);
   };
 
   static readonly schema = {
@@ -85,64 +89,24 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema, InvoiceModelItem, I
         ...item,
       }),
     },
+    // These properties are added by transformItem, so they must be allow-listed:
+    allowUnknownAttributes: ["createdBy", "assignedTo"],
   };
 
   constructor() {
-    super("Invoice", InvoiceModel.schema, { ...InvoiceModel.schemaOptions, ...ddbSingleTable });
+    super("Invoice", InvoiceModel.schema, {
+      ...InvoiceModel.schemaOptions,
+      ...ddbSingleTable,
+    });
   }
 
-  // INVOICE MODEL — Instance properties:
+  // INVOICE MODEL — Instance properties and methods:
 
   readonly STATUSES = InvoiceModel.STATUSES;
   readonly SK_PREFIX = InvoiceModel.SK_PREFIX;
-
-  // INVOICE MODEL — Instance methods:
-
   readonly getFormattedID = InvoiceModel.getFormattedID;
+  readonly isValidID = InvoiceModel.isValidID;
   readonly updateOne = updateOne;
-
-  readonly queryInvoiceByID = async (invoiceID: string) => {
-    const [invoice] = await this.query({
-      where: { id: invoiceID },
-      limit: 1,
-      // IndexName: DDB_INDEXES.Overloaded_SK_GSI.name,
-      // KeyConditionExpression: "id = :id",
-      // ExpressionAttributeValues: { ":id": invoiceID },
-    });
-    return invoice;
-  };
-
-  readonly queryUsersInvoices = async (userID: string) => {
-    return await this.query({
-      where: {
-        createdByUserID: userID,
-        id: { beginsWith: this.SK_PREFIX },
-      },
-      // KeyConditionExpression: "pk = :userID AND begins_with(sk, :invSKprefix)",
-      // ExpressionAttributeValues: {
-      //   ":userID": userID,
-      //   ":invSKprefix": `${INV_SK_PREFIX}#`,
-      // },
-    });
-  };
-
-  readonly queryInvoicesAssignedToUser = async (userID: string) => {
-    return await this.query({
-      where: {
-        assignedToUserID: userID,
-        id: { beginsWith: this.SK_PREFIX },
-      },
-      // IndexName: DDB_INDEXES.Overloaded_Data_GSI.name,
-      // KeyConditionExpression: "#uid = :userID AND begins_with(sk, :invSKprefix)",
-      // ExpressionAttributeNames: {
-      //   "#uid": DDB_INDEXES.Overloaded_Data_GSI.primaryKey,
-      // },
-      // ExpressionAttributeValues: {
-      //   ":userID": userID,
-      //   ":invSKprefix": `${INV_SK_PREFIX}#`,
-      // },
-    });
-  };
 }
 
 export const Invoice = new InvoiceModel();

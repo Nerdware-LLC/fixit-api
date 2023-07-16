@@ -6,7 +6,7 @@ import {
   type ModelSchemaOptions,
 } from "@lib/dynamoDB";
 import { Location } from "@models/Location";
-import { USER_ID_REGEX } from "@models/User";
+import { USER_ID_REGEX } from "@models/User/regex";
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES, type FixitUserFields } from "@models/_common";
 import { ddbSingleTable } from "@models/ddbSingleTable";
 import { createOne } from "./createOne";
@@ -32,8 +32,12 @@ class WorkOrderModel extends Model<
   static readonly CATEGORIES = ENUM_CONSTANTS.CATEGORIES;
   static readonly SK_PREFIX = WO_SK_PREFIX;
 
-  static readonly getFormattedID = (createdByUserID: string, createdAt: Date) => {
+  static readonly getFormattedID = (createdByUserID: string, createdAt: moment.MomentInput) => {
     return `${WO_SK_PREFIX}#${createdByUserID}#${moment(createdAt).unix()}`;
+  };
+
+  static readonly isValidID = (value?: unknown) => {
+    return typeof value === "string" && WO_ID_REGEX.test(value);
   };
 
   static readonly schema = {
@@ -46,7 +50,8 @@ class WorkOrderModel extends Model<
     sk: {
       type: "string",
       alias: "id",
-      default: (woItem: { pk: string; createdAt: Date }) => WorkOrderModel.getFormattedID(woItem.pk, woItem.createdAt), // prettier-ignore
+      default: (woItem: { pk: string; createdAt: Date }) =>
+        WorkOrderModel.getFormattedID(woItem.pk, woItem.createdAt),
       validate: (value: string) => WO_ID_REGEX.test(value),
       required: true,
     },
@@ -106,7 +111,7 @@ class WorkOrderModel extends Model<
           schema: {
             id: {
               type: "string",
-              default: (woItem: { pk: string }) => `${WO_SK_PREFIX}#${woItem.pk}#CHECKLIST_ITEM#${moment().unix()}`, // prettier-ignore
+              default: (woItem: { sk: string }) => `${woItem.sk}#CHECKLIST_ITEM#${moment().unix()}`,
               validate: (value: string) => WO_CHECKLIST_ITEM_ID_REGEX.test(value),
               required: true,
             },
@@ -155,6 +160,8 @@ class WorkOrderModel extends Model<
         ...woItem,
       }),
     },
+    // These properties are added by transformItem, so they must be allow-listed:
+    allowUnknownAttributes: ["createdBy", "assignedTo"],
   };
 
   constructor() {
@@ -164,65 +171,16 @@ class WorkOrderModel extends Model<
     });
   }
 
-  // WORK ORDER SUBSCRIPTION MODEL — Instance properties
-  // The below getters allow static enums to be read from the model instance (for convenience)
+  // WORK ORDER MODEL — Instance properties and methods:
 
   readonly PRIORITIES = WorkOrderModel.PRIORITIES;
   readonly STATUSES = WorkOrderModel.STATUSES;
   readonly CATEGORIES = WorkOrderModel.CATEGORIES;
   readonly SK_PREFIX = WorkOrderModel.SK_PREFIX;
-
-  // WORK ORDER MODEL — Instance methods:
-
+  readonly getFormattedID = WorkOrderModel.getFormattedID;
+  readonly isValidID = WorkOrderModel.isValidID;
   readonly createOne = createOne;
   readonly updateOne = updateOne;
-
-  // TODO This method can be rm'd
-  readonly queryWorkOrderByID = async (workOrderID: string) => {
-    const [workOrder] = await this.query({
-      where: { id: workOrderID },
-      limit: 1,
-      // IndexName: DDB_INDEXES.Overloaded_SK_GSI.name,
-      // KeyConditionExpression: `${DDB_INDEXES.Overloaded_SK_GSI.primaryKey} = :id`,
-      // ExpressionAttributeValues: { ":id": workOrderID },
-    });
-    return workOrder;
-  };
-
-  // TODO This method can be rm'd
-  readonly queryUsersWorkOrders = async (userID: string) => {
-    return await this.query({
-      where: {
-        createdByUserID: userID,
-        id: { beginsWith: this.SK_PREFIX },
-      },
-      // KeyConditionExpression: "#uid = :userID AND begins_with(sk, :woSKprefix)",
-      // ExpressionAttributeNames: { "#uid": "pk" },
-      // ExpressionAttributeValues: {
-      //   ":userID": userID,
-      //   ":woSKprefix": `${WO_SK_PREFIX}#`,
-      // },
-    });
-  };
-
-  // TODO This method can be rm'd
-  readonly queryWorkOrdersAssignedToUser = async (userID: string) => {
-    return await this.query({
-      where: {
-        assignedToUserID: userID,
-        id: { beginsWith: this.SK_PREFIX },
-      },
-      // IndexName: DDB_INDEXES.Overloaded_Data_GSI.name,
-      // KeyConditionExpression: "#uid = :userID AND begins_with(sk, :woSKprefix)",
-      // ExpressionAttributeNames: {
-      //   "#uid": DDB_INDEXES.Overloaded_Data_GSI.primaryKey,
-      // },
-      // ExpressionAttributeValues: {
-      //   ":userID": userID,
-      //   ":woSKprefix": `${WO_SK_PREFIX}#`,
-      // },
-    });
-  };
 }
 
 export const WorkOrder = new WorkOrderModel();
