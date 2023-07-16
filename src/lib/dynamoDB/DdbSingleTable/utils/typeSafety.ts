@@ -10,13 +10,16 @@ export const isType = Object.freeze({
   Buffer: (input: unknown): input is Buffer => Buffer.isBuffer(input),
   Date: (input: unknown): input is Date => input instanceof Date && !isNaN(input.getTime()),
   array: (input: unknown): input is Array<unknown> => Array.isArray(input),
+  tuple: (input: unknown, nestedSchema: unknown): input is [...unknown[]] =>
+    Array.isArray(input) && Array.isArray(nestedSchema) && input.length === nestedSchema.length,
   /** Test if `input` is a record/dictionary-like object (e.g. `{ foo: "bar" }`) */
   map: (input: unknown): input is Record<string, unknown> =>
     typeof input === "object" && !Array.isArray(input) && input !== null,
   enum: <EnumValues extends ReadonlyArray<string>>(
     input: unknown,
-    allowedValues: EnumValues
-  ): input is EnumValues[number] => typeof input === "string" && allowedValues.includes(input),
+    allowedValues: unknown
+  ): input is EnumValues[number] =>
+    typeof input === "string" && Array.isArray(allowedValues) && allowedValues.includes(input),
 });
 
 /**
