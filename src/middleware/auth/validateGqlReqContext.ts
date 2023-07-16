@@ -3,7 +3,7 @@ import { ENV } from "@server/env";
 import { AuthToken } from "@utils/AuthToken";
 import { GqlAuthError, GqlPaymentRequiredError } from "@utils/customErrors";
 import type { Request } from "express";
-import type { ApolloServerResolverContext } from "../../apolloServer";
+import type { ApolloServerResolverContext } from "../../createApolloServer";
 
 const validateGqlRequest = async ({
   req,
