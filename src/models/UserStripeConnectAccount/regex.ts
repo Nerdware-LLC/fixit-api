@@ -1,9 +1,8 @@
-import { USER_ID_REGEX_STR } from "@models/User";
+import { USER_ID_REGEX_STR } from "@models/User/regex";
 
 export const STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR = "STRIPE_CONNECT_ACCOUNT";
-export const STRIPE_CONNECT_ACCOUNT_SK_REGEX = new RegExp(
-  `^${STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR}#${USER_ID_REGEX_STR}$`
-);
+export const STRIPE_CONNECT_ACCOUNT_SK_REGEX_STR = `^${STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR}#${USER_ID_REGEX_STR}$`;
+export const STRIPE_CONNECT_ACCOUNT_SK_REGEX = new RegExp(STRIPE_CONNECT_ACCOUNT_SK_REGEX_STR);
 
 /**
  * Stripe connect account id regex
