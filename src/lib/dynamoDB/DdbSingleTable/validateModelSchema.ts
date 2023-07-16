@@ -33,7 +33,8 @@ export const validateModelSchema = function <ModelSchema extends ModelSchemaType
         (keyConfigProperty) => {
           if (hasKey(attrConfigs, keyConfigProperty)) {
             throw new SchemaValidationError(
-              `"${modelName}" Model schema attribute "${attrName}" includes an "${keyConfigProperty}" config, which is only valid in a TableKeysSchema.`
+              `${modelName} Model schema attribute "${attrName}" includes an ` +
+                `"${keyConfigProperty}" config, which is only valid in a TableKeysSchema.`
             );
           }
         }
@@ -44,7 +45,7 @@ export const validateModelSchema = function <ModelSchema extends ModelSchemaType
         // If alias already exists in accum, there's a dupe alias in the schema, throw error
         if (alias in accum.aliasesToAttributesMap) {
           throw new SchemaValidationError(
-            `"${modelName}" Model schema contains duplicate alias "${alias}".`
+            `${modelName} Model schema contains duplicate alias "${alias}".`
           );
         }
 
@@ -56,26 +57,27 @@ export const validateModelSchema = function <ModelSchema extends ModelSchemaType
       // Ensure "type" was provided
       if (!type) {
         throw new SchemaValidationError(
-          `"${modelName}" Model schema attribute "${attrName}" does not specify a "type".`
+          `${modelName} Model schema attribute "${attrName}" does not specify a "type".`
         );
       }
 
-      // Validate nested "map" and "array" types
-      if (type === "map" || type === "array") {
-        // Ensure nested "map" and "array" types define a nested "schema"
+      // Validate nested "map", "array", and "tuple" types
+      if (["map", "array", "tuple"].includes(type)) {
+        // Ensure nested types define a nested "schema"
         if (!schema) {
           throw new SchemaValidationError(
-            `"${modelName}" Model schema attribute "${attrName}" is of type ` +
-              `"${type}" but does not specify a nested "schema".`
+            `${modelName} Model schema attribute "${attrName}" is of type ` +
+              `"${type}", but does not specify a nested "schema".`
           );
         }
         // Ensure nested "schema" type matches the "map"/"array" type
         if (
           (type === "map" && !isType.map(schema)) ||
-          (type === "array" && !isType.array(schema))
+          (type === "array" && !isType.array(schema)) ||
+          (type === "tuple" && !isType.array(schema))
         ) {
           throw new SchemaValidationError(
-            `"${modelName}" Model schema attribute "${attrName}" is of type "${type}" ` +
+            `${modelName} Model schema attribute "${attrName}" is of type "${type}", ` +
               `but its nested "schema" is not an ${type === "map" ? "object" : "array"}.`
           );
         }
@@ -84,7 +86,7 @@ export const validateModelSchema = function <ModelSchema extends ModelSchemaType
       // Ensure "enum" types define a "oneOf" array with at least 1 element
       if (type === "enum" && (!Array.isArray(oneOf) || oneOf.length === 0)) {
         throw new SchemaValidationError(
-          `"${modelName}" Model schema attribute "${attrName}" is of type "${type}" ` +
+          `${modelName} Model schema attribute "${attrName}" is of type "${type}", ` +
             `but does not specify a valid "oneOf" array.`
         );
       }
@@ -96,7 +98,7 @@ export const validateModelSchema = function <ModelSchema extends ModelSchemaType
         !isType[type](defaultValue, oneOf)
       ) {
         throw new SchemaValidationError(
-          `"${modelName}" Model schema attribute "${attrName}" specifies a "default" ` +
+          `${modelName} Model schema attribute "${attrName}" specifies a "default" ` +
             `which does not match the attribute's "type" (${type}).`
         );
       }

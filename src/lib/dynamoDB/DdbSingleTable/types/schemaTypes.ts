@@ -27,23 +27,60 @@ export interface BaseAttributeConfigProperties {
    * - For type "enum":
    *   - The `oneOf` property must be defined.
    */
-  readonly type: "string" | "number" | "boolean" | "Buffer" | "Date" | "map" | "array" | "enum";
+  readonly type:
+    | "string"
+    | "number"
+    | "boolean"
+    | "Buffer"
+    | "Date"
+    | "map"
+    | "array"
+    | "tuple"
+    | "enum";
   /** Specifies allowed values for attributes of `type: "enum"`. */
   readonly oneOf?: ReadonlyArray<string>;
   /**
-   * Optional attribute default value to apply during write operations. If set to a
-   * function, it is called with the entire raw item-object provided to the Model
-   * method, and the attribute value is set to the function's returned value. With the
-   * exception of `updateItem` calls, an attribute's value is set to this `default` if
-   * the initial value provided to the Model method is `undefined` or `null`. Note that
-   * if a specified `default` is a primitive rather than a function, and the primitive's
-   * type does not match the attribute's `type`, the Model's constructor will throw an
-   * error. _DdbST does not validate functional `default`s._
+   * Optional attribute default value to apply during write operations. If set to a function,
+   * it is called with the entire raw item-object provided to the Model method, and the attribute
+   * value is set to the function's returned value. With the exception of `updateItem` calls, an
+   * attribute's value is set to this `default` if the initial value provided to the Model method
+   * is `undefined` or `null`. Note that if a specified `default` is a primitive rather than a fn,
+   * and the primitive's type does not match the attribute's `type`, the Model's constructor will
+   * throw an error. _DdbST does not validate functional `default`s._
+   *
+   * Bear in mind that key and index attributes are always processed _before_ all other attributes,
+   * thereby making them available to use in `default` functions for other attributes. For example,
+   * in the below `LibraryModelSchema`, each `authorID` is generated using the `libraryID` plus a
+   * UUID:
+   * ```ts
+   * const LibraryModelSchema = {
+   *   libraryID: {
+   *     isHashKey: true,
+   *     type: "string",
+   *     default: () => makeLibraryID()
+   *   },
+   *   authors: {
+   *     type: "array",
+   *     schema: [
+   *       {
+   *         type: "map",
+   *         schema: {
+   *           authorID: {
+   *             type: "string",
+   *             default: ({ libraryID }) => libraryID + getUUID()
+   *             // libraryID is available here because it is a key attribute!
+   *           },
+   *         }
+   *       }
+   *    ],
+   *   },
+   * };
+   * ```
    */
   readonly default?:
     | Required<unknown>
     | null
-    | ((input: Record<string, unknown>) => Required<unknown> | null);
+    | ((item: Record<string, unknown>) => Required<unknown> | null);
   /** Methods for transforming the attribute value to/from the DB. */
   readonly transformValue?: {
     /** Fn to modify value before `validate` fn is called; use for normalization. */
@@ -114,7 +151,7 @@ export interface KeyAttributeConfig extends BaseAttributeConfigProperties {
 export interface ModelSchemaAttributeConfig extends BaseAttributeConfigProperties {
   /**
    * An attribute's nested schema. This property is only valid for attributes of type
-   * `"map"` or `"array"`.
+   * `"map"`, `"array"`, or `"tuple"`.
    *
    * For `"map"` attributes, the schema must be an object whose keys are the names of
    * the nested attributes, and whose values are the nested attribute configs. Note that
@@ -133,7 +170,8 @@ export interface ModelSchemaAttributeConfig extends BaseAttributeConfigPropertie
    *   attribute config.
    * - If the schema is an array with a length > 1, the attribute is treated as a tuple
    *   of fixed length, where each element in the array is of the type defined by the
-   *   attribute config at the corresponding index.
+   *   attribute config at the corresponding index. Tuple attribute values on items being
+   *   written to the DB must have the same length as the corresponding schema.
    *
    * > - `schema` is limited to a max nest depth of 5 levels.
    */
@@ -146,7 +184,7 @@ export type ModelSchemaNestedAttributes = ModelSchemaNestedMap | ModelSchemaNest
 export type ModelSchemaNestedArray = ReadonlyArray<ModelSchemaAttributeConfig>;
 /** Type for "schema" defining nested map of attribute values. */
 export interface ModelSchemaNestedMap {
-  readonly [k: string]: ModelSchemaAttributeConfig;
+  readonly [nestedAttrName: string]: ModelSchemaAttributeConfig;
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -156,7 +194,7 @@ export interface ModelSchemaNestedMap {
  * Type for the `TableKeys` schema; for `Model` schemas, instead use {@link ModelSchemaType}.
  */
 export interface TableKeysSchemaType {
-  readonly [k: string]: KeyAttributeConfig;
+  readonly [keyAttrName: string]: KeyAttributeConfig;
 }
 
 /**
@@ -172,13 +210,13 @@ export interface TableKeysSchemaType {
  */
 export type ModelSchemaType<TableKeysSchema extends TableKeysSchemaType | undefined = undefined> =
   TableKeysSchema extends TableKeysSchemaType
-    ? { readonly [k: string]: ModelSchemaAttributeConfig } & {
-        readonly [K in keyof TableKeysSchema]?: SetOptional<
+    ? { readonly [attrName: string]: ModelSchemaAttributeConfig } & {
+        readonly [KeyAttrName in keyof TableKeysSchema]?: SetOptional<
           ModelSchemaAttributeConfig,
           "type" | "required"
         >;
       }
-    : { readonly [k: string]: ModelSchemaAttributeConfig };
+    : { readonly [attrName: string]: ModelSchemaAttributeConfig };
 
 /**
  * Use this type to derive a _merged_ schema type from merging a
@@ -223,6 +261,18 @@ export interface ModelSchemaOptions {
   /** Item-level custom validation function. */
   readonly validateItem?: (item: any) => boolean;
 }
+
+/**
+ * Schema entries are created by each Model upon instantiation using
+ * `Object.entries(schema)` to achieve the following:
+ *
+ * - Ensure `IOHookActionMethod`s aren't needlessly re-creating schema entries
+ *   using `Object.entries(schema)` on every call.
+ * - Ensure that the order of attributes processed by `IOHookActionMethod`s is
+ *   always consistent.
+ * - Ensure that key attributes are always processed before non-key attributes.
+ */
+export type SchemaEntries = Array<[string, ModelSchemaAttributeConfig]>;
 
 ///////////////////////////////////////////////////////////////////
 // SCHEMA MAPPED UTILITY-TYPES:
