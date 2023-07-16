@@ -1,4 +1,3 @@
-import "./env";
 import "./initSentry";
 import "./processEventHandlers";
 import "./logStartupInfo";
@@ -9,7 +8,6 @@ await import("./initCacheForUsersSearch");
 
 /* The imports in this file achieve the following:
 
-  env                      Initialize the ENV object
   sentry                   Initialize Sentry
   processHandlers          Initialize NodeJS process event handlers
   logStartupInfo           Logs fixit-api version and other runtime info
