@@ -1,4 +1,4 @@
-import { passwordHasher } from "@utils";
+import { passwordHasher } from "@utils/passwordHasher";
 import type { UserModelItem } from "@models/User";
 
 export class UserLogin {
