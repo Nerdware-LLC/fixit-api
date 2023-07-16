@@ -58,26 +58,6 @@ class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccoun
   readonly SK_PREFIX = UserStripeConnectAccountModel.SK_PREFIX;
   readonly createOne = createOne;
   readonly updateOne = updateOne;
-
-  readonly queryByStripeConnectAccountID = async (stripeConnectAccountID: string) => {
-    const [userSCA] = await this.query({
-      where: {
-        id: stripeConnectAccountID,
-        sk: { beginsWith: this.SK_PREFIX },
-      },
-      limit: 1,
-      // IndexName: DDB_INDEXES.Overloaded_Data_GSI.name,
-      // KeyConditionExpression: "#scaID = :scaID AND begins_with(sk, :scaSKprefix)",
-      // ExpressionAttributeNames: {
-      //   "#scaID": DDB_INDEXES.Overloaded_Data_GSI.primaryKey,
-      // },
-      // ExpressionAttributeValues: {
-      //   ":scaID": stripeConnectAccountID,
-      //   ":scaSKprefix": `${SCA_SK_PREFIX}#`,
-      // },
-    });
-    return userSCA;
-  };
 }
 
 export const UserStripeConnectAccount = new UserStripeConnectAccountModel();
