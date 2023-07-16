@@ -9,6 +9,7 @@ import type {
   // Model schema types:
   ModelSchemaType,
   ModelSchemaOptions,
+  SchemaEntries,
   // IO-Action types:
   IODirection,
   IOActionSetFn,
@@ -43,27 +44,27 @@ import type {
 /**
  * Each Model instance is provided with a set of CRUD methods featuring parameter
  * and return types which reflect the Model's schema. Model instance methods wrap
- * a corresponding method of the DdbSingleTableClient instance with sets of {@link IOActionSet|actions}
- * which use the Model's schema to provide functionality related to database-IO like
- * alias mapping, value validation, etc.
+ * a corresponding method of the DdbSingleTableClient instance with sets of
+ * "{@link IOActionSetFn|IO Hook Actions}" which use the Model's schema to provide
+ * functionality related to database-IO like alias mapping, value validation, etc.
  *
- * There are two sets of actions, grouped by data flow directionality:
- * 1. **`toDB`**: Actions executed on objects being _sent to_ the database.
+ * There are two sets of IO-Actions, grouped by data flow directionality:
+ * 1. **`toDB`**: IO-Actions executed on objects being _sent to_ the database.
  *    - Only used for _write_ operations.
- * 2. **`fromDB`**: Actions executed on objects being _returned from_ the database.
+ * 2. **`fromDB`**: IO-Actions executed on objects being _returned from_ the database.
  *    - Used for both _read_ AND _write_ operations which return 1+ items.
  *
- * The actions undertaken for each set are listed below in order of execution. Note
- * that some actions are skipped by certain methods, depending on the method's purpose.
+ * The IO-Actions undertaken for each set are listed below in order of execution. Note
+ * that some IO-Actions are skipped by certain methods, depending on the method's purpose.
  * For example, objects provided to `Model.updateItem` are not subjected to `"required"`
  * checks, since the method is intended to update individual properties of existing items.
- * _See **{@link ioHookActions}** for more info an any of the actions listed below._
+ * _See **{@link ioHookActions}** for more info an any of the IO-Actions listed below._
  *
  * **`toDB`**:
  * 1. **`Alias Mapping`** — Replaces "alias" keys with attribute names.
  * 2. **`Set Defaults`** — Applies defaults defined in the schema.
- * 3. **`Attribute `toDB` Modifiers`** — Runs your `transformValue.toDB` fns.
- * 4. **`Item `toDB` Modifiers`** — Runs your `transformItem.toDB` fn.
+ * 3. **`Attribute toDB Modifiers`** — Runs your `transformValue.toDB` fns.
+ * 4. **`Item toDB Modifier`** — Runs your `transformItem.toDB` fn.
  * 5. **`Type Checking`** — Checks properties for conformance with their `"type"`.
  * 6. **`Attribute Validation`** — Validates individual item properties.
  * 7. **`Item Validation`** — Validates an item in its entirety.
@@ -72,9 +73,23 @@ import type {
  *
  * **`fromDB`**:
  * 1. **`Convert JS Types`** — Converts DynamoDB types into JS types.
- * 2. **`Attribute `fromDB` Modifiers`** — Runs your `transformValue.fromDB` fns.
- * 3. **`Item `fromDB` Modifiers`** — Runs your `transformItem.fromDB` fn.
+ * 2. **`Attribute fromDB Modifiers`** — Runs your `transformValue.fromDB` fns.
+ * 3. **`Item fromDB Modifier`** — Runs your `transformItem.fromDB` fn.
  * 4. **`Alias Mapping`** — Replaces attribute names with "alias" keys.
+ *
+ * #### Ordering of Attributes
+ * Both `toDB` and `fromDB` IO-Actions which process individual attributes always
+ * process attributes in the same order:
+ *   1. The table hash key is always processed first.
+ *   2. The table sort key is always processed second.
+ *   3. Any index PKs are processed after the table SK.
+ *   4. All other attributes are then processed in the order they are defined in the schema.
+ *
+ * Aside from ensuring predictable execution, this consistency also opens up design
+ * opportunities for your various schema. For example, if you have a schema which uses a
+ * function to dynamically generate a default value for an `id` attribute which is used as
+ * the table hash key, other non-key attributes may be defined using the item's generated
+ * `id` value.
  *
  * @class
  * @template Schema - The Model's schema type.
@@ -99,6 +114,7 @@ export class Model<
 
   readonly modelName: string;
   readonly schema: Schema;
+  readonly schemaEntries: SchemaEntries;
   readonly schemaOptions: ModelSchemaOptions;
   readonly attributesToAliasesMap: Record<string, string>;
   readonly aliasesToAttributesMap: Record<string, string>;
@@ -139,6 +155,23 @@ export class Model<
     this.tableRangeKey = tableRangeKey;
     this.indexes = indexes;
     this.ddbClient = ddbClient;
+
+    // Cache sorted schema entries for IOHookActions
+    this.schemaEntries = Object.entries(modelSchema).sort(([attrNameA], [attrNameB]) => {
+      return attrNameA === tableHashKey // Sort tableHashKey to the front
+        ? -1
+        : attrNameB === tableHashKey
+        ? 1
+        : attrNameA === tableRangeKey // tableRangeKey goes after tableHashKey
+        ? -1
+        : attrNameB === tableRangeKey
+        ? 1
+        : attrNameA in indexes // index PKs, if any, go after tableRangeKey
+        ? -1
+        : attrNameB in indexes
+        ? 1
+        : 0; // For all other attributes the order is unchanged
+    });
   }
 
   // INSTANCE METHODS: wrapped DdbSingleTableClient methods
@@ -338,6 +371,7 @@ export class Model<
         ioDirection,
         modelName: this.modelName,
         schema: this.schema,
+        schemaEntries: this.schemaEntries,
         schemaOptions: this.schemaOptions,
         attributesToAliasesMap: this.attributesToAliasesMap,
         aliasesToAttributesMap: this.aliasesToAttributesMap,
@@ -421,6 +455,7 @@ export class Model<
       ioDirection,
       modelName: this.modelName,
       schema: this.schema,
+      schemaEntries: this.schemaEntries,
       schemaOptions: this.schemaOptions,
       attributesToAliasesMap: this.attributesToAliasesMap,
       aliasesToAttributesMap: this.aliasesToAttributesMap,
