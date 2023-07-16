@@ -1,3 +1,5 @@
+import type { EnvObject } from "@types";
+
 const {
   NODE_ENV,
   npm_package_version,
@@ -6,11 +8,9 @@ const {
   PORT,
   AWS_REGION,
   DYNAMODB_TABLE_NAME,
-  APOLLO_STUDIO_INTROSPECTION_AUTH_TOKEN,
   JWT_PRIVATE_KEY,
   JWT_ALGORITHM,
   SENTRY_DSN,
-  STRIPE_API_VERSION,
   STRIPE_WEBHOOKS_SECRET,
   STRIPE_PUBLISHABLE_KEY,
   STRIPE_SECRET_KEY,
@@ -26,13 +26,12 @@ const FIXIT_SUB_PRICES = JSON.parse(FIXIT_SUB_PRICES_JSON) as {
 
 const API_BASE_URL = `${PROTOCOL}://${DOMAIN}`;
 
-export const ENV = Object.freeze({
+export const ENV: EnvObject = Object.freeze({
   NODE_ENV,
   IS_PROD: /^prod/i.test(NODE_ENV),
   CONFIG: {
-    PROJECT_VERSION: npm_package_version,
-    // prettier-ignore
-    TIMEZONE: `${new Date().toString().match(/([A-Z]+[+-][0-9]+.*)/)?.[1] ?? "FAILED_TO_OBTAIN_TIMEZONE"}`,
+    PROJECT_VERSION: `v${npm_package_version}`,
+    TIMEZONE: `${new Date().toString().match(/([A-Z]+[+-][0-9]+.*)/)?.[1] ?? "FAILED_TO_OBTAIN_TIMEZONE"}`, // prettier-ignore
     PROTOCOL,
     DOMAIN,
     PORT,
@@ -50,17 +49,12 @@ export const ENV = Object.freeze({
   SECURITY: {
     JWT_PRIVATE_KEY,
     JWT_ALGORITHM,
-    ...(NODE_ENV === "development" && { APOLLO_STUDIO_INTROSPECTION_AUTH_TOKEN }),
   },
   SENTRY_DSN,
   STRIPE: {
-    API_VERSION: STRIPE_API_VERSION,
-    // WEBHOOKS SECRETS
     WEBHOOKS_SECRET: STRIPE_WEBHOOKS_SECRET,
-    // STRIPE KEYS
     PUBLISHABLE_KEY: STRIPE_PUBLISHABLE_KEY,
     SECRET_KEY: STRIPE_SECRET_KEY,
-    // STRIPE IDs
     BILLING: {
       FIXIT_SUBSCRIPTION: {
         productID: FIXIT_SUB_PRODUCT_ID,

@@ -1,4 +1,5 @@
 import type { Algorithm } from "jsonwebtoken";
+import type { EnvName } from "./env";
 
 export {};
 
@@ -8,18 +9,16 @@ declare global {
      * process.env fields (see src/server/env)
      */
     interface ProcessEnv {
-      NODE_ENV: "development" | "test" | "ci" | "staging" | "production";
+      NODE_ENV: EnvName;
       npm_package_version: string;
       PROTOCOL: string;
       DOMAIN: string;
       PORT: string;
       AWS_REGION: string;
       DYNAMODB_TABLE_NAME: string;
-      APOLLO_STUDIO_INTROSPECTION_AUTH_TOKEN?: string;
       JWT_PRIVATE_KEY: string;
       JWT_ALGORITHM: Algorithm;
-      SENTRY_DSN: string;
-      STRIPE_API_VERSION: string;
+      SENTRY_DSN?: string | undefined; // not provided in test envs
       STRIPE_WEBHOOKS_SECRET: string;
       STRIPE_PUBLISHABLE_KEY: string;
       STRIPE_SECRET_KEY: string;
