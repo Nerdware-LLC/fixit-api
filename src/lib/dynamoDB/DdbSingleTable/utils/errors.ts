@@ -1,5 +1,6 @@
 import { ENV } from "@server/env";
 import { safeJsonStringify } from "@utils/typeSafety";
+import type { ModelSchemaAttributeConfig, ModelSchemaNestedAttributes } from "../types";
 
 /**
  * The base `error` class for `DdbSingleTable`.
@@ -72,3 +73,25 @@ export class InvalidExpressionError extends DdbSingleTableError {
     this.name = "InvalidExpressionError";
   }
 }
+
+/** Helper fn which provides a consistent attribute identifier for error messages. */
+export const getAttrErrID = (
+  modelName: string,
+  attrName: string,
+  { alias }: ModelSchemaAttributeConfig
+) => {
+  return `${modelName} property "${alias || attrName}"`;
+};
+
+/** Helper fn which stringifies a nested schema for error messages. */
+export const stringifyNestedSchema = (
+  nestedSchema: ModelSchemaNestedAttributes,
+  propertiesToPrint: Array<keyof ModelSchemaAttributeConfig> = ["type", "oneOf", "schema"],
+  spaces = 2
+) => {
+  return JSON.stringify(
+    nestedSchema,
+    (key: any, value: unknown) => (propertiesToPrint.includes(key) ? value : undefined),
+    spaces
+  );
+};
