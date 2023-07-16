@@ -1,5 +1,5 @@
 import { Model, type ItemTypeFromSchema, type ItemInputType } from "@lib/dynamoDB";
-import { USER_ID_REGEX, USER_HANDLE_REGEX } from "@models/User";
+import { USER_ID_REGEX, USER_HANDLE_REGEX } from "@models/User/regex";
 import { COMMON_ATTRIBUTES } from "@models/_common";
 import { ddbSingleTable } from "@models/ddbSingleTable";
 import { CONTACT_SK_PREFIX_STR as SK_PREFIX, CONTACT_SK_REGEX } from "./regex";
@@ -12,6 +12,10 @@ class ContactModel extends Model<typeof ContactModel.schema> {
 
   static readonly getFormattedID = (contactUserID: string) => {
     return `${SK_PREFIX}#${contactUserID}`;
+  };
+
+  static readonly isValidID = (value?: unknown) => {
+    return typeof value === "string" && CONTACT_SK_REGEX.test(value);
   };
 
   static readonly schema = {
@@ -49,38 +53,7 @@ class ContactModel extends Model<typeof ContactModel.schema> {
   // CONTACT MODEL — Instance properties and methods:
   readonly SK_PREFIX = ContactModel.SK_PREFIX;
   readonly getFormattedID = ContactModel.getFormattedID;
-
-  // TODO This method can be rm'd
-  readonly queryContactByID = async (ownUserID: string, contactUserID: string) => {
-    const [contact] = await this.query({
-      where: {
-        userID: ownUserID,
-        id: ContactModel.getFormattedID(contactUserID),
-      },
-      limit: 1,
-      // KeyConditionExpression: "pk = :pk AND sk = :sk",
-      // ExpressionAttributeValues: {
-      //   ":pk": ownUserID,
-      //   ":sk": `${SK_PREFIX}#${contactUserID}`,
-      // },
-    });
-    return contact;
-  };
-
-  // TODO This method can be rm'd
-  readonly queryUsersContacts = async (userID: string) => {
-    return await this.query({
-      where: {
-        userID,
-        id: { beginsWith: this.SK_PREFIX },
-      },
-      // KeyConditionExpression: "pk = :userID AND begins_with(sk, :contactSKprefix)",
-      // ExpressionAttributeValues: {
-      //   ":userID": userID,
-      //   ":contactSKprefix": `${SK_PREFIX}#`,
-      // },
-    });
-  };
+  readonly isValidID = ContactModel.isValidID;
 }
 
 export const Contact = new ContactModel();
