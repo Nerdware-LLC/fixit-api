@@ -23,8 +23,9 @@ import type { ExpressionAttributeDicts } from "./types";
  *   they are added to the `"SET"` clause.
  */
 export const generateUpdateExpression = (
-  itemAttributes: { [k: string]: unknown },
+  itemAttributes: { [attrName: string]: unknown },
   { nullHandling }: GenerateUpdateExpressionOpts = {}
+  // IDEA Try adding a `nullHandling` option to Schema-types for per-attribute control.
 ) => {
   const shouldAddToRemoveClause =
     nullHandling !== "SET"
@@ -41,14 +42,15 @@ export const generateUpdateExpression = (
       ) => {
         // Get the keys for ExpressionAttribute{Names,Values}
         const { attrNamesToken, attrValuesToken } = getExpressionAttrTokens(attributeName);
-        // Update ExpressionAttribute{Names,Values}
+        // Always update ExpressionAttributeNames
         accum.ExpressionAttributeNames[attrNamesToken] = attributeName;
-        accum.ExpressionAttributeValues[attrValuesToken] = attributeValue;
         // Derive and append the appropriate UpdateExpression clause
         if (shouldAddToRemoveClause(attributeValue)) {
           accum.updateExpressionClauses.REMOVE += `${attrNamesToken}, `;
         } else {
           accum.updateExpressionClauses.SET += `${attrNamesToken} = ${attrValuesToken}, `;
+          // Only add to EAV if attrValue will be used, otherwise DDB will throw error
+          accum.ExpressionAttributeValues[attrValuesToken] = attributeValue;
         }
 
         return accum;
