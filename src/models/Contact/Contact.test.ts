@@ -1,6 +1,6 @@
 import moment from "moment";
+import { test, expect, describe, beforeAll, afterAll } from "vitest";
 import { Contact } from "./Contact";
-import { CONTACT_SK_REGEX } from "./regex";
 import type { ContactModelItem, ContactModelInput } from "./Contact";
 
 const USER_1 = "USER#11111111-1111-1111-1111-contact11111";
@@ -11,10 +11,12 @@ const MOCK_INPUTS: Record<"CONTACT_A" | "CONTACT_B", Partial<ContactModelInput>>
   CONTACT_A: {
     userID: USER_1,
     contactUserID: USER_2,
+    handle: "@contact_A",
   },
   CONTACT_B: {
     userID: USER_2,
     contactUserID: USER_3,
+    handle: "@contact_B",
   },
 } as const;
 
@@ -26,11 +28,11 @@ const testContactFields = (mockInputsKey: MockInputKey, mockContact: ContactMode
   const mockContactInputs = MOCK_INPUTS[mockInputsKey];
 
   expect(mockContact.userID).toEqual(mockContactInputs.userID);
-  expect(mockContact.id).toMatch(CONTACT_SK_REGEX);
+  expect(Contact.isValidID(mockContact.id)).toBe(true);
   expect(mockContact.contactUserID).toEqual(mockContactInputs.contactUserID);
 
-  expect(moment(mockContact.createdAt).isValid()).toEqual(true);
-  expect(moment(mockContact.updatedAt).isValid()).toEqual(true);
+  expect(moment(mockContact.createdAt).isValid()).toBe(true);
+  expect(moment(mockContact.updatedAt).isValid()).toBe(true);
 };
 
 describe("Contact model R/W database operations", () => {
@@ -53,7 +55,7 @@ describe("Contact model R/W database operations", () => {
 
   // QUERIES:
 
-  test("Contact.query Contact by ID returns expected keys and values", async () => {
+  test("Contact.query a Contact by ID returns expected keys and values", async () => {
     for (const key of MOCK_INPUT_KEYS) {
       const { userID, contactUserID } = createdContacts[key];
       const [result] = await Contact.query({
@@ -67,7 +69,7 @@ describe("Contact model R/W database operations", () => {
     }
   });
 
-  test("Contact.query User's Contacts returns expected keys and values", async () => {
+  test("Contact.query a User's Contacts returns expected keys and values", async () => {
     for (const key of MOCK_INPUT_KEYS) {
       // Should be an array of 1 Contact
       const contacts = await Contact.query({
@@ -103,7 +105,7 @@ afterAll(async () => {
 
   const remainingMockContacts = await Contact.ddbClient.scan({
     FilterExpression: "begins_with(sk, :skPrefix)",
-    ExpressionAttributeValues: { ":skPrefix": "CONTACT#" },
+    ExpressionAttributeValues: { ":skPrefix": Contact.SK_PREFIX },
   });
 
   if (Array.isArray(remainingMockContacts) && remainingMockContacts.length > 0) {

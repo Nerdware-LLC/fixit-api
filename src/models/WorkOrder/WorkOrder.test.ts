@@ -1,5 +1,6 @@
+import deepMerge from "lodash.merge";
 import moment from "moment";
-import { MILLISECONDS_PER_DAY } from "@tests/datetime";
+import { test, expect, describe, beforeAll, afterAll } from "vitest";
 import { WorkOrder } from "./WorkOrder";
 import { WORK_ORDER_ID_REGEX, WORK_ORDER_ID_REGEX_STR } from "./regex";
 import type { PartialDeep } from "type-fest";
@@ -38,10 +39,10 @@ const MOCK_INPUTS: Record<"WO_A" | "WO_B", PartialDeep<WorkOrderModelInput>> = {
       { description: "Engineer all the things" },
       { description: "Pet a doggo" },
     ],
-    dueDate: new Date(Date.now() + MILLISECONDS_PER_DAY * 10), // + 10 days
+    dueDate: moment().add(10, "days").toDate(),
     entryContact: "Sundar Pichai",
     entryContactPhone: "(555) 123-4567",
-    scheduledDateTime: new Date(Date.now() + MILLISECONDS_PER_DAY * 2), // + 2 days
+    scheduledDateTime: moment().add(2, "days").toDate(),
   },
 };
 
@@ -53,15 +54,19 @@ const testWorkOrderFields = (mockInputsKey: MockInputKey, mockWO: WorkOrderModel
   const mockWOinputs = MOCK_INPUTS[mockInputsKey];
 
   expect(mockWO.createdBy.id).toEqual(mockWOinputs.createdByUserID);
-  expect(mockWO.id).toMatch(WORK_ORDER_ID_REGEX);
-  expect(mockWO.location).toEqual({ country: "USA", ...mockWOinputs.location });
+  expect(WorkOrder.isValidID(mockWO.id)).toBe(true);
+  expect(mockWO.location).toEqual({
+    country: "USA",
+    streetLine2: null, // <-- will be overwritten if present in mockWOinputs.location
+    ...mockWOinputs.location,
+  });
 
-  expect(moment(mockWO.createdAt).isValid()).toEqual(true);
-  expect(moment(mockWO.updatedAt).isValid()).toEqual(true);
+  expect(moment(mockWO.createdAt).isValid()).toBe(true);
+  expect(moment(mockWO.updatedAt).isValid()).toBe(true);
 
   if (mockWOinputs === MOCK_INPUTS.WO_A) {
-    expect(mockWO.assignedTo?.id).toEqual("UNASSIGNED");
-    expect(mockWO.priority).toEqual("NORMAL");
+    expect(mockWO.assignedTo?.id).toBeNull();
+    expect(mockWO.priority).toBe("NORMAL");
     //
   } else if (mockWOinputs === MOCK_INPUTS.WO_B) {
     expect(mockWO.assignedTo?.id).toEqual(mockWOinputs.assignedToUserID);
@@ -70,8 +75,8 @@ const testWorkOrderFields = (mockInputsKey: MockInputKey, mockWO: WorkOrderModel
     expect(mockWO.category).toEqual(mockWOinputs.category);
     expect(mockWO.entryContact).toEqual(mockWOinputs.entryContact);
     expect(mockWO.entryContactPhone).toEqual(mockWOinputs.entryContactPhone);
-    expect(moment(mockWO.dueDate).isValid()).toEqual(true);
-    expect(moment(mockWO.scheduledDateTime).isValid()).toEqual(true);
+    expect(moment(mockWO.dueDate).isValid()).toBe(true);
+    expect(moment(mockWO.scheduledDateTime).isValid()).toBe(true);
     expect(mockWO.checklist).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -146,11 +151,9 @@ describe("WorkOrder model R/W database operations", () => {
   test("WorkOrder.updateOne returns expected keys and values", async () => {
     const updatedWOs = { ...createdWOs };
 
-    const NEW_WO_VALUES: { [K in MockInputKey]: Partial<WorkOrderModelItem> } = {
+    const NEW_WO_VALUES: { [K in MockInputKey]: PartialDeep<WorkOrderModelInput> } = {
       WO_A: {
-        assignedTo: {
-          id: USER_3,
-        },
+        assignedToUserID: USER_3,
         description: "Visit Google's Toronto HQ",
         location: {
           country: "Canada",
@@ -160,9 +163,7 @@ describe("WorkOrder model R/W database operations", () => {
         },
       },
       WO_B: {
-        assignedTo: {
-          id: "UNASSIGNED",
-        },
+        assignedToUserID: "UNASSIGNED",
         status: "UNASSIGNED", // <-- "status" currently added by updateWorkOrder resolver (conditionally)
       },
     };
@@ -174,10 +175,7 @@ describe("WorkOrder model R/W database operations", () => {
 
     // Test updated values
     for (const key of MOCK_INPUT_KEYS) {
-      expect(updatedWOs[key]).toMatchObject({
-        ...createdWOs[key],
-        ...NEW_WO_VALUES[key],
-      });
+      expect(updatedWOs[key]).toMatchObject(deepMerge(createdWOs[key], NEW_WO_VALUES[key]));
     }
   });
 

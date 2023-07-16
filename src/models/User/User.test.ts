@@ -1,3 +1,4 @@
+import { test, expect, describe, beforeAll, afterAll } from "vitest";
 import { normalizeInput, prettifyStr } from "@utils";
 import { User, type UserModelItem } from "./User";
 import { USER_ID_REGEX, USER_SK_REGEX, USER_STRIPE_CUSTOMER_ID_REGEX } from "./regex";
@@ -42,7 +43,7 @@ const testUserFields = (mockInputsKey: MockInputKey, mockUser: Partial<UserModel
   expect(mockUser.expoPushToken).toMatch(mockUserInputs.expoPushToken);
 
   if (mockUserInputs === MOCK_INPUTS.USER_A) {
-    expect(mockUser?.profile).toBeUndefined();
+    expect(mockUser?.profile?.displayName).toBeTypeOf("string");
     expect(mockUser.login).toMatchObject({
       type: "LOCAL",
       passwordHash: expect.stringMatching(/\S{30,}/i) as unknown,

@@ -1,4 +1,5 @@
 import moment from "moment";
+import { test, expect, describe, beforeAll, afterAll } from "vitest";
 import { USER_ID_REGEX } from "@models/User/regex";
 import { ENV } from "@server/env";
 import { MILLISECONDS_PER_DAY } from "@tests/datetime";
@@ -53,9 +54,9 @@ const testSubFields = (mockInputsKey: MockInputKey, mockSub: UserSubscriptionMod
   expect(mockSub.productID).toEqual(UserSubscription.PRODUCT_IDS.FIXIT_SUBSCRIPTION);
   expect(mockSub.priceID).toEqual(MOCK_INPUTS[mockInputsKey].priceID);
 
-  expect(moment(mockSub.currentPeriodEnd).isValid()).toEqual(true);
-  expect(moment(mockSub.createdAt).isValid()).toEqual(true);
-  expect(moment(mockSub.updatedAt).isValid()).toEqual(true);
+  expect(moment(mockSub.currentPeriodEnd).isValid()).toBe(true);
+  expect(moment(mockSub.createdAt).isValid()).toBe(true);
+  expect(moment(mockSub.updatedAt).isValid()).toBe(true);
 };
 
 describe("UserSubscription model R/W database operations", () => {

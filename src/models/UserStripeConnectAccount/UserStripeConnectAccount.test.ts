@@ -1,4 +1,5 @@
 import moment from "moment";
+import { test, expect, describe, beforeAll, afterAll } from "vitest";
 import { USER_ID_REGEX } from "@models/User/regex";
 import {
   UserStripeConnectAccount,
@@ -32,11 +33,11 @@ const testUserFields = (mockUserSCA: UserStripeConnectAccountModelItem) => {
   expect(mockUserSCA.userID).toMatch(USER_ID_REGEX);
   expect(mockUserSCA.sk).toMatch(STRIPE_CONNECT_ACCOUNT_SK_REGEX);
   expect(mockUserSCA.id).toMatch(STRIPE_CONNECT_ACCOUNT_STRIPE_ID_REGEX);
-  expect(mockUserSCA.detailsSubmitted).toEqual(false);
-  expect(mockUserSCA.chargesEnabled).toEqual(false);
-  expect(mockUserSCA.payoutsEnabled).toEqual(false);
-  expect(moment(mockUserSCA.createdAt).isValid()).toEqual(true);
-  expect(moment(mockUserSCA.updatedAt).isValid()).toEqual(true);
+  expect(mockUserSCA.detailsSubmitted).toBe(false);
+  expect(mockUserSCA.chargesEnabled).toBe(false);
+  expect(mockUserSCA.payoutsEnabled).toBe(false);
+  expect(moment(mockUserSCA.createdAt).isValid()).toBe(true);
+  expect(moment(mockUserSCA.updatedAt).isValid()).toBe(true);
 };
 
 describe("UserStripeConnectAccount model R/W database operations", () => {

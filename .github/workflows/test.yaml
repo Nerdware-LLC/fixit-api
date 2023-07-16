@@ -31,7 +31,6 @@ jobs:
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       env-vars: >-
-        SENTRY_DSN=${{ secrets.SENTRY_DSN }}
         JWT_PRIVATE_KEY=${{ secrets.JWT_TEST_KEY }}
         JWT_ALGORITHM=${{ secrets.JWT_ALGORITHM }}
         STRIPE_PUBLISHABLE_KEY=${{ secrets.STRIPE_TEST_PUBLISHABLE_KEY }}
@@ -55,13 +54,7 @@ jobs:
         with:
           name: coverage-reports
       - name: Update PR Using "coverage-reports" Artifact
-        uses: ArtiomTr/jest-coverage-report-action@v2
-        with:
-          skip-step: all # Use existing reports, no need to re-run tests
-          coverage-file: coverage/coverage-final.json
-          base-coverage-file: coverage/coverage-final.json
-          annotations: none # <-- Can change this value to add code annotations
-          # https://github.com/marketplace/actions/jest-coverage-report#change-annotations
+        uses: davelosert/vitest-coverage-report-action@v2
 
   release:
     name: Release (push-only)

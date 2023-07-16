@@ -1,7 +1,7 @@
 import moment from "moment";
-import { MILLISECONDS_PER_DAY } from "@tests/datetime";
+import { test, expect, describe, beforeAll, afterAll } from "vitest";
+import { WorkOrder } from "@models/WorkOrder";
 import { Invoice } from "./Invoice";
-import { INVOICE_SK_REGEX } from "./regex";
 import type { InvoiceModelItem, InvoiceModelInput } from "./Invoice";
 
 const USER_1 = "USER#11111111-1111-1111-1111-inv111111111";
@@ -19,7 +19,7 @@ const MOCK_INPUTS: Record<"INV_A" | "INV_B", Partial<InvoiceModelInput>> = {
     createdByUserID: USER_2,
     assignedToUserID: USER_1,
     amount: 22222, // $222.22
-    workOrderID: `WO#${USER_1}#${(Date.now() - MILLISECONDS_PER_DAY * 10) / 1000}`, // WO created 10 days ago
+    workOrderID: WorkOrder.getFormattedID(USER_1, moment().subtract(10, "days")),
   },
 };
 
@@ -32,11 +32,11 @@ const testInvoiceFields = (mockInputsKey: MockInputKey, mockInv: InvoiceModelIte
 
   expect(mockInv.createdBy.id).toEqual(mockInvInputs.createdByUserID);
   expect(mockInv.assignedTo.id).toEqual(mockInvInputs.assignedToUserID);
-  expect(mockInv.id).toMatch(INVOICE_SK_REGEX);
+  expect(Invoice.isValidID(mockInv.id)).toBe(true);
   expect(mockInv.amount).toEqual(mockInvInputs.amount);
 
-  expect(moment(mockInv.createdAt).isValid()).toEqual(true);
-  expect(moment(mockInv.updatedAt).isValid()).toEqual(true);
+  expect(moment(mockInv.createdAt).isValid()).toBe(true);
+  expect(moment(mockInv.updatedAt).isValid()).toBe(true);
 };
 
 describe("Invoice model R/W database operations", () => {
@@ -51,7 +51,7 @@ describe("Invoice model R/W database operations", () => {
 
   // CREATE:
 
-  test("Invoice.createOne returns expected keys and values", () => {
+  test("Invoice.createItem returns expected keys and values", () => {
     Object.entries(createdInvoices).forEach(([mockInputsKey, createdInv]) => {
       testInvoiceFields(mockInputsKey as MockInputKey, createdInv);
     });
@@ -59,10 +59,13 @@ describe("Invoice model R/W database operations", () => {
 
   // QUERIES:
 
-  test("Invoice.queryInvoiceByID returns expected keys and values", async () => {
+  test("Invoice.query Invoice by ID returns expected keys and values", async () => {
     for (const key of MOCK_INPUT_KEYS) {
-      const result = await Invoice.queryInvoiceByID(createdInvoices[key].id);
-      testInvoiceFields(key, result);
+      const [invoice] = await Invoice.query({
+        where: { id: createdInvoices[key].id },
+        limit: 1,
+      });
+      testInvoiceFields(key, invoice);
     }
   });
 
@@ -81,7 +84,7 @@ describe("Invoice model R/W database operations", () => {
     }
   });
 
-  test("Invoice.query Invoices AssignedToUser returns expected keys and values", async () => {
+  test("Invoice.query Invoices assignedToUser returns expected keys and values", async () => {
     for (const key of MOCK_INPUT_KEYS) {
       // Should be an array of 1 Invoice
       const invoices = await Invoice.query({
@@ -147,17 +150,12 @@ afterAll(async () => {
   /* After all tests are complete, ensure all mock Items created here have been deleted.
   Note: DDB methods are called from the ddbClient to circumvent toDB IO hook actions. */
 
-  const remainingMockINVs = await Invoice.scan({
+  const remainingMockINVs = await Invoice.ddbClient.scan({
     FilterExpression: "begins_with(sk, :skPrefix)",
     ExpressionAttributeValues: { ":skPrefix": Invoice.SK_PREFIX },
   });
 
   if (Array.isArray(remainingMockINVs) && remainingMockINVs.length > 0) {
-    await Invoice.batchDeleteItems(
-      remainingMockINVs.map(({ id, createdBy }) => ({
-        id,
-        createdByUserID: createdBy.id,
-      }))
-    );
+    await Invoice.ddbClient.batchDeleteItems(remainingMockINVs.map(({ pk, sk }) => ({ pk, sk })));
   }
 });

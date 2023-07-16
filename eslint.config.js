@@ -1,15 +1,10 @@
 import eslintJS from "@eslint/js";
 import importPlugin from "eslint-plugin-import";
-import jestPlugin from "eslint-plugin-jest";
 import nodePlugin from "eslint-plugin-node";
-import globalsPkg from "globals";
+import vitestPlugin from "eslint-plugin-vitest";
+import globals from "globals";
 import tsEslintPlugin from "@typescript-eslint/eslint-plugin";
 import tsEslintParser from "@typescript-eslint/parser";
-
-const {
-  node: nodeGlobals,
-  jest: { jest, ...jestGlobals }, // jest has to be explicitly imported
-} = globalsPkg;
 
 /** @type { import("eslint").Linter.FlatConfig } */
 export default [
@@ -22,7 +17,7 @@ export default [
       reportUnusedDisableDirectives: true,
     },
     languageOptions: {
-      globals: nodeGlobals,
+      globals: globals.node,
       ecmaVersion: "latest",
       sourceType: "module",
       parser: tsEslintParser,
@@ -47,6 +42,7 @@ export default [
       ...tsEslintPlugin.configs["recommended-requiring-type-checking"].rules,
       eqeqeq: ["error", "always"],
       "no-console": "warn",
+      "no-redeclare": "off", // @typescript-eslint/no-redeclare is used instead
       "no-unused-vars": "off", // @typescript-eslint/no-unused-vars is used instead
       "prefer-const": "warn",
       semi: ["error", "always"],
@@ -54,10 +50,7 @@ export default [
       "node/no-extraneous-import": ["error", { allowModules: ["@jest/globals"] }],
       "node/no-missing-import": "off",
       "node/no-process-env": "error",
-      "node/no-unpublished-import": [
-        "error",
-        { allowModules: ["@jest/types", "ts-jest", "type-fest"] },
-      ],
+      "node/no-unpublished-import": ["error", { allowModules: ["type-fest"] }],
       "node/no-unsupported-features/es-syntax": "off",
       "@typescript-eslint/ban-types": [
         "error",
@@ -101,21 +94,37 @@ export default [
   ////////////////////////////////////////////////////////////////
   // TEST FILES
   {
-    files: ["src/**/*.{test,spec}.[tj]s"],
+    files: ["src/**/*.{test,spec}.[tj]s", "**/__tests__/**/*", "**/__mocks__/**/*"],
     languageOptions: {
-      globals: jestGlobals,
+      globals: {
+        vitest: "readonly",
+        vi: "readonly",
+        describe: "readonly",
+        it: "readonly",
+        expect: "readonly",
+        assert: "readonly",
+        suite: "readonly",
+        test: "readonly",
+        beforeAll: "readonly",
+        afterAll: "readonly",
+        beforeEach: "readonly",
+        afterEach: "readonly",
+      },
     },
     plugins: {
-      jest: jestPlugin,
+      vitest: vitestPlugin,
+      node: nodePlugin,
     },
     rules: {
-      ...jestPlugin.configs.recommended.rules,
-      "jest/expect-expect": "off", // doesn't detect 'expect's in called fns
-      "jest/no-disabled-tests": "warn",
-      "jest/no-focused-tests": "error",
-      "jest/no-identical-title": "error",
-      "jest/prefer-to-have-length": "warn",
-      "jest/valid-expect": "error",
+      ...vitestPlugin.configs.recommended.rules,
+      "vitest/expect-expect": "off", // doesn't detect 'expect's in called fns
+      "vitest/no-disabled-tests": "warn",
+      "vitest/prefer-to-have-length": "warn",
+      "vitest/valid-expect": "error",
+      "node/no-unpublished-import": [
+        "error",
+        { allowModules: ["type-fest", "vitest", "@graphql-tools/mock"] },
+      ],
       "@typescript-eslint/no-unsafe-assignment": "off", // many Jest fns return `any`
     },
   },
@@ -123,7 +132,7 @@ export default [
   // NON-TEST FILES
   {
     files: ["src/**/*"],
-    ignores: ["**/__tests__/**/*", "src/**/*.{test,spec}.[tj]s"],
+    ignores: ["src/**/*.{test,spec}.[tj]s", "**/__tests__/**/*", "**/__mocks__/**/*"],
     rules: {
       "no-restricted-imports": [
         "warn",

@@ -16,6 +16,7 @@
     "module": "ES2022",
     "moduleResolution": "node",
     "resolveJsonModule": true,
+    "types": ["vitest/globals"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
