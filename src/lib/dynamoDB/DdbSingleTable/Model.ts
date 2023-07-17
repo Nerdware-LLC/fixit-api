@@ -1,6 +1,7 @@
 import merge from "lodash.merge";
+import { hasKey } from "@utils/typeSafety";
 import { ioHookActions } from "./ioHookActions";
-import { DdbSingleTableError } from "./utils";
+import { DdbSingleTableError, hasDefinedProperty } from "./utils";
 import { validateModelSchema } from "./validateModelSchema";
 import type { PartialDeep } from "type-fest";
 import type { DdbSingleTableClient } from "./DdbSingleTableClient";
@@ -180,7 +181,7 @@ export class Model<
     primaryKeys: AliasedItemPrimaryKeys<Schema>,
     getItemOpts?: CmdArgs
   ) => {
-    const toDBpks = this.aliasMapping(primaryKeys, "toDB");
+    const toDBpks = this.processKeyArgs(primaryKeys);
     const item = await this.ddbClient.getItem(toDBpks, getItemOpts);
     if (item) {
       return this.processItemData.fromDB(item) as PartialItemIfProjectionExpression<
@@ -194,7 +195,7 @@ export class Model<
     primaryKeys: Array<AliasedItemPrimaryKeys<Schema>>,
     batchGetItemsOpts?: BatchGetItemsOpts
   ) => {
-    const toDBpks = primaryKeys.map((pks) => this.aliasMapping(pks, "toDB"));
+    const toDBpks = primaryKeys.map((pks) => this.processKeyArgs(pks));
     const items = await this.ddbClient.batchGetItems(toDBpks, batchGetItemsOpts);
     return this.processItemData.fromDB(items ?? []) as Array<ItemOutput>;
   };
@@ -235,7 +236,7 @@ export class Model<
     attributesToUpdate: PartialDeep<ItemInput>,
     updateItemOpts?: UpdateItemOpts
   ) => {
-    const toDBpks = this.aliasMapping(primaryKeys, "toDB");
+    const toDBpks = this.processKeyArgs(primaryKeys);
     const toDBitem = this.processItemData.toDB(attributesToUpdate as Partial<ItemInput>, {
       shouldSetDefaults: false,
       shouldTransformItem: false,
@@ -250,7 +251,7 @@ export class Model<
     primaryKeys: AliasedItemPrimaryKeys<Schema>,
     deleteItemOpts?: DeleteItemOpts
   ) => {
-    const toDBpks = this.aliasMapping(primaryKeys, "toDB");
+    const toDBpks = this.processKeyArgs(primaryKeys);
     const itemAttributes = await this.ddbClient.deleteItem(toDBpks, deleteItemOpts);
     if (!itemAttributes) throw new DdbSingleTableError("Failed to delete item.");
     return this.processItemData.fromDB(itemAttributes) as ItemOutput;
@@ -260,7 +261,7 @@ export class Model<
     primaryKeys: Array<AliasedItemPrimaryKeys<Schema>>,
     batchDeleteItemsOpts?: BatchDeleteItemsOpts
   ) => {
-    const toDBpks = primaryKeys.map((pks) => this.aliasMapping(pks, "toDB"));
+    const toDBpks = primaryKeys.map((pks) => this.processKeyArgs(pks));
     await this.ddbClient.batchDeleteItems(toDBpks, batchDeleteItemsOpts);
     return primaryKeys;
   };
@@ -277,7 +278,7 @@ export class Model<
   ) => {
     const itemsToDB = {
       upsertItems: this.processItemData.toDB(upsertItems),
-      deleteItems: deleteItems.map((pks) => this.aliasMapping(pks, "toDB")),
+      deleteItems: deleteItems.map((pks) => this.processKeyArgs(pks)),
     };
 
     await this.ddbClient.batchUpsertAndDeleteItems(itemsToDB, batchUpsertAndDeleteItemsOpts);
@@ -295,7 +296,7 @@ export class Model<
     ...otherQueryOpts
   }: QueryOpts<ItemInput>) => {
     // If Where-API object is provided, unalias the keys
-    where &&= this.aliasMapping(where, "toDB") as ItemConditionals<ItemInput>;
+    where &&= this.unaliasKeyArgs(where) as ItemConditionals<ItemInput>;
     // Run the query
     const items = await this.ddbClient.query({ where, ...otherQueryOpts });
     // If `items` is undefined, return an empty array instead of undefined
@@ -445,20 +446,73 @@ export class Model<
   };
 
   /**
-   * This internal Model provides public methods with direct/easy access to the
-   * `aliasMapping` IO-hook action, which is used to convert between attribute
-   * names and their aliases. The only context-arg needed is the `ioDirection`,
-   * all other properties are obtained from Model instance properties.
+   * This internal Model method takes key-args from public methods like `Model.getItem`,
+   * unaliases the keys, and applies defaults to the key-args if necessary, thereby
+   * allowing the calling method to only require the _necessary_ keys. For example, if
+   * the `sk` value is derived using a `default` function that returns a string using the
+   * `pk` value, then the caller only needs to provide the `pk`.
    */
-  private readonly aliasMapping = (item: Record<string, unknown>, ioDirection: IODirection) => {
-    return ioHookActions.aliasMapping(item, {
-      ioDirection,
-      modelName: this.modelName,
-      schema: this.schema,
-      schemaEntries: this.schemaEntries,
-      schemaOptions: this.schemaOptions,
-      attributesToAliasesMap: this.attributesToAliasesMap,
-      aliasesToAttributesMap: this.aliasesToAttributesMap,
+  private readonly processKeyArgs = (primaryKeyArgs: Record<string, unknown>) => {
+    // Unalias primaryKeyArgs and apply defaults
+    return [this.tableHashKey, this.tableRangeKey].reduce(
+      (args, keyAttrName) => {
+        // If args[keyName] is null/undefined and a default is defined, use it.
+        if (!hasDefinedProperty(args, keyAttrName) && hasKey(this.schema[keyAttrName], "default")) {
+          // hasKey/hasOwnProperty is used since default can be 0, false, etc.
+          const attrDefault = this.schema[keyAttrName].default;
+          // Check if "default" is a function, and if so, call it to get the "default" value
+          primaryKeyArgs[keyAttrName] =
+            typeof attrDefault === "function" ? attrDefault(primaryKeyArgs) : attrDefault;
+        }
+        return args;
+      },
+      { ...this.unaliasKeyArgs(primaryKeyArgs) }
+    );
+  };
+
+  /**
+   * This internal Model method provides public methods with a quick way to unalias
+   * key-args, like those used in the `GetItem` and `UpdateItem` operations.
+   */
+  private readonly unaliasKeyArgs = (primaryKeyArgs: Record<string, unknown>) => {
+    return [this.tableHashKey, this.tableRangeKey].reduce(
+      (args, keyAttrName) => {
+        // Check if args contains keyAttrName - if not, check for key alias
+        if (
+          !hasKey(args, keyAttrName) &&
+          hasDefinedProperty(this.attributesToAliasesMap, keyAttrName)
+        ) {
+          const keyAlias = this.attributesToAliasesMap[keyAttrName];
+          // If args contains the key alias, replace it with the keyAttrName
+          if (hasDefinedProperty(args, keyAlias)) {
+            args[keyAttrName] = args[keyAlias];
+            delete args[keyAlias];
+          }
+        }
+        return args;
+      },
+      { ...primaryKeyArgs }
+    );
+  };
+
+  /**
+   * This internal Model method provides public methods with direct/easy access to
+   * the `setDefaults` IO-hook action for key attributes. This is used in methods
+   * like `Model.getItem` to allow the caller to only provide _necessary_ keys. If,
+   * for example, the `sk` value is derived using a `default` function that returns
+   * a string using the `pk` value, then the caller only needs to provide the `pk`.
+   */
+  private readonly getKeyDefaults = (primaryKeyArgs: Record<string, unknown>) => {
+    [this.tableHashKey, this.tableRangeKey].forEach((keyName) => {
+      // If primaryKeysInput[keyName] is null/undefined and a default is defined, use it.
+      if (!hasDefinedProperty(primaryKeyArgs, keyName) && hasKey(this.schema[keyName], "default")) {
+        // hasKey/hasOwnProperty is used since default can be 0, false, etc.
+        const attrDefault = this.schema[keyName].default;
+        // Check if "default" is a function, and if so, call it to get the "default" value
+        primaryKeyArgs[keyName] =
+          typeof attrDefault === "function" ? attrDefault(primaryKeyArgs) : attrDefault;
+      }
     });
+    return primaryKeyArgs;
   };
 }
