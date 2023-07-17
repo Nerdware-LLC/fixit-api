@@ -81,11 +81,16 @@ describe("UserSubscription model R/W database operations", () => {
     });
   });
 
-  test("UserSubscription.queryUserSubscriptions returns expected keys and values", async () => {
+  test("UserSubscription.query UserSubscriptions returns expected keys and values", async () => {
     // Get mock UserSubscriptions by userID
     for (const key of MOCK_INPUT_KEYS) {
       // Each user should only have the 1 subscription
-      const subscriptions = await UserSubscription.queryUserSubscriptions(createdSubs[key].userID);
+      const subscriptions = await UserSubscription.query({
+        where: {
+          userID: createdSubs[key].userID,
+          sk: { beginsWith: UserSubscription.SK_PREFIX },
+        },
+      });
 
       subscriptions.forEach((sub) => {
         testSubFields(key, sub);
