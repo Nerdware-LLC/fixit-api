@@ -20,7 +20,7 @@ class UserModel extends Model<typeof UserModel.schema, UserModelItem, UserModelI
   static readonly SK_PREFIX = `#DATA`;
   static readonly getFormattedSK = (userID: string) => `#DATA#${userID}`;
 
-  static readonly schema = {
+  static readonly schema = ddbSingleTable.getModelSchema({
     pk: {
       type: "string",
       alias: "id",
@@ -93,41 +93,15 @@ class UserModel extends Model<typeof UserModel.schema, UserModelItem, UserModelI
       },
     },
     ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
-  } as const;
+  } as const);
 
   constructor() {
     super("User", UserModel.schema, ddbSingleTable);
   }
 
   // USER MODEL — Instance methods:
-
   readonly getFormattedSK = UserModel.getFormattedSK;
   readonly createOne = createOne;
-
-  // TODO This method can be rm'd
-  readonly getUserByID = async (userID: string) => {
-    return await this.getItem({ id: userID, sk: UserModel.getFormattedSK(userID) });
-  };
-
-  // TODO This method can be rm'd
-  readonly batchGetUsersByID = async (userIDs: Array<string>) => {
-    return await this.batchGetItems(
-      userIDs.map((userID) => ({ id: userID, sk: UserModel.getFormattedSK(userID) }))
-    );
-  };
-
-  // TODO This method can be rm'd
-  readonly queryUserByEmail = async (email: string) => {
-    const [user] = await this.query({
-      where: { email },
-      limit: 1,
-      // IndexName: DDB_INDEXES.Overloaded_Data_GSI.name,
-      // KeyConditionExpression: "#e = :email",
-      // ExpressionAttributeNames: { "#e": DDB_INDEXES.Overloaded_Data_GSI.primaryKey },
-      // ExpressionAttributeValues: { ":email": email },
-    });
-    return user;
-  };
 }
 
 export const User = new UserModel();
