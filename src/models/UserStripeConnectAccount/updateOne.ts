@@ -1,8 +1,8 @@
 import {
   UserStripeConnectAccount,
-  STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR as SK_PREFIX,
   type UserStripeConnectAccountModelItem,
 } from "@models/UserStripeConnectAccount";
+import { STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR as SK_PREFIX } from "@models/UserStripeConnectAccount/regex";
 
 /**
  * This method updates a `UserStripeConnectAccount` item in both the DB and
