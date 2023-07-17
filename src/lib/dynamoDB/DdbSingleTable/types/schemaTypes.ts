@@ -230,9 +230,9 @@ export type MergeModelAndTableKeysSchema<
     ? TableKeysSchema[K] extends KeyAttributeConfig // <-- K is in TableKeysSchema
       ? K extends keyof ModelSchema
         ? ModelSchema[K] extends SetOptional<ModelSchemaAttributeConfig, "type" | "required">
-          ? Omit<TableKeysSchema[K], "isHashKey" | "isRangeKey" | "index"> & ModelSchema[K]
+          ? TableKeysSchema[K] & ModelSchema[K]
           : never
-        : Omit<TableKeysSchema[K], "isHashKey" | "isRangeKey" | "index">
+        : TableKeysSchema[K]
       : never
     : K extends keyof ModelSchema // <-- K is NOT in TableKeysSchema
     ? ModelSchema[K] extends ModelSchemaAttributeConfig

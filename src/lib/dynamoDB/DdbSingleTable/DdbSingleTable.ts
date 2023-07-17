@@ -111,18 +111,13 @@ export class DdbSingleTable<TableKeysSchema extends TableKeysSchemaType> {
 
   readonly ensureTableIsActive = ensureTableIsActive;
 
+  /** Returns a ModelSchema with the TableKeysSchema merged in. */
   readonly getModelSchema = <ModelSchema extends ModelSchemaType<TableKeysSchema>>(
-    schemaArgs: ModelSchema | { modelSchema: ModelSchema; modelName?: string }
+    modelSchema: ModelSchema
   ) => {
-    const { modelSchema, modelName = null } =
-      "modelSchema" in schemaArgs
-        ? (schemaArgs as { modelSchema: ModelSchema; modelName?: string })
-        : { modelSchema: schemaArgs };
-
     return getMergedModelSchema<TableKeysSchema, ModelSchema>({
       tableKeysSchema: this.tableKeysSchema,
       modelSchema,
-      ...(modelName && { modelName }),
     });
   };
 
@@ -143,19 +138,12 @@ export class DdbSingleTable<TableKeysSchema extends TableKeysSchemaType> {
       MergeModelAndTableKeysSchema<TableKeysSchema, ModelSchema>,
       ItemOutput,
       ItemInput
-    >(
-      modelName,
-      this.getModelSchema({
-        modelName,
-        modelSchema,
-      }),
-      {
-        ...modelSchemaOptions,
-        tableHashKey: this.tableHashKey,
-        tableRangeKey: this.tableRangeKey,
-        indexes: this.indexes,
-        ddbClient: this.ddbClient,
-      }
-    );
+    >(modelName, this.getModelSchema(modelSchema), {
+      ...modelSchemaOptions,
+      tableHashKey: this.tableHashKey,
+      tableRangeKey: this.tableRangeKey,
+      indexes: this.indexes,
+      ddbClient: this.ddbClient,
+    });
   };
 }
