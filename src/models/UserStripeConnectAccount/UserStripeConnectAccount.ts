@@ -16,7 +16,7 @@ import { updateOne } from "./updateOne";
 class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccountModel.schema> {
   static readonly SK_PREFIX = SCA_SK_PREFIX;
 
-  static readonly schema = {
+  static readonly schema = ddbSingleTable.getModelSchema({
     pk: {
       type: "string",
       required: true,
@@ -48,13 +48,14 @@ class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccoun
       required: true,
     },
     ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
-  } as const;
+  } as const);
 
   constructor() {
     super("UserStripeConnectAccount", UserStripeConnectAccountModel.schema, ddbSingleTable);
   }
 
   // USER STRIPE CONNECT ACCOUNT MODEL — Instance properties and methods:
+
   readonly SK_PREFIX = UserStripeConnectAccountModel.SK_PREFIX;
   readonly createOne = createOne;
   readonly updateOne = updateOne;
