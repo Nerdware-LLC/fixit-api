@@ -4,6 +4,64 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+# [1.23.0-next.1](https://github.com/Nerdware-LLC/fixit-api/compare/v1.22.0...v1.23.0-next.1) (2023-07-17)
+
+
+### Bug Fixes
+
+* ensure EAVs is only updated for SET clauses ([b0df627](https://github.com/Nerdware-LLC/fixit-api/commit/b0df6279ebcb4e36a4fe861a7e16140ca1bdc8d3))
+* ensure Sentry does not try to init for test envs ([569df2d](https://github.com/Nerdware-LLC/fixit-api/commit/569df2db8230b3ad114cbf917c7dc057f12897be))
+* extract regex-strings into own vars to aid debugging ([be2b9ba](https://github.com/Nerdware-LLC/fixit-api/commit/be2b9ba9cbd6277974b45696a021b1fb424e8615))
+* **ioHooks:** ensure recursivelyApplyIOHookAction uses fn.call for provided ioAction arg ([e986f67](https://github.com/Nerdware-LLC/fixit-api/commit/e986f677ce6a199d2ed8ba7b0b338bdbdeffd4ba))
+* replace createOne w createItem ([1bbd89a](https://github.com/Nerdware-LLC/fixit-api/commit/1bbd89a72f29ca65679cfc68d895195c266d7657))
+* replace dep'd query method w where conditional ([6658ff0](https://github.com/Nerdware-LLC/fixit-api/commit/6658ff02e41858325e66757b25a7ce1cb4d2fc38))
+* replace dep'd query method w where conditional ([6b9dc3e](https://github.com/Nerdware-LLC/fixit-api/commit/6b9dc3e4acc4c81ae0272f03839ec2e385e96c23))
+* replace WO.createOne w createItem ([f88577a](https://github.com/Nerdware-LLC/fixit-api/commit/f88577a84f63cbab9a485fd33922c9d88618d158))
+* rm dep'd queryUserSubs method w where conditional query ([69ef0d6](https://github.com/Nerdware-LLC/fixit-api/commit/69ef0d6baebb821d0a8415968848d7b357a52a73))
+* rm export of Model-regex from Model dirs ([7bfd9de](https://github.com/Nerdware-LLC/fixit-api/commit/7bfd9de2e0e098b942dbc6aa184b150459d308ff))
+* rm unnecessary inclusion of 'sk' attr in User.getItem ([036d9f0](https://github.com/Nerdware-LLC/fixit-api/commit/036d9f044a9d433fb0c2490c6f6a8b419897532c))
+* rm unnecessary init of 'ENV' obj ([e66bfa4](https://github.com/Nerdware-LLC/fixit-api/commit/e66bfa498b041b925cd23ced12de9e36b7da055b))
+* update AliasedItemPKs to ensure keys w defaults are optional ([5172d20](https://github.com/Nerdware-LLC/fixit-api/commit/5172d2017bd788a6bf0806786787ab46047485a0))
+* update import path for ApolloServerResolverContext ([3af7f0d](https://github.com/Nerdware-LLC/fixit-api/commit/3af7f0d3229a23999ddc483b018e211aa3476385))
+* update import path for ApolloServerResolverContext ([bc86233](https://github.com/Nerdware-LLC/fixit-api/commit/bc86233df0862a098a5c38dba361b7ffcf622cfe))
+* update import paths for Model regex ([e6e3fce](https://github.com/Nerdware-LLC/fixit-api/commit/e6e3fceb3c05dcc118271e9e79c3d4195b8f65e2))
+* update path to contextType ([15eaa8f](https://github.com/Nerdware-LLC/fixit-api/commit/15eaa8fc9bf3a4c54cd57d1e5272ef1273ff21e7))
+* update regex import path ([11ff1f5](https://github.com/Nerdware-LLC/fixit-api/commit/11ff1f511d1df06353404c8bc8006f9bbb7ce335))
+* wrap schema in getModelSchema ([7634714](https://github.com/Nerdware-LLC/fixit-api/commit/76347145b778bcbc5d5c42148be13a3add10b837))
+* wrap schema in getModelSchema ([5e3764f](https://github.com/Nerdware-LLC/fixit-api/commit/5e3764fb7c744300cac7d399386d5a6324eeba1b))
+* wrap schema in getModelSchema ([0c7a7f2](https://github.com/Nerdware-LLC/fixit-api/commit/0c7a7f28ae84636a180366071375fc4089f9e96b))
+* wrap schema in getModelSchema ([4371ec4](https://github.com/Nerdware-LLC/fixit-api/commit/4371ec41f003693038922ce769269f549d42f0c7))
+* wrap schema in getModelSchema, rm dep'd methods ([55890db](https://github.com/Nerdware-LLC/fixit-api/commit/55890db708df6a5aeb88a34a3dec383af7205ff1))
+* wrap schema in getModelSchema, rm dep'd methods ([605acc0](https://github.com/Nerdware-LLC/fixit-api/commit/605acc011dc1a70af6c3487ec3b8a19e543a30a4))
+
+
+### Features
+
+* add 'isValidID' method to avoid regex imports ([4b59497](https://github.com/Nerdware-LLC/fixit-api/commit/4b59497e33d972709637f6a7f35a67b9784fada9))
+* add 'isValidID' methods and allow createdBy/assignedTo schemaOpts ([0f9beea](https://github.com/Nerdware-LLC/fixit-api/commit/0f9beeaaee8f15ef974063062e1a16b5b5765b05))
+* add 'processKeyArgs' for streamlined key-args handling ([6e23ffb](https://github.com/Nerdware-LLC/fixit-api/commit/6e23ffb7f52b7e8ff6909a7ecd6d4132951044b7))
+* add 'tuple' attribute type ([8cd1c99](https://github.com/Nerdware-LLC/fixit-api/commit/8cd1c996e93bcd958be83e7e8c11d4615841c880))
+* add 'tuple' to isType util ([3f02698](https://github.com/Nerdware-LLC/fixit-api/commit/3f0269855f6ac1626efbf3d40493b23bbb95ea13))
+* add codegen'd file to prettierignore ([e4fa577](https://github.com/Nerdware-LLC/fixit-api/commit/e4fa577a0939076fc6a23c0eac39b607383ea23c))
+* add err-msg helper fns ([32d3671](https://github.com/Nerdware-LLC/fixit-api/commit/32d3671876de01a6fdbdceafa0a2469967999e75))
+* add sorted 'schemaEntries' to Model+IO-Actions ([341f661](https://github.com/Nerdware-LLC/fixit-api/commit/341f661aac0cfacd95f7701870a2b3b07915623c))
+* add Vitest globalSetup and setupTests files ([e255073](https://github.com/Nerdware-LLC/fixit-api/commit/e255073491faf726550eba7880833d5231b34386))
+* **ddbST:** allow 'allowUnknownAttributes' to be array of strings for transformItem ([126093f](https://github.com/Nerdware-LLC/fixit-api/commit/126093f9b8b3098dcc3eec1a8db62ca9e5442346))
+* impl makeExecutableSchema ([868f866](https://github.com/Nerdware-LLC/fixit-api/commit/868f866e8dd7f49a1237c366aa620c267280e141))
+* mv ApolloServer init logic to fn for env-based configurability ([546aaf3](https://github.com/Nerdware-LLC/fixit-api/commit/546aaf3587121a19fc3c17a91814941312a211b1))
+* rm manual GQL mocks ([91d487d](https://github.com/Nerdware-LLC/fixit-api/commit/91d487d2f91e3ad01d18fad78be0df1e3d51bf5a))
+* rm ModelName from err msg so fn doesnt require the param ([ff56650](https://github.com/Nerdware-LLC/fixit-api/commit/ff56650531c3f5e5951bf0e35dc4d64f578619d8))
+* rm old WO.createOne method file ([8b1cec6](https://github.com/Nerdware-LLC/fixit-api/commit/8b1cec6e3ff0bf85a011425cd0362022a5fce0d4))
+* streamline mergeModelSchema and related types ([21866b6](https://github.com/Nerdware-LLC/fixit-api/commit/21866b63170f549fe60d0aa7de4cd4b5fd63020d))
+* **tests:** add scripts to run stripe-mock docker img for testing ([a5c9f0a](https://github.com/Nerdware-LLC/fixit-api/commit/a5c9f0a2ff49af325aea364aa2dda3986ce83a61))
+* **tests:** replace Jest with Vitest ([a34dbcf](https://github.com/Nerdware-LLC/fixit-api/commit/a34dbcf4c91e98fa41cc722a1414191927074026))
+* update env vars for vitest + ci operability ([0955f7d](https://github.com/Nerdware-LLC/fixit-api/commit/0955f7dd5597c16ba714ca40650872b0bd6d7779))
+
+
+### Performance Improvements
+
+* impl AliasedKeyArgs type param ([0021153](https://github.com/Nerdware-LLC/fixit-api/commit/0021153b96a95fe16cb6ab62742e47d90dc9cd16))
+
 # [1.22.0](https://github.com/Nerdware-LLC/fixit-api/compare/v1.21.0...v1.22.0) (2023-07-12)
 
 
