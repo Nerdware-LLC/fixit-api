@@ -1,15 +1,15 @@
-import { CONTACT_SK_PREFIX_STR, type ContactModelItem } from "../Contact";
-import { INVOICE_SK_PREFIX_STR, type InvoiceModelItem } from "../Invoice";
-import { USER_SK_PREFIX_STR, type UserModelItem } from "../User";
-import {
-  STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR,
-  type UserStripeConnectAccountModelItem,
-} from "../UserStripeConnectAccount";
-import {
-  USER_SUBSCRIPTION_SK_PREFIX_STR,
-  type UserSubscriptionModelItem,
-} from "../UserSubscription";
-import { WORK_ORDER_SK_PREFIX_STR, type WorkOrderModelItem } from "../WorkOrder";
+import { CONTACT_SK_PREFIX_STR } from "../Contact/regex";
+import { INVOICE_SK_PREFIX_STR } from "../Invoice/regex";
+import { USER_SK_PREFIX_STR } from "../User/regex";
+import { STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR } from "../UserStripeConnectAccount/regex";
+import { USER_SUBSCRIPTION_SK_PREFIX_STR } from "../UserSubscription/regex";
+import { WORK_ORDER_SK_PREFIX_STR } from "../WorkOrder/regex";
+import type { ContactModelItem } from "../Contact";
+import type { InvoiceModelItem } from "../Invoice";
+import type { UserModelItem } from "../User";
+import type { UserStripeConnectAccountModelItem } from "../UserStripeConnectAccount";
+import type { UserSubscriptionModelItem } from "../UserSubscription";
+import type { WorkOrderModelItem } from "../WorkOrder";
 
 /**
  * This object contains type-guard functions which ascertain whether a given object
