@@ -1,6 +1,6 @@
 import moment from "moment";
 import { Model, type ItemTypeFromSchema } from "@lib/dynamoDB";
-import { USER_ID_REGEX } from "@models/User";
+import { USER_ID_REGEX } from "@models/User/regex";
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@models/_common";
 import { ddbSingleTable } from "@models/ddbSingleTable";
 import { ENV } from "@server/env";
@@ -31,7 +31,7 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
 
   static readonly normalizeStripeFields = normalizeStripeFields;
 
-  static readonly schema = {
+  static readonly schema = ddbSingleTable.getModelSchema({
     pk: {
       type: "string",
       alias: "userID",
@@ -90,61 +90,23 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
       required: true,
     },
     ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
-  } as const;
+  } as const);
 
   constructor() {
     super("UserSubscription", UserSubscriptionModel.schema, ddbSingleTable);
   }
 
-  // USER SUBSCRIPTION MODEL — Instance property getters
-  // The below getters allow static enums to be read from the model instance (for convenience)
+  // USER SUBSCRIPTION MODEL — Instance properties and methods:
 
   readonly PRODUCT_IDS = UserSubscriptionModel.PRODUCT_IDS;
   readonly PRICE_IDS = UserSubscriptionModel.PRICE_IDS;
   readonly PROMO_CODES = UserSubscriptionModel.PROMO_CODES;
   readonly SK_PREFIX = UserSubscriptionModel.SK_PREFIX;
-
-  // USER SUBSCRIPTION MODEL — Instance methods:
-
   readonly getFormattedSK = UserSubscriptionModel.getFormattedSK;
   readonly normalizeStripeFields = UserSubscriptionModel.normalizeStripeFields;
   readonly updateOne = updateOne;
   readonly upsertOne = upsertOne;
   readonly validateExisting = validateExisting;
-
-  readonly queryBySubscriptionID = async (subID: string) => {
-    const [userSubscription] = await this.query({
-      where: {
-        id: subID,
-        sk: { beginsWith: this.SK_PREFIX },
-      },
-      // IndexName: DDB_INDEXES.Overloaded_Data_GSI.name,
-      // KeyConditionExpression: "#subID = :subID AND begins_with(sk, :subSKprefix)",
-      // ExpressionAttributeNames: {
-      //   "#subID": DDB_INDEXES.Overloaded_Data_GSI.primaryKey,
-      // },
-      // ExpressionAttributeValues: {
-      //   ":subID": subID,
-      //   ":subSKprefix": `${SUB_SK_PREFIX}#`,
-      // },
-      Limit: 1,
-    });
-    return userSubscription;
-  };
-
-  readonly queryUserSubscriptions = async (userID: string) => {
-    return await this.query({
-      where: {
-        userID,
-        sk: { beginsWith: this.SK_PREFIX },
-      },
-      // KeyConditionExpression: "pk = :userID AND begins_with(sk, :subSKprefix)",
-      // ExpressionAttributeValues: {
-      //   ":userID": userID,
-      //   ":subSKprefix": `${SUB_SK_PREFIX}#`,
-      // },
-    });
-  };
 }
 
 export const UserSubscription = new UserSubscriptionModel();
