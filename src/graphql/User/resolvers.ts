@@ -6,7 +6,7 @@ import type { Resolvers, Contact } from "@types";
 export const resolvers: Partial<Resolvers> = {
   Query: {
     user: async (parent, args, { user }) => {
-      const getItemResult = await User.getItem({ id: user.id, sk: User.getFormattedSK(user.id) });
+      const getItemResult = await User.getItem({ id: user.id });
       if (!getItemResult) throw new GqlInternalServerError("User not found.");
       return getItemResult;
     },
