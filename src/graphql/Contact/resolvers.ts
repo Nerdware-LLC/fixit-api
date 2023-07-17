@@ -1,6 +1,6 @@
 import { DeleteMutationResponse } from "@graphql/_common";
 import { usersCache } from "@lib/cache";
-import { Contact, CONTACT_SK_REGEX, type ContactModelItem } from "@models/Contact";
+import { Contact, type ContactModelItem } from "@models/Contact";
 import { User } from "@models/User";
 import { GqlUserInputError } from "@utils/customErrors";
 import type { Resolvers, Contact as GqlContact } from "@types";
@@ -28,10 +28,7 @@ export const resolvers: Partial<Resolvers> = {
       if (`${contactUserID}`.toUpperCase() === user.id.toUpperCase())
         throw new GqlUserInputError("Can not add yourself as a contact");
 
-      const requestedUser = await User.getItem({
-        id: contactUserID,
-        sk: User.getFormattedSK(contactUserID),
-      });
+      const requestedUser = await User.getItem({ id: contactUserID });
 
       if (!requestedUser) throw new GqlUserInputError("Requested user not found.");
 
@@ -54,7 +51,7 @@ export const resolvers: Partial<Resolvers> = {
     },
     deleteContact: async (parent, { contactID }, { user }) => {
       // Test to ensure `contactID` is a valid contact ID
-      if (!CONTACT_SK_REGEX.test(contactID)) throw new GqlUserInputError("Invalid contact ID.");
+      if (!Contact.isValidID(contactID)) throw new GqlUserInputError("Invalid contact ID.");
 
       await Contact.deleteItem({ userID: user.id, id: contactID });
 
