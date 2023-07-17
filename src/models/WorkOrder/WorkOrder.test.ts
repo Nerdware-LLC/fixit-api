@@ -11,7 +11,7 @@ const USER_2 = "USER#22222222-2222-2222-2222-wo2222222222";
 const USER_3 = "USER#33333333-3333-3333-3333-wo3333333333";
 
 const MOCK_INPUTS: Record<"WO_A" | "WO_B", PartialDeep<WorkOrderModelInput>> = {
-  // WO_A contains the bare minimum inputs for WorkOrder.createOne
+  // WO_A contains the bare minimum inputs for WorkOrder.createItem
   WO_A: {
     createdByUserID: USER_1,
     location: {
@@ -20,7 +20,7 @@ const MOCK_INPUTS: Record<"WO_A" | "WO_B", PartialDeep<WorkOrderModelInput>> = {
       streetLine1: "1 Microsoft Way",
     },
   },
-  // WO_B contains all WO properties that can be provided to WorkOrder.createOne
+  // WO_B contains all WO properties that can be provided to WorkOrder.createItem
   WO_B: {
     createdByUserID: USER_2,
     assignedToUserID: USER_1,
@@ -95,13 +95,19 @@ describe("WorkOrder model R/W database operations", () => {
   beforeAll(async () => {
     // Write mock WOs to Table
     for (const key of MOCK_INPUT_KEYS) {
-      createdWOs[key] = await WorkOrder.createOne(MOCK_INPUTS[key] as any);
+      const { assignedToUserID = "UNASSIGNED", ...mockInputs } = MOCK_INPUTS[key];
+
+      createdWOs[key] = await WorkOrder.createItem({
+        assignedToUserID,
+        status: assignedToUserID === "UNASSIGNED" ? "UNASSIGNED" : "ASSIGNED",
+        ...mockInputs,
+      } as any);
     }
   });
 
   // CREATE:
 
-  test("WorkOrder.createOne returns expected keys and values", () => {
+  test("WorkOrder.createItem returns expected keys and values", () => {
     Object.entries(createdWOs).forEach(([mockInputsKey, createdWO]) => {
       testWorkOrderFields(mockInputsKey as MockInputKey, createdWO);
     });
