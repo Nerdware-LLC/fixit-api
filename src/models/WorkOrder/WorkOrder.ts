@@ -9,7 +9,6 @@ import { Location } from "@models/Location";
 import { USER_ID_REGEX } from "@models/User/regex";
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES, type FixitUserFields } from "@models/_common";
 import { ddbSingleTable } from "@models/ddbSingleTable";
-import { createOne } from "./createOne";
 import { ENUM_CONSTANTS } from "./enumConstants";
 import {
   WORK_ORDER_SK_PREFIX_STR as WO_SK_PREFIX,
@@ -40,7 +39,7 @@ class WorkOrderModel extends Model<
     return typeof value === "string" && WO_ID_REGEX.test(value);
   };
 
-  static readonly schema = {
+  static readonly schema = ddbSingleTable.getModelSchema({
     pk: {
       type: "string",
       alias: "createdByUserID",
@@ -142,7 +141,7 @@ class WorkOrderModel extends Model<
       required: false,
     },
     ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
-  } as const;
+  } as const);
 
   // prettier-ignore
   static readonly schemaOptions: ModelSchemaOptions = {
@@ -179,7 +178,6 @@ class WorkOrderModel extends Model<
   readonly SK_PREFIX = WorkOrderModel.SK_PREFIX;
   readonly getFormattedID = WorkOrderModel.getFormattedID;
   readonly isValidID = WorkOrderModel.isValidID;
-  readonly createOne = createOne;
   readonly updateOne = updateOne;
 }
 
