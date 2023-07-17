@@ -11,7 +11,7 @@ Author: [Trevor Anderson](https://github.com/trevor-anderson), Solopreneur & Fou
 
 [<img src="./.github/assets/powered_by_Stripe_blurple.svg" height="26" style="position:relative;top:3px;"/>](https://stripe.com/)
 &nbsp;
-![test_workflow_status](https://github.com/Nerdware-LLC/fixit-api/actions/workflows/cicd_pipeline.yaml/badge.svg?branch=main)
+![test_workflow_status](https://github.com/Nerdware-LLC/fixit-api/actions/workflows/test.yaml/badge.svg?branch=main)
 &nbsp;
 [![graphql][graphql-shield]](https://graphql.org/)
 &nbsp;
