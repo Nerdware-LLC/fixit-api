@@ -1,6 +1,7 @@
+import { eventEmitter } from "@events";
 import { DeleteMutationResponse } from "@graphql/_common";
 import { verifyUserCanPerformThisUpdate, getFixitUser } from "@graphql/_helpers";
-import { USER_ID_REGEX } from "@models/User";
+import { USER_ID_REGEX } from "@models/User/regex";
 import { WorkOrder } from "@models/WorkOrder";
 import type { WorkOrderModelItem } from "@models/WorkOrder";
 import type { Resolvers, WorkOrder as GqlWorkOrder } from "@types";
@@ -50,13 +51,16 @@ export const resolvers: Partial<Resolvers> = {
   },
   Mutation: {
     createWorkOrder: async (parent, { workOrder: woInput }, { user }) => {
-      const { assignedTo, ...createWorkOrderInput } = woInput;
+      const { assignedTo = "UNASSIGNED", ...createWorkOrderInput } = woInput;
 
-      const createdWO = await WorkOrder.createOne({
+      const createdWO = await WorkOrder.createItem({
         createdByUserID: user.id,
-        ...(!!assignedTo && { assignedToUserID: assignedTo }),
+        assignedToUserID: assignedTo,
+        status: assignedTo === "UNASSIGNED" ? "UNASSIGNED" : "ASSIGNED",
         ...createWorkOrderInput,
       });
+
+      eventEmitter.emitWorkOrderCreated(createdWO);
 
       return await getWorkOrderCreatedByAndAssignedTo(createdWO, user);
     },
