@@ -16,21 +16,26 @@ export const resolvers: Partial<Resolvers> = {
             - currentSub.status is "active" and created more recently than subToReturn
             - neither are "active", and currentSub was updated more recently than subToReturn
         */
-      return (await UserSubscription.queryUserSubscriptions(user.id)).reduce(
-        (subToReturn, currentSub) => {
-          if (!subToReturn) {
-            subToReturn = currentSub;
-          } else if (
-            currentSub.status === "active" &&
-            (subToReturn.status !== "active" || wasCreatedEarlier(currentSub, subToReturn))
-          ) {
-            subToReturn = currentSub;
-          } else if (subToReturn.status !== "active" && wasUpdatedLater(currentSub, subToReturn)) {
-            subToReturn = currentSub;
-          }
-          return subToReturn;
+      return (
+        await UserSubscription.query({
+          where: {
+            userID: user.id,
+            sk: { beginsWith: UserSubscription.SK_PREFIX },
+          },
+        })
+      ).reduce((subToReturn, currentSub) => {
+        if (!subToReturn) {
+          subToReturn = currentSub;
+        } else if (
+          currentSub.status === "active" &&
+          (subToReturn.status !== "active" || wasCreatedEarlier(currentSub, subToReturn))
+        ) {
+          subToReturn = currentSub;
+        } else if (subToReturn.status !== "active" && wasUpdatedLater(currentSub, subToReturn)) {
+          subToReturn = currentSub;
         }
-      );
+        return subToReturn;
+      });
     },
   },
 };
