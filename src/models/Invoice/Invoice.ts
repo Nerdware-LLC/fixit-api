@@ -27,7 +27,7 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema, InvoiceModelItem, I
     return typeof value === "string" && INV_SK_REGEX.test(value);
   };
 
-  static readonly schema = {
+  static readonly schema = ddbSingleTable.getModelSchema({
     pk: {
       type: "string",
       alias: "createdByUserID",
@@ -69,7 +69,7 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema, InvoiceModelItem, I
       type: "string",
     },
     ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
-  } as const;
+  } as const);
 
   static readonly schemaOptions: ModelSchemaOptions = {
     transformItem: {
@@ -101,7 +101,6 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema, InvoiceModelItem, I
   }
 
   // INVOICE MODEL — Instance properties and methods:
-
   readonly STATUSES = InvoiceModel.STATUSES;
   readonly SK_PREFIX = InvoiceModel.SK_PREFIX;
   readonly getFormattedID = InvoiceModel.getFormattedID;
