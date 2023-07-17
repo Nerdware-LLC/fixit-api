@@ -23,7 +23,7 @@ generates:
       useIndexSignature: true
       useTypeImports: true
       # resolver Context type:
-      contextType: "../apolloServer#ApolloServerResolverContext"
+      contextType: "../createApolloServer#ApolloServerResolverContext"
       scalars:
         ID: string
         DateTime: Date
