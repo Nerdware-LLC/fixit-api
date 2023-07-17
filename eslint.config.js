@@ -11,7 +11,7 @@ export default [
   ////////////////////////////////////////////////////////////////
   // ALL FILES
   {
-    files: ["src/**/*.[tj]s", "./*.[tj]s"],
+    files: ["src/**/*.[tj]s", "__mocks__/**/*", "./*.[tj]s"],
     ignores: ["src/types/graphql.ts"], // don't lint generated code
     linterOptions: {
       reportUnusedDisableDirectives: true,
