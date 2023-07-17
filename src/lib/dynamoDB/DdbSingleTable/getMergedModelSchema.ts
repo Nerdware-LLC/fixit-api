@@ -24,11 +24,9 @@ export const getMergedModelSchema = <
 >({
   tableKeysSchema,
   modelSchema,
-  modelName,
 }: {
   tableKeysSchema: TableKeysSchema;
   modelSchema: ModelSchema;
-  modelName?: string;
 }) => {
   const mergedModelSchema: Record<string, Record<string, any>> = { ...modelSchema };
 
@@ -42,12 +40,10 @@ export const getMergedModelSchema = <
         if (hasKey(modelSchema[keyAttrName], attrConfigName)) {
           // If ModelSchema contains `keyAttrName` AND a mergeable property, ensure it matches TableKeysSchema.
           if (modelSchema[keyAttrName][attrConfigName] !== keyAttrConfig[attrConfigName]) {
-            // Derive a string that identifies the ModelSchema if possible
-            const modelIdString = modelName ? `the "${modelName}"` : "a";
+            // Throw error if ModelSchema key attrConfig has a config mismatch
             throw new SchemaValidationError(
-              `The "${attrConfigName}" value of key attribute "${keyAttrName}" ` +
-                `defined in ${modelIdString} ModelSchema does not match the ` +
-                `"${attrConfigName}" value defined in the TableKeysSchema.`
+              `Invalid "${attrConfigName}" value found in ModelSchema for key attribute ` +
+                `"${keyAttrName}" does not match the value provided in the TableKeysSchema.`
             );
           }
         } else {
