@@ -18,12 +18,12 @@ class ContactModel extends Model<typeof ContactModel.schema> {
     return typeof value === "string" && CONTACT_SK_REGEX.test(value);
   };
 
-  static readonly schema = {
+  static readonly schema = ddbSingleTable.getModelSchema({
     pk: {
       type: "string",
-      required: true,
       alias: "userID",
       validate: (value: string) => USER_ID_REGEX.test(value),
+      required: true,
     },
     sk: {
       type: "string",
@@ -40,11 +40,11 @@ class ContactModel extends Model<typeof ContactModel.schema> {
     },
     handle: {
       type: "string",
-      required: true,
       validate: (value: string) => USER_HANDLE_REGEX.test(value),
+      required: true,
     },
     ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
-  } as const;
+  } as const);
 
   constructor() {
     super("Contact", ContactModel.schema, ddbSingleTable);
