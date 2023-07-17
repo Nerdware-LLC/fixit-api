@@ -1,4 +1,3 @@
-import moment from "moment";
 import { UserSubscription } from "@models/UserSubscription";
 import { logger, getTypeSafeError } from "@utils";
 import type Stripe from "stripe";
@@ -18,12 +17,21 @@ export const customerSubscriptionDeleted = async (
 
   try {
     // Get "userID" needed for the primary key
-    const { userID } = await UserSubscription.queryBySubscriptionID(subID);
+    const [{ userID }] = await UserSubscription.query({
+      where: {
+        id: subID,
+        sk: { beginsWith: UserSubscription.SK_PREFIX },
+      },
+      limit: 1,
+    });
+
+    // If no user ID, throw an error
+    if (!userID) throw new Error(`User ID not found for UserSubscription with ID "${subID}".`);
 
     // Delete the user's subscription item
     await UserSubscription.deleteItem({
       userID,
-      sk: `SUBSCRIPTION#${userID}#${moment(createdAt).unix()}`,
+      sk: UserSubscription.getFormattedSK(userID, createdAt),
     });
   } catch (err) {
     const error = getTypeSafeError(err);
