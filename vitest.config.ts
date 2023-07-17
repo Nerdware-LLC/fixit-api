@@ -11,6 +11,7 @@ export default defineConfig(({ mode }) => ({
   test: {
     globals: true,
     clearMocks: true,
+    mockReset: true, // <-- recommended for aws-sdk-client-mock
     environment: "node",
     include: ["**/?(*.){test,spec}.?(c|m)[tj]s?(x)"],
     setupFiles: ["dotenv/config", "src/__tests__/setupTests.ts"],
