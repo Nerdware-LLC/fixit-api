@@ -5,7 +5,10 @@ import { safeJsonStringify } from "@utils/typeSafety";
  */
 export const helpers = {
   getScalarErrMsg: (scalarType: string, invalidValue: unknown) => {
-    // prettier-ignore
-    return `[${scalarType.toUpperCase()} SCALAR ERROR]: Client provided an invalid ${scalarType.toLowerCase()}: ${safeJsonStringify(invalidValue)}`;
+    return (
+      `[${scalarType.toUpperCase()} SCALAR ERROR]: ` +
+      `Client provided an invalid ${scalarType.toLowerCase()}: ` +
+      `${safeJsonStringify(invalidValue)}`
+    );
   },
 };
