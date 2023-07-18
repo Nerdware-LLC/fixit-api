@@ -35,7 +35,7 @@
     "test:ui": "vitest --ui",
     "test:watch": "vitest",
     "test:benchmarks": "vitest bench",
-    "test:ci": "npm run docker:ddb-start ; vitest run --coverage",
+    "test:ci": "npm run docker:ddb-start ; vitest run --coverage --bail=1",
     "rover:update-schema": "rover graph introspect http://localhost:8080/api | rover graph publish fixit@current --schema -",
     "rover:fetch": "rover graph fetch fixit@current > fixit@current.graphql",
     "gql:codegen": "graphql-codegen --config codegen.yaml",
