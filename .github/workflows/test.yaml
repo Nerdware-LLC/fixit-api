@@ -27,6 +27,8 @@ jobs:
         DOMAIN=localhost
         PORT=8080
         AWS_REGION=local
+        AWS_ACCESS_KEY_ID=local
+        AWS_SECRET_ACCESS_KEY=local
         DYNAMODB_TABLE_NAME=fixit-db-test
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
