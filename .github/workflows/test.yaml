@@ -23,24 +23,24 @@ jobs:
       # env context to called workflows.
       env-vars: >-
         NODE_ENV=test
-        PROTOCOL=http
-        DOMAIN=localhost
-        PORT=8080
-        AWS_REGION=local
+        VITE_PROTOCOL=http
+        VITE_DOMAIN=localhost
+        VITE_PORT=8080
+        VITE_AWS_REGION=local
         AWS_ACCESS_KEY_ID=local
         AWS_SECRET_ACCESS_KEY=local
-        DYNAMODB_TABLE_NAME=fixit-db-test
+        VITE_DYNAMODB_TABLE_NAME=fixit-db-test
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       env-vars: >-
-        JWT_PRIVATE_KEY=${{ secrets.JWT_TEST_KEY }}
-        JWT_ALGORITHM=${{ secrets.JWT_ALGORITHM }}
-        STRIPE_PUBLISHABLE_KEY=${{ secrets.STRIPE_TEST_PUBLISHABLE_KEY }}
-        STRIPE_SECRET_KEY=${{ secrets.STRIPE_TEST_SECRET_KEY }}
-        STRIPE_WEBHOOKS_SECRET=${{ secrets.STRIPE_TEST_WEBHOOKS_SECRET }}
-        FIXIT_SUB_PRODUCT_ID=${{ secrets.STRIPE_TEST_FIXIT_SUB_PRODUCT_ID }}
-        FIXIT_SUB_PRICES_JSON=${{ secrets.STRIPE_TEST_FIXIT_SUB_PRICES_JSON }}
-        FIXIT_SUB_PROMO_CODES_JSON=${{ secrets.STRIPE_TEST_FIXIT_SUB_PROMO_CODES_JSON }}
+        VITE_JWT_PRIVATE_KEY=${{ secrets.JWT_TEST_KEY }}
+        VITE_JWT_ALGORITHM=${{ secrets.JWT_ALGORITHM }}
+        VITE_STRIPE_PUBLISHABLE_KEY=${{ secrets.STRIPE_TEST_PUBLISHABLE_KEY }}
+        VITE_STRIPE_SECRET_KEY=${{ secrets.STRIPE_TEST_SECRET_KEY }}
+        VITE_STRIPE_WEBHOOKS_SECRET=${{ secrets.STRIPE_TEST_WEBHOOKS_SECRET }}
+        VITE_FIXIT_SUB_PRODUCT_ID=${{ secrets.STRIPE_TEST_FIXIT_SUB_PRODUCT_ID }}
+        VITE_FIXIT_SUB_PRICES_JSON=${{ secrets.STRIPE_TEST_FIXIT_SUB_PRICES_JSON }}
+        VITE_FIXIT_SUB_PROMO_CODES_JSON=${{ secrets.STRIPE_TEST_FIXIT_SUB_PROMO_CODES_JSON }}
 
   update_pr:
     name: Update PR with Coverage Reports
