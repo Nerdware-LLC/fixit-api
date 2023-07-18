@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile:1
 ######################################################################
-### IMAGE: nerdware/fixit-api
+# IMAGE: nerdware/fixit-api
 ######################################################################
-# base
+# STAGE: base
 
 # This build stage sets values and files common to all build stages
 # Source image: Nodejs LTS (https://hub.docker.com/_/node)
@@ -18,7 +18,7 @@ WORKDIR /home/node/app
 COPY package*.json apollo.config.cjs ./
 
 #---------------------------------------------------------------------
-# builder
+# STAGE: builder
 
 # This build stage creates the build/ artifact for "prod" build stage
 FROM base as builder
@@ -29,14 +29,11 @@ COPY tsconfig*.json ./
 # Copy over src files
 COPY src src/
 
-# Install all dependencies
-RUN npm ci
-
-# Create build/ for "prod" stage
-RUN npm run build
+# Install all deps and create build/ for "prod" stage
+RUN npm ci --include=dev && npm run build
 
 #---------------------------------------------------------------------
-# prod
+# STAGE: prod
 
 # This build stage creates the final "prod" image for ECS tasks
 FROM base as prod
