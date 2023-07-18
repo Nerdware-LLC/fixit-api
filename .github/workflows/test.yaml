@@ -55,13 +55,13 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: coverage-reports
-      - name: Update PR Using "coverage-reports" Artifact
+      - name: Add Coverage Report to PR
         uses: davelosert/vitest-coverage-report-action@v2
 
   release:
     name: Release (push-only)
     needs: test # only run on push events when tests pass
-    if: github.event_name == 'push' && needs.test.outputs.did-tests-succeed == true
+    if: github.event_name == 'push' && needs.test.result == 'success'
     uses: ./.github/workflows/release.yaml
     secrets:
       SEMANTIC_RELEASE_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
