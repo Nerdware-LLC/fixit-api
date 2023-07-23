@@ -1,7 +1,7 @@
 import merge from "lodash.merge";
 import { hasKey } from "@utils/typeSafety";
 import { ioHookActions } from "./ioHookActions";
-import { DdbSingleTableError, hasDefinedProperty } from "./utils";
+import { DdbSingleTableError, ItemInputError } from "./utils";
 import { validateModelSchema } from "./validateModelSchema";
 import type { PartialDeep } from "type-fest";
 import type { DdbSingleTableClient } from "./DdbSingleTableClient";
@@ -111,6 +111,7 @@ export class Model<
 
   private static readonly DEFAULT_MODEL_SCHEMA_OPTS: ModelSchemaOptions = {
     allowUnknownAttributes: false,
+    autoAddCreatedAt: { enabled: true, attrName: "createdAt" },
   };
 
   // INSTANCE PROPERTIES
@@ -151,7 +152,7 @@ export class Model<
 
     this.modelName = modelName;
     this.schema = modelSchema;
-    this.schemaOptions = { ...Model.DEFAULT_MODEL_SCHEMA_OPTS, ...modelSchemaOptions };
+    this.schemaOptions = merge(Model.DEFAULT_MODEL_SCHEMA_OPTS, modelSchemaOptions);
     this.attributesToAliasesMap = attributesToAliasesMap;
     this.aliasesToAttributesMap = aliasesToAttributesMap;
     this.tableHashKey = tableHashKey;
@@ -203,8 +204,11 @@ export class Model<
   };
 
   readonly createItem = async (item: ItemInput, createItemOpts?: CreateItemOpts) => {
+    // Get "createdAt" auto-add options from schemaOptions
+    const { enabled = true, attrName = "createdAt" } = this.schemaOptions.autoAddCreatedAt || {};
+    // Add "createdAt" timestamp if not disabled
     const toDBitem = this.processItemData.toDB({
-      createdAt: new Date(), // add "createdAt" timestamp if not provided
+      ...(enabled && { [attrName]: new Date() }),
       ...item,
     });
     await this.ddbClient.createItem(toDBitem, createItemOpts);
@@ -461,38 +465,29 @@ export class Model<
    */
   private readonly processKeyArgs = (primaryKeyArgs: Record<string, unknown>) => {
     // Unalias primaryKeyArgs and apply defaults
-    const unaliasedPrimaryKeyArgs = [this.tableHashKey, this.tableRangeKey].reduce(
+    return [this.tableHashKey, this.tableRangeKey].reduce(
       (args, keyAttrName) => {
-        // Check if args contains keyAttrName - if not, check for key alias
-        if (
-          !hasKey(args, keyAttrName) &&
-          hasDefinedProperty(this.attributesToAliasesMap, keyAttrName)
-        ) {
-          const keyAlias = this.attributesToAliasesMap[keyAttrName];
-          // If args contains the key alias, replace it with the keyAttrName
-          if (hasDefinedProperty(args, keyAlias)) {
+        // See if args contains keyAttrName
+        if (!Object.prototype.hasOwnProperty.call(args, keyAttrName)) {
+          // See if keyAttrName has an alias
+          const keyAlias = this.attributesToAliasesMap?.[keyAttrName];
+          if (keyAlias && hasKey(args, keyAlias)) {
+            // If args contains keyAttrName's alias, unalias it.
             args[keyAttrName] = args[keyAlias];
             delete args[keyAlias];
+          } else if (hasKey(this.schema[keyAttrName], "default")) {
+            /* At this point, we know args contains neither keyAttrName nor its alias. As
+            a fallback, keyAttrName's `default` is used if one is defined in the schema. */
+            const attrDefault = this.schema[keyAttrName].default;
+            args[keyAttrName] = typeof attrDefault === "function" ? attrDefault(args) : attrDefault;
+          } else {
+            // If there's no key value, and there's no default, throw an error.
+            throw new ItemInputError(`Missing required key attribute "${keyAttrName}".`);
           }
         }
         return args;
       },
       { ...primaryKeyArgs }
-    );
-    // Apply defaults
-    return [this.tableHashKey, this.tableRangeKey].reduce(
-      (args, keyAttrName) => {
-        // If args[keyName] is null/undefined and a default is defined, use it.
-        if (!hasDefinedProperty(args, keyAttrName) && hasKey(this.schema[keyAttrName], "default")) {
-          // hasKey/hasOwnProperty is used since default can be 0, false, etc.
-          const attrDefault = this.schema[keyAttrName].default;
-          // Check if "default" is a function, and if so, call it to get the "default" value
-          primaryKeyArgs[keyAttrName] =
-            typeof attrDefault === "function" ? attrDefault(primaryKeyArgs) : attrDefault;
-        }
-        return args;
-      },
-      { ...unaliasedPrimaryKeyArgs }
     );
   };
 }

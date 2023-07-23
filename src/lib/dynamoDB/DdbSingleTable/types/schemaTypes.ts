@@ -260,6 +260,22 @@ export interface ModelSchemaOptions {
   };
   /** Item-level custom validation function. */
   readonly validateItem?: (item: any) => boolean;
+  /**
+   * Whether the `createItem` method should auto-add a `"createdAt"` timestamp field to
+   * items upon invocation (default: `{ enabled: true, attrName: "createdAt" }`). Use
+   * `"attrName"` to specify an attribute name other than `"createdAt"`. Unless `"enabled"`
+   * is set to `false` to disable this behavior, the timestamp field is added _before_ any
+   * IOHookActions are called, thereby facilitating the use of timestamp-based values in
+   * the schema. For example, your schema could define a `"pk"` attribute with a `default`
+   * function which generates a timestamp-based UUID using the `createdAt` value.
+   * Note that this config has no impact on Model typings created with DdbST generics like
+   * `ItemTypeFromSchema`; to utilize auto-add behavior, the timestamp attribute must be
+   * defined in the schema.
+   */
+  readonly autoAddCreatedAt?: {
+    enabled?: boolean;
+    attrName?: string;
+  };
 }
 
 /**
