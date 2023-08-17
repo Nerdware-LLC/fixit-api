@@ -9,11 +9,7 @@ import { getRequestBodyValidatorMW } from "@middleware/helpers";
 import { hasKey } from "@utils/typeSafety";
 
 /**
- * This router handles all requests to the "/api/subscriptions" path.
- *
- * - `req.baseUrl` = "/api/subscriptions"
- *
- * Descendant paths:
+ * This router handles all `/api/subscriptions` request paths:
  * - `/api/subscriptions/submit-payment`
  * - `/api/subscriptions/customer-portal`
  */
