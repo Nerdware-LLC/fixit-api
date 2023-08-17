@@ -142,7 +142,7 @@ export const queryUserItems = mwAsyncCatchWrapper(async (req, res, next) => {
       invoices: (Invoice.processItemData.fromDB(invoices) as typeof invoices).map((invoice) => ({
         // Fields which are nullable/optional in GQL schema default to null:
         stripePaymentIntentID: null,
-        workOrder: null,
+        workOrderID: null,
         // DB object values override above defaults:
         ...invoice,
       })),
