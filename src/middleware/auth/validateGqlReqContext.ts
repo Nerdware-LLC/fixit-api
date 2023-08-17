@@ -1,7 +1,7 @@
 import { UserSubscription } from "@models/UserSubscription";
 import { ENV } from "@server/env";
 import { AuthToken } from "@utils/AuthToken";
-import { GqlAuthError, GqlPaymentRequiredError } from "@utils/customErrors";
+import { GqlAuthError, GqlPaymentRequiredError } from "@utils/httpErrors";
 import type { Request } from "express";
 import type { ApolloServerResolverContext } from "../../createApolloServer";
 
