@@ -1,16 +1,16 @@
 import dayjs from "dayjs";
-import { isType, normalizeInput, prettifyStr, US_PHONE_DIGITS_REGEX } from "@utils";
+import { isType, normalize, prettifyStr, isValid, } from "@utils";
 
 export const COMMON_ATTRIBUTE_TYPES = {
   PHONE: {
     type: "string",
+    validate: (value: unknown) => isType.string(value) && isValid.phone(value),
     transformValue: {
       /** If a phone-value is provided, all non-digit chars are rm'd */
-      toDB: (value: unknown) => (isType.string(value) ? normalizeInput.phone(value) : null),
+      toDB: (value: unknown) => (isType.string(value) ? normalize.phone(value) : null),
       /** Prettify phone num strings like `"8881234567"` into `"(888) 123-4567"` */
       fromDB: (value: unknown) => (isType.string(value) ? prettifyStr.phone(value) : null),
     },
-    validate: (value: unknown) => isType.string(value) && US_PHONE_DIGITS_REGEX.test(value),
   },
 
   DATETIME: {
