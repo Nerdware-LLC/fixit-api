@@ -1,3 +1,4 @@
 export * from "./commonModelAttributes";
-export * from "./FixitUserFields";
+export * from "./modelHelpers";
 export * from "./skTypeGuards";
+export * from "./types";
