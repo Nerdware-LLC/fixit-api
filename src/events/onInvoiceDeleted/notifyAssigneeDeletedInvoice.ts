@@ -1,17 +1,22 @@
 import { InvoicePushNotification } from "@events/pushNotifications";
 import { lambdaClient } from "@lib/lambdaClient";
-import { User } from "@models";
+import { User } from "@models/User";
 import type { InvoiceModelItem } from "@models/Invoice";
 
-export const notifyAssigneeDeletedInvoice = async (deletedInvoice: InvoiceModelItem) => {
+/**
+ * Notify assignee of deleted Invoice when `InvoiceDeleted` event is emitted.
+ * @event InvoiceDeleted
+ * @param {InvoiceModelItem} deletedInvoice - The deleted Invoice
+ * @category events
+ */
+export const notifyAssigneeDeletedInvoice = async (deletedInvoice?: InvoiceModelItem) => {
+  if (!deletedInvoice) return;
+
   const {
     assignedTo: { id: assignedToUserID },
   } = deletedInvoice;
 
-  const assigneeUser = await User.getItem({
-    id: assignedToUserID,
-    sk: User.getFormattedSK(assignedToUserID),
-  });
+  const assigneeUser = await User.getItem({ id: assignedToUserID });
 
   // If assignee does not currently have a registered pushToken, return.
   if (!assigneeUser?.expoPushToken) return;
@@ -19,10 +24,7 @@ export const notifyAssigneeDeletedInvoice = async (deletedInvoice: InvoiceModelI
   await lambdaClient.invokeEvent("PushNotificationService", [
     new InvoicePushNotification({
       pushEventName: "InvoiceDeleted",
-      recipientUser: {
-        id: assignedToUserID,
-        expoPushToken: assigneeUser.expoPushToken,
-      },
+      recipientUser: assigneeUser,
       invoice: deletedInvoice,
     }),
   ]);
