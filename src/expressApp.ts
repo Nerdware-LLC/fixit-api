@@ -33,7 +33,7 @@ expressApp.use(corsMW, setSecureHttpHeaders);
 expressApp.use([/^\/api$/, /^\/api\/(auth|connect|subscriptions)/], express.json());
 
 // EXPRESS ROUTE HANDLERS
-expressApp.get("/api/admin/*", adminRouter);
+expressApp.use("/api/admin", adminRouter);
 expressApp.use("/api/auth", authRouter);
 expressApp.use("/api/connect", connectRouter);
 expressApp.use("/api/subscriptions", subscriptionsRouter);
