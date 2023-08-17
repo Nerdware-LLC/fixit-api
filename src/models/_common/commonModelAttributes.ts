@@ -1,4 +1,4 @@
-import moment from "moment";
+import dayjs from "dayjs";
 import { isType, normalizeInput, prettifyStr, US_PHONE_DIGITS_REGEX } from "@utils";
 
 export const COMMON_ATTRIBUTE_TYPES = {
@@ -15,7 +15,7 @@ export const COMMON_ATTRIBUTE_TYPES = {
 
   DATETIME: {
     type: "Date",
-    validate: (value: unknown) => !!value && moment(value).isValid(),
+    validate: (value: unknown) => !!value && dayjs(value as Parameters<typeof dayjs>[0]).isValid(),
   },
 } as const;
 
