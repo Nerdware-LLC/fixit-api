@@ -136,7 +136,10 @@ export class Model<
       tableRangeKey,
       indexes,
       ddbClient,
-      ...modelSchemaOptions
+      allowUnknownAttributes,
+      transformItem = {},
+      validateItem,
+      autoAddCreatedAt = {},
     }: ModelSchemaOptions & {
       tableHashKey: string;
       tableRangeKey: string;
@@ -152,7 +155,17 @@ export class Model<
 
     this.modelName = modelName;
     this.schema = modelSchema;
-    this.schemaOptions = merge(Model.DEFAULT_MODEL_SCHEMA_OPTS, modelSchemaOptions);
+    this.schemaOptions = {
+      transformItem,
+      validateItem,
+      allowUnknownAttributes:
+        allowUnknownAttributes ?? Model.DEFAULT_MODEL_SCHEMA_OPTS.allowUnknownAttributes,
+      autoAddCreatedAt: {
+        ...Model.DEFAULT_MODEL_SCHEMA_OPTS.autoAddCreatedAt,
+        ...autoAddCreatedAt,
+      },
+    };
+
     this.attributesToAliasesMap = attributesToAliasesMap;
     this.aliasesToAttributesMap = aliasesToAttributesMap;
     this.tableHashKey = tableHashKey;
