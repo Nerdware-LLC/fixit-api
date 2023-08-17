@@ -154,7 +154,7 @@ export const queryUserItems = mwAsyncCatchWrapper(async (req, res, next) => {
           email = "", // These defaults shouldn't be necessary, but are included for type-safety
           phone = "",
           profile = { displayName: contact.handle },
-        } = usersCache.get(contact.userID) || {};
+        } = usersCache.get(contact.contactUserID) || {};
 
         return {
           email,
