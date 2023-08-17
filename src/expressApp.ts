@@ -1,8 +1,7 @@
 import { expressMiddleware } from "@apollo/server/express4";
 import * as Sentry from "@sentry/node";
 import express from "express";
-import { ENV } from "@server/env";
-import { createApolloServer } from "./createApolloServer";
+import { apolloServer } from "@/apolloServer";
 import {
   corsMW,
   setSecureHttpHeaders,
@@ -20,9 +19,6 @@ import {
 } from "@routers";
 
 export const expressApp = express();
-
-// Create an ApolloServer instance with the default Fixit schema
-const apolloServer = await createApolloServer();
 
 // SENTRY REQUEST-HANDLER (must be first middleware)
 expressApp.use(Sentry.Handlers.requestHandler());
