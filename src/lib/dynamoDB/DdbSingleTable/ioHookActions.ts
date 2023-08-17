@@ -252,8 +252,11 @@ export const ioHookActions: IOHookActions = Object.freeze({
    * Model schema options to validate an item in its entirety.
    */
   validateItem: function (item, { schemaOptions, modelName }) {
-    // if schemaOptions has transformItem toDB/fromDB, pass the existing item into the fn
-    if (schemaOptions?.validateItem && !schemaOptions?.validateItem(item)) {
+    // If schemaOptions has validateItem, pass the existing item into the fn
+    if (
+      typeof schemaOptions?.validateItem === "function" &&
+      schemaOptions.validateItem(item) === false
+    ) {
       throw new ItemInputError(`Invalid ${modelName} item.`);
     }
     return item;
