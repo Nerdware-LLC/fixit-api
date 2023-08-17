@@ -1,5 +1,5 @@
 import { ENV } from "@server/env";
-import { logger, getTypeSafeError, InternalServerError, safeJsonStringify } from "@utils";
+import { logger, getTypeSafeError, safeJsonStringify } from "@utils";
 import type { ErrorRequestHandler } from "express";
 
 /**
@@ -19,6 +19,6 @@ export const errorHandler: ErrorRequestHandler = (err: unknown, req, res, next) 
 
   // Send JSON response to client; mask 500 error-messages in production
   res.status(errorStatusCode).json({
-    error: errorStatusCode >= 500 && ENV.IS_PROD ? InternalServerError.DEFAULT_MSG : error.message,
+    error: errorStatusCode >= 500 && ENV.IS_PROD ? "An unexpected error occurred" : error.message,
   });
 };
