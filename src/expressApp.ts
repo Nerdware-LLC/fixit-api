@@ -33,9 +33,8 @@ if (!ENV.IS_PROD) expressApp.use(logReqReceived);
 // SECURITY
 expressApp.use(corsMW, setSecureHttpHeaders);
 
-// BODY-PARSING
-expressApp.use(["/api/auth", "/api/connect", "/api/subscriptions"], express.json());
-expressApp.use("/api/webhooks", express.raw({ type: "application/json" }));
+// BODY-PARSING (admin and webhooks routers handle their own body parsing)
+expressApp.use([/^\/api$/, /^\/api\/(auth|connect|subscriptions)/], express.json());
 
 // EXPRESS ROUTE HANDLERS
 expressApp.get("/api/admin/*", adminRouter);
@@ -47,7 +46,6 @@ expressApp.use("/api/webhooks", webhooksRouter);
 // APOLLO SERVER (root path: /api)
 expressApp.use(
   "/api",
-  express.json(),
   expressMiddleware(apolloServer, {
     context: validateGqlReqContext,
   })
