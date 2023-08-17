@@ -19,8 +19,11 @@ const _invoke = async ({
       ...invokeCmdOpts,
     })
   );
+
   return {
-    Payload: returnedPayload ? Buffer.from(returnedPayload).toString() : null,
+    Payload: returnedPayload
+      ? (JSON.parse(Buffer.from(returnedPayload).toString()) as Record<PropertyKey, unknown>)
+      : null,
     ...rest, // rest: { $metadata, ExecutedVersion, StatusCode, FunctionError, LogResult }
   };
 };
