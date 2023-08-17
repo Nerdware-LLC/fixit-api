@@ -1,4 +1,4 @@
-import moment from "moment";
+import dayjs from "dayjs";
 import { hasKey, safeJsonStringify } from "@utils/typeSafety";
 import {
   hasDefinedProperty,
