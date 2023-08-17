@@ -213,7 +213,7 @@ export type GenerateKeyConditionExpressionArgs<ItemType extends Record<string, u
 };
 
 /**
- * Keys of attribute names to {@link WhereConditionalsSyntax|where conditionals}.
+ * Keys of attribute names to {@link WhereApiObject | WhereAPI objects }.
  * > Keys which aren't `where` operators are treated as `eq` expressions.
  */
 export type ItemConditionals<ItemType extends Record<string, unknown>> = {
