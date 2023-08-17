@@ -1,15 +1,23 @@
 import * as Sentry from "@sentry/node";
 import chalk, { type ChalkInstance } from "chalk";
-import moment from "moment";
+import dayjs from "dayjs";
 import { ENV } from "@server/env";
 import { safeJsonStringify } from "@utils/typeSafety";
 
 /* eslint-disable no-console */
 
 /**
+ * - In PROD, timestamp is formatted to always be the same length to accomodate bulk log parsing.
+ *   - _example:_ `"2020:Jan:01 01:01:01.123"`
+ * - In NON-PROD, timestamp format is designed to be easier to read at a glance in the console.
+ *   - _example:_ `"2020:Jan:1 1:01:01.123"`
+ */
+const LOG_TIMESTAMP_FORMAT = ENV.IS_PROD ? "YYYY:MMM:DD HH:mm:ss.SSS" : "YYYY:MMM:D H:mm:ss.SSS";
+
+/**
  * Returns a log message string.
  * - Format: `"[<timestamp>][<label>] <messagePrefix?> <message>"`
- * - Timestamp format: `"YYYY:MMM:D k:mm:ss.SS"`
+ * @see {@link LOG_TIMESTAMP_FORMAT}
  */
 const getLogMessage = ({
   label,
@@ -18,7 +26,7 @@ const getLogMessage = ({
   labelColor,
   messageColor,
 }: GetLogMessageArgsProvidedByLoggerUtil & GetLogMessageArgsProvidedByHandler): string => {
-  let labelAndTimestamp = `[${moment().format("YYYY:MMM:D k:mm:ss.SS")}][${label}]`;
+  let labelAndTimestamp = `[${dayjs().format(LOG_TIMESTAMP_FORMAT)}][${label}]`;
 
   let message = messagePrefix ? `${messagePrefix} ` : "";
   message +=
