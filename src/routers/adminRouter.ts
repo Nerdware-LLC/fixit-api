@@ -4,11 +4,7 @@ import type { Request } from "express";
 import type { JsonObject } from "type-fest";
 
 /**
- * This router handles all requests to the "/api/admin" path.
- *
- * - `req.baseUrl` = "/api/admin"
- *
- * Descendant paths:
+ * This router handles all `/api/admin` request paths:
  * - `/api/admin/healthcheck`
  * - `/api/admin/csp-violation`
  *
