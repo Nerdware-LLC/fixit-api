@@ -4,7 +4,6 @@ import { AuthToken } from "@utils/AuthToken";
 import { GqlAuthError, GqlPaymentRequiredError } from "@utils/httpErrors";
 import type { ApolloServerResolverContext } from "@/apolloServer";
 import type { Request } from "express";
-import type { ApolloServerResolverContext } from "../../createApolloServer";
 
 /**
  * This middleware validates and authenticates requests on the /api route, and ensures that
@@ -42,7 +41,7 @@ const validateGqlRequest = async ({
 
   return {
     ...req,
-    user: AuthToken.stripInternalJwtPayloadFields(tokenPayload),
+    user: tokenPayload,
   };
 };
 
