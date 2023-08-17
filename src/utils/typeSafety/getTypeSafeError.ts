@@ -10,17 +10,28 @@ import { safeJsonStringify } from "./safeJsonStringify";
  */
 export const getTypeSafeError = (
   err: unknown,
-  fallBackErrMsg: string = "An unknown error occurred."
-): Error & { name?: string; status?: number; statusCode?: number } => {
+  {
+    ErrorClass,
+    fallBackErrMsg,
+  }: {
+    ErrorClass?: Class<Error>;
+    fallBackErrMsg?: string;
+  } = {}
+): Partial<HttpErrorInterface> => {
+  ErrorClass ??= Error;
+  fallBackErrMsg ||= "An unknown error occurred.";
+
   return err instanceof Error
     ? err
     : err === null || err === undefined
-    ? new InternalServerError(fallBackErrMsg)
+    ? new ErrorClass(fallBackErrMsg)
     : typeof err === "string" && err !== ""
-    ? new InternalServerError(err)
-    : typeof err === "object" && !Array.isArray(err) && hasKey(err, "message")
-    ? new InternalServerError(err.message)
-    : new InternalServerError(
-        `${fallBackErrMsg}\nOriginal error payload: ${safeJsonStringify(err)}`
-      );
+    ? new ErrorClass(err)
+    : typeof err === "object" &&
+      !Array.isArray(err) &&
+      hasKey(err, "message") &&
+      typeof err.message === "string"
+    ? new ErrorClass(err.message)
+    : new ErrorClass(`${fallBackErrMsg}\nOriginal error payload: ${safeJsonStringify(err)}`);
+};
 };
