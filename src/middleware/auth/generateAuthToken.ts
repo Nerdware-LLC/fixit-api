@@ -1,6 +1,6 @@
 import { mwCatchWrapper } from "@middleware/helpers";
 import { AuthToken } from "@utils";
-import type { FixitApiAuthTokenPayloadUserData } from "@utils";
+import type { FixitApiAuthTokenPayload } from "@utils";
 
 /**
  * This middleware generates an AuthToken for the authenticated User and
@@ -10,15 +10,17 @@ import type { FixitApiAuthTokenPayloadUserData } from "@utils";
  * as "userItems".
  */
 export const generateAuthToken = mwCatchWrapper((req, res, next) => {
-  if (!req?._authenticatedUser) return next("User not found");
-  if (!req._authenticatedUser?.stripeConnectAccount)
+  const { _authenticatedUser, _userQueryItems } = req;
+
+  if (!_authenticatedUser?.id) return next("User not found");
+  if (!_authenticatedUser?.stripeConnectAccount?.id) {
     return next("User's Stripe Connect account not found");
+  }
 
   const token = new AuthToken(_authenticatedUser as FixitApiAuthTokenPayload);
 
   res.json({
     token: token.toString(),
-    // If req includes pre-fetched WOs/Invoices/Contacts, attach them to response.
-    ...(req?._userQueryItems && { userItems: req._userQueryItems }),
+    ...(!!_userQueryItems && { userItems: _userQueryItems }),
   });
 });
