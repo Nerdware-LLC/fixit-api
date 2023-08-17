@@ -7,5 +7,8 @@ import { handleStripeWebhookEvent } from "@middleware/stripeWebhooks";
  */
 export const webhooksRouter = express.Router();
 
-// For all Stripe-webhook requests, the Stripe webhook event is logged and validated.
-webhooksRouter.use("/stripe", handleStripeWebhookEvent);
+webhooksRouter.use(
+  "/stripe",
+  express.raw({ type: "application/json" }),
+  handleStripeWebhookEvent // prettier-ignore
+);
