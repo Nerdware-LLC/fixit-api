@@ -14,7 +14,7 @@ export const generateAuthToken = mwCatchWrapper((req, res, next) => {
   if (!req._authenticatedUser?.stripeConnectAccount)
     return next("User's Stripe Connect account not found");
 
-  const token = new AuthToken(req._authenticatedUser as FixitApiAuthTokenPayloadUserData);
+  const token = new AuthToken(_authenticatedUser as FixitApiAuthTokenPayload);
 
   res.json({
     token: token.toString(),
