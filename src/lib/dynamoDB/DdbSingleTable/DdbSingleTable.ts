@@ -2,6 +2,7 @@ import { DdbSingleTableClient } from "./DdbSingleTableClient";
 import { Model } from "./Model";
 import { ensureTableIsActive } from "./ensureTableIsActive";
 import { getMergedModelSchema } from "./getMergedModelSchema";
+import { DdbSingleTableError } from "./utils";
 import { validateTableKeysSchema } from "./validateTableKeysSchema";
 import type { DynamoDBClientConfig } from "@aws-sdk/client-dynamodb";
 import type { TranslateConfig } from "@aws-sdk/lib-dynamodb";
@@ -83,6 +84,20 @@ export class DdbSingleTable<TableKeysSchema extends TableKeysSchemaType> {
     // Initialize high-level table properties
     this.tableName = tableName;
     this.tableKeysSchema = tableKeysSchema;
+
+    // Validate the tableConfigs
+    if (tableConfigs.billingMode === "PAY_PER_REQUEST" && "provisionedThroughput" in tableConfigs) {
+      throw new DdbSingleTableError(
+        "Invalid 'tableConfigs', 'provisionedThroughput' should not be provided when billingMode is 'PAY_PER_REQUEST'."
+      );
+    } else {
+      Object.keys(tableConfigs).forEach((key) => {
+        if (!["billingMode", "provisionedThroughput", "createIfNotExists"].includes(key)) {
+          throw new DdbSingleTableError(`Invalid 'tableConfigs', unrecognized key: "${key}"`);
+        }
+      });
+    }
+
     this.tableConfigs = { ...DdbSingleTable.DEFAULTS.TABLE_CONFIGS, ...tableConfigs };
 
     // Validate the TableKeysSchema and obtain the table's keys+indexes
