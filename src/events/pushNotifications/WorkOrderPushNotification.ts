@@ -1,4 +1,4 @@
-import { PushNotification } from "./_PushNotification";
+import { PushNotification, type PushNotificationRecipient } from "./PushNotification";
 import type { WorkOrderModelItem } from "@models/WorkOrder";
 
 export class WorkOrderPushNotification extends PushNotification {
@@ -31,7 +31,7 @@ export class WorkOrderPushNotification extends PushNotification {
     workOrder: { id: workOrderID, location },
   }: {
     pushEventName: WorkOrderPushNotificationEventName;
-    recipientUser: { id: string; expoPushToken?: string };
+    recipientUser: PushNotificationRecipient;
     workOrder: WorkOrderModelItem;
   }) {
     super({
@@ -45,4 +45,7 @@ export class WorkOrderPushNotification extends PushNotification {
   }
 }
 
+/**
+ * Union of all possible push event names for WorkOrderPushNotification.
+ */
 type WorkOrderPushNotificationEventName = keyof typeof WorkOrderPushNotification.PUSH_EVENTS;

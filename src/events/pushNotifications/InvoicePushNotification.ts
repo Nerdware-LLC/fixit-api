@@ -1,6 +1,12 @@
-import { PushNotification } from "./_PushNotification";
+import { PushNotification, type PushNotificationRecipient } from "./PushNotification";
 import type { InvoiceModelItem } from "@models/Invoice";
 
+/**
+ * Represents a push notification for an Invoice event.
+ * @extends PushNotification
+ * @category Events
+ * @subcategory PushNotification
+ */
 export class InvoicePushNotification extends PushNotification {
   static PUSH_EVENTS = {
     NewInvoice: {
@@ -27,7 +33,7 @@ export class InvoicePushNotification extends PushNotification {
     invoice: { id: invoiceID },
   }: {
     pushEventName: InvoicePushNotificationEventName;
-    recipientUser: { id: string; expoPushToken?: string };
+    recipientUser: PushNotificationRecipient;
     invoice: InvoiceModelItem;
   }) {
     super({
@@ -40,4 +46,7 @@ export class InvoicePushNotification extends PushNotification {
   }
 }
 
+/**
+ * Union of all possible push event names for InvoicePushNotification.
+ */
 type InvoicePushNotificationEventName = keyof typeof InvoicePushNotification.PUSH_EVENTS;

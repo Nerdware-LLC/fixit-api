@@ -1,2 +1,3 @@
-export { InvoicePushNotification } from "./InvoicePushNotification";
-export { WorkOrderPushNotification } from "./WorkOrderPushNotification";
+export * from "./PushNotification";
+export * from "./InvoicePushNotification";
+export * from "./WorkOrderPushNotification";
