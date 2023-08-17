@@ -14,6 +14,21 @@ import type {
   SchemaEntries,
 } from "./types";
 
+/**
+ * An object with various methods used to validate and transform items to/from the db.
+ *
+ * @type {IOHookActions}
+ * @property {RecursiveIOActionMethod} recursivelyApplyIOHookAction - Applies any given `ioAction` to nested attributes of type "map" or "array".
+ * @property {IOHookActionMethod} aliasMapping - Swaps attribute-names with their corresponding aliases.
+ * @property {IOHookActionMethod} setDefaults - Applies attribute default values/functions when creating items.
+ * @property {IOHookActionMethod} transformValues - Transforms attribute values using `transformValue` functions.
+ * @property {IOHookActionMethod} transformItem - Transforms an entire item using the `transformItem` method.
+ * @property {IOHookActionMethod} typeChecking - Checks item properties for conformance with their respective attribute "type".
+ * @property {IOHookActionMethod} validate - Validates an item's individual properties using attribute's respective `"validate"` functions.
+ * @property {IOHookActionMethod} validateItem - Validates an item in its entirety using the `validateItem` method.
+ * @property {IOHookActionMethod} convertJsTypes - Converts JS types to DynamoDB types and vice versa.
+ * @property {IOHookActionMethod} checkRequired - Checks an item for the existence of properties marked `required` in the schema.
+ */
 export const ioHookActions: IOHookActions = Object.freeze({
   /**
    * Applies any given `ioAction` to nested attributes of type "map" or "array".
