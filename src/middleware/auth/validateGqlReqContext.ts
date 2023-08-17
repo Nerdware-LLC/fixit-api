@@ -6,6 +6,19 @@ import type { ApolloServerResolverContext } from "@/apolloServer";
 import type { Request } from "express";
 import type { ApolloServerResolverContext } from "../../createApolloServer";
 
+/**
+ * This middleware validates and authenticates requests on the /api route, and ensures that
+ * no request reaches any GQL resolver unless the following are all true:
+ *
+ *   1. The request contains a valid unexpired AuthToken which was signed by the relevant key.
+ *   2. The AuthToken payload contains required User information.
+ *   3. The User's subscription is both active and unexpired.
+ *
+ * If all authentication criteria are met, the User's information is attached to the GQL
+ * resolvers' context object.
+ *
+ * @returns The context object made available to all GQL resolvers.
+ */
 const validateGqlRequest = async ({
   req,
 }: {
