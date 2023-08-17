@@ -30,6 +30,8 @@
       "@middleware/*": ["src/middleware/*"],
       "@models": ["src/models"],
       "@models/*": ["src/models/*"],
+      "@routers": ["src/routers"],
+      "@routers/*": ["src/routers/*"],
       "@server": ["src/server"],
       "@server/*": ["src/server/*"],
       "@tests/*": ["src/__tests__/*"],
