@@ -28,6 +28,17 @@ export const getMergedModelSchema = <
   tableKeysSchema: TableKeysSchema;
   modelSchema: ModelSchema;
 }) => {
+  // Ensure unknown/invalid attr configs are not present in the Model schema
+  Object.entries(modelSchema).forEach(([modelAttrName, modelAttrConfig]) => {
+    Object.keys(modelAttrConfig).forEach((modelAttrConfigKey) => {
+      if (!MODEL_ATTR_CONFIG_PROPERTY_NAMES.includes(modelAttrConfigKey)) {
+        throw new SchemaValidationError(
+          `Invalid Model schema: attribute "${modelAttrName}" contains unknown property "${modelAttrConfigKey}".`
+        );
+      }
+    });
+  });
+
   const mergedModelSchema: Record<string, Record<string, any>> = { ...modelSchema };
 
   for (const keyAttrName in tableKeysSchema) {
@@ -36,7 +47,7 @@ export const getMergedModelSchema = <
     // Check if ModelSchema contains keyAttrName
     if (hasKey(modelSchema, keyAttrName)) {
       // If ModelSchema contains keyAttrName, check if it contains mergeable config properties.
-      KEY_ATTR_CONFIGS.MERGEABLE.forEach((attrConfigName) => {
+      KEY_ATTR_CONFIG_PROPERTY_NAMES.MERGEABLE.forEach((attrConfigName) => {
         if (hasKey(modelSchema[keyAttrName], attrConfigName)) {
           // If ModelSchema contains `keyAttrName` AND a mergeable property, ensure it matches TableKeysSchema.
           if (modelSchema[keyAttrName][attrConfigName] !== keyAttrConfig[attrConfigName]) {
@@ -59,7 +70,7 @@ export const getMergedModelSchema = <
 
   // Ensure the returned schema doesn't contain NO_MERGE configs.
   for (const attrName in mergedModelSchema) {
-    KEY_ATTR_CONFIGS.NO_MERGE.forEach((attrConfigName) => {
+    KEY_ATTR_CONFIG_PROPERTY_NAMES.NO_MERGE.forEach((attrConfigName) => {
       if (hasKey(mergedModelSchema[attrName], attrConfigName)) {
         delete mergedModelSchema[attrName][attrConfigName];
       }
@@ -69,7 +80,18 @@ export const getMergedModelSchema = <
   return mergedModelSchema as MergeModelAndTableKeysSchema<TableKeysSchema, ModelSchema>;
 };
 
-const KEY_ATTR_CONFIGS = {
+const KEY_ATTR_CONFIG_PROPERTY_NAMES = {
   MERGEABLE: ["type", "required"] satisfies Array<keyof BaseAttributeConfigProperties>,
   NO_MERGE: ["isHashKey", "isRangeKey", "index"] satisfies Array<keyof KeyAttributeConfig>,
 } as const;
+
+const MODEL_ATTR_CONFIG_PROPERTY_NAMES = [
+  "alias",
+  "type",
+  "oneOf",
+  "schema",
+  "required",
+  "default",
+  "validate",
+  "transformValue",
+];
