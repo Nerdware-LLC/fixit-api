@@ -4,17 +4,11 @@ import { getRequestBodyValidatorMW } from "@middleware/helpers";
 import { hasKey } from "@utils/typeSafety";
 
 /**
- * This router handles all requests to the "/api/connect" path.
- *
- * - `req.baseUrl` = "/api/connect"
- *
- * Descendant paths:
+ * This router handles all `/api/connect` request paths:
  * - `/api/connect/account-link`
  * - `/api/connect/dashboard-link`
  */
 export const connectRouter = express.Router();
-
-// TODO Do we need to check the user's connect account capabilities (charges_enabled, payouts_enabled) ... ?
 
 connectRouter.use(getUserFromAuthHeaderToken);
 
