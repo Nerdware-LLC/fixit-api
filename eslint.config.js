@@ -117,15 +117,23 @@ export default [
     },
     rules: {
       ...vitestPlugin.configs.recommended.rules,
-      "vitest/expect-expect": "off", // doesn't detect 'expect's in called fns
       "vitest/no-disabled-tests": "warn",
+      "vitest/no-focused-tests": "warn",
       "vitest/prefer-to-have-length": "warn",
       "vitest/valid-expect": "error",
       "node/no-unpublished-import": [
         "error",
-        { allowModules: ["type-fest", "vitest", "@graphql-tools/mock"] },
+        {
+          allowModules: [
+            "type-fest",
+            "vitest",
+            "@graphql-tools/mock",
+            "aws-sdk-client-mock",
+            "supertest",
+          ],
+        },
       ],
-      "@typescript-eslint/no-unsafe-assignment": "off", // many Jest fns return `any`
+      "@typescript-eslint/no-unsafe-assignment": "off",
     },
   },
   ////////////////////////////////////////////////////////////////
