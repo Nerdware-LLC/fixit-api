@@ -2,7 +2,7 @@ import { stripe } from "@lib/stripe";
 import { mwAsyncCatchWrapper } from "@middleware/helpers";
 
 /**
- * This middleware creates a Stripe account link for authenticated users.
+ * This middleware creates a Stripe ConnectAccount link for authenticated users.
  *
  * - `req.originalUrl = "/api/connect/account-link"`
  */
