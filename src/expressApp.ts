@@ -27,8 +27,8 @@ const apolloServer = await createApolloServer();
 // SENTRY REQUEST-HANDLER (must be first middleware)
 expressApp.use(Sentry.Handlers.requestHandler());
 
-// LOG ALL REQUESTS IN DEV
-if (!ENV.IS_PROD) expressApp.use(logReqReceived);
+// LOG ALL REQUESTS
+expressApp.use(logReqReceived);
 
 // SECURITY
 expressApp.use(corsMW, setSecureHttpHeaders);
