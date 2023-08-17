@@ -11,17 +11,14 @@ export default defineConfig(({ mode }) => ({
   test: {
     globals: true,
     clearMocks: true,
-    mockReset: true, // <-- recommended for aws-sdk-client-mock
+    mockReset: true,
     environment: "node",
     include: ["**/?(*.){test,spec}.?(c|m)[tj]s?(x)"],
-    setupFiles: ["dotenv/config", "src/__tests__/setupTests.ts"],
-    globalSetup: ["src/__tests__/globalSetup.ts"],
-    reporters: [
-      "default", // prettier-ignore
-      ...(process.env.GITHUB_ACTIONS ? [new GithubActionsReporter()] : []),
-    ],
+    setupFiles: ["src/__tests__/setupTests.ts"],
+    reporters: ["default", ...(process.env.GITHUB_ACTIONS ? [new GithubActionsReporter()] : [])],
     coverage: {
       include: ["src/**/*.{js,ts}"],
+      exclude: ["src/__tests__/**/*.{js,ts}", "**/__mocks__/**/*", "__mocks__/**/*"],
       reporter: [
         // Default reporters:
         "text",
