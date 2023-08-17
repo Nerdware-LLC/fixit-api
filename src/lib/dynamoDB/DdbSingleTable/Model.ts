@@ -259,6 +259,7 @@ export class Model<
     const toDBitem = this.processItemData.toDB(attributesToUpdate as Partial<ItemInput>, {
       shouldSetDefaults: false,
       shouldTransformItem: false,
+      shouldValidateItem: false,
       shouldCheckRequired: false,
     });
     const itemAttributes = await this.ddbClient.updateItem(toDBpks, toDBitem, updateItemOpts);
@@ -351,11 +352,17 @@ export class Model<
   readonly processItemData = {
     toDB: <ItemArgs extends OneOrMoreMaybePartialItems<ItemInput>>(
       itemInput: ItemArgs,
-      { shouldSetDefaults = true, shouldTransformItem = true, shouldCheckRequired = true } = {}
+      {
+        shouldSetDefaults = true,
+        shouldTransformItem = true,
+        shouldValidateItem = true,
+        shouldCheckRequired = true,
+      } = {}
     ) => {
       return this.applyActionSetToItemData(itemInput, "toDB", {
         shouldSetDefaults,
         shouldTransformItem,
+        shouldValidateItem,
         shouldCheckRequired,
       }) as unknown as AscertainTypeFromOneOrMoreMaybePartialItems<
         ItemArgs,
@@ -388,7 +395,12 @@ export class Model<
   >(
     itemData: ItemArgs,
     ioDirection: Directionality,
-    { shouldSetDefaults = true, shouldTransformItem = true, shouldCheckRequired = true } = {}
+    {
+      shouldSetDefaults = true,
+      shouldTransformItem = true,
+      shouldValidateItem = true,
+      shouldCheckRequired = true,
+    } = {}
   ) => {
     // Get list of ioActions to apply to item/items
     const ioActions = this.getActionsSet[ioDirection](
@@ -401,7 +413,7 @@ export class Model<
         attributesToAliasesMap: this.attributesToAliasesMap,
         aliasesToAttributesMap: this.aliasesToAttributesMap,
       },
-      { shouldSetDefaults, shouldTransformItem, shouldCheckRequired }
+      { shouldSetDefaults, shouldTransformItem, shouldValidateItem, shouldCheckRequired }
     );
 
     // Define fn for applying ioActions to item/items
@@ -426,7 +438,12 @@ export class Model<
   > = {
     toDB: (
       ioContext,
-      { shouldSetDefaults = true, shouldTransformItem = true, shouldCheckRequired = true } = {}
+      {
+        shouldSetDefaults = true,
+        shouldTransformItem = true,
+        shouldValidateItem = true,
+        shouldCheckRequired = true,
+      } = {}
     ) => {
       return [
         // Alias Mapping
@@ -446,7 +463,9 @@ export class Model<
         // Attribute-level Validation
         (item) => ioHookActions.validate(item, ioContext),
         // Item-level Validation
-        (item) => ioHookActions.validateItem(item, ioContext),
+        ...(shouldValidateItem
+          ? ([(item) => ioHookActions.validateItem(item, ioContext)] satisfies [IOActionSetFn])
+          : []),
         // Convert JS Types
         (item) => ioHookActions.convertJsTypes(item, ioContext),
         // Check Required
