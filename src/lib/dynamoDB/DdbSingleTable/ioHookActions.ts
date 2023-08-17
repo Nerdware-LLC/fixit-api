@@ -280,17 +280,17 @@ export const ioHookActions: IOHookActions = Object.freeze({
         let convertedValue: unknown = undefined;
 
         if (attrType === "Date") {
-          // For "Date" attributes, convert Date objects to unix timestamps and vice versa.
-          if (ioDirection === "toDB" && isType.Date(itemValue)) {
+          // For "Date" attributes, convert Date objects and ISO strings to unix timestamps and vice versa.
+          if (ioDirection === "toDB" && (isType.Date(itemValue) || isType.string(itemValue))) {
             // toDB, convert Date objects to unix timestamps (Math.floor(new Date(value).getTime() / 1000))
-            convertedValue = moment(itemValue).unix();
-          } else if (
-            ioDirection === "fromDB" &&
-            isType.number(itemValue) &&
-            moment(itemValue).isValid()
-          ) {
-            // fromDB, convert unix timestamps to Date objects
-            convertedValue = new Date(itemValue * 1000);
+            convertedValue = dayjs(itemValue).unix();
+          } else if (ioDirection === "fromDB" && dayjs(itemValue as any).isValid()) {
+            // fromDB, convert timestamps to Date objects
+            convertedValue = dayjs(
+              isType.number(itemValue)
+                ? itemValue * 1000 // <-- convert seconds to milliseconds
+                : (itemValue as any)
+            ).toDate();
           }
         } else if (attrType === "Buffer") {
           // For "Buffer" attributes, convert Buffers to binary and vice versa.
