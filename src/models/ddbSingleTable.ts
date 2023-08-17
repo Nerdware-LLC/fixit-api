@@ -38,7 +38,13 @@ export const ddbSingleTable = new DdbSingleTable({
   } as const,
   ddbClientConfigs: {
     region: ENV.AWS.REGION,
-    ...(shouldUseDdbLocal && { endpoint: "http://localhost:8000" }),
+    ...(shouldUseDdbLocal && {
+      endpoint: "http://localhost:8000",
+      credentials: {
+        accessKeyId: "local",
+        secretAccessKey: "local",
+      },
+    }),
   },
   ...(!!shouldUseDdbLocal && {
     tableConfigs: {
