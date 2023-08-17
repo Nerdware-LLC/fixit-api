@@ -10,14 +10,14 @@ import {
   validateGqlReqContext,
   errorHandler,
   handle404,
-} from "./middleware";
+} from "@middleware";
 import {
   adminRouter,
   authRouter,
   connectRouter,
   subscriptionsRouter,
   webhooksRouter,
-} from "./routers";
+} from "@routers";
 
 export const expressApp = express();
 
