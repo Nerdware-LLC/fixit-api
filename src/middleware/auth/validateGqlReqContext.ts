@@ -29,19 +29,15 @@ const validateGqlRequest = async ({
     /* If err, re-throw as Apollo 401 auth error. By default, errors thrown from
     apollo context-init fn return to client with http status code 500, so an "http"
     extension is added here to ensure the status code is properly set to 401.    */
-    throw new GqlAuthError("Authentication required", {
-      extensions: { http: { status: GqlAuthError.STATUS_CODE } },
-    });
+    throw new GqlAuthError("Authentication required");
   });
 
   // Ensure the User's subscription is active and not expired
   try {
     UserSubscription.validateExisting(tokenPayload.subscription);
   } catch (err) {
-    // If err, re-throw as Apollo 402 error
-    throw new GqlPaymentRequiredError("Payment required", {
-      extensions: { http: { status: GqlPaymentRequiredError.STATUS_CODE } },
-    });
+    // If err, re-throw as GQL 402 error
+    throw new GqlPaymentRequiredError("Payment required");
   }
 
   return {
