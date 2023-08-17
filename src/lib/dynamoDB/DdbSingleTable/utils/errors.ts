@@ -1,4 +1,3 @@
-import { ENV } from "@server/env";
 import { safeJsonStringify } from "@utils/typeSafety";
 import type { ModelSchemaAttributeConfig, ModelSchemaNestedAttributes } from "../types";
 
@@ -6,14 +5,11 @@ import type { ModelSchemaAttributeConfig, ModelSchemaNestedAttributes } from "..
  * The base `error` class for `DdbSingleTable`.
  */
 export class DdbSingleTableError extends Error {
+  readonly name: string = "DdbSingleTableError";
+
   constructor(message = "Unknown error") {
     super(message);
-    this.name = "DdbSingleTableError";
-
-    // Explicitly set the prototype
-    Object.setPrototypeOf(this, DdbSingleTableError.prototype);
-
-    if (!ENV.IS_PROD) Error.captureStackTrace(this, DdbSingleTableError);
+    Error.captureStackTrace(this, DdbSingleTableError);
   }
 }
 
@@ -21,10 +17,12 @@ export class DdbSingleTableError extends Error {
  * This error is thrown by schema-validation functions when a `TableKeysSchema`
  * or `ModelSchema` is invalid.
  */
-export class SchemaValidationError extends DdbSingleTableError {
-  constructor(message?: string) {
+export class SchemaValidationError extends Error {
+  readonly name: string = "SchemaValidationError";
+
+  constructor(message = "Invalid schema") {
     super(message);
-    this.name = "SchemaValidationError";
+    Error.captureStackTrace(this, SchemaValidationError);
   }
 }
 
@@ -32,10 +30,12 @@ export class SchemaValidationError extends DdbSingleTableError {
  * This error is thrown by Model `IOHookAction` functions when run-time input
  * data is invalid.
  */
-export class ItemInputError extends DdbSingleTableError {
-  constructor(message?: string) {
+export class ItemInputError extends Error {
+  readonly name: string = "ItemInputError";
+
+  constructor(message = "Invalid item input") {
     super(message);
-    this.name = "ItemInputError";
+    Error.captureStackTrace(this, ItemInputError);
   }
 }
 
@@ -43,7 +43,9 @@ export class ItemInputError extends DdbSingleTableError {
  * This error is thrown by expression-generator utils when a run-time arg is invalid
  * (e.g., more than two K-V pairs for a `KeyConditionExpression`).
  */
-export class InvalidExpressionError extends DdbSingleTableError {
+export class InvalidExpressionError extends Error {
+  readonly name: string = "InvalidExpressionError";
+
   constructor(
     arg:
       | string
@@ -70,7 +72,7 @@ export class InvalidExpressionError extends DdbSingleTableError {
           `${arg.problem}: ${safeJsonStringify(arg.invalidValue, null, 2)}`;
 
     super(message);
-    this.name = "InvalidExpressionError";
+    Error.captureStackTrace(this, InvalidExpressionError);
   }
 }
 
