@@ -26,7 +26,7 @@ class FixitEventEmitter extends EventEmitter {
     InvoiceUpdated: [notifyAssigneeUpdatedInvoice],
     InvoiceDeleted: [notifyAssigneeDeletedInvoice],
     InvoicePaid: [notifyAssignorPaidInvoice],
-    NewUser: [], // TODO Add "sendWelcomeEmail" here once implemented.
+    NewUser: [sendWelcomeEmail],
     WorkOrderCreated: [notifyAssigneeNewWO],
     WorkOrderUpdated: [notifyAssigneeUpdatedWO],
     WorkOrderCancelled: [notifyAssigneeCancelledWO],
