@@ -33,9 +33,7 @@ import type { JsonObject } from "type-fest";
  */
 export const adminRouter = express.Router();
 
-adminRouter.use("/healthcheck", express.json(), (req, res) => {
-  res.json({ message: "SUCESS" });
-});
+adminRouter.use("/healthcheck", (req, res) => res.json({ message: "SUCESS" }));
 
 adminRouter.use(
   "/csp-violation",
