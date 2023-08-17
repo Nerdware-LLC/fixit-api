@@ -1,6 +1,7 @@
-import { InternalServerError } from "@utils/customErrors/500_InternalServerError";
 import { hasKey } from "./hasKey";
 import { safeJsonStringify } from "./safeJsonStringify";
+import type { HttpErrorInterface } from "@utils/httpErrors";
+import type { Class } from "type-fest";
 
 /**
  * Internal type-safety util which guarantees the returned object is an `Error`.
@@ -34,4 +35,14 @@ export const getTypeSafeError = (
     ? new ErrorClass(err.message)
     : new ErrorClass(`${fallBackErrMsg}\nOriginal error payload: ${safeJsonStringify(err)}`);
 };
+
+/**
+ * Attempts to parse an error message from an unknown error.
+ */
+export const getErrorMessage = (err: unknown): string | undefined => {
+  return typeof err === "string"
+    ? err
+    : !!err && typeof err === "object" && hasKey(err, "message") && typeof err.message === "string"
+    ? err.message
+    : undefined;
 };
