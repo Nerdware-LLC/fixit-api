@@ -23,16 +23,17 @@ importOrder: [
     # Below keyword applies to any imports that don't match an explicitly-provided pattern
     "<THIRD_PARTY_MODULES>",
     # Project path aliases:
+    "^@/",
     "^@events/?(.*)$",
     "^@graphql/?(.*)$",
     "^@lib/?(.*)$",
     "^@middleware/?(.*)$",
     "^@models/?(.*)$",
+    "^@routers/?(.*)$",
     "^@server/?(.*)$",
     "^@tests/?(.*)$",
     "^@types/?(.*)$",
     "^@utils/?(.*)$",
-    "^@/",
     # Relative imports at the bottom
     "^./",
     "^../",
