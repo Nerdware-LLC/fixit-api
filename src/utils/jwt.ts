@@ -1,56 +1,60 @@
 import jwt from "jsonwebtoken";
 import { ENV } from "@server/env";
 
-export const validateAndDecodeJWT = async (token: string): Promise<FixitApiJwtPayload> => {
+/**
+ * Validates and decodes a JSON Web Token (JWT) using the provided private key
+ * and algorithm. It checks if the token is valid based on the shared parameters
+ * and returns the decoded payload if successful.
+ *
+ * @param token - The JWT to be validated and decoded.
+ * @returns A Promise that resolves to a 'FixitApiJwtPayload' object representing the decoded JWT payload.
+ * @throws An error if the token is invalid.
+ */
+export const validateAndDecodeJWT = async <
+  DecodedPayload extends Record<string, unknown> = Record<string, unknown>
+>(
+  token: string
+): Promise<DecodedPayload & jwt.JwtPayload> => {
   return new Promise((resolve, reject) => {
     jwt.verify(
       token,
-      ENV.SECURITY.JWT_PRIVATE_KEY,
+      ENV.JWT.PRIVATE_KEY,
       {
-        ...SHARED_JWT_PARAMS,
-        algorithms: [ENV.SECURITY.JWT_ALGORITHM],
-        maxAge: "10h",
+        audience: ENV.CONFIG.API_FULL_URL,
+        issuer: ENV.JWT.ISSUER,
+        algorithms: [ENV.JWT.ALGORITHM],
+        maxAge: ENV.JWT.EXPIRES_IN,
       },
       (err, decoded) => {
-        if (err || !decoded) reject(new Error("Invalid token."));
-        resolve(decoded as FixitApiJwtPayload);
+        if (err || !decoded) {
+          reject(
+            new Error(
+              err?.name === "TokenExpiredError"
+                ? "Token expired"
+                : err?.name === "JsonWebTokenError"
+                ? "Signature verification failed"
+                : "Invalid token"
+            )
+          );
+        }
+        resolve(decoded as DecodedPayload);
       }
     );
   });
 };
 
-export const signAndEncodeJWT = (payload: FixitApiJwtPayload) => {
-  return jwt.sign(payload, ENV.SECURITY.JWT_PRIVATE_KEY, {
-    ...SHARED_JWT_PARAMS,
-    algorithm: ENV.SECURITY.JWT_ALGORITHM,
-    expiresIn: "10h",
+/**
+ * Signs and encodes a JSON Web Token (JWT) using the provided payload and env vars.
+ *
+ * @param payload - The payload data for the JWT; if `payload.id` is provided, it will be used as the JWT subject.
+ * @returns The signed and encoded JWT string.
+ */
+export const signAndEncodeJWT = (payload: jwt.JwtPayload & { id?: string }) => {
+  return jwt.sign(payload, ENV.JWT.PRIVATE_KEY, {
+    audience: ENV.CONFIG.API_FULL_URL,
+    issuer: ENV.JWT.ISSUER,
+    algorithm: ENV.JWT.ALGORITHM,
+    expiresIn: ENV.JWT.EXPIRES_IN,
     subject: payload.id,
   });
 };
-
-/** JWT params used for both signing and verifying tokens. */
-const SHARED_JWT_PARAMS = {
-  audience: ENV.CONFIG.API_FULL_URL,
-  issuer: "fixit",
-};
-
-export const INTERNAL_JWT_PAYLOAD_FIELDS: ReadonlyArray<keyof jwt.JwtPayload> = Object.freeze(
-  ["iss", "sub", "aud", "exp", "nbf", "iat", "jti"] // prettier-ignore
-);
-
-/**
- * Fixit API JWT Token Payload
- * - Usage: provide a User object with an "id" property to use for the jwt "sub".
- *
- * Includes the following JwtPayload fields:
- * - `iss`: issuer
- * - `sub`: subject
- * - `aud`: audience
- * - `exp`: expiration time
- * - `nbf`: not before
- * - `iat`: issued at
- * - `jti`: jwt id
- */
-export interface FixitApiJwtPayload extends jwt.JwtPayload {
-  id: string;
-}
