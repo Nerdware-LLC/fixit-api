@@ -17,11 +17,15 @@ export type IOActionSetFn = (item: Record<string, unknown>) => Record<string, un
  * - **`shouldTransformItem`** — If `true`, the `transformItem.toDB` method will be called
  *   if one is defined in the `ModelSchemaOptions`.
  *
+ * - **`shouldValidateItem`** — If `true`, the `validateItem` method will be called if one
+ *   is defined in the `ModelSchemaOptions`.
+ *
  * - **`shouldCheckRequired`** — If `true`, attributes marked `required` in the schema are
  *   checked to ensure the `item` contains a value for each that is not `null`/`undefined`.
  */
 export interface IOBehavioralOpts {
   shouldSetDefaults?: boolean;
   shouldTransformItem?: boolean;
+  shouldValidateItem?: boolean;
   shouldCheckRequired?: boolean;
 }
