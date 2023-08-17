@@ -1,14 +1,14 @@
 import { EventEmitter } from "events";
-import { ENV } from "@server/env";
+import { notifyAssigneeNewInvoice } from "@/events/onInvoiceCreated";
+import { notifyAssigneeDeletedInvoice } from "@/events/onInvoiceDeleted";
+import { notifyAssignorPaidInvoice } from "@/events/onInvoicePaid";
+import { notifyAssigneeUpdatedInvoice } from "@/events/onInvoiceUpdated";
+import { sendWelcomeEmail } from "@/events/onNewUser";
+import { notifyAssigneeCancelledWO } from "@/events/onWorkOrderCancelled";
+import { notifyAssignorCompletedWO } from "@/events/onWorkOrderCompleted";
+import { notifyAssigneeNewWO } from "@/events/onWorkOrderCreated";
+import { notifyAssigneeUpdatedWO } from "@/events/onWorkOrderUpdated";
 import { logger } from "@utils/logger";
-import { notifyAssigneeNewInvoice } from "./onInvoiceCreated";
-import { notifyAssigneeDeletedInvoice } from "./onInvoiceDeleted";
-import { notifyAssignorPaidInvoice } from "./onInvoicePaid";
-import { notifyAssigneeUpdatedInvoice } from "./onInvoiceUpdated";
-import { notifyAssigneeCancelledWO } from "./onWorkOrderCancelled";
-import { notifyAssignorCompletedWO } from "./onWorkOrderCompleted";
-import { notifyAssigneeNewWO } from "./onWorkOrderCreated";
-import { notifyAssigneeUpdatedWO } from "./onWorkOrderUpdated";
 
 /**
  * FixitEventEmitter is a simple wrapper around EventEmitter which
