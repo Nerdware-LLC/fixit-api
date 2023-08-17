@@ -1,12 +1,14 @@
 import express from "express";
+import { isValidStripeID } from "@lib/stripe";
 import {
   getUserFromAuthHeaderToken,
   findOrCreateStripeSubscription,
   generateAuthToken,
   createCustomerPortalLink,
 } from "@middleware";
-import { getRequestBodyValidatorMW } from "@middleware/helpers";
-import { hasKey } from "@utils/typeSafety";
+import { sanitizeAndValidateRequestBody } from "@middleware/helpers";
+import { UserSubscription } from "@models/UserSubscription";
+import { hasKey, sanitize, isValid } from "@utils";
 
 /**
  * This router handles all `/api/subscriptions` request paths:
@@ -19,15 +21,51 @@ subscriptionsRouter.use(getUserFromAuthHeaderToken);
 
 subscriptionsRouter.post(
   "/submit-payment",
-  getRequestBodyValidatorMW(
-    (reqBody) => hasKey(reqBody, "selectedSubscription") && hasKey(reqBody, "paymentMethodID")
-  ),
+  sanitizeAndValidateRequestBody({
+    requestBodySchema: {
+      selectedSubscription: {
+        required: true,
+        type: "string",
+        sanitize: sanitize.alphabetic,
+        validate: (value) => {
+          if (!hasKey(UserSubscription.PRICE_IDS, value as string)) {
+            throw new Error("Invalid subscription");
+          }
+        },
+      },
+      paymentMethodID: {
+        required: true,
+        type: "string",
+        sanitize: sanitize.id,
+        validate: isValidStripeID.paymentMethod,
+      },
+      promoCode: {
+        required: false,
+        type: "string",
+        sanitize: sanitize.id,
+        validate: (value) => {
+          if (!hasKey(UserSubscription.PROMO_CODES, value as string)) {
+            throw new Error("Invalid promo code");
+          }
+        },
+      },
+    },
+  }),
   findOrCreateStripeSubscription,
   generateAuthToken
 );
 
 subscriptionsRouter.post(
   "/customer-portal",
-  getRequestBodyValidatorMW((reqBody) => hasKey(reqBody, "returnURL")),
+  sanitizeAndValidateRequestBody({
+    requestBodySchema: {
+      returnURL: {
+        required: true,
+        type: "string",
+        sanitize: sanitize.url,
+        validate: isValid.url,
+      },
+    },
+  }),
   createCustomerPortalLink
 );

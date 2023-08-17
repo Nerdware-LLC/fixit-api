@@ -1,7 +1,7 @@
 import express from "express";
 import { getUserFromAuthHeaderToken, createAccountLink, createDashboardLink } from "@middleware";
-import { getRequestBodyValidatorMW } from "@middleware/helpers";
-import { hasKey } from "@utils/typeSafety";
+import { sanitizeAndValidateRequestBody } from "@middleware/helpers";
+import { sanitize, isValid } from "@utils";
 
 /**
  * This router handles all `/api/connect` request paths:
@@ -14,7 +14,16 @@ connectRouter.use(getUserFromAuthHeaderToken);
 
 connectRouter.post(
   "/account-link",
-  getRequestBodyValidatorMW((reqBody) => hasKey(reqBody, "returnURL")),
+  sanitizeAndValidateRequestBody({
+    requestBodySchema: {
+      returnURL: {
+        required: true,
+        type: "string",
+        sanitize: sanitize.url,
+        validate: isValid.url,
+      },
+    },
+  }),
   createAccountLink
 );
 
