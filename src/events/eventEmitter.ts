@@ -11,15 +11,17 @@ import { notifyAssigneeUpdatedWO } from "@/events/onWorkOrderUpdated";
 import { logger } from "@utils/logger";
 
 /**
- * FixitEventEmitter is a simple wrapper around EventEmitter which
- * allows events to be called as methods on `eventEmitter`, rather
- * than as string enums passed to the `emit` method.
- * For each registered event, it creates an emit method and attaches
- * all event listeners in order.
+ * A thin wrapper around EventEmitter which adds named emitter methods for each
+ * event for which listeners are registered. All event handlers are wrapped in
+ * an async try/catch block to prevent unhandled errors/rejections.
  *
- * Note: An array of all events for which there are listeners can be
- * obtained via `process.eventNames`.
+ * Note: If needed for debugging, an array of all events for which there are
+ * listeners can be obtained via `process.eventNames`.
  */
+export class FixitEventEmitter
+  extends EventEmitter
+  implements Record<`emit${FixitEventName}`, (...args: any[]) => void>
+{
   static readonly EVENT_HANDLERS = {
     InvoiceCreated: [notifyAssigneeNewInvoice],
     InvoiceUpdated: [notifyAssigneeUpdatedInvoice],
@@ -32,55 +34,51 @@ import { logger } from "@utils/logger";
     WorkOrderCompleted: [notifyAssignorCompletedWO],
   } as const;
 
-  constructor() {
-    super();
-    Object.entries(FixitEventEmitter.FIXIT_EVENT_HANDLERS).forEach(([eventName, eventHandlers]) => {
-      // Provide an emit fn for the event
-      Object.defineProperty(this, `emit${eventName}`, {
-        value: (...args: any[]) => {
-          this.emit(eventName, ...args);
-        },
-        writable: false,
-        enumerable: false,
-        configurable: false,
-      });
+  private getNamedEmitter<T extends FixitEventName>(name: T): NamedEmitFn<T> {
+    return (...args) => this.emit(name, ...args);
+  }
 
-      // Register the event's handler fns
+  emitInvoiceCreated = this.getNamedEmitter("InvoiceCreated");
+  emitInvoiceUpdated = this.getNamedEmitter("InvoiceUpdated");
+  emitInvoiceDeleted = this.getNamedEmitter("InvoiceDeleted");
+  emitInvoicePaid = this.getNamedEmitter("InvoicePaid");
+  emitNewUser = this.getNamedEmitter("NewUser");
+  emitWorkOrderCreated = this.getNamedEmitter("WorkOrderCreated");
+  emitWorkOrderUpdated = this.getNamedEmitter("WorkOrderUpdated");
+  emitWorkOrderCancelled = this.getNamedEmitter("WorkOrderCancelled");
+  emitWorkOrderCompleted = this.getNamedEmitter("WorkOrderCompleted");
+
+  constructor(eventHandlers = FixitEventEmitter.EVENT_HANDLERS) {
+    super();
+    // Register each event's handler functions
+    Object.entries(eventHandlers).forEach(([eventName, eventHandlers]) => {
       eventHandlers.forEach((eventHandler) =>
         this.on(
           eventName,
-          !/^test/i.test(ENV.NODE_ENV)
-            ? eventHandler
-            : () => logger.test(`(Mock FixitEventEmitter) Event emitted: ${eventName}`)
+          // Wrap each event handler in a try/catch block to prevent unhandled errors
+          async (...args: any[]) => {
+            await eventHandler(args?.[0], args?.[1]).catch((error) => logger.error(error));
+          }
         )
       );
     });
   }
 }
 
-/**
- * Fixit eventEmitter
- *
- * @method `emitInvoiceCreated()` args: (newInvoice)
- * @method `emitInvoiceUpdated()` args: (updatedInvoice)
- * @method `emitInvoiceDeleted()` args: (deletedInvoice)
- * @method `emitNewUser()` args: (newUser)
- * @method `emitWorkOrderCreated()` args: (newWorkOrder)
- * @method `emitWorkOrderUpdated()` args: (newWorkOrder, oldWorkOrder)
- * @method `emitWorkOrderCancelled()` args: (cancelledWorkOrder)
- * @method `emitWorkOrderCompleted()` args: (completedWorkOrder)
- */
 export const eventEmitter = new FixitEventEmitter();
 
-// To provide the methods in intellisense:
-declare interface FixitEventEmitter {
-  emitInvoiceCreated: (...args: Parameters<typeof notifyAssigneeNewInvoice>) => void;
-  emitInvoiceUpdated: (...args: Parameters<typeof notifyAssigneeUpdatedInvoice>) => void;
-  emitInvoiceDeleted: (...args: Parameters<typeof notifyAssigneeDeletedInvoice>) => void;
-  emitInvoicePaid: (...args: Parameters<typeof notifyAssignorPaidInvoice>) => void;
-  emitNewUser: () => void;
-  emitWorkOrderCreated: (...args: Parameters<typeof notifyAssigneeNewWO>) => void;
-  emitWorkOrderUpdated: (...args: Parameters<typeof notifyAssigneeUpdatedWO>) => void;
-  emitWorkOrderCancelled: (...args: Parameters<typeof notifyAssigneeCancelledWO>) => void;
-  emitWorkOrderCompleted: (...args: Parameters<typeof notifyAssignorCompletedWO>) => void;
+/** Map of Fixit event names to their respective handlers. */
+export type FixitEventHandlers = typeof FixitEventEmitter.EVENT_HANDLERS;
+/** The name of an event for which there's a registered listener. */
+export type FixitEventName = keyof FixitEventHandlers;
+/** A function which emits a FixitEvent. */
+export type NamedEmitFn<EventName extends FixitEventName> = (
+  ...args: Parameters<FixitEventHandlers[EventName][number]>
+) => void;
+
+// Augment EventEmitter to only allow the names of configured events to be emitted.
+declare module "events" {
+  interface EventEmitter {
+    emit(eventName: FixitEventName, ...args: unknown[]): boolean;
+  }
 }
