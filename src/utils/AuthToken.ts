@@ -1,74 +1,73 @@
-import {
-  signAndEncodeJWT,
-  validateAndDecodeJWT,
-  INTERNAL_JWT_PAYLOAD_FIELDS,
-  type FixitApiJwtPayload,
-} from "./jwt";
+import { signAndEncodeJWT, validateAndDecodeJWT } from "./jwt";
 import type { UserModelItem } from "@models/User";
 import type { UserStripeConnectAccountModelItem } from "@models/UserStripeConnectAccount";
 import type { UserSubscriptionModelItem } from "@models/UserSubscription";
 import type { Request } from "express";
+import type jwt from "jsonwebtoken";
 import type { Simplify } from "type-fest";
 
+/**
+ * The AuthToken class is responsible for creating, validating, and decoding JSON
+ * Web Tokens (JWTs) used for authentication in the Fixit API.
+ */
 export class AuthToken {
-  private tokenValue;
+  private encodedTokenValue: string;
 
-  constructor({
-    id: userID,
-    handle,
-    email,
-    phone,
-    profile,
-    stripeCustomerID,
-    stripeConnectAccount,
-    subscription,
-    createdAt,
-    updatedAt,
-  }: FixitApiAuthTokenPayloadUserData) {
-    const payload: FixitApiAuthTokenPayloadUserData = {
-      id: userID,
-      handle,
-      email,
-      phone,
-      profile,
-      stripeCustomerID,
+  /**
+   * Creates a new AuthToken by signing and encoding a JWT payload using the provided user data.
+   * @param userData - The user data used to create the JWT payload.
+   */
+  constructor(userData: FixitApiAuthTokenPayload) {
+    const payload: FixitApiAuthTokenPayload = {
+      id: userData.id,
+      handle: userData.handle,
+      email: userData.email,
+      phone: userData.phone,
+      profile: userData.profile,
+      stripeCustomerID: userData.stripeCustomerID,
       stripeConnectAccount: {
-        id: stripeConnectAccount.id,
-        detailsSubmitted: !!stripeConnectAccount.detailsSubmitted,
-        chargesEnabled: !!stripeConnectAccount.chargesEnabled,
-        payoutsEnabled: !!stripeConnectAccount.payoutsEnabled,
+        id: userData.stripeConnectAccount.id,
+        detailsSubmitted: !!userData.stripeConnectAccount.detailsSubmitted,
+        chargesEnabled: !!userData.stripeConnectAccount.chargesEnabled,
+        payoutsEnabled: !!userData.stripeConnectAccount.payoutsEnabled,
       },
-      ...(subscription && {
+      ...(userData.subscription && {
         subscription: {
-          id: subscription.id,
-          status: subscription.status,
-          currentPeriodEnd: subscription.currentPeriodEnd,
+          id: userData.subscription.id,
+          status: userData.subscription.status,
+          currentPeriodEnd: userData.subscription.currentPeriodEnd,
         },
       }),
-      createdAt,
-      updatedAt,
+      createdAt: userData.createdAt,
+      updatedAt: userData.updatedAt,
     };
 
-    this.tokenValue = signAndEncodeJWT(payload);
+    this.encodedTokenValue = signAndEncodeJWT(payload);
   }
 
   /**
-   * This method returns the encoded auth token string.
+   * Returns the encoded auth token string.
+   * @returns The encoded auth token string.
    */
   toString() {
-    return this.tokenValue;
+    return this.encodedTokenValue;
   }
 
   /**
-   * This method is called to validate and decode an encoded auth token.
+   * Validates and decodes an encoded auth token.
+   * @param encodedAuthToken - The encoded auth token to validate and decode.
+   * @returns The decoded auth token payload.
    */
   static validateAndDecodeAuthToken = async (encodedAuthToken: string) => {
-    return (await validateAndDecodeJWT(encodedAuthToken)) as FixitApiAuthTokenPayload;
+    const decodedPayload = await validateAndDecodeJWT(encodedAuthToken);
+    return AuthToken.stripInternalJwtPayloadFields(decodedPayload) as FixitApiAuthTokenPayload;
   };
 
   /**
-   * This method validates the request's "Authorization" header, and returns the
-   * decoded payload if valid.
+   * Validates the "Authorization" header of an incoming request and returns the decoded payload if valid.
+   * @param request - The incoming request object.
+   * @returns The decoded auth token payload.
+   * @throws Error if the token is invalid.
    */
   static getValidatedRequestAuthTokenPayload = async (request: Request) => {
     // Get token from "Authorization" header
@@ -87,25 +86,27 @@ export class AuthToken {
   };
 
   /**
-   * This methods strips the following fields from the JWT payload (if present):
-   * - `iss`
-   * - `sub`
-   * - `aud`
-   * - `iat`
-   * - `exp`
-   * - `nbf`
-   * - `jti`
+   * Strips internal JWT payload fields from a given payload.
+   * @param payload - The JWT payload to strip internal fields from.
+   * @returns The stripped payload.
    */
-  static stripInternalJwtPayloadFields = (payload: FixitApiAuthTokenPayload) => {
+  static stripInternalJwtPayloadFields = <
+    Payload extends Record<string, unknown> = FixitApiAuthTokenPayload
+  >(
+    payload: Payload
+  ) => {
     return Object.fromEntries(
-      Object.entries(payload).filter(([key]) => !INTERNAL_JWT_PAYLOAD_FIELDS.includes(key))
-    ) as FixitApiAuthTokenPayloadUserData;
+      Object.entries(payload).filter(
+        ([key]) => !["iss", "sub", "aud", "exp", "nbf", "iat", "jti"].includes(key)
+      )
+    ) as Omit<Payload, keyof jwt.JwtPayload>;
   };
 }
 
-export type FixitApiAuthTokenPayload = FixitApiJwtPayload & FixitApiAuthTokenPayloadUserData;
-
-export type FixitApiAuthTokenPayloadUserData = Simplify<
+/**
+ * The decoded payload of a Fixit API auth token.
+ */
+export type FixitApiAuthTokenPayload = Simplify<
   Pick<
     UserModelItem,
     "id" | "handle" | "email" | "phone" | "profile" | "stripeCustomerID" | "createdAt" | "updatedAt"
