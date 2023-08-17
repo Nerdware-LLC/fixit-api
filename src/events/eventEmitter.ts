@@ -20,8 +20,7 @@ import { logger } from "@utils/logger";
  * Note: An array of all events for which there are listeners can be
  * obtained via `process.eventNames`.
  */
-class FixitEventEmitter extends EventEmitter {
-  static FIXIT_EVENT_HANDLERS = {
+  static readonly EVENT_HANDLERS = {
     InvoiceCreated: [notifyAssigneeNewInvoice],
     InvoiceUpdated: [notifyAssigneeUpdatedInvoice],
     InvoiceDeleted: [notifyAssigneeDeletedInvoice],
