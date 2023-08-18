@@ -29,7 +29,7 @@ export const resolvers: Partial<Resolvers> = {
   },
   Profile: {
     displayName: ({ givenName, familyName, businessName }, _, { user: { handle } }) => {
-      return Profile.getDisplayNameFromArgs({
+      return Profile.getDisplayName({
         handle,
         businessName,
         givenName,
