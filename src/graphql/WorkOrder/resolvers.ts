@@ -1,4 +1,4 @@
-import { eventEmitter } from "@events";
+import { eventEmitter } from "@events/eventEmitter";
 import { DeleteMutationResponse } from "@graphql/_common";
 import { verifyUserCanPerformThisUpdate, getFixitUser } from "@graphql/_helpers";
 import { USER_ID_REGEX } from "@models/User/regex";

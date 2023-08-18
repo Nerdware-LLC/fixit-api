@@ -1,4 +1,4 @@
-import { eventEmitter } from "@events";
+import { eventEmitter } from "@events/eventEmitter";
 import { DeleteMutationResponse } from "@graphql/_common";
 import { getFixitUser } from "@graphql/_helpers";
 import { stripe } from "@lib/stripe";
