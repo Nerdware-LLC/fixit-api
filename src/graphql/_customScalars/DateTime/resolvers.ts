@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import { GraphQLScalarType } from "graphql";
 import { Kind } from "graphql/language";
-import { logger } from "@utils/logger";
+import { logger } from "@/utils/logger";
 import { helpers } from "../helpers";
 
 /** @returns boolean indicating whether the value is a valid DateTime scalar. */

@@ -1,5 +1,5 @@
-import { hasKey, hasKeys, sanitize, isValid } from "@utils";
-import type { RequestBodyFieldsSchema, RequestBodyValidatorFn } from "@middleware/helpers";
+import { hasKey, hasKeys, sanitize, isValid } from "@/utils";
+import type { RequestBodyFieldsSchema, RequestBodyValidatorFn } from "@/middleware/helpers";
 
 /**
  * A {@link RequestBodyFieldsSchema} that configures sanitzation and

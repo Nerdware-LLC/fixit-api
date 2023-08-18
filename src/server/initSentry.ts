@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/node";
-import { ENV } from "@server/env";
+import { ENV } from "@/server/env";
 
 // TODO Add support for uploading source maps to Sentry (see link below).
 // https://docs.sentry.io/platforms/node/sourcemaps/uploading/typescript/?original_referrer=https%3A%2F%2Fwww.google.com%2F

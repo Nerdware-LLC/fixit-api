@@ -1,4 +1,4 @@
-import type { FixitUser, Profile as NullableProfile, NonNullableProfile } from "@types";
+import type { FixitUser, Profile as NullableProfile, NonNullableProfile } from "@/types";
 
 /**
  * Ideas for potential profile fields:

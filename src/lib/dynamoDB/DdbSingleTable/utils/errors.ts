@@ -1,4 +1,4 @@
-import { safeJsonStringify } from "@utils/typeSafety";
+import { safeJsonStringify } from "@/utils/typeSafety";
 import type { ModelSchemaAttributeConfig, ModelSchemaNestedAttributes } from "../types";
 
 /**

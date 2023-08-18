@@ -1,6 +1,6 @@
-import { stripe } from "@lib/stripe";
-import { mwAsyncCatchWrapper } from "@middleware/helpers";
-import { UserSubscription } from "@models/UserSubscription";
+import { stripe } from "@/lib/stripe";
+import { mwAsyncCatchWrapper } from "@/middleware/helpers";
+import { UserSubscription } from "@/models/UserSubscription";
 
 export const checkSubscriptionStatus = mwAsyncCatchWrapper(async (req, res, next) => {
   if (!req?._authenticatedUser) return next("User not found");

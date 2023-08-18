@@ -1,5 +1,5 @@
-import { stripe } from "@lib/stripe";
-import { mwAsyncCatchWrapper } from "@middleware/helpers";
+import { stripe } from "@/lib/stripe";
+import { mwAsyncCatchWrapper } from "@/middleware/helpers";
 
 /**
  * `req.originalUrl = "/api/subscriptions/customer-portal"`

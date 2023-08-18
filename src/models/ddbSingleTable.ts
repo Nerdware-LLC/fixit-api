@@ -1,5 +1,5 @@
-import { DdbSingleTable } from "@lib/dynamoDB";
-import { ENV } from "@server/env";
+import { DdbSingleTable } from "@/lib/dynamoDB";
+import { ENV } from "@/server/env";
 
 // Use ddb-local in dev and test environments.
 const shouldUseDdbLocal = /^(dev|test)/i.test(ENV.NODE_ENV);

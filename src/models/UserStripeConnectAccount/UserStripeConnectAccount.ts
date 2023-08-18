@@ -1,13 +1,13 @@
-import { Model } from "@lib/dynamoDB";
-import { isValidStripeID } from "@lib/stripe";
-import { userModelHelpers } from "@models/User/helpers";
-import { COMMON_ATTRIBUTES } from "@models/_common";
-import { ddbSingleTable } from "@models/ddbSingleTable";
+import { Model } from "@/lib/dynamoDB";
+import { isValidStripeID } from "@/lib/stripe";
+import { userModelHelpers } from "@/models/User/helpers";
+import { COMMON_ATTRIBUTES } from "@/models/_common";
+import { ddbSingleTable } from "@/models/ddbSingleTable";
 import { createOne } from "./createOne";
 import { userStripeConnectAccountModelHelpers as scaModelHelpers } from "./helpers";
 import { STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR } from "./regex";
 import { updateOne } from "./updateOne";
-import type { ItemTypeFromSchema, ItemInputType, DynamoDbItemType } from "@lib/dynamoDB";
+import type { ItemTypeFromSchema, ItemInputType, DynamoDbItemType } from "@/lib/dynamoDB";
 
 /**
  * UserStripeConnectAccount DdbSingleTable Model

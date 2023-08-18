@@ -1,8 +1,8 @@
-import { InvoicePushNotification } from "@events/pushNotifications";
-import { lambdaClient } from "@lib/lambdaClient";
-import { User, type UserModelItem } from "@models/User";
+import { InvoicePushNotification } from "@/events/pushNotifications";
+import { lambdaClient } from "@/lib/lambdaClient";
+import { User, type UserModelItem } from "@/models/User";
 import { notifyAssignorPaidInvoice } from "./notifyAssignorPaidInvoice";
-import type { InvoiceModelItem } from "@models/Invoice";
+import type { InvoiceModelItem } from "@/models/Invoice";
 
 vi.mock("@aws-sdk/client-lambda"); // <repo_root>/__mocks__/@aws-sdk/client-lambda.ts
 

@@ -1,7 +1,7 @@
-import { stripe } from "@lib/stripe";
-import { mwAsyncCatchWrapper } from "@middleware/helpers";
-import { UserSubscription, type UserSubscriptionPriceLabels } from "@models/UserSubscription";
-import { logger, getTypeSafeError, PaymentRequiredError } from "@utils";
+import { stripe } from "@/lib/stripe";
+import { mwAsyncCatchWrapper } from "@/middleware/helpers";
+import { UserSubscription, type UserSubscriptionPriceLabels } from "@/models/UserSubscription";
+import { logger, getTypeSafeError, PaymentRequiredError } from "@/utils";
 
 /**
  * `req.originalUrl = "/api/subscriptions/submit-payment"`

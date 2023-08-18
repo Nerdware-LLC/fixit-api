@@ -14,11 +14,11 @@ export default defineConfig({
     mockReset: true,
     environment: "node",
     include: ["**/?(*.){test,spec}.?(c|m)[tj]s?(x)"],
-    setupFiles: ["src/__tests__/setupTests.ts"],
+    setupFiles: ["src/tests/setupTests.ts"],
     reporters: ["default", ...(process.env.GITHUB_ACTIONS ? [new GithubActionsReporter()] : [])],
     coverage: {
       include: ["src/**/*.{js,ts}"],
-      exclude: ["src/__tests__/**/*.{js,ts}", "**/__mocks__/**/*", "__mocks__/**/*"],
+      exclude: ["src/tests/**/*.{js,ts}", "**/__mocks__/**/*", "__mocks__/**/*"],
       reporter: [
         // Default reporters:
         "text",

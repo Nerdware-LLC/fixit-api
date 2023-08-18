@@ -1,13 +1,13 @@
 import { Expo } from "expo-server-sdk";
-import { Model } from "@lib/dynamoDB";
-import { isValidStripeID } from "@lib/stripe";
-import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@models/_common";
-import { ddbSingleTable } from "@models/ddbSingleTable";
-import { hasKey, isValid } from "@utils";
+import { Model } from "@/lib/dynamoDB";
+import { isValidStripeID } from "@/lib/stripe";
+import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@/models/_common";
+import { ddbSingleTable } from "@/models/ddbSingleTable";
+import { hasKey, isValid } from "@/utils";
 import { createOne } from "./createOne";
 import { userModelHelpers } from "./helpers";
-import type { ItemTypeFromSchema, ItemInputType, DynamoDbItemType } from "@lib/dynamoDB";
-import type { UserLoginU } from "@models/UserLogin";
+import type { ItemTypeFromSchema, ItemInputType, DynamoDbItemType } from "@/lib/dynamoDB";
+import type { UserLoginU } from "@/models/UserLogin";
 import type { OverrideProperties } from "type-fest";
 
 /**

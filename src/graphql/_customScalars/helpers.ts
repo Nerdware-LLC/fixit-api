@@ -1,4 +1,4 @@
-import { safeJsonStringify } from "@utils/typeSafety";
+import { safeJsonStringify } from "@/utils/typeSafety";
 
 /**
  * GQL Custom Scalar Helper Methods

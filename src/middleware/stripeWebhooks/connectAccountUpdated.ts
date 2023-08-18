@@ -1,5 +1,5 @@
-import { UserStripeConnectAccount } from "@models/UserStripeConnectAccount";
-import { logger, getTypeSafeError } from "@utils";
+import { UserStripeConnectAccount } from "@/models/UserStripeConnectAccount";
+import { logger, getTypeSafeError } from "@/utils";
 import type Stripe from "stripe";
 
 /**

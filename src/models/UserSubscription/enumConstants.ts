@@ -1,4 +1,4 @@
-import type { SubscriptionStatus } from "@types";
+import type { SubscriptionStatus } from "@/types";
 
 export const SUBSCRIPTION_ENUM_CONSTANTS: {
   readonly STATUSES: ReadonlyArray<SubscriptionStatus>;

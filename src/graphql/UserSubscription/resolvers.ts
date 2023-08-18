@@ -1,6 +1,6 @@
-import { UserSubscription } from "@models/UserSubscription";
-import type { UserSubscriptionModelItem } from "@models/UserSubscription";
-import type { Resolvers } from "@types";
+import { UserSubscription } from "@/models/UserSubscription";
+import type { UserSubscriptionModelItem } from "@/models/UserSubscription";
+import type { Resolvers } from "@/types";
 
 export const resolvers: Partial<Resolvers> = {
   Query: {

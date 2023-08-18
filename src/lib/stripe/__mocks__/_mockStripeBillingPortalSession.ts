@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import type { UserModelItem } from "@models/User";
+import type { UserModelItem } from "@/models/User";
 import type Stripe from "stripe";
 
 /**

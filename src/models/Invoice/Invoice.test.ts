@@ -1,4 +1,4 @@
-import { MOCK_INVOICES } from "@tests/staticMockItems";
+import { MOCK_INVOICES } from "@/tests/staticMockItems";
 import { Invoice } from "./Invoice";
 
 /**
@@ -6,7 +6,7 @@ import { Invoice } from "./Invoice";
  * - `@aws-sdk/lib-dynamodb`
  * - `stripe`
  *
- * See Vitest setup file `src/__tests__/setupTests.ts`
+ * See Vitest setup file `src/tests/setupTests.ts`
  */
 
 const { INV_A, INV_B, INV_C } = MOCK_INVOICES;

@@ -1,10 +1,10 @@
-import { Model } from "@lib/dynamoDB";
-import { isValidStripeID } from "@lib/stripe";
-import { userModelHelpers } from "@models/User/helpers";
-import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@models/_common";
-import { ddbSingleTable } from "@models/ddbSingleTable";
-import { ENV } from "@server/env";
-import { hasKey } from "@utils";
+import { Model } from "@/lib/dynamoDB";
+import { isValidStripeID } from "@/lib/stripe";
+import { userModelHelpers } from "@/models/User/helpers";
+import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@/models/_common";
+import { ddbSingleTable } from "@/models/ddbSingleTable";
+import { ENV } from "@/server/env";
+import { hasKey } from "@/utils";
 import { SUBSCRIPTION_ENUM_CONSTANTS } from "./enumConstants";
 import { userSubscriptionModelHelpers as subModelHelpers } from "./helpers";
 import { normalizeStripeFields } from "./normalizeStripeFields";
@@ -12,7 +12,7 @@ import { USER_SUB_SK_PREFIX_STR as SUB_SK_PREFIX } from "./regex";
 import { updateOne } from "./updateOne";
 import { upsertOne } from "./upsertOne";
 import { validateExisting } from "./validateExisting";
-import type { ItemTypeFromSchema, ItemInputType, DynamoDbItemType } from "@lib/dynamoDB";
+import type { ItemTypeFromSchema, ItemInputType, DynamoDbItemType } from "@/lib/dynamoDB";
 
 /**
  * UserSubscription DdbSingleTable Model

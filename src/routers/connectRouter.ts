@@ -1,7 +1,7 @@
 import express from "express";
-import { getUserFromAuthHeaderToken, createAccountLink, createDashboardLink } from "@middleware";
-import { sanitizeAndValidateRequestBody } from "@middleware/helpers";
-import { sanitize, isValid } from "@utils";
+import { getUserFromAuthHeaderToken, createAccountLink, createDashboardLink } from "@/middleware";
+import { sanitizeAndValidateRequestBody } from "@/middleware/helpers";
+import { sanitize, isValid } from "@/utils";
 
 /**
  * This router handles all `/api/connect` request paths:

@@ -1,6 +1,6 @@
-import { mwCatchWrapper } from "@middleware/helpers";
-import { AuthToken } from "@utils";
-import type { FixitApiAuthTokenPayload } from "@utils";
+import { mwCatchWrapper } from "@/middleware/helpers";
+import { AuthToken } from "@/utils";
+import type { FixitApiAuthTokenPayload } from "@/utils";
 
 /**
  * This middleware generates an AuthToken for the authenticated User and

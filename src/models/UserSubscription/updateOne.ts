@@ -1,6 +1,6 @@
-import { InternalServerError } from "@utils/httpErrors";
+import { InternalServerError } from "@/utils/httpErrors";
 import { UserSubscription, type UserSubscriptionModelItem } from "./UserSubscription";
-import type { UserModelItem } from "@models/User";
+import type { UserModelItem } from "@/models/User";
 
 export const updateOne = async function (
   this: typeof UserSubscription,

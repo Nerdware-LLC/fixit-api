@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { hasKey, safeJsonStringify } from "@utils/typeSafety";
+import { hasKey, safeJsonStringify } from "@/utils/typeSafety";
 import {
   hasDefinedProperty,
   isType,

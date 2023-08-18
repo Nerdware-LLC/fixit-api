@@ -1,4 +1,4 @@
-import { MOCK_WORK_ORDERS } from "@tests/staticMockItems";
+import { MOCK_WORK_ORDERS } from "@/tests/staticMockItems";
 import { WorkOrder } from "./WorkOrder";
 
 /**
@@ -6,7 +6,7 @@ import { WorkOrder } from "./WorkOrder";
  * - `@aws-sdk/lib-dynamodb`
  * - `stripe`
  *
- * See Vitest setup file `src/__tests__/setupTests.ts`
+ * See Vitest setup file `src/tests/setupTests.ts`
  */
 
 const { WO_A, WO_B, WO_C } = MOCK_WORK_ORDERS;

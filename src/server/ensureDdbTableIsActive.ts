@@ -1,3 +1,3 @@
-import { ddbSingleTable } from "@models/ddbSingleTable";
+import { ddbSingleTable } from "@/models/ddbSingleTable";
 
 await ddbSingleTable.ensureTableIsActive();

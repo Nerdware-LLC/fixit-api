@@ -1,5 +1,5 @@
-import { hasKey, isType, UserInputError, getErrorMessage } from "@utils";
-import type { CustomRequestProperties } from "@types";
+import { hasKey, isType, UserInputError, getErrorMessage } from "@/utils";
+import type { CustomRequestProperties } from "@/types";
 import type { RequestHandler, Request } from "express";
 import type { SetReturnType, SetRequired, EmptyObject, JsonPrimitive } from "type-fest";
 
@@ -49,7 +49,7 @@ export const mwCatchWrapper = <ReqBody extends Record<string, any> = Record<stri
  * @throws UserInputError if any validation fails.
  *
  * @example
- * import { sanitizeAndValidateRequestBody } from "@middleware/helpers";
+ * import { sanitizeAndValidateRequestBody } from "@/middleware/helpers";
  *
  * const requestBodySchema = {
  *   name: { type: "string", required: true, sanitize: (value) => value.trim() },

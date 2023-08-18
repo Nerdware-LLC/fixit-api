@@ -1,4 +1,4 @@
-import { getRegexValidatorFn } from "@utils/clientInputHandlers/validate";
+import { getRegexValidatorFn } from "@/utils/clientInputHandlers/validate";
 
 /**
  * An object with methods which return `true` if the given value is a string which

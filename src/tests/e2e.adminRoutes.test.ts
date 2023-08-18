@@ -1,5 +1,5 @@
 import request from "supertest";
-import { ENV } from "@server/env";
+import { ENV } from "@/server/env";
 import { expressApp } from "../expressApp";
 import type { Server } from "http";
 

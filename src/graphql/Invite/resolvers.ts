@@ -1,7 +1,7 @@
-import { GenericSuccessResponse } from "@graphql/_common";
-import { isValid } from "@utils/clientInputHandlers";
-import { GqlUserInputError } from "@utils/httpErrors";
-import type { Resolvers } from "@types";
+import { GenericSuccessResponse } from "@/graphql/_common";
+import { isValid } from "@/utils/clientInputHandlers";
+import { GqlUserInputError } from "@/utils/httpErrors";
+import type { Resolvers } from "@/types";
 
 export const resolvers: Partial<Resolvers> = {
   Mutation: {

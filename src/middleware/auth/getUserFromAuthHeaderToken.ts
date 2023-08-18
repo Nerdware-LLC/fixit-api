@@ -1,5 +1,5 @@
-import { mwAsyncCatchWrapper } from "@middleware/helpers";
-import { AuthToken, AuthError } from "@utils";
+import { mwAsyncCatchWrapper } from "@/middleware/helpers";
+import { AuthToken, AuthError } from "@/utils";
 
 /**
  * Authentication middleware that checks for a valid auth token in the request

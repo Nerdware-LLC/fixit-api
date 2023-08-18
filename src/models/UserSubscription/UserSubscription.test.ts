@@ -1,4 +1,4 @@
-import { MOCK_USERS, MOCK_USER_SUBS } from "@tests/staticMockItems";
+import { MOCK_USERS, MOCK_USER_SUBS } from "@/tests/staticMockItems";
 import { UserSubscription } from "./UserSubscription";
 import { userSubscriptionModelHelpers as subModelHelpers } from "./helpers";
 
@@ -7,7 +7,7 @@ import { userSubscriptionModelHelpers as subModelHelpers } from "./helpers";
  * - `@aws-sdk/lib-dynamodb`
  * - `stripe`
  *
- * See Vitest setup file `src/__tests__/setupTests.ts`
+ * See Vitest setup file `src/tests/setupTests.ts`
  */
 
 describe("UserSubscription Model", () => {

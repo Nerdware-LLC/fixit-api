@@ -1,5 +1,5 @@
 import cors from "cors";
-import { ENV } from "@server/env";
+import { ENV } from "@/server/env";
 
 const corsOptions = {
   origin: [

@@ -1,5 +1,5 @@
-import { mwAsyncCatchWrapper } from "@middleware/helpers";
-import { User } from "@models/User";
+import { mwAsyncCatchWrapper } from "@/middleware/helpers";
+import { User } from "@/models/User";
 
 /**
  * On the Fixit mobile app, if the user's ExpoPushToken has changed/expired

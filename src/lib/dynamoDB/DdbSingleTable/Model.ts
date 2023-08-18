@@ -1,5 +1,5 @@
 import merge from "lodash.merge";
-import { hasKey } from "@utils/typeSafety";
+import { hasKey } from "@/utils/typeSafety";
 import { ioHookActions } from "./ioHookActions";
 import { DdbSingleTableError, ItemInputError } from "./utils";
 import { validateModelSchema } from "./validateModelSchema";

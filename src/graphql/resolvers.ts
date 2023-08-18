@@ -1,5 +1,5 @@
 import merge from "lodash.merge";
-import { logger } from "@utils/logger";
+import { logger } from "@/utils/logger";
 import * as contact from "./Contact/resolvers";
 import * as fixitUser from "./FixitUser/resolvers";
 import * as invoice from "./Invoice/resolvers";

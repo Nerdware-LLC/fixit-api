@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { isType, normalize, prettifyStr, isValid, } from "@utils";
+import { isType, normalize, prettifyStr, isValid } from "@/utils";
 
 export const COMMON_ATTRIBUTE_TYPES = {
   PHONE: {

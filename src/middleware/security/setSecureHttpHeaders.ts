@@ -1,5 +1,5 @@
 import helmet from "helmet";
-import { ENV } from "@server/env";
+import { ENV } from "@/server/env";
 import type { RequestHandler } from "express";
 
 /**

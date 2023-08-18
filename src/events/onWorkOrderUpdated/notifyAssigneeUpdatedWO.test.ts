@@ -1,8 +1,8 @@
-import { WorkOrderPushNotification } from "@events/pushNotifications";
-import { lambdaClient } from "@lib/lambdaClient";
-import { User, type UserModelItem } from "@models/User";
+import { WorkOrderPushNotification } from "@/events/pushNotifications";
+import { lambdaClient } from "@/lib/lambdaClient";
+import { User, type UserModelItem } from "@/models/User";
 import { notifyAssigneeUpdatedWO } from "./notifyAssigneeUpdatedWO";
-import type { WorkOrderModelItem } from "@models/WorkOrder";
+import type { WorkOrderModelItem } from "@/models/WorkOrder";
 
 describe("notifyAssigneeUpdatedWO", () => {
   test("does not create/send any PushNotifications when there are no assignees", async () => {

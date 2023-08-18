@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { ENV } from "@server/env";
+import { ENV } from "@/server/env";
 
 /**
  * Validates and decodes a JSON Web Token (JWT) using the provided private key

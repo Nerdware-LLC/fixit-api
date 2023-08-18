@@ -1,4 +1,4 @@
-import { passwordHasher, isValid } from "@utils";
+import { passwordHasher, isValid } from "@/utils";
 
 /**
  * Represents a User login object that can be created with either a password or

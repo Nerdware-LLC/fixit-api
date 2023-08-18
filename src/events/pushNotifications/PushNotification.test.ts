@@ -1,4 +1,4 @@
-import { ENV } from "@server/env";
+import { ENV } from "@/server/env";
 import { PushNotification } from "./PushNotification";
 
 describe("PushNotification", () => {

@@ -1,11 +1,11 @@
 import { mockClient } from "aws-sdk-client-mock";
 import request from "supertest";
-import { usersCache } from "@lib/cache";
-import { stripe } from "@lib/stripe";
-import { User, type UserModelItem } from "@models/User";
-import { USER_ID_REGEX } from "@models/User/regex";
-import { ddbSingleTable } from "@models/ddbSingleTable";
-import { ENV } from "@server/env";
+import { usersCache } from "@/lib/cache";
+import { stripe } from "@/lib/stripe";
+import { User, type UserModelItem } from "@/models/User";
+import { USER_ID_REGEX } from "@/models/User/regex";
+import { ddbSingleTable } from "@/models/ddbSingleTable";
+import { ENV } from "@/server/env";
 import {
   MOCK_USERS,
   MOCK_CONTACTS,
@@ -18,8 +18,8 @@ import {
   UNALIASED_MOCK_WORK_ORDERS,
   UNALIASED_MOCK_INVOICES,
   MOCK_USER_SCAs,
-} from "@tests/staticMockItems";
-import { AuthToken, passwordHasher } from "@utils";
+} from "@/tests/staticMockItems";
+import { AuthToken, passwordHasher } from "@/utils";
 import { expressApp } from "../expressApp";
 import type { Server } from "http";
 

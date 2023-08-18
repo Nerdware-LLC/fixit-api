@@ -1,11 +1,11 @@
-import { stripe } from "@lib/stripe";
-import { UserInputError } from "@utils/httpErrors";
+import { stripe } from "@/lib/stripe";
+import { UserInputError } from "@/utils/httpErrors";
 import {
   UserSubscription,
   type UserSubscriptionModelItem,
   type UserSubscriptionPriceLabels,
 } from "./UserSubscription";
-import type { UserModelItem } from "@models/User";
+import type { UserModelItem } from "@/models/User";
 import type Stripe from "stripe";
 
 /**

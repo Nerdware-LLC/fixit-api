@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
-import { hasKey } from "@utils";
-import type { SubscriptionStatus } from "@types";
+import { hasKey } from "@/utils";
+import type { SubscriptionStatus } from "@/types";
 import type { UserSubscriptionModelItem } from "./UserSubscription";
 
 /**

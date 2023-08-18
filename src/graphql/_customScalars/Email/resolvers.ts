@@ -1,6 +1,6 @@
 import { GraphQLScalarType } from "graphql";
 import { Kind } from "graphql/language";
-import { logger, isValid } from "@utils";
+import { logger, isValid } from "@/utils";
 import { helpers } from "../helpers";
 
 export const resolvers = {

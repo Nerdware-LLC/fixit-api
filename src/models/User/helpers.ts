@@ -1,5 +1,5 @@
-import { createModelHelpers } from "@models/_common";
-import { getUnixTimestampUUID } from "@utils";
+import { createModelHelpers } from "@/models/_common";
+import { getUnixTimestampUUID } from "@/utils";
 import {
   USER_ID_PREFIX_STR as ID_PREFIX,
   USER_ID_REGEX,

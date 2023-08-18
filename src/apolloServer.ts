@@ -1,7 +1,7 @@
 import { ApolloServer, type BaseContext } from "@apollo/server";
-import { fixitSchema } from "@graphql/schema";
-import { ENV } from "@server/env";
-import type { FixitApiAuthTokenPayload } from "@utils/AuthToken";
+import { fixitSchema } from "@/graphql/schema";
+import { ENV } from "@/server/env";
+import type { FixitApiAuthTokenPayload } from "@/utils/AuthToken";
 import type { Request } from "express";
 
 export const apolloServer = new ApolloServer<ApolloServerResolverContext>({

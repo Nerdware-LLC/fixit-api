@@ -1,5 +1,5 @@
 import { LOCATION_COMPOSITE_REGEX } from "./regex";
-import type { Location as GqlSchemaLocationType } from "@types";
+import type { Location as GqlSchemaLocationType } from "@/types";
 
 /**
  * Location Model

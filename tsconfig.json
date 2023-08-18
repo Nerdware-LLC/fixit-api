@@ -19,26 +19,7 @@
     "types": ["vitest/globals"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@events": ["src/events"],
-      "@events/*": ["src/events/*"],
-      "@graphql": ["src/graphql"],
-      "@graphql/*": ["src/graphql/*"],
-      "@lib": ["src/lib"],
-      "@lib/*": ["src/lib/*"],
-      "@middleware": ["src/middleware"],
-      "@middleware/*": ["src/middleware/*"],
-      "@models": ["src/models"],
-      "@models/*": ["src/models/*"],
-      "@routers": ["src/routers"],
-      "@routers/*": ["src/routers/*"],
-      "@server": ["src/server"],
-      "@server/*": ["src/server/*"],
-      "@tests/*": ["src/__tests__/*"],
-      "@types": ["src/types"],
-      "@types/*": ["src/types/*"],
-      "@utils": ["src/utils"],
-      "@utils/*": ["src/utils/*"]
+      "@/*": ["src/*"]
     },
 
     // "Completeness" Configs:

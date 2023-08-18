@@ -1,5 +1,5 @@
 import { PushNotification, type PushNotificationRecipient } from "./PushNotification";
-import type { WorkOrderModelItem } from "@models/WorkOrder";
+import type { WorkOrderModelItem } from "@/models/WorkOrder";
 
 export class WorkOrderPushNotification extends PushNotification {
   static PUSH_EVENTS = {

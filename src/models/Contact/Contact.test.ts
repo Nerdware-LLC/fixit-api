@@ -1,4 +1,4 @@
-import { MOCK_CONTACTS } from "@tests/staticMockItems";
+import { MOCK_CONTACTS } from "@/tests/staticMockItems";
 import { Contact } from "./Contact";
 
 /**
@@ -6,7 +6,7 @@ import { Contact } from "./Contact";
  * - `@aws-sdk/lib-dynamodb`
  * - `stripe`
  *
- * See Vitest setup file `src/__tests__/setupTests.ts`
+ * See Vitest setup file `src/tests/setupTests.ts`
  */
 
 const { CONTACT_A, CONTACT_B, CONTACT_C } = MOCK_CONTACTS;

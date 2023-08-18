@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { ENV } from "@server/env";
+import { ENV } from "@/server/env";
 import { signAndEncodeJWT, validateAndDecodeJWT } from "./jwt";
 
 /** A valid JWT payload. */

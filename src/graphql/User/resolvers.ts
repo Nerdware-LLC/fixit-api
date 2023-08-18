@@ -1,7 +1,7 @@
-import { usersCache } from "@lib/cache";
-import { User } from "@models/User";
-import { GqlInternalServerError } from "@utils/httpErrors";
-import type { Resolvers, Contact } from "@types";
+import { usersCache } from "@/lib/cache";
+import { User } from "@/models/User";
+import { GqlInternalServerError } from "@/utils/httpErrors";
+import type { Resolvers, Contact } from "@/types";
 
 export const resolvers: Partial<Resolvers> = {
   Query: {

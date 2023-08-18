@@ -1,4 +1,4 @@
-import { findMock } from "@tests/staticMockItems";
+import { findMock } from "@/tests/staticMockItems";
 import { mockStripeBillingPortalSession } from "./_mockStripeBillingPortalSession";
 import { mockStripeConnectAccount } from "./_mockStripeConnectAccount";
 import { mockStripeConnectAccountLink } from "./_mockStripeConnectAccountLink";
@@ -7,12 +7,12 @@ import { mockStripeCustomer, mockStripeDeletedCustomer } from "./_mockStripeCust
 import { mockStripePaymentIntent } from "./_mockStripePaymentIntent";
 import { mockStripePaymentMethod } from "./_mockStripePaymentMethod";
 import { mockStripeSubscription } from "./_mockStripeSubscription";
-import type { ParamsOfFirstOverload } from "@types";
+import type { ParamsOfFirstOverload } from "@/types";
 import type Stripe from "stripe";
 import type { SetRequired, AsyncReturnType } from "type-fest";
 
 // Ensure isValidStripeID util is exported from here:
-export * from "@lib/stripe/isValidStripeID";
+export * from "@/lib/stripe/isValidStripeID";
 
 /**
  * Mock Stripe API method signatures are mostly identical to the real Stripe API,

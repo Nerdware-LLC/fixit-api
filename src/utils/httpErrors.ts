@@ -1,7 +1,7 @@
 import { ApolloServerErrorCode } from "@apollo/server/errors";
 import { GraphQLError, type GraphQLErrorOptions } from "graphql";
 import merge from "lodash.merge";
-import { getErrorMessage } from "@utils/typeSafety";
+import { getErrorMessage } from "@/utils/typeSafety";
 import type { Class } from "type-fest";
 
 /**

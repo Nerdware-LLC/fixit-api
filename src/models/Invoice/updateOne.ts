@@ -1,6 +1,6 @@
 import merge from "lodash.merge";
-import { eventEmitter } from "@events/eventEmitter";
-import { Invoice, type InvoiceModelItem } from "@models/Invoice";
+import { eventEmitter } from "@/events/eventEmitter";
+import { Invoice, type InvoiceModelItem } from "@/models/Invoice";
 
 export const updateOne = async function (
   this: typeof Invoice,

@@ -4,8 +4,8 @@ import { mockStripeInvoice } from "./_mockStripeInvoice";
 import { mockStripePaymentIntent } from "./_mockStripePaymentIntent";
 import { MOCK_STRIPE_PLAN } from "./_mockStripePlan";
 import { MOCK_STRIPE_PRICE } from "./_mockStripePrice";
-import type { UserModelItem } from "@models/User";
-import type { UserSubscriptionModelItem } from "@models/UserSubscription";
+import type { UserModelItem } from "@/models/User";
+import type { UserSubscriptionModelItem } from "@/models/UserSubscription";
 import type Stripe from "stripe";
 import type { PartialDeep } from "type-fest";
 

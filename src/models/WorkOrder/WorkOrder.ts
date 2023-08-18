@@ -1,8 +1,8 @@
-import { Model } from "@lib/dynamoDB";
-import { Location } from "@models/Location";
-import { userModelHelpers } from "@models/User/helpers";
-import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES, type FixitUserFields } from "@models/_common";
-import { ddbSingleTable } from "@models/ddbSingleTable";
+import { Model } from "@/lib/dynamoDB";
+import { Location } from "@/models/Location";
+import { userModelHelpers } from "@/models/User/helpers";
+import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES, type FixitUserFields } from "@/models/_common";
+import { ddbSingleTable } from "@/models/ddbSingleTable";
 import { WORK_ORDER_ENUM_CONSTANTS } from "./enumConstants";
 import { workOrderModelHelpers as woModelHelpers } from "./helpers";
 import { WORK_ORDER_SK_PREFIX_STR } from "./regex";
@@ -12,7 +12,7 @@ import type {
   ItemInputType,
   ModelSchemaOptions,
   DynamoDbItemType,
-} from "@lib/dynamoDB";
+} from "@/lib/dynamoDB";
 import type { OverrideProperties } from "type-fest";
 
 /**

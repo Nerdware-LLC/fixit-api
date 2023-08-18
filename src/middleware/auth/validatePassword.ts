@@ -1,5 +1,5 @@
-import { mwAsyncCatchWrapper } from "@middleware/helpers";
-import { passwordHasher, AuthError } from "@utils";
+import { mwAsyncCatchWrapper } from "@/middleware/helpers";
+import { passwordHasher, AuthError } from "@/utils";
 
 /**
  * This middleware checks if the authenticated User's login type is "LOCAL",

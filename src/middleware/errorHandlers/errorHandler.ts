@@ -1,5 +1,5 @@
-import { ENV } from "@server/env";
-import { logger, getTypeSafeError, safeJsonStringify } from "@utils";
+import { ENV } from "@/server/env";
+import { logger, getTypeSafeError, safeJsonStringify } from "@/utils";
 import type { ErrorRequestHandler } from "express";
 
 /**

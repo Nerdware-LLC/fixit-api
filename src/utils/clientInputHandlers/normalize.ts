@@ -1,4 +1,4 @@
-import { i18nFormats } from "@utils/i18n";
+import { i18nFormats } from "@/utils/i18n";
 
 /**
  * An object with methods for formatting values for data-normalization purposes.

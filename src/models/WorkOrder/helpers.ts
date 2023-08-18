@@ -1,5 +1,5 @@
-import { createModelHelpers } from "@models/_common";
-import { getUnixTimestampUUID } from "@utils/uuid";
+import { createModelHelpers } from "@/models/_common";
+import { getUnixTimestampUUID } from "@/utils/uuid";
 import {
   WORK_ORDER_SK_PREFIX_STR as WO_SK_PREFIX,
   WORK_ORDER_ID_REGEX,

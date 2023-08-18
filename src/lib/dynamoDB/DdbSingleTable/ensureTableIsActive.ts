@@ -1,4 +1,4 @@
-import { logger } from "@utils/logger";
+import { logger } from "@/utils/logger";
 import { DdbSingleTable } from "./DdbSingleTable";
 import { DdbSingleTableError } from "./utils";
 import type { SetNonNullable, SetRequired } from "type-fest";

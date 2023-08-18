@@ -1,6 +1,6 @@
-import { lambdaClient } from "@lib/lambdaClient";
+import { lambdaClient } from "@/lib/lambdaClient";
 import { sendWelcomeEmail } from "./sendWelcomeEmail";
-import type { UserModelItem } from "@models/User";
+import type { UserModelItem } from "@/models/User";
 
 vi.mock("@aws-sdk/client-lambda"); // <repo_root>/__mocks__/@aws-sdk/client-lambda.ts
 

@@ -1,11 +1,11 @@
-import { Model } from "@lib/dynamoDB";
-import { userModelHelpers } from "@models/User/helpers";
-import { COMMON_ATTRIBUTES } from "@models/_common";
-import { ddbSingleTable } from "@models/ddbSingleTable";
-import { isValid } from "@utils/clientInputHandlers";
+import { Model } from "@/lib/dynamoDB";
+import { userModelHelpers } from "@/models/User/helpers";
+import { COMMON_ATTRIBUTES } from "@/models/_common";
+import { ddbSingleTable } from "@/models/ddbSingleTable";
+import { isValid } from "@/utils/clientInputHandlers";
 import { contactModelHelpers } from "./helpers";
 import { CONTACT_SK_PREFIX_STR } from "./regex";
-import type { ItemTypeFromSchema, ItemInputType, DynamoDbItemType } from "@lib/dynamoDB";
+import type { ItemTypeFromSchema, ItemInputType, DynamoDbItemType } from "@/lib/dynamoDB";
 
 /**
  * Contact DdbSingleTable Model

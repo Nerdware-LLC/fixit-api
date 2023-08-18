@@ -1,7 +1,7 @@
-import { WorkOrderPushNotification } from "@events/pushNotifications";
-import { lambdaClient } from "@lib/lambdaClient";
-import { User } from "@models/User";
-import type { WorkOrderModelItem } from "@models/WorkOrder";
+import { WorkOrderPushNotification } from "@/events/pushNotifications";
+import { lambdaClient } from "@/lib/lambdaClient";
+import { User } from "@/models/User";
+import type { WorkOrderModelItem } from "@/models/WorkOrder";
 
 /**
  * Notify assignee of cancelled WorkOrder when `WorkOrderCancelled` event is emitted.

@@ -1,14 +1,14 @@
 import express from "express";
-import { isValidStripeID } from "@lib/stripe";
+import { isValidStripeID } from "@/lib/stripe";
 import {
   getUserFromAuthHeaderToken,
   findOrCreateStripeSubscription,
   generateAuthToken,
   createCustomerPortalLink,
-} from "@middleware";
-import { sanitizeAndValidateRequestBody } from "@middleware/helpers";
-import { UserSubscription } from "@models/UserSubscription";
-import { hasKey, sanitize, isValid } from "@utils";
+} from "@/middleware";
+import { sanitizeAndValidateRequestBody } from "@/middleware/helpers";
+import { UserSubscription } from "@/models/UserSubscription";
+import { hasKey, sanitize, isValid } from "@/utils";
 
 /**
  * This router handles all `/api/subscriptions` request paths:

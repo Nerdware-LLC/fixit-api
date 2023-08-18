@@ -1,4 +1,4 @@
-import type { EnvObject } from "@server/env/EnvObject";
+import type { EnvObject } from "@/server/env/EnvObject";
 
 declare global {
   namespace NodeJS {

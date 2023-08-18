@@ -1,6 +1,6 @@
-import { stripe } from "@lib/stripe";
-import { mwAsyncCatchWrapper } from "@middleware/helpers";
-import { UserStripeConnectAccount } from "@models/UserStripeConnectAccount";
+import { stripe } from "@/lib/stripe";
+import { mwAsyncCatchWrapper } from "@/middleware/helpers";
+import { UserStripeConnectAccount } from "@/models/UserStripeConnectAccount";
 
 export const checkOnboardingStatus = mwAsyncCatchWrapper(async (req, res, next) => {
   if (!req?._authenticatedUser) return next("User not found");

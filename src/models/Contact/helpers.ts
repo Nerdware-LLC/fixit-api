@@ -1,4 +1,4 @@
-import { createModelHelpers } from "@models/_common";
+import { createModelHelpers } from "@/models/_common";
 import { CONTACT_SK_PREFIX_STR as SK_PREFIX, CONTACT_SK_REGEX } from "./regex";
 
 export const contactModelHelpers = createModelHelpers({

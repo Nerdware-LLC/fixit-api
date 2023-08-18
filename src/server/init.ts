@@ -1,7 +1,7 @@
 import "./initSentry";
 import "./processEventHandlers";
 import "./logStartupInfo";
-import "@events/eventEmitter";
+import "@/events/eventEmitter";
 
 await import("./ensureDdbTableIsActive");
 await import("./initCacheForUsersSearch");

@@ -1,7 +1,7 @@
-import { isValidStripeID } from "@lib/stripe";
-import { userStripeConnectAccountModelHelpers as scaModelHelpers } from "@models/UserStripeConnectAccount/helpers";
-import { MOCK_USERS } from "@tests/staticMockItems";
-import { isValid, normalize } from "@utils/clientInputHandlers";
+import { isValidStripeID } from "@/lib/stripe";
+import { userStripeConnectAccountModelHelpers as scaModelHelpers } from "@/models/UserStripeConnectAccount/helpers";
+import { MOCK_USERS } from "@/tests/staticMockItems";
+import { isValid, normalize } from "@/utils/clientInputHandlers";
 import { User } from "./User";
 import { userModelHelpers } from "./helpers";
 
@@ -10,7 +10,7 @@ import { userModelHelpers } from "./helpers";
  * - `@aws-sdk/lib-dynamodb`
  * - `stripe`
  *
- * See Vitest setup file `src/__tests__/setupTests.ts`
+ * See Vitest setup file `src/tests/setupTests.ts`
  */
 
 describe("User Model", () => {

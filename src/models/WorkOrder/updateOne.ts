@@ -1,6 +1,6 @@
 import merge from "lodash.merge";
-import { eventEmitter } from "@events/eventEmitter";
-import { WorkOrder, type WorkOrderModelItem, type WorkOrderModelInput } from "@models/WorkOrder";
+import { eventEmitter } from "@/events/eventEmitter";
+import { WorkOrder, type WorkOrderModelItem, type WorkOrderModelInput } from "@/models/WorkOrder";
 import type { PartialDeep } from "type-fest";
 
 export const updateOne = async function (

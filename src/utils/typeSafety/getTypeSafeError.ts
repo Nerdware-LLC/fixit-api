@@ -1,6 +1,6 @@
 import { hasKey } from "./hasKey";
 import { safeJsonStringify } from "./safeJsonStringify";
-import type { HttpErrorInterface } from "@utils/httpErrors";
+import type { HttpErrorInterface } from "@/utils/httpErrors";
 import type { Class } from "type-fest";
 
 /**

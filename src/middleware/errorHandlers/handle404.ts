@@ -1,5 +1,5 @@
-import { mwCatchWrapper } from "@middleware/helpers";
-import { logger, NotFoundError } from "@utils";
+import { mwCatchWrapper } from "@/middleware/helpers";
+import { logger, NotFoundError } from "@/utils";
 
 /**
  * This middleware function captures all 404 errors and throws a NotFoundError.

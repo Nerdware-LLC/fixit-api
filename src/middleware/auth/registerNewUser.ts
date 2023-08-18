@@ -1,6 +1,6 @@
-import { mwAsyncCatchWrapper } from "@middleware/helpers";
-import { User } from "@models/User";
-import type { UserCreateOneParams } from "@models/User/createOne";
+import { mwAsyncCatchWrapper } from "@/middleware/helpers";
+import { User } from "@/models/User";
+import type { UserCreateOneParams } from "@/models/User/createOne";
 
 /**
  * This middleware function creates a new User item in the DB.

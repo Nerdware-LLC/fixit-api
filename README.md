@@ -48,7 +48,6 @@ Author: [Trevor Anderson](https://github.com/trevor-anderson), Solopreneur & Fou
 - [**`docker`**](/docker) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; API Dockerfile and docker-compose.yaml
 - [**`fixit@current.graphql`**](/fixit%40current.graphql) &nbsp; The Fixit API GraphQL schema
 - [**`src/`**](/src) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Source code files
-  - [**`__tests__/`**](/src/__tests__/README.md) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Jest setup files and test utils
   - [**`events/`**](/src/events) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Event emitter and handlers
   - [**`graphql/`**](/src/graphql) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; GraphQL typedefs and resolvers
   - [**`lib/`**](/src/lib) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Third-party clients and internal cache
@@ -56,6 +55,7 @@ Author: [Trevor Anderson](https://github.com/trevor-anderson), Solopreneur & Fou
   - [**`models/`**](/src/models) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Data-defining classes which implement DB CRUD operations
   - [**`routers/`**](/src/routers) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Express routers
   - [**`server/`**](/src/server) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Server init logic and process handlers
+  - [**`tests/`**](/src/tests/README.md) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; End-to-end tests and the Vitest setup file
   - [**`types/`**](/src/types) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Global type definitions and codegen'd types
   - [**`utils/`**](/src/utils) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Utility functions
 

@@ -1,5 +1,5 @@
-import { stripe } from "@lib/stripe";
-import { mwAsyncCatchWrapper } from "@middleware/helpers";
+import { stripe } from "@/lib/stripe";
+import { mwAsyncCatchWrapper } from "@/middleware/helpers";
 
 /**
  * This middleware creates a Stripe dashboard link for authenticated users.

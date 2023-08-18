@@ -1,9 +1,9 @@
-import { Model } from "@lib/dynamoDB";
-import { isValidStripeID } from "@lib/stripe";
-import { userModelHelpers } from "@models/User/helpers";
-import { workOrderModelHelpers as woModelHelpers } from "@models/WorkOrder/helpers";
-import { COMMON_ATTRIBUTES, type FixitUserFields } from "@models/_common";
-import { ddbSingleTable } from "@models/ddbSingleTable";
+import { Model } from "@/lib/dynamoDB";
+import { isValidStripeID } from "@/lib/stripe";
+import { userModelHelpers } from "@/models/User/helpers";
+import { workOrderModelHelpers as woModelHelpers } from "@/models/WorkOrder/helpers";
+import { COMMON_ATTRIBUTES, type FixitUserFields } from "@/models/_common";
+import { ddbSingleTable } from "@/models/ddbSingleTable";
 import { INVOICE_ENUM_CONSTANTS } from "./enumConstants";
 import { invoiceModelHelpers } from "./helpers";
 import { INVOICE_SK_PREFIX_STR } from "./regex";
@@ -13,7 +13,7 @@ import type {
   ItemInputType,
   ModelSchemaOptions,
   DynamoDbItemType,
-} from "@lib/dynamoDB";
+} from "@/lib/dynamoDB";
 
 /**
  * Invoice DdbSingleTable Model

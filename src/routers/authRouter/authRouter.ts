@@ -11,9 +11,9 @@ import {
   checkSubscriptionStatus,
   checkOnboardingStatus,
   generateAuthToken,
-} from "@middleware";
-import { sanitizeAndValidateRequestBody } from "@middleware/helpers";
-import { sanitize, isValid } from "@utils";
+} from "@/middleware";
+import { sanitizeAndValidateRequestBody } from "@/middleware/helpers";
+import { sanitize, isValid } from "@/utils";
 import { LOGIN_REQ_BODY_FIELDS_SCHEMA, requirePasswordOrGoogleOAuth } from "./reqBodySchema";
 
 /**

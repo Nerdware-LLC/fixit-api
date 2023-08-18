@@ -94,7 +94,7 @@ export default [
   ////////////////////////////////////////////////////////////////
   // TEST FILES
   {
-    files: ["src/**/*.{test,spec}.[tj]s", "**/__tests__/**/*", "**/__mocks__/**/*"],
+    files: ["src/**/*.{test,spec}.[tj]s", "**/tests/**/*", "**/__mocks__/**/*"],
     languageOptions: {
       globals: {
         vitest: "readonly",
@@ -140,14 +140,14 @@ export default [
   // NON-TEST FILES
   {
     files: ["src/**/*"],
-    ignores: ["src/**/*.{test,spec}.[tj]s", "**/__tests__/**/*", "**/__mocks__/**/*"],
+    ignores: ["src/**/*.{test,spec}.[tj]s", "**/tests/**/*", "**/__mocks__/**/*"],
     rules: {
       "no-restricted-imports": [
         "warn",
         {
           patterns: [
             {
-              group: ["@tests*", "@tests/*", "@/__tests__*", "@/__tests__/*"],
+              group: ["@/tests*", "@/tests/*"],
               message:
                 "Test-related exports like mocks should only be imported in test-related files. " +
                 "If this file is part of a test suite, please rename it to match the pattern *.test.*",

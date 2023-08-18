@@ -1,5 +1,5 @@
-import { UserSubscription } from "@models/UserSubscription";
-import { logger, getTypeSafeError } from "@utils";
+import { UserSubscription } from "@/models/UserSubscription";
+import { logger, getTypeSafeError } from "@/utils";
 import type Stripe from "stripe";
 
 /**

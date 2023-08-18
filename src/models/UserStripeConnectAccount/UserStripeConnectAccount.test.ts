@@ -1,4 +1,4 @@
-import { MOCK_USERS, MOCK_USER_SCAs } from "@tests/staticMockItems";
+import { MOCK_USERS, MOCK_USER_SCAs } from "@/tests/staticMockItems";
 import { UserStripeConnectAccount } from "./UserStripeConnectAccount";
 
 /**
@@ -6,7 +6,7 @@ import { UserStripeConnectAccount } from "./UserStripeConnectAccount";
  * - `@aws-sdk/lib-dynamodb`
  * - `stripe`
  *
- * See Vitest setup file `src/__tests__/setupTests.ts`
+ * See Vitest setup file `src/tests/setupTests.ts`
  */
 
 describe("UserStripeConnectAccount Model", () => {

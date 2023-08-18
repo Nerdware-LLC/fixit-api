@@ -1,4 +1,4 @@
-import type { InvoiceStatus } from "@types";
+import type { InvoiceStatus } from "@/types";
 
 export const INVOICE_ENUM_CONSTANTS: {
   readonly STATUSES: ReadonlyArray<InvoiceStatus>;

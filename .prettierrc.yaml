@@ -24,16 +24,6 @@ importOrder: [
     "<THIRD_PARTY_MODULES>",
     # Project path aliases:
     "^@/",
-    "^@events/?(.*)$",
-    "^@graphql/?(.*)$",
-    "^@lib/?(.*)$",
-    "^@middleware/?(.*)$",
-    "^@models/?(.*)$",
-    "^@routers/?(.*)$",
-    "^@server/?(.*)$",
-    "^@tests/?(.*)$",
-    "^@types/?(.*)$",
-    "^@utils/?(.*)$",
     # Relative imports at the bottom
     "^./",
     "^../",

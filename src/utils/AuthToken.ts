@@ -1,7 +1,7 @@
 import { signAndEncodeJWT, validateAndDecodeJWT } from "./jwt";
-import type { UserModelItem } from "@models/User";
-import type { UserStripeConnectAccountModelItem } from "@models/UserStripeConnectAccount";
-import type { UserSubscriptionModelItem } from "@models/UserSubscription";
+import type { UserModelItem } from "@/models/User";
+import type { UserStripeConnectAccountModelItem } from "@/models/UserStripeConnectAccount";
+import type { UserSubscriptionModelItem } from "@/models/UserSubscription";
 import type { Request } from "express";
 import type jwt from "jsonwebtoken";
 import type { Simplify } from "type-fest";

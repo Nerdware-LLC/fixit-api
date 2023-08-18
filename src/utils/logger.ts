@@ -1,8 +1,8 @@
 import * as Sentry from "@sentry/node";
 import chalk, { type ChalkInstance } from "chalk";
 import dayjs from "dayjs";
-import { ENV } from "@server/env";
-import { safeJsonStringify } from "@utils/typeSafety";
+import { ENV } from "@/server/env";
+import { safeJsonStringify } from "@/utils/typeSafety";
 
 /* eslint-disable no-console */
 

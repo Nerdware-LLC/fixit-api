@@ -1,7 +1,7 @@
-import { usersCache } from "@lib/cache";
-import { ddbSingleTable } from "@models/ddbSingleTable";
-import { logger } from "@utils/logger";
-import type { Profile } from "@types";
+import { usersCache } from "@/lib/cache";
+import { ddbSingleTable } from "@/models/ddbSingleTable";
+import { logger } from "@/utils/logger";
+import type { Profile } from "@/types";
 
 logger.server(`initCacheForUsersSearch: initializing cache ...`);
 

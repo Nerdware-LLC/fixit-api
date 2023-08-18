@@ -1,9 +1,9 @@
-import { stripe } from "@lib/stripe";
+import { stripe } from "@/lib/stripe";
 import {
   UserStripeConnectAccount,
   type UserStripeConnectAccountModelItem,
-} from "@models/UserStripeConnectAccount";
-import type { UserModelItem } from "@models/User";
+} from "@/models/UserStripeConnectAccount";
+import type { UserModelItem } from "@/models/User";
 
 /**
  * This method creates a `UserStripeConnectAccount` item in both the DB and

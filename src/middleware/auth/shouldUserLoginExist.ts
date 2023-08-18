@@ -1,4 +1,4 @@
-import { UserInputError, AuthError } from "@utils";
+import { UserInputError, AuthError } from "@/utils";
 import type { RequestHandler } from "express";
 
 /**

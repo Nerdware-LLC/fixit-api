@@ -1,4 +1,4 @@
-import { hasKey } from "@utils/typeSafety";
+import { hasKey } from "@/utils/typeSafety";
 import { isType, SchemaValidationError } from "./utils";
 import type { ModelSchemaType, KeyAttributeConfig } from "./types";
 
