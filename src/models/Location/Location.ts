@@ -121,6 +121,20 @@ export class Location implements GqlSchemaLocationType {
   };
 
   constructor({ country, region, city, streetLine1, streetLine2 }: Location) {
+    // Ensure values have been provided for all required Location fields
+    const missingRequiredFields: Array<string> = [];
+
+    if (!region) missingRequiredFields.push("region");
+    if (!city) missingRequiredFields.push("city");
+    if (!streetLine1) missingRequiredFields.push("street line 1");
+
+    if (missingRequiredFields.length > 0) {
+      throw new Error(
+        `Invalid Location: "${missingRequiredFields.join(", ")}" ` +
+          `${missingRequiredFields.length > 1 ? "are" : "is"} required`
+      );
+    }
+
     this.country = country || null;
     this.region = region;
     this.city = city;
