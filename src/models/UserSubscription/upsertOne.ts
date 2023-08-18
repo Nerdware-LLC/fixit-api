@@ -1,5 +1,5 @@
 import { stripe } from "@lib/stripe";
-import { UserInputError } from "@utils/customErrors";
+import { UserInputError } from "@utils/httpErrors";
 import {
   UserSubscription,
   type UserSubscriptionModelItem,
@@ -48,8 +48,8 @@ export const upsertOne = async function (
   });
 
   // Get the fields needed from the returned object
-  // prettier-ignore
-  const { createdAt, currentPeriodEnd, productID } = UserSubscription.normalizeStripeFields(stripeSubObject);
+  const { createdAt, currentPeriodEnd, productID } =
+    UserSubscription.normalizeStripeFields(stripeSubObject);
 
   const userSubscription = {
     userID,
