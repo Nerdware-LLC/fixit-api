@@ -30,7 +30,6 @@
     "docker:ddb-kill": "docker container kill ddb-local &>/dev/null",
     "test": "vitest run",
     "test:ui": "vitest --ui",
-    "test:benchmarks": "vitest bench",
     "test:ci": "vitest run --coverage --bail=1 --silent",
     "gql:update-schema-and-types": "npm run gql:fetch-current-schema && npm run gql:codegen",
     "gql:fetch-current-schema": "rover graph fetch fixit@current > fixit@current.graphql",
