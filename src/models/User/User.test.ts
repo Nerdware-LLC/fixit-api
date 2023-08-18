@@ -20,7 +20,7 @@ describe("User Model", () => {
         const result = await User.createOne({
           ...MOCK_USERS[key],
           ...(MOCK_USERS[key].login.type === "LOCAL"
-            ? { password: "MockPassword_123" }
+            ? { password: "MockPassword@123" }
             : MOCK_USERS[key].login),
         });
 

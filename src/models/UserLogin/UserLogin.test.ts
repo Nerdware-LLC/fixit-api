@@ -3,7 +3,7 @@ import { UserLogin } from "./UserLogin";
 describe("UserLogin", () => {
   describe("UserLogin.createLogin()", () => {
     test("returns a LOCAL UserLogin when called with a password", async () => {
-      const password = "password123";
+      const password = "MockPassword@123";
       const result = await UserLogin.createLogin({ password });
       expect(result.type).toBe("LOCAL");
       expect(result.passwordHash).toBeTypeOf("string");
