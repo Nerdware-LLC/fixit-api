@@ -24,7 +24,7 @@
     "start": "npm run docker:ddb-start ; nodemon ./src/index.ts dotenv_config_path=.env.dev",
     "start:prod": "node --no-warnings --loader ./build/loader.js ./build/index.js",
     "compose:up": "docker compose --file ./docker/docker-compose.yaml --project-directory . up",
-    "build": "rm -rf ./build 2>/dev/null && tsc --project tsconfig.build.json",
+    "build": "rm -rf ./build 2>/dev/null && tsc --project tsconfig.build.json && tsc-alias -p tsconfig.json",
     "docker:ddb-start": "npm run docker:ddb-kill ; npm run docker:ddb-run",
     "docker:ddb-run": "docker run -d -p 8000:8000 --rm --name ddb-local amazon/dynamodb-local 1>/dev/null",
     "docker:ddb-kill": "docker container kill ddb-local &>/dev/null",
@@ -53,7 +53,6 @@
     "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.1",
     "lodash.merge": "^4.6.2",
-    "module-alias": "^2.2.3",
     "stripe": "^10.7.0",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
@@ -88,21 +87,11 @@
     "eslint-plugin-vitest": "^0.2.8",
     "nodemon": "^3.0.1",
     "supertest": "^6.3.3",
+    "tsc-alias": "^1.8.7",
     "type-fest": "^4.2.0",
     "typescript": "^5.1.6",
     "vite-tsconfig-paths": "^4.2.0",
     "vitest": "^0.34.2",
     "vitest-github-actions-reporter": "^0.10.0"
-  },
-  "_moduleAliases": {
-    "@": "build/",
-    "@events": "build/events",
-    "@graphql": "build/graphql",
-    "@lib": "build/lib",
-    "@middleware": "build/middleware",
-    "@models": "build/models",
-    "@routers": "build/routers",
-    "@server": "build/server",
-    "@utils": "build/utils"
   }
 }
