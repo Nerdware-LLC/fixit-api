@@ -9,7 +9,7 @@ declare global {
      */
     interface ProcessEnv {
       NODE_ENV: EnvObject["NODE_ENV"];
-      npm_package_version: string;
+      npm_package_version?: string;
       PROTOCOL?: string;
       DOMAIN?: string;
       PORT?: string;

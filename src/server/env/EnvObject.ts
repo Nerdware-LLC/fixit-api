@@ -24,7 +24,7 @@ export class EnvObject {
   readonly NODE_ENV: "development" | "test" | "ci" | "staging" | "production";
   readonly IS_PROD: boolean;
   readonly CONFIG: Readonly<{
-    PROJECT_VERSION: string;
+    PROJECT_VERSION?: string;
     TIMEZONE: string;
     PROTOCOL: string;
     DOMAIN: string;
@@ -85,7 +85,6 @@ export class EnvObject {
     // Ensure necessary env vars have been provided
     if (
       !NODE_ENV ||
-      !npm_package_version ||
       !PROTOCOL ||
       !DOMAIN ||
       !PORT ||
@@ -122,7 +121,7 @@ export class EnvObject {
     this.NODE_ENV = NODE_ENV;
     this.IS_PROD = /^prod/i.test(NODE_ENV);
     this.CONFIG = {
-      PROJECT_VERSION: `v${npm_package_version}`,
+      ...(npm_package_version && { PROJECT_VERSION: `v${npm_package_version}` }),
       TIMEZONE: `${new Date().toString().match(/([A-Z]+[+-][0-9]+.*)/)?.[1] ?? "-"}`,
       PROTOCOL,
       DOMAIN,

@@ -9,7 +9,7 @@ const {
 
 if (ENV.NODE_ENV === "development") {
   logger.server(
-    `(SERVER STARTUP) 🚀 fixit-api ${PROJECT_VERSION}
+    `(SERVER STARTUP) 🚀 fixit-api ${PROJECT_VERSION || ""}
     App Env ...... ${NODE_ENV}
     AWS Region ... ${REGION}
     Timezone ..... ${TIMEZONE}
