@@ -2,6 +2,7 @@ import { Model, type ItemTypeFromSchema, type ItemInputType } from "@lib/dynamoD
 import { userModelHelpers } from "@models/User/helpers";
 import { COMMON_ATTRIBUTES } from "@models/_common";
 import { ddbSingleTable } from "@models/ddbSingleTable";
+import { isValid } from "@utils/clientInputHandlers";
 import { contactModelHelpers } from "./helpers";
 
 /**
@@ -30,7 +31,7 @@ class ContactModel extends Model<typeof ContactModel.schema> {
     },
     handle: {
       type: "string",
-      validate: (value: string) => USER_HANDLE_REGEX.test(value),
+      validate: (value: string) => isValid.handle(value),
       required: true,
     },
     ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
