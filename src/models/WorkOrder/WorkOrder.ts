@@ -1,21 +1,18 @@
-import moment from "moment";
-import {
-  Model,
-  type ItemTypeFromSchema,
-  type ItemInputType,
-  type ModelSchemaOptions,
-} from "@lib/dynamoDB";
+import { Model } from "@lib/dynamoDB";
 import { Location } from "@models/Location";
-import { USER_ID_REGEX } from "@models/User/regex";
+import { userModelHelpers } from "@models/User/helpers";
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES, type FixitUserFields } from "@models/_common";
 import { ddbSingleTable } from "@models/ddbSingleTable";
-import { ENUM_CONSTANTS } from "./enumConstants";
-import {
-  WORK_ORDER_SK_PREFIX_STR as WO_SK_PREFIX,
-  WORK_ORDER_ID_REGEX as WO_ID_REGEX,
-  WO_CHECKLIST_ITEM_ID_REGEX,
-} from "./regex";
+import { WORK_ORDER_ENUM_CONSTANTS } from "./enumConstants";
+import { workOrderModelHelpers as woModelHelpers } from "./helpers";
+import { WORK_ORDER_SK_PREFIX_STR } from "./regex";
 import { updateOne } from "./updateOne";
+import type {
+  ItemTypeFromSchema,
+  ItemInputType,
+  ModelSchemaOptions,
+  DynamoDbItemType,
+} from "@lib/dynamoDB";
 import type { OverrideProperties } from "type-fest";
 
 /**
@@ -26,54 +23,42 @@ class WorkOrderModel extends Model<
   WorkOrderModelItem,
   WorkOrderModelInput
 > {
-  static readonly STATUSES = ENUM_CONSTANTS.STATUSES;
-  static readonly PRIORITIES = ENUM_CONSTANTS.PRIORITIES;
-  static readonly CATEGORIES = ENUM_CONSTANTS.CATEGORIES;
-  static readonly SK_PREFIX = WO_SK_PREFIX;
-
-  static readonly getFormattedID = (createdByUserID: string, createdAt: moment.MomentInput) => {
-    return `${WO_SK_PREFIX}#${createdByUserID}#${moment(createdAt).unix()}`;
-  };
-
-  static readonly isValidID = (value?: unknown) => {
-    return typeof value === "string" && WO_ID_REGEX.test(value);
-  };
-
   static readonly schema = ddbSingleTable.getModelSchema({
     pk: {
       type: "string",
       alias: "createdByUserID",
-      validate: (value: string) => USER_ID_REGEX.test(value),
+      validate: userModelHelpers.id.isValid,
       required: true,
     },
     sk: {
       type: "string",
       alias: "id",
       default: (woItem: { pk: string; createdAt: Date }) =>
-        WorkOrderModel.getFormattedID(woItem.pk, woItem.createdAt),
-      validate: (value: string) => WO_ID_REGEX.test(value),
+        woModelHelpers.id.format(woItem.pk, woItem.createdAt),
+      validate: woModelHelpers.id.isValid,
       required: true,
     },
     data: {
       type: "string",
       alias: "assignedToUserID",
       default: "UNASSIGNED",
-      validate: (value: string) => value === "UNASSIGNED" || USER_ID_REGEX.test(value),
+      validate: (value: string) => value === "UNASSIGNED" || userModelHelpers.id.isValid(value),
       required: true,
       transformValue: {
-        /* `data` can't be null on an index-pk, but `assignedTo` is nullable in the GQL schema,
-        hence the placeholder "UNASSIGNED". This fn converts it to null on read fromDB.      */
+        /* `data` can't be null on an index-pk, but `assignedTo` is nullable
+        in the GQL schema, hence the placeholder "UNASSIGNED". */
+        toDB: (value?: unknown) => (typeof value === "string" ? value : "UNASSIGNED"),
         fromDB: (value: string) => (value === "UNASSIGNED" ? null : value),
       },
     },
     status: {
       type: "enum",
-      oneOf: WorkOrderModel.STATUSES,
+      oneOf: WORK_ORDER_ENUM_CONSTANTS.STATUSES,
       required: true,
     },
     priority: {
       type: "enum",
-      oneOf: WorkOrderModel.PRIORITIES,
+      oneOf: WORK_ORDER_ENUM_CONSTANTS.PRIORITIES,
       default: "NORMAL",
       required: true,
     },
@@ -94,7 +79,7 @@ class WorkOrderModel extends Model<
     },
     category: {
       type: "enum",
-      oneOf: WorkOrderModel.CATEGORIES,
+      oneOf: WORK_ORDER_ENUM_CONSTANTS.CATEGORIES,
       required: false,
     },
     description: {
@@ -110,8 +95,8 @@ class WorkOrderModel extends Model<
           schema: {
             id: {
               type: "string",
-              default: (woItem: { sk: string }) => `${woItem.sk}#CHECKLIST_ITEM#${moment().unix()}`,
-              validate: (value: string) => WO_CHECKLIST_ITEM_ID_REGEX.test(value),
+              default: (woItem: { sk: string }) => woModelHelpers.checklistItemID.format(woItem.sk),
+              validate: woModelHelpers.checklistItemID.isValid,
               required: true,
             },
             description: { type: "string", required: true },
@@ -143,19 +128,26 @@ class WorkOrderModel extends Model<
     ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
   } as const);
 
-  // prettier-ignore
   static readonly schemaOptions: ModelSchemaOptions = {
     // This validateItem fn ensures WOs can not be assigned to the createdBy user
-    validateItem: ({ pk: createdByUserID, data: assignedToUserID }) => createdByUserID !== assignedToUserID,
+    validateItem: ({ pk, data }) => pk !== data, // createdByUserID !== assignedToUserID
     transformItem: {
       /* fromDB, string fields `pk` (createdByUserID) and `data` (assignedToUserID) are converted
       into GQL-API fields `createdBy` and `assignedTo`. Note that while `assignedTo` CAN BE null
       in the GQL-API schema, `data` is an index-pk and therefore CAN'T BE null in the db, so a
       placeholder-constant of "UNASSIGNED" is used in the db. So along with converting the keys,
       this fn also converts the "UNASSIGNED" placeholder to null on read. */
-      fromDB: ({ pk: createdByUserID, data: assignedToUserID, ...woItem }: { pk: string; data: string }) => ({
+      fromDB: ({
+        pk: createdByUserID,
+        data: assignedToUserID,
+        ...woItem
+      }: {
+        pk: string;
+        data: string;
+      }) => ({
         createdBy: { id: createdByUserID },
-        assignedTo: assignedToUserID === "UNASSIGNED" ? null : { id: assignedToUserID },
+        assignedTo:
+          !assignedToUserID || assignedToUserID === "UNASSIGNED" ? null : { id: assignedToUserID },
         ...woItem,
       }),
     },
@@ -171,23 +163,31 @@ class WorkOrderModel extends Model<
   }
 
   // WORK ORDER MODEL — Instance properties and methods:
-
-  readonly PRIORITIES = WorkOrderModel.PRIORITIES;
-  readonly STATUSES = WorkOrderModel.STATUSES;
-  readonly CATEGORIES = WorkOrderModel.CATEGORIES;
-  readonly SK_PREFIX = WorkOrderModel.SK_PREFIX;
-  readonly getFormattedID = WorkOrderModel.getFormattedID;
-  readonly isValidID = WorkOrderModel.isValidID;
+  readonly PRIORITIES = WORK_ORDER_ENUM_CONSTANTS.PRIORITIES;
+  readonly STATUSES = WORK_ORDER_ENUM_CONSTANTS.STATUSES;
+  readonly CATEGORIES = WORK_ORDER_ENUM_CONSTANTS.CATEGORIES;
+  readonly SK_PREFIX = WORK_ORDER_SK_PREFIX_STR;
+  readonly getFormattedID = woModelHelpers.id.format;
+  readonly isValidID = woModelHelpers.id.isValid;
   readonly updateOne = updateOne;
 }
 
 export const WorkOrder = new WorkOrderModel();
 
+/** The shape of a `WorkOrder` object returned from Model read/write methods. */
 export type WorkOrderModelItem = OverrideProperties<
-  FixitUserFields<ItemTypeFromSchema<typeof WorkOrderModel.schema>>,
+  FixitUserFields<ItemTypeFromSchema<typeof WorkOrderModel.schema>, true>,
   { location: Location }
 >;
+
+/** The shape of a `WorkOrder` input arg for Model write methods. */
 export type WorkOrderModelInput = OverrideProperties<
   ItemInputType<typeof WorkOrderModel.schema>,
   { location: Location }
 >;
+
+/**
+ * The shape of a `WorkOrder` object in the DB.
+ * > This type is used to mock `@aws-sdk/lib-dynamodb` responses.
+ */
+export type UnaliasedWorkOrderModelItem = DynamoDbItemType<typeof WorkOrderModel.schema>;
