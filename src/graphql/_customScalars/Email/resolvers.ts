@@ -1,6 +1,6 @@
 import { GraphQLScalarType } from "graphql";
 import { Kind } from "graphql/language";
-import { logger, EMAIL_REGEX } from "@utils";
+import { logger, isValid } from "@utils";
 import { helpers } from "../helpers";
 
 export const resolvers = {
@@ -10,7 +10,7 @@ export const resolvers = {
 
     // parseValue = value from the client
     parseValue(value: unknown) {
-      if (typeof value === "string" && !EMAIL_REGEX.test(value)) {
+      if (!isValid.email(value)) {
         const errMsg = helpers.getScalarErrMsg("Email", value);
         logger.gql(errMsg);
         throw new TypeError(errMsg);
@@ -20,7 +20,7 @@ export const resolvers = {
 
     // serialize = value sent to the client
     serialize(value: unknown) {
-      if (typeof value === "string" && !EMAIL_REGEX.test(value)) {
+      if (!isValid.email(value)) {
         const errMsg = helpers.getScalarErrMsg("Email", value);
         logger.gql(errMsg);
         throw new TypeError(errMsg);
