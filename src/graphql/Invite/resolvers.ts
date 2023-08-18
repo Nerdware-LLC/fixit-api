@@ -1,6 +1,6 @@
 import { GenericSuccessResponse } from "@graphql/_common";
-import { GqlUserInputError } from "@utils/customErrors";
-import { EMAIL_REGEX, US_PHONE_DIGITS_REGEX } from "@utils/regex";
+import { isValid } from "@utils/clientInputHandlers";
+import { GqlUserInputError } from "@utils/httpErrors";
 import type { Resolvers } from "@types";
 
 export const resolvers: Partial<Resolvers> = {
@@ -10,9 +10,9 @@ export const resolvers: Partial<Resolvers> = {
         throw new GqlUserInputError("Unable to create invite with the provided input.");
 
       // Determine if arg is a valid US phone or email address
-      const argType = US_PHONE_DIGITS_REGEX.test(phoneOrEmail)
+      const argType = isValid.phone(phoneOrEmail)
         ? "phone"
-        : EMAIL_REGEX.test(phoneOrEmail)
+        : isValid.email(phoneOrEmail)
         ? "email"
         : null;
 
