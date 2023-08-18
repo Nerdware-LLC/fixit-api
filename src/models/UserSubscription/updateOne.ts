@@ -1,4 +1,4 @@
-import { InternalServerError } from "@utils/customErrors";
+import { InternalServerError } from "@utils/httpErrors";
 import { UserSubscription, type UserSubscriptionModelItem } from "./UserSubscription";
 import type { UserModelItem } from "@models/User";
 
