@@ -51,5 +51,14 @@ class ContactModel extends Model<typeof ContactModel.schema> {
 
 export const Contact = new ContactModel();
 
+/** The shape of a `Contact` object returned from Model read/write methods. */
 export type ContactModelItem = ItemTypeFromSchema<typeof ContactModel.schema>;
+
+/** The shape of a `Contact` input arg for Model write methods. */
 export type ContactModelInput = ItemInputType<typeof ContactModel.schema>;
+
+/**
+ * The shape of a `Contact` object in the DB.
+ * > This type is used to mock `@aws-sdk/lib-dynamodb` responses.
+ */
+export type UnaliasedContactModelItem = DynamoDbItemType<typeof ContactModel.schema>;
