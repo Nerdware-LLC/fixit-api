@@ -2,10 +2,10 @@ import viteTsconfigPaths from "vite-tsconfig-paths";
 import GithubActionsReporter from "vitest-github-actions-reporter";
 import { defineConfig } from "vitest/config";
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig({
   plugins: [
     viteTsconfigPaths({
-      projects: [mode === "production" ? "./tsconfig.build.json" : "./tsconfig.json"],
+      projects: ["./tsconfig.json"],
     }),
   ],
   test: {
@@ -30,4 +30,4 @@ export default defineConfig(({ mode }) => ({
       ],
     },
   },
-}));
+});
