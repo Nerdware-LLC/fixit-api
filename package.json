@@ -21,7 +21,7 @@
   },
   "type": "module",
   "scripts": {
-    "start": "npm run docker:ddb-forceNew ; nodemon ./src/index.ts dotenv_config_path=.env.dev",
+    "start": "npm run docker:ddb-start ; nodemon ./src/index.ts dotenv_config_path=.env.dev",
     "start:prod": "node --no-warnings --loader ./build/loader.js ./build/index.js",
     "compose:up": "docker compose --file ./docker/docker-compose.yaml --project-directory . up",
     "build": "rm -rf ./build 2>/dev/null && tsc --project tsconfig.build.json",
