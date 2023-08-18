@@ -1,94 +1,38 @@
-import moment from "moment";
-import { test, expect, describe, beforeAll, afterAll } from "vitest";
-import { USER_ID_REGEX } from "@models/User/regex";
-import {
-  UserStripeConnectAccount,
-  type UserStripeConnectAccountModelItem,
-} from "./UserStripeConnectAccount";
-import { STRIPE_CONNECT_ACCOUNT_SK_REGEX, STRIPE_CONNECT_ACCOUNT_STRIPE_ID_REGEX } from "./regex";
+import { MOCK_USERS, MOCK_USER_SCAs } from "@tests/staticMockItems";
+import { UserStripeConnectAccount } from "./UserStripeConnectAccount";
 
-const MOCK_INPUTS = {
-  USER_A: {
-    userID: "USER#11111111-1111-1111-1111-sca111111111",
-    email: "userA@gmail.com",
-    phone: "888-111-1111",
-  },
-  USER_B: {
-    userID: "USER#22222222-2222-2222-2222-sca222222222",
-    email: "user_B@gmail.com",
-    phone: "888-222-2222",
-    profile: {
-      givenName: "Rick",
-      familyName: "Sanchez",
-      businessName: "Science Inc.",
-    },
-  },
-} as const;
+/**
+ * NOTE: The following packages are mocked before these tests are run:
+ * - `@aws-sdk/lib-dynamodb`
+ * - `stripe`
+ *
+ * See Vitest setup file `src/__tests__/setupTests.ts`
+ */
 
-type MockInputKey = keyof typeof MOCK_INPUTS;
-// This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
-const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<MockInputKey>;
-
-const testUserFields = (mockUserSCA: UserStripeConnectAccountModelItem) => {
-  expect(mockUserSCA.userID).toMatch(USER_ID_REGEX);
-  expect(mockUserSCA.sk).toMatch(STRIPE_CONNECT_ACCOUNT_SK_REGEX);
-  expect(mockUserSCA.id).toMatch(STRIPE_CONNECT_ACCOUNT_STRIPE_ID_REGEX);
-  expect(mockUserSCA.detailsSubmitted).toBe(false);
-  expect(mockUserSCA.chargesEnabled).toBe(false);
-  expect(mockUserSCA.payoutsEnabled).toBe(false);
-  expect(moment(mockUserSCA.createdAt).isValid()).toBe(true);
-  expect(moment(mockUserSCA.updatedAt).isValid()).toBe(true);
-};
-
-describe("UserStripeConnectAccount model R/W database operations", () => {
-  const createdUserSCAs = {} as {
-    [K in MockInputKey]: Awaited<ReturnType<typeof UserStripeConnectAccount.createOne>>;
-  };
-
-  // Write mock UserStripeConnectAccounts to Table
-  beforeAll(async () => {
-    for (const key of MOCK_INPUT_KEYS) {
-      // prettier-ignore
-      const createdUser = await UserStripeConnectAccount.createOne(MOCK_INPUTS[key] as any);
-      createdUserSCAs[key] = createdUser;
-    }
-  });
-
-  test("UserStripeConnectAccount.createOne returns expected keys and values", () => {
-    Object.values(createdUserSCAs).forEach((createdUserSCA) => {
-      testUserFields(createdUserSCA);
+describe("UserStripeConnectAccount Model", () => {
+  describe("UserStripeConnectAccount.createOne()", () => {
+    test("returns a valid UserStripeConnectAccount when called with valid args", async () => {
+      const result = await UserStripeConnectAccount.createOne({
+        userID: MOCK_USER_SCAs.SCA_A.userID,
+        ...MOCK_USERS.USER_A,
+      });
+      expect(result).toEqual({
+        ...MOCK_USER_SCAs.SCA_A,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+      });
     });
   });
 
-  // TODO Test UserStripeConnectAccount updateItem
+  // TODO Make test for "UserStripeConnectAccount.updateItem()"
+  describe.todo("UserStripeConnectAccount.updateItem()");
 
-  // DELETE:
-
-  test("UserStripeConnectAccount.deleteItem returns expected keys and values", async () => {
-    for (const key of MOCK_INPUT_KEYS) {
-      const { userID, sk } = createdUserSCAs[key];
-      // If deleteItem did not error out, the delete succeeded, check userID.
-      // prettier-ignore
-      const { userID: userIDofDeletedUserSCA } = await UserStripeConnectAccount.deleteItem({ userID, sk });
-      expect(userIDofDeletedUserSCA).toEqual(userID);
-    }
+  describe("UserStripeConnectAccount.deleteItem()", () => {
+    test(`returns a deleted UserStripeConnectAccount's "userID"`, async () => {
+      const { userID } = await UserStripeConnectAccount.deleteItem({
+        userID: MOCK_USER_SCAs.SCA_A.userID,
+      });
+      expect(userID).toEqual(MOCK_USER_SCAs.SCA_A.userID);
+    });
   });
-});
-
-// ENSURE MOCK RESOURCE CLEANUP:
-
-afterAll(async () => {
-  /* After all tests are complete, ensure all mock Items created here have been deleted.
-  Note: DDB methods are called from the ddbClient to circumvent toDB IO hook actions. */
-
-  const remainingMockUserSCAs = await UserStripeConnectAccount.ddbClient.scan({
-    FilterExpression: "begins_with(pk, :skPrefix)",
-    ExpressionAttributeValues: { ":skPrefix": "STRIPE_CONNECT_ACCOUNT#" },
-  });
-
-  if (Array.isArray(remainingMockUserSCAs) && remainingMockUserSCAs.length > 0) {
-    await UserStripeConnectAccount.ddbClient.batchDeleteItems(
-      remainingMockUserSCAs.map(({ pk, sk }) => ({ pk, sk }))
-    );
-  }
 });
