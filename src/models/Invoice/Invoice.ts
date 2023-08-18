@@ -1,55 +1,48 @@
-import moment from "moment";
-import {
-  Model,
-  type ItemTypeFromSchema,
-  type ItemInputType,
-  type ModelSchemaOptions,
-} from "@lib/dynamoDB";
-import { USER_ID_REGEX } from "@models/User/regex";
-import { WORK_ORDER_ID_REGEX } from "@models/WorkOrder/regex";
+import { Model } from "@lib/dynamoDB";
+import { isValidStripeID } from "@lib/stripe";
+import { userModelHelpers } from "@models/User/helpers";
+import { workOrderModelHelpers as woModelHelpers } from "@models/WorkOrder/helpers";
 import { COMMON_ATTRIBUTES, type FixitUserFields } from "@models/_common";
 import { ddbSingleTable } from "@models/ddbSingleTable";
-import { INVOICE_SK_PREFIX_STR as INV_SK_PREFIX, INVOICE_SK_REGEX as INV_SK_REGEX } from "./regex";
+import { INVOICE_ENUM_CONSTANTS } from "./enumConstants";
+import { invoiceModelHelpers } from "./helpers";
+import { INVOICE_SK_PREFIX_STR } from "./regex";
 import { updateOne } from "./updateOne";
+import type {
+  ItemTypeFromSchema,
+  ItemInputType,
+  ModelSchemaOptions,
+  DynamoDbItemType,
+} from "@lib/dynamoDB";
 
 /**
  * Invoice DdbSingleTable Model
  */
 class InvoiceModel extends Model<typeof InvoiceModel.schema, InvoiceModelItem, InvoiceModelInput> {
-  static readonly STATUSES = ["OPEN", "CLOSED", "DISPUTED"] as const;
-  static readonly SK_PREFIX = INV_SK_PREFIX;
-
-  static readonly getFormattedID = (createdByUserID: string, createdAt: Date) => {
-    return `${INV_SK_PREFIX}#${createdByUserID}#${moment(createdAt).unix()}`;
-  };
-
-  static readonly isValidID = (value?: unknown) => {
-    return typeof value === "string" && INV_SK_REGEX.test(value);
-  };
-
   static readonly schema = ddbSingleTable.getModelSchema({
     pk: {
       type: "string",
       alias: "createdByUserID",
-      validate: (value: string) => USER_ID_REGEX.test(value),
+      validate: userModelHelpers.id.isValid,
       required: true,
     },
     sk: {
       type: "string",
       alias: "id",
-      default: ({ pk, createdAt }: { pk: string; createdAt: Date }) => InvoiceModel.getFormattedID(pk, createdAt), // prettier-ignore
-      validate: (value: string) => INV_SK_REGEX.test(value),
+      default: ({ pk, createdAt }: { pk: string; createdAt: Date }) =>
+        invoiceModelHelpers.id.format(pk, createdAt),
+      validate: invoiceModelHelpers.id.isValid,
       required: true,
     },
     data: {
       type: "string",
       alias: "assignedToUserID",
-      validate: (value: string) => USER_ID_REGEX.test(value),
+      validate: userModelHelpers.id.isValid,
       required: true,
     },
     workOrderID: {
       type: "string",
-      validate: (value: string) => WORK_ORDER_ID_REGEX.test(value),
+      validate: woModelHelpers.id.isValid,
     },
     amount: {
       type: "number",
@@ -61,12 +54,16 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema, InvoiceModelItem, I
     },
     status: {
       type: "enum",
-      oneOf: InvoiceModel.STATUSES,
+      oneOf: INVOICE_ENUM_CONSTANTS.STATUSES,
       default: "OPEN",
       required: true,
     },
     stripePaymentIntentID: {
       type: "string",
+      validate: (value?: unknown) =>
+        value === null ||
+        value === undefined ||
+        (typeof value === "string" && isValidStripeID.paymentIntent(value)),
     },
     ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
   } as const);
@@ -101,14 +98,23 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema, InvoiceModelItem, I
   }
 
   // INVOICE MODEL — Instance properties and methods:
-  readonly STATUSES = InvoiceModel.STATUSES;
-  readonly SK_PREFIX = InvoiceModel.SK_PREFIX;
-  readonly getFormattedID = InvoiceModel.getFormattedID;
-  readonly isValidID = InvoiceModel.isValidID;
+  readonly STATUSES = INVOICE_ENUM_CONSTANTS.STATUSES;
+  readonly SK_PREFIX = INVOICE_SK_PREFIX_STR;
+  readonly getFormattedID = invoiceModelHelpers.id.format;
+  readonly isValidID = invoiceModelHelpers.id.isValid;
   readonly updateOne = updateOne;
 }
 
 export const Invoice = new InvoiceModel();
 
+/** The shape of an `Invoice` object returned from Model read/write methods. */
 export type InvoiceModelItem = FixitUserFields<ItemTypeFromSchema<typeof InvoiceModel.schema>>;
+
+/** The shape of an `Invoice` input arg for Model write methods. */
 export type InvoiceModelInput = ItemInputType<typeof InvoiceModel.schema>;
+
+/**
+ * The shape of an `Invoice` object in the DB.
+ * > This type is used to mock `@aws-sdk/lib-dynamodb` responses.
+ */
+export type UnaliasedInvoiceModelItem = DynamoDbItemType<typeof InvoiceModel.schema>;
