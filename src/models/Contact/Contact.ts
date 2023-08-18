@@ -1,41 +1,31 @@
 import { Model, type ItemTypeFromSchema, type ItemInputType } from "@lib/dynamoDB";
-import { USER_ID_REGEX, USER_HANDLE_REGEX } from "@models/User/regex";
+import { userModelHelpers } from "@models/User/helpers";
 import { COMMON_ATTRIBUTES } from "@models/_common";
 import { ddbSingleTable } from "@models/ddbSingleTable";
-import { CONTACT_SK_PREFIX_STR as SK_PREFIX, CONTACT_SK_REGEX } from "./regex";
+import { contactModelHelpers } from "./helpers";
 
 /**
  * Contact DdbSingleTable Model
  */
 class ContactModel extends Model<typeof ContactModel.schema> {
-  static readonly SK_PREFIX = SK_PREFIX;
-
-  static readonly getFormattedID = (contactUserID: string) => {
-    return `${SK_PREFIX}#${contactUserID}`;
-  };
-
-  static readonly isValidID = (value?: unknown) => {
-    return typeof value === "string" && CONTACT_SK_REGEX.test(value);
-  };
-
   static readonly schema = ddbSingleTable.getModelSchema({
     pk: {
       type: "string",
       alias: "userID",
-      validate: (value: string) => USER_ID_REGEX.test(value),
+      validate: userModelHelpers.id.isValid,
       required: true,
     },
     sk: {
       type: "string",
       alias: "id", // Contact "sk" contains the "contactUserID"
-      default: (contactItem: { data: string }) => ContactModel.getFormattedID(contactItem.data),
-      validate: (value: string) => CONTACT_SK_REGEX.test(value),
+      default: (contact: { data: string }) => contactModelHelpers.id.format(contact.data),
+      validate: contactModelHelpers.id.isValid,
       required: true,
     },
     data: {
       type: "string",
       alias: "contactUserID",
-      validate: (value: string) => USER_ID_REGEX.test(value),
+      validate: userModelHelpers.id.isValid,
       required: true,
     },
     handle: {
@@ -52,8 +42,8 @@ class ContactModel extends Model<typeof ContactModel.schema> {
 
   // CONTACT MODEL — Instance properties and methods:
   readonly SK_PREFIX = ContactModel.SK_PREFIX;
-  readonly getFormattedID = ContactModel.getFormattedID;
-  readonly isValidID = ContactModel.isValidID;
+  readonly getFormattedID = contactModelHelpers.id.format;
+  readonly isValidID = contactModelHelpers.id.isValid;
 }
 
 export const Contact = new ContactModel();
