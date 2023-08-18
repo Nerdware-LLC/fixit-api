@@ -1,141 +1,144 @@
-import { test, expect, describe, beforeAll, afterAll } from "vitest";
-import { normalizeInput, prettifyStr } from "@utils";
-import { User, type UserModelItem } from "./User";
-import { USER_ID_REGEX, USER_SK_REGEX, USER_STRIPE_CUSTOMER_ID_REGEX } from "./regex";
+import { isValidStripeID } from "@lib/stripe";
+import { userStripeConnectAccountModelHelpers as scaModelHelpers } from "@models/UserStripeConnectAccount/helpers";
+import { MOCK_USERS } from "@tests/staticMockItems";
+import { isValid, normalize } from "@utils/clientInputHandlers";
+import { User } from "./User";
+import { userModelHelpers } from "./helpers";
 
-const MOCK_INPUTS = {
-  USER_A: {
-    handle: "@user_A",
-    email: "userA@gmail.com",
-    phone: "888-111-1111",
-    expoPushToken: "ExponentPushToken[AAAAAAAAAAAAAAAAAAAAAA]",
-    password: "foo_password_unhashed_text",
-  },
-  USER_B: {
-    handle: "@user_B",
-    email: "user_B@gmail.com",
-    phone: "888-222-2222",
-    expoPushToken: "ExponentPushToken[BBBBBBBBBBBBBBBBBBBBBB]",
-    googleID: "userB_googleID",
-    googleAccessToken: "userB_gat",
-    profile: {
-      displayName: "Rick Sanchez",
-      givenName: "Rick",
-      familyName: "Sanchez",
-      businessName: "Science Inc.",
-    },
-  },
-} as const;
+/**
+ * NOTE: The following packages are mocked before these tests are run:
+ * - `@aws-sdk/lib-dynamodb`
+ * - `stripe`
+ *
+ * See Vitest setup file `src/__tests__/setupTests.ts`
+ */
 
-type MockInputKey = keyof typeof MOCK_INPUTS;
-// This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
-const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<MockInputKey>;
+describe("User Model", () => {
+  describe("User.createOne()", () => {
+    test("returns a valid User when called with valid args", async () => {
+      for (const key in MOCK_USERS) {
+        const result = await User.createOne({
+          ...MOCK_USERS[key],
+          ...(MOCK_USERS[key].login.type === "LOCAL"
+            ? { password: "MockPassword_123" }
+            : MOCK_USERS[key].login),
+        });
 
-const testUserFields = (mockInputsKey: MockInputKey, mockUser: Partial<UserModelItem>) => {
-  const mockUserInputs = MOCK_INPUTS[mockInputsKey];
-
-  expect(mockUser.id).toMatch(USER_ID_REGEX);
-  expect(mockUser.sk).toMatch(USER_SK_REGEX);
-  expect(mockUser.handle).toMatch(mockUserInputs.handle);
-  expect(mockUser.email).toMatch(mockUserInputs.email);
-  expect(mockUser.phone).toMatch(prettifyStr.phone(normalizeInput.phone(mockUserInputs.phone)));
-  expect(mockUser.stripeCustomerID).toMatch(USER_STRIPE_CUSTOMER_ID_REGEX);
-  expect(mockUser.expoPushToken).toMatch(mockUserInputs.expoPushToken);
-
-  if (mockUserInputs === MOCK_INPUTS.USER_A) {
-    expect(mockUser?.profile?.displayName).toBeTypeOf("string");
-    expect(mockUser.login).toMatchObject({
-      type: "LOCAL",
-      passwordHash: expect.stringMatching(/\S{30,}/i) as unknown,
-    });
-  } else if (mockUserInputs === MOCK_INPUTS.USER_B) {
-    expect(mockUser.profile).toMatchObject(MOCK_INPUTS.USER_B.profile);
-    expect(mockUser.login).toMatchObject({
-      type: "GOOGLE_OAUTH",
-      googleID: MOCK_INPUTS.USER_B.googleID,
-      googleAccessToken: MOCK_INPUTS.USER_B.googleAccessToken,
-    });
-  }
-};
-
-describe("User model R/W database operations", () => {
-  const createdUsers = {} as { [K in MockInputKey]: UserModelItem };
-
-  beforeAll(async () => {
-    // Write mock Users to Table
-    for (const key of MOCK_INPUT_KEYS) {
-      createdUsers[key] = await User.createOne(MOCK_INPUTS[key]);
-    }
-  });
-
-  test("User.createOne returns expected keys and values", () => {
-    Object.entries(createdUsers).forEach(([mockInputsKey, createdUser]) => {
-      testUserFields(mockInputsKey as MockInputKey, createdUser);
+        expect(result).toEqual({
+          ...MOCK_USERS[key],
+          id: expect.toSatisfyFn((value: string) => userModelHelpers.id.isValid(value)),
+          sk: expect.toSatisfyFn((value: string) => userModelHelpers.sk.isValid(value)),
+          login: {
+            ...MOCK_USERS[key].login,
+            ...(MOCK_USERS[key].login.type === "LOCAL" && {
+              passwordHash: expect.stringMatching(/^\S{30,}$/),
+            }),
+          },
+          profile: expect.objectContaining({
+            displayName: MOCK_USERS[key].profile.displayName,
+            businessName: expect.toBeOneOf([undefined, null, expect.any(String)]),
+            givenName: expect.toBeOneOf([undefined, null, expect.any(String)]),
+            familyName: expect.toBeOneOf([undefined, null, expect.any(String)]),
+            photoUrl: expect.toBeOneOf([undefined, null, expect.any(String)]),
+          }),
+          stripeConnectAccount: {
+            userID: expect.toSatisfyFn((value: string) => userModelHelpers.id.isValid(value)),
+            sk: expect.toSatisfyFn((value: string) => scaModelHelpers.sk.isValid(value)),
+            id: expect.toSatisfyFn((value) => isValidStripeID.connectAccount(value)),
+            detailsSubmitted: expect.any(Boolean),
+            chargesEnabled: expect.any(Boolean),
+            payoutsEnabled: expect.any(Boolean),
+            createdAt: expect.any(Date),
+            updatedAt: expect.any(Date),
+          },
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
+        });
+      }
     });
   });
 
-  test("User.getItem returns expected keys and values", async () => {
-    for (const key of MOCK_INPUT_KEYS) {
-      const createdByUserID = createdUsers[key].id || "";
-
-      const result = await User.getItem({
-        id: createdByUserID,
-        sk: User.getFormattedSK(createdByUserID),
+  describe("User.getItem()", () => {
+    test("returns desired User when obtained via ID", async () => {
+      const result = await User.getItem({ id: MOCK_USERS.USER_A.id });
+      assert(!!result, `Failed to retrieve mock User with ID: "${MOCK_USERS.USER_A.id}".`);
+      expect(result.id).toBe(MOCK_USERS.USER_A.id);
+      expect(result).toEqual({
+        ...MOCK_USERS.USER_A,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
       });
-
-      testUserFields(key, result as UserModelItem);
-    }
-  });
-
-  test("User.batchGetItems returns expected keys and values", async () => {
-    const users = await User.batchGetItems(
-      [createdUsers.USER_A.id || "", createdUsers.USER_B.id || ""].map((userID) => ({
-        id: userID,
-        sk: User.getFormattedSK(userID),
-      }))
-    );
-
-    users.forEach((user) => {
-      testUserFields(user.id === createdUsers.USER_A.id ? "USER_A" : "USER_B", user);
     });
   });
 
-  test("User.query User by email returns expected keys and values", async () => {
-    for (const key of MOCK_INPUT_KEYS) {
-      // Get mock Users by email
-      const [result] = await User.query({ where: { email: MOCK_INPUTS[key].email }, limit: 1 });
-      testUserFields(key, result);
-    }
+  describe("User.batchGetItems()", () => {
+    test("returns expected keys and values", async () => {
+      const result = await User.batchGetItems(Object.values(MOCK_USERS).map(({ id }) => ({ id })));
+      expect(result).toOnlyContain({
+        id: expect.toSatisfyFn((value) => userModelHelpers.id.isValid(value)),
+        sk: expect.toSatisfyFn((value) => userModelHelpers.sk.isValid(value)),
+        handle: expect.toSatisfyFn((value: string) => isValid.handle(value)),
+        email: expect.toSatisfyFn((value: string) => isValid.email(value)),
+        phone: expect.toSatisfyFn((value: string) => isValid.phone(normalize.phone(value))),
+        stripeCustomerID: expect.toSatisfyFn((value) => isValidStripeID.customer(value)),
+        expoPushToken: expect.toBeOneOf([
+          undefined,
+          null,
+          expect.stringMatching(/ExponentPushToken/),
+        ]),
+        login: expect.toBeOneOf([
+          {
+            type: "LOCAL",
+            passwordHash: expect.stringMatching(/\S{30,}/i),
+          },
+          {
+            type: "GOOGLE_OAUTH",
+            googleID: expect.stringMatching(/\S{6,}/i),
+            googleAccessToken: expect.stringMatching(/\S{6,}/i),
+          },
+        ]),
+        profile: expect.objectContaining({
+          displayName: expect.any(String),
+          givenName: expect.toBeOneOf([undefined, null, expect.any(String)]),
+          familyName: expect.toBeOneOf([undefined, null, expect.any(String)]),
+          businessName: expect.toBeOneOf([undefined, null, expect.any(String)]),
+          photoUrl: expect.toBeOneOf([undefined, null, expect.any(String)]),
+        }),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+      });
+    });
   });
 
-  // TODO Test User updateItem
-
-  // DELETE:
-
-  test("User.deleteItem returns expected keys and values", async () => {
-    for (const key of MOCK_INPUT_KEYS) {
-      const { id = "", sk = "" } = createdUsers[key];
-      const deletedUserItem = await User.deleteItem({ id, sk });
-      // If deleteItem did not error out, the delete succeeded, check ID.
-      expect(deletedUserItem?.id).toEqual(id);
-    }
-  });
-});
-
-// ENSURE MOCK RESOURCE CLEANUP:
-
-afterAll(async () => {
-  /* After all tests are complete, ensure all mock Items created here have been deleted.
-  Note: DDB methods are called from the ddbClient to circumvent toDB IO hook actions. */
-
-  const remainingMockUsers = await User.ddbClient.scan({
-    FilterExpression: "begins_with(pk, :pkPrefix)",
-    ExpressionAttributeValues: { ":pkPrefix": "USER#" },
+  describe("User.query()", () => {
+    test("returns desired User when queried by email", async () => {
+      const [result] = await User.query({
+        where: { email: MOCK_USERS.USER_B.email },
+        limit: 1,
+      });
+      expect(result).toEqual(MOCK_USERS.USER_B);
+      expect(result.id).toBe(MOCK_USERS.USER_B.id);
+    });
   });
 
-  if (Array.isArray(remainingMockUsers) && remainingMockUsers.length > 0) {
-    await User.ddbClient.batchDeleteItems(
-      remainingMockUsers.map(({ pk, sk }) => ({ pk: pk as string, sk: sk as string }))
-    );
-  }
+  describe("User.updateItem()", () => {
+    test("returns an updated User with expected keys and values", async () => {
+      const NEW_DISPLAY_NAME = "Iam Updated-display-name";
+      const updatedUser = await User.updateItem(MOCK_USERS.USER_A, {
+        profile: { displayName: NEW_DISPLAY_NAME },
+      });
+      expect(updatedUser.profile.displayName).toBe(NEW_DISPLAY_NAME);
+      expect(updatedUser).toEqual({
+        ...MOCK_USERS.USER_A,
+        profile: { ...MOCK_USERS.USER_A.profile, displayName: NEW_DISPLAY_NAME },
+      });
+    });
+  });
+
+  describe("User.deleteItem()", () => {
+    test("returns a deleted User's ID", async () => {
+      const result = await User.deleteItem({ id: MOCK_USERS.USER_C.id });
+      expect(result?.id).toBe(MOCK_USERS.USER_C.id);
+    });
+  });
 });
