@@ -5,8 +5,8 @@ import {
   UNALIASED_MOCK_CONTACTS,
   UNALIASED_MOCK_WORK_ORDERS,
   UNALIASED_MOCK_INVOICES,
-} from "@tests/staticMockItems";
-import { hasKey } from "@utils/typeSafety";
+} from "@/tests/staticMockItems";
+import { hasKey } from "@/utils/typeSafety";
 
 /** An array containing unaliased mock items for `lib-dynamodb` stubs to return. */
 export const UNALIASED_MOCKS = [

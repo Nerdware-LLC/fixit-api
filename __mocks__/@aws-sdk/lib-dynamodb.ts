@@ -1,6 +1,6 @@
 import { mockClient } from "aws-sdk-client-mock";
 import merge from "lodash.merge";
-import { hasKey } from "@utils/typeSafety";
+import { hasKey } from "@/utils/typeSafety";
 import { findUnaliasedMockItem, UNALIASED_MOCKS } from "./_helpers";
 import type {
   GetCommandInput,

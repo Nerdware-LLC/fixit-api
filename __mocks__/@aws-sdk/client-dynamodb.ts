@@ -1,5 +1,5 @@
 import { mockClient } from "aws-sdk-client-mock";
-import { MOCK_TABLE } from "@tests/staticMockItems/ddbTable";
+import { MOCK_TABLE } from "@/tests/staticMockItems/ddbTable";
 import type {
   ListTablesOutput,
   DescribeTableInput,
