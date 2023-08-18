@@ -1,225 +1,95 @@
-import deepMerge from "lodash.merge";
-import moment from "moment";
-import { test, expect, describe, beforeAll, afterAll } from "vitest";
+import { MOCK_WORK_ORDERS } from "@tests/staticMockItems";
 import { WorkOrder } from "./WorkOrder";
-import { WORK_ORDER_ID_REGEX, WORK_ORDER_ID_REGEX_STR } from "./regex";
-import type { PartialDeep } from "type-fest";
-import type { WorkOrderModelItem, WorkOrderModelInput } from "./WorkOrder";
 
-const USER_1 = "USER#11111111-1111-1111-1111-wo1111111111";
-const USER_2 = "USER#22222222-2222-2222-2222-wo2222222222";
-const USER_3 = "USER#33333333-3333-3333-3333-wo3333333333";
+/**
+ * NOTE: The following packages are mocked before these tests are run:
+ * - `@aws-sdk/lib-dynamodb`
+ * - `stripe`
+ *
+ * See Vitest setup file `src/__tests__/setupTests.ts`
+ */
 
-const MOCK_INPUTS: Record<"WO_A" | "WO_B", PartialDeep<WorkOrderModelInput>> = {
-  // WO_A contains the bare minimum inputs for WorkOrder.createItem
-  WO_A: {
-    createdByUserID: USER_1,
-    location: {
-      region: "Washington",
-      city: "Redmond",
-      streetLine1: "1 Microsoft Way",
-    },
-  },
-  // WO_B contains all WO properties that can be provided to WorkOrder.createItem
-  WO_B: {
-    createdByUserID: USER_2,
-    assignedToUserID: USER_1,
-    priority: "HIGH",
-    location: {
-      country: "USA",
-      region: "California",
-      city: "Mountain View",
-      streetLine1: "1600 Amphitheatre Parkway",
-      streetLine2: "Attn: #Human Googlers", // <-- tests chars :#
-    },
-    category: "GENERAL",
-    description: "Do cool things at the Googleplex",
-    checklist: [
-      { description: "Did a cool thing" },
-      { description: "Engineer all the things" },
-      { description: "Pet a doggo" },
-    ],
-    dueDate: moment().add(10, "days").toDate(),
-    entryContact: "Sundar Pichai",
-    entryContactPhone: "(555) 123-4567",
-    scheduledDateTime: moment().add(2, "days").toDate(),
-  },
-};
+const { WO_A, WO_B, WO_C } = MOCK_WORK_ORDERS;
 
-type MockInputKey = keyof typeof MOCK_INPUTS;
-// This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
-const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<MockInputKey>;
+describe("WorkOrder Model", () => {
+  describe("WorkOrder.createItem()", () => {
+    test("returns a valid WorkOrder when called with valid args", async () => {
+      for (const key in MOCK_WORK_ORDERS) {
+        const { createdBy, assignedTo, ...workOrder } = MOCK_WORK_ORDERS[key];
 
-const testWorkOrderFields = (mockInputsKey: MockInputKey, mockWO: WorkOrderModelItem) => {
-  const mockWOinputs = MOCK_INPUTS[mockInputsKey];
+        const result = await WorkOrder.createItem({
+          createdByUserID: createdBy.id,
+          ...workOrder,
+          ...(assignedTo?.id && { assignedToUserID: assignedTo.id }),
+        });
 
-  expect(mockWO.createdBy.id).toEqual(mockWOinputs.createdByUserID);
-  expect(WorkOrder.isValidID(mockWO.id)).toBe(true);
-  expect(mockWO.location).toEqual({
-    country: "USA",
-    streetLine2: null, // <-- will be overwritten if present in mockWOinputs.location
-    ...mockWOinputs.location,
-  });
-
-  expect(moment(mockWO.createdAt).isValid()).toBe(true);
-  expect(moment(mockWO.updatedAt).isValid()).toBe(true);
-
-  if (mockWOinputs === MOCK_INPUTS.WO_A) {
-    expect(mockWO.assignedTo?.id).toBeNull();
-    expect(mockWO.priority).toBe("NORMAL");
-    //
-  } else if (mockWOinputs === MOCK_INPUTS.WO_B) {
-    expect(mockWO.assignedTo?.id).toEqual(mockWOinputs.assignedToUserID);
-    expect(mockWO.description).toEqual(mockWOinputs.description);
-    expect(mockWO.priority).toEqual(mockWOinputs.priority);
-    expect(mockWO.category).toEqual(mockWOinputs.category);
-    expect(mockWO.entryContact).toEqual(mockWOinputs.entryContact);
-    expect(mockWO.entryContactPhone).toEqual(mockWOinputs.entryContactPhone);
-    expect(moment(mockWO.dueDate).isValid()).toBe(true);
-    expect(moment(mockWO.scheduledDateTime).isValid()).toBe(true);
-    expect(mockWO.checklist).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: expect.stringMatching(WORK_ORDER_ID_REGEX_STR),
-          description: expect.any(String),
-          isCompleted: false,
-        }),
-      ])
-    );
-  }
-};
-
-describe("WorkOrder model R/W database operations", () => {
-  const createdWOs = {} as { [K in MockInputKey]: WorkOrderModelItem };
-
-  beforeAll(async () => {
-    // Write mock WOs to Table
-    for (const key of MOCK_INPUT_KEYS) {
-      const { assignedToUserID = "UNASSIGNED", ...mockInputs } = MOCK_INPUTS[key];
-
-      createdWOs[key] = await WorkOrder.createItem({
-        assignedToUserID,
-        status: assignedToUserID === "UNASSIGNED" ? "UNASSIGNED" : "ASSIGNED",
-        ...mockInputs,
-      } as any);
-    }
-  });
-
-  // CREATE:
-
-  test("WorkOrder.createItem returns expected keys and values", () => {
-    Object.entries(createdWOs).forEach(([mockInputsKey, createdWO]) => {
-      testWorkOrderFields(mockInputsKey as MockInputKey, createdWO);
+        expect(result).toEqual({
+          ...MOCK_WORK_ORDERS[key],
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
+        });
+      }
     });
   });
 
-  // QUERIES:
-
-  test("WorkOrder.query by WO ID returns expected keys and values", async () => {
-    for (const key of MOCK_INPUT_KEYS) {
-      const [result] = await WorkOrder.query({
-        where: { id: createdWOs[key].id },
+  describe("WorkOrder.query()", () => {
+    test("returns desired WorkOrder when queried by ID", async () => {
+      const result = await WorkOrder.query({
+        where: { id: WO_A.id },
         limit: 1,
       });
-      testWorkOrderFields(key, result);
-    }
+      expect(result).toHaveLength(1);
+      expect(result).toEqual([WO_A]);
+    });
   });
 
-  test("WorkOrder.query of User's OWN WorkOrders returns expected keys and values", async () => {
-    for (const key of MOCK_INPUT_KEYS) {
-      // Should be an array of 1 WorkOrder
-      const workOrders = await WorkOrder.query({
-        where: {
-          createdByUserID: createdWOs[key].createdBy.id,
-          id: { beginsWith: WorkOrder.SK_PREFIX },
-        },
-      });
-      workOrders.forEach((wo) => testWorkOrderFields(key, wo));
-    }
-  });
-
-  test("WorkOrder.query of User's RECEIVED WorkOrders returns expected keys and values", async () => {
-    // Should be an array of 1 WorkOrder (WO_B)
-    const workOrders = await WorkOrder.query({
+  test("returns all of a User's OWN WorkOrders when queried by the User's ID", async () => {
+    const result = await WorkOrder.query({
       where: {
-        assignedToUserID: MOCK_INPUTS.WO_B.assignedToUserID as string,
+        createdByUserID: WO_A.createdBy.id,
         id: { beginsWith: WorkOrder.SK_PREFIX },
       },
     });
+    expect(result).toHaveLength(1);
+    expect(result).toEqual([WO_A]);
+  });
 
-    workOrders.forEach((wo) => {
-      testWorkOrderFields("WO_B", wo);
+  test("returns all of a User's RECEIVED WorkOrders when queried by the User's ID", async () => {
+    const result = await WorkOrder.query({
+      where: {
+        assignedToUserID: WO_B.assignedTo!.id,
+        id: { beginsWith: WorkOrder.SK_PREFIX },
+      },
+    });
+    expect(result).toHaveLength(2);
+    expect(result).toEqual([WO_B, WO_C]);
+  });
+
+  describe("WorkOrder.updateOne()", () => {
+    test("returns the updated WorkOrder with expected keys and values", async () => {
+      const NEW_LOCATION = {
+        country: "Canada",
+        region: "Ontario",
+        city: "Toronto",
+        streetLine1: "65 King East",
+      };
+      const result = await WorkOrder.updateOne(WO_A, {
+        location: NEW_LOCATION,
+      });
+      expect(result.location).toMatchObject(NEW_LOCATION);
+      expect(result).toEqual({ ...WO_A, updatedAt: expect.any(Date) });
     });
   });
 
-  // UPDATE:
-
-  test("WorkOrder.updateOne returns expected keys and values", async () => {
-    const updatedWOs = { ...createdWOs };
-
-    const NEW_WO_VALUES: { [K in MockInputKey]: PartialDeep<WorkOrderModelInput> } = {
-      WO_A: {
-        assignedToUserID: USER_3,
-        description: "Visit Google's Toronto HQ",
-        location: {
-          country: "Canada",
-          region: "Ontario",
-          city: "Toronto",
-          streetLine1: "65 King East",
-        },
-      },
-      WO_B: {
-        assignedToUserID: "UNASSIGNED",
-        status: "UNASSIGNED", // <-- "status" currently added by updateWorkOrder resolver (conditionally)
-      },
-    };
-
-    // Update WO values
-    for (const key of MOCK_INPUT_KEYS) {
-      updatedWOs[key] = await WorkOrder.updateOne(createdWOs[key], NEW_WO_VALUES[key]);
-    }
-
-    // Test updated values
-    for (const key of MOCK_INPUT_KEYS) {
-      expect(updatedWOs[key]).toMatchObject(deepMerge(createdWOs[key], NEW_WO_VALUES[key]));
-    }
+  describe("WorkOrder.deleteItem()", () => {
+    test("returns a deleted WorkOrder's ID", async () => {
+      for (const key in MOCK_WORK_ORDERS) {
+        const result = await WorkOrder.deleteItem({
+          createdByUserID: MOCK_WORK_ORDERS[key].createdBy.id,
+          id: MOCK_WORK_ORDERS[key].id,
+        });
+        expect(result?.id).toEqual(MOCK_WORK_ORDERS[key].id);
+      }
+    });
   });
-
-  // DELETE:
-
-  test("WorkOrder.deleteItem returns expected keys and values", async () => {
-    for (const key of MOCK_INPUT_KEYS) {
-      const {
-        createdBy: { id: createdByUserID },
-        id: workOrderID,
-      } = createdWOs[key];
-
-      const { id: deletedWorkOrderID } = await WorkOrder.deleteItem({
-        createdByUserID,
-        id: workOrderID,
-      });
-
-      // If deleteItem did not error out, the delete succeeded, so delete from createdWOs (for good measure, test returned ID is same as arg)
-      expect(deletedWorkOrderID).toMatch(WORK_ORDER_ID_REGEX);
-      expect(deletedWorkOrderID).toEqual(workOrderID);
-    }
-  });
-});
-
-// ENSURE MOCK RESOURCE CLEANUP:
-
-afterAll(async () => {
-  /* After all tests are complete, ensure all mock Items created here have been deleted.
-  Note: DDB methods are called from the ddbClient to circumvent toDB IO hook actions. */
-
-  const remainingMockWOs = await WorkOrder.scan({
-    FilterExpression: "begins_with(sk, :skPrefix)",
-    ExpressionAttributeValues: { ":skPrefix": WorkOrder.SK_PREFIX },
-  });
-
-  if (Array.isArray(remainingMockWOs) && remainingMockWOs.length > 0) {
-    await WorkOrder.batchDeleteItems(
-      remainingMockWOs.map(({ id, createdBy }) => ({ id, createdByUserID: createdBy.id }))
-    );
-  }
 });
