@@ -14,11 +14,11 @@ import { isDate } from "@/utils/typeSafety";
  */
 
 //                                      MANUAL MOCK LOCATION:
-vi.mock("@/server/env"); //              <repo_root>/src/server/env/__mocks__/index.ts
+vi.mock("@/server/env"); //             <repo_root>/src/server/env/__mocks__/index.ts
 vi.mock("@aws-sdk/client-dynamodb"); // <repo_root>/__mocks__/@aws-sdk/client-dynamodb.ts
 vi.mock("@aws-sdk/client-lambda"); //   <repo_root>/__mocks__/@aws-sdk/client-lambda.ts
 vi.mock("@aws-sdk/lib-dynamodb"); //    <repo_root>/__mocks__/@aws-sdk/lib-dynamodb.ts
-vi.mock("@/lib/stripe"); //              <repo_root>/src/lib/stripe/__mocks__/index.ts
+vi.mock("@/lib/stripe"); //             <repo_root>/src/lib/stripe/__mocks__/index.ts
 
 /**
  * This helper fn returns a `message` for the custom matchers below.
