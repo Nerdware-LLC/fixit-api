@@ -1,5 +1,6 @@
 import { mockClient } from "aws-sdk-client-mock";
 import request from "supertest";
+import { expressApp } from "@/expressApp";
 import { usersCache } from "@/lib/cache";
 import { stripe } from "@/lib/stripe";
 import { User, type UserModelItem } from "@/models/User";
@@ -20,7 +21,6 @@ import {
   MOCK_USER_SCAs,
 } from "@/tests/staticMockItems";
 import { AuthToken, passwordHasher } from "@/utils";
-import { expressApp } from "../expressApp";
 import type { Server } from "http";
 
 vi.mock("@/apolloServer");

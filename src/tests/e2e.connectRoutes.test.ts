@@ -1,9 +1,9 @@
 import request from "supertest";
+import { expressApp } from "@/expressApp";
 import { stripe } from "@/lib/stripe";
 import { ENV } from "@/server/env";
 import { MOCK_USERS, MOCK_USER_SUBS, MOCK_USER_SCAs } from "@/tests/staticMockItems";
 import { AuthToken } from "@/utils";
-import { expressApp } from "../expressApp";
 import type { Server } from "http";
 
 vi.mock("@/apolloServer");
