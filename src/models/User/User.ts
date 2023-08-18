@@ -1,15 +1,12 @@
 import { Expo } from "expo-server-sdk";
-import { Model, type ItemTypeFromSchema, type ItemInputType } from "@lib/dynamoDB";
+import { Model } from "@lib/dynamoDB";
+import { isValidStripeID } from "@lib/stripe";
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@models/_common";
 import { ddbSingleTable } from "@models/ddbSingleTable";
-import { EMAIL_REGEX, getUnixTimestampUUID, hasKey } from "@utils";
+import { hasKey, isValid } from "@utils";
 import { createOne } from "./createOne";
-import {
-  USER_ID_REGEX,
-  USER_SK_REGEX,
-  USER_HANDLE_REGEX,
-  USER_STRIPE_CUSTOMER_ID_REGEX,
-} from "./regex";
+import { userModelHelpers } from "./helpers";
+import type { ItemTypeFromSchema, ItemInputType, DynamoDbItemType } from "@lib/dynamoDB";
 import type { UserLoginU } from "@models/UserLogin";
 import type { OverrideProperties } from "type-fest";
 
@@ -17,47 +14,43 @@ import type { OverrideProperties } from "type-fest";
  * User DdbSingleTable Model
  */
 class UserModel extends Model<typeof UserModel.schema, UserModelItem, UserModelInput> {
-  static readonly SK_PREFIX = `#DATA`;
-  static readonly getFormattedSK = (userID: string) => `#DATA#${userID}`;
-
   static readonly schema = ddbSingleTable.getModelSchema({
     pk: {
       type: "string",
       alias: "id",
-      default: () => `USER#${getUnixTimestampUUID()}`,
-      validate: (value: string) => USER_ID_REGEX.test(value),
+      default: ({ createdAt }: { createdAt: Date }) => userModelHelpers.id.format(createdAt),
+      validate: userModelHelpers.id.isValid,
       required: true,
     },
     sk: {
       type: "string",
-      default: (userItem: { pk: string }) => UserModel.getFormattedSK(userItem.pk),
-      validate: (value: string) => USER_SK_REGEX.test(value),
+      default: (userItem: { pk: string }) => userModelHelpers.sk.format(userItem.pk),
+      validate: userModelHelpers.sk.isValid,
       required: true,
     },
     data: {
       type: "string",
       alias: "email",
-      validate: (value: string) => EMAIL_REGEX.test(value),
+      validate: (value: string) => isValid.email(value),
       required: true,
     },
     handle: {
       type: "string",
-      validate: (value: string) => USER_HANDLE_REGEX.test(value),
-      required: true,
+      validate: (value: string) => isValid.handle(value),
+      required: true, // NOTE: User.handle is case-sensitive
     },
     phone: {
       ...COMMON_ATTRIBUTE_TYPES.PHONE,
       required: true,
     },
     expoPushToken: {
-      type: "string", // The push-service sets EPT to "" (empty string)
-      default: "",
+      type: "string", // The push-service may set EPT to empty string
       validate: (tokenValue: string) => tokenValue === "" || Expo.isExpoPushToken(tokenValue),
       required: false,
     },
     stripeCustomerID: {
       type: "string",
-      validate: (value: string) => USER_STRIPE_CUSTOMER_ID_REGEX.test(value),
+      validate: (value: string) => isValidStripeID.customer(value),
       required: true,
     },
     login: {
@@ -89,7 +82,7 @@ class UserModel extends Model<typeof UserModel.schema, UserModelItem, UserModelI
         givenName: { type: "string" },
         familyName: { type: "string" },
         businessName: { type: "string" },
-        photoURL: { type: "string" },
+        photoUrl: { type: "string" },
       },
     },
     ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
@@ -100,17 +93,26 @@ class UserModel extends Model<typeof UserModel.schema, UserModelItem, UserModelI
   }
 
   // USER MODEL — Instance methods:
-  readonly getFormattedSK = UserModel.getFormattedSK;
+  readonly getFormattedSK = userModelHelpers.sk.format;
   readonly createOne = createOne;
 }
 
 export const User = new UserModel();
 
+/** The shape of a `User` object returned from Model read/write methods. */
 export type UserModelItem = OverrideProperties<
   ItemTypeFromSchema<typeof UserModel.schema>,
   { login: UserLoginU }
 >;
+
+/** The shape of a `User` input arg for Model write methods. */
 export type UserModelInput = OverrideProperties<
   ItemInputType<typeof UserModel.schema>,
   { login: UserLoginU }
 >;
+
+/**
+ * The shape of a `User` object in the DB.
+ * > This type is used to mock `@aws-sdk/lib-dynamodb` responses.
+ */
+export type UnaliasedUserModelItem = DynamoDbItemType<typeof UserModel.schema>;
