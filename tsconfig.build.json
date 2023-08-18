@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "types": [], // Don't include vitest globals
+    "types": [],
     "skipLibCheck": true
   },
   // Exclude from build: node_modules, test/mock files
@@ -14,5 +14,13 @@
     "**/*.test.js",
     "**/*.spec.ts",
     "**/*.spec.js"
-  ]
+  ],
+  "tsc-alias": {
+    "replacers": {
+      "tscAliasReplacer": {
+        "enabled": true,
+        "file": "./tscAliasReplacer.cjs"
+      }
+    }
+  }
 }

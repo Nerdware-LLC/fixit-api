@@ -24,7 +24,7 @@
     "start": "npm run docker:ddb-start ; nodemon ./src/index.ts dotenv_config_path=.env.dev",
     "start:prod": "node --no-warnings --loader ./build/loader.js ./build/index.js",
     "compose:up": "docker compose --file ./docker/docker-compose.yaml --project-directory . up",
-    "build": "rm -rf ./build 2>/dev/null && tsc --project tsconfig.build.json && tsc-alias -p tsconfig.json",
+    "build": "rm -rf ./build 2>/dev/null && tsc --project tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "docker:ddb-start": "npm run docker:ddb-kill ; npm run docker:ddb-run",
     "docker:ddb-run": "docker run -d -p 8000:8000 --rm --name ddb-local amazon/dynamodb-local 1>/dev/null",
     "docker:ddb-kill": "docker container kill ddb-local &>/dev/null",
