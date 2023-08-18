@@ -6,7 +6,7 @@ import {
   UserStripeConnectAccount,
   type UserStripeConnectAccountModelItem,
 } from "@models/UserStripeConnectAccount";
-import { normalizeInput, logger } from "@utils";
+import { normalize, logger } from "@utils";
 import type { UserModelItem, User } from "@models/User";
 import type { SetOptional } from "type-fest";
 
@@ -37,7 +37,7 @@ export const createOne = async function (
   // Create Stripe Customer via Stripe API
   const { id: stripeCustomerID } = await stripe.customers.create({
     email,
-    phone: normalizeInput.phone(phone), // <-- don't send non-digit chars to Stripe
+    phone: normalize.phone(phone), // <-- don't send non-digit chars to Stripe
     ...(newUserProfile.displayName.length > 0 && { name: newUserProfile.displayName }),
   });
 
