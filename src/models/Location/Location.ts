@@ -85,6 +85,12 @@ export class Location implements GqlSchemaLocationType {
     if (typeof locationCompoundStr !== "string") return locationCompoundStr;
     // Split the composite value string using the "#" delimeter
     const locationComponents: Array<string | null> = locationCompoundStr.split("#");
+    // If length is less than 4, throw an error
+    if (locationComponents.length < 4) {
+      throw new Error(
+        `Invalid Location: "${locationCompoundStr}" is not a valid Location compound string.`
+      );
+    }
     // If length is 4, append `null` for streetLine2
     if (locationComponents.length === 4) locationComponents.push(null);
 
