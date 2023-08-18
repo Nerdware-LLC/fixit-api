@@ -1,6 +1,6 @@
 import type { WorkOrderStatus, WorkOrderCategory, WorkOrderPriority } from "@types";
 
-export const ENUM_CONSTANTS: {
+export const WORK_ORDER_ENUM_CONSTANTS: {
   readonly PRIORITIES: ReadonlyArray<WorkOrderPriority>;
   readonly STATUSES: ReadonlyArray<WorkOrderStatus>;
   readonly CATEGORIES: ReadonlyArray<WorkOrderCategory>;
