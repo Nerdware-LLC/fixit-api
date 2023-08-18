@@ -1,20 +1,18 @@
-import moment from "moment";
-import { Model, type ItemTypeFromSchema } from "@lib/dynamoDB";
-import { USER_ID_REGEX } from "@models/User/regex";
+import { Model } from "@lib/dynamoDB";
+import { isValidStripeID } from "@lib/stripe";
+import { userModelHelpers } from "@models/User/helpers";
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@models/_common";
 import { ddbSingleTable } from "@models/ddbSingleTable";
 import { ENV } from "@server/env";
 import { hasKey } from "@utils";
+import { SUBSCRIPTION_ENUM_CONSTANTS } from "./enumConstants";
+import { userSubscriptionModelHelpers as subModelHelpers } from "./helpers";
 import { normalizeStripeFields } from "./normalizeStripeFields";
-import {
-  USER_SUBSCRIPTION_SK_PREFIX_STR as SUB_SK_PREFIX,
-  USER_SUBSCRIPTION_SK_REGEX as SUB_SK_REGEX,
-  USER_SUB_STRIPE_ID_REGEX as SUB_ID_REGEX,
-} from "./regex";
+import { USER_SUB_SK_PREFIX_STR as SUB_SK_PREFIX } from "./regex";
 import { updateOne } from "./updateOne";
 import { upsertOne } from "./upsertOne";
-import { validateExisting, SUBSCRIPTION_STATUS_METADATA } from "./validateExisting";
-import type { SubscriptionStatus } from "@types";
+import { validateExisting } from "./validateExisting";
+import type { ItemTypeFromSchema, ItemInputType, DynamoDbItemType } from "@lib/dynamoDB";
 
 /**
  * UserSubscription DdbSingleTable Model
@@ -23,31 +21,25 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
   static readonly PRODUCT_IDS = { FIXIT_SUBSCRIPTION: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.productID }; // prettier-ignore
   static readonly PRICE_IDS = ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.priceIDs;
   static readonly PROMO_CODES = ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.promoCodes;
-  static readonly SK_PREFIX = SUB_SK_PREFIX;
-
-  static readonly getFormattedSK = (userID: string, createdAt: Date) => {
-    return `${SUB_SK_PREFIX}#${userID}#${moment(createdAt).unix()}`;
-  };
-
-  static readonly normalizeStripeFields = normalizeStripeFields;
 
   static readonly schema = ddbSingleTable.getModelSchema({
     pk: {
       type: "string",
       alias: "userID",
-      validate: (value: string) => USER_ID_REGEX.test(value),
+      validate: userModelHelpers.id.isValid,
       required: true,
     },
     sk: {
       type: "string",
-      default: (subItem: { pk: string; createdAt: Date }) => UserSubscriptionModel.getFormattedSK(subItem.pk, subItem.createdAt), // prettier-ignore
-      validate: (value: string) => SUB_SK_REGEX.test(value),
+      default: (subItem: { pk: string; createdAt: Date }) =>
+        subModelHelpers.sk.format(subItem.pk, subItem.createdAt),
+      validate: subModelHelpers.sk.isValid,
       required: true,
     },
     data: {
       type: "string",
       alias: "id", // Sub IDs comes from Stripe
-      validate: (value: string) => SUB_ID_REGEX.test(value),
+      validate: (value: string) => isValidStripeID.subscription(value),
       required: true,
     },
     currentPeriodEnd: {
@@ -86,7 +78,7 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
     },
     status: {
       type: "enum",
-      oneOf: Object.keys(SUBSCRIPTION_STATUS_METADATA) as ReadonlyArray<SubscriptionStatus>,
+      oneOf: SUBSCRIPTION_ENUM_CONSTANTS.STATUSES,
       required: true,
     },
     ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
@@ -97,13 +89,12 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
   }
 
   // USER SUBSCRIPTION MODEL — Instance properties and methods:
-
   readonly PRODUCT_IDS = UserSubscriptionModel.PRODUCT_IDS;
   readonly PRICE_IDS = UserSubscriptionModel.PRICE_IDS;
   readonly PROMO_CODES = UserSubscriptionModel.PROMO_CODES;
-  readonly SK_PREFIX = UserSubscriptionModel.SK_PREFIX;
-  readonly getFormattedSK = UserSubscriptionModel.getFormattedSK;
-  readonly normalizeStripeFields = UserSubscriptionModel.normalizeStripeFields;
+  readonly SK_PREFIX = SUB_SK_PREFIX;
+  readonly getFormattedSK = subModelHelpers.sk.format;
+  readonly normalizeStripeFields = normalizeStripeFields;
   readonly updateOne = updateOne;
   readonly upsertOne = upsertOne;
   readonly validateExisting = validateExisting;
@@ -111,5 +102,19 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
 
 export const UserSubscription = new UserSubscriptionModel();
 
+/** The shape of a `UserSubscription` object returned from Model read/write methods. */
 export type UserSubscriptionModelItem = ItemTypeFromSchema<typeof UserSubscriptionModel.schema>;
+
+/** The shape of a `UserSubscription` input arg for Model write methods. */
+export type UserSubscriptionModelInput = ItemInputType<typeof UserSubscriptionModel.schema>;
+
+/**
+ * The shape of a `UserSubscription` object in the DB.
+ * > This type is used to mock `@aws-sdk/lib-dynamodb` responses.
+ */
+export type UnaliasedUserSubscriptionModelItem = DynamoDbItemType<
+  typeof UserSubscriptionModel.schema
+>;
+
+/** The names of UserSubscription Stripe prices: "TRIAL", "MONTHLY", "ANNUAL" */
 export type UserSubscriptionPriceLabels = keyof typeof UserSubscriptionModel.PRICE_IDS;
