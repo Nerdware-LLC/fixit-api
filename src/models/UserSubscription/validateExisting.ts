@@ -1,4 +1,4 @@
-import moment from "moment";
+import dayjs from "dayjs";
 import { hasKey } from "@utils";
 import type { SubscriptionStatus } from "@types";
 import type { UserSubscriptionModelItem } from "./UserSubscription";
@@ -21,7 +21,7 @@ export const validateExisting = function ({
     !hasKey(SUBSCRIPTION_STATUS_METADATA, status) ||
     SUBSCRIPTION_STATUS_METADATA?.[status]?.isValid !== true ||
     !currentPeriodEnd ||
-    !moment(currentPeriodEnd).isValid()
+    !dayjs(currentPeriodEnd).isValid()
   ) {
     throw new Error(
       !!status && hasKey(SUBSCRIPTION_STATUS_METADATA, status)
@@ -31,9 +31,9 @@ export const validateExisting = function ({
   }
 
   // Coerce to unix timestamp in seconds and compare
-  if (moment().unix() >= moment(currentPeriodEnd).unix()) {
+  if (dayjs().unix() >= dayjs(currentPeriodEnd).unix()) {
     throw new Error(
-      "This subscription has expired; please submit payment to re-activate your subscription."
+      "This subscription has expired - please submit payment to re-activate your subscription."
     );
   }
 };
