@@ -115,8 +115,9 @@ export class Location implements GqlSchemaLocationType {
   /**
    * Validates a Location DDB-compound-string for use in DdbSingleTable model schema.
    */
-  public static validateCompoundString = (locationCompoundStr: string) => {
-    return LOCATION_COMPOSITE_REGEX.test(locationCompoundStr);
+  public static validateCompoundString = (locationCompoundStr?: unknown) => {
+    // The test method doesn't throw when given invalid arg types, so it's safe to cast here.
+    return LOCATION_COMPOSITE_REGEX.test(locationCompoundStr as string);
   };
 
   constructor({ country, region, city, streetLine1, streetLine2 }: Location) {
