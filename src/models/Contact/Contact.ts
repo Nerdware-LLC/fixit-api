@@ -1,9 +1,11 @@
-import { Model, type ItemTypeFromSchema, type ItemInputType } from "@lib/dynamoDB";
+import { Model } from "@lib/dynamoDB";
 import { userModelHelpers } from "@models/User/helpers";
 import { COMMON_ATTRIBUTES } from "@models/_common";
 import { ddbSingleTable } from "@models/ddbSingleTable";
 import { isValid } from "@utils/clientInputHandlers";
 import { contactModelHelpers } from "./helpers";
+import { CONTACT_SK_PREFIX_STR } from "./regex";
+import type { ItemTypeFromSchema, ItemInputType, DynamoDbItemType } from "@lib/dynamoDB";
 
 /**
  * Contact DdbSingleTable Model
@@ -42,7 +44,7 @@ class ContactModel extends Model<typeof ContactModel.schema> {
   }
 
   // CONTACT MODEL — Instance properties and methods:
-  readonly SK_PREFIX = ContactModel.SK_PREFIX;
+  readonly SK_PREFIX = CONTACT_SK_PREFIX_STR;
   readonly getFormattedID = contactModelHelpers.id.format;
   readonly isValidID = contactModelHelpers.id.isValid;
 }
