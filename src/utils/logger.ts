@@ -96,7 +96,7 @@ const getLoggerUtil = ({
       }
     : {
         handleLogError: (input, messagePrefix) => {
-          console.error(getLogMessage({ label, input, messagePrefix }), input);
+          console.error(getLogMessage({ label, input, messagePrefix, labelColor, messageColor }));
         },
         handleLogMessage: (input, messagePrefix) => {
           nonProdConsoleMethod(
