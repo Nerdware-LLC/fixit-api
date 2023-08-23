@@ -1,10 +1,10 @@
 import eslintJS from "@eslint/js";
+import tsEslintPlugin from "@typescript-eslint/eslint-plugin";
+import tsEslintParser from "@typescript-eslint/parser";
 import importPlugin from "eslint-plugin-import";
 import nodePlugin from "eslint-plugin-node";
 import vitestPlugin from "eslint-plugin-vitest";
 import globals from "globals";
-import tsEslintPlugin from "@typescript-eslint/eslint-plugin";
-import tsEslintParser from "@typescript-eslint/parser";
 
 /** @type { import("eslint").Linter.FlatConfig } */
 export default [
@@ -47,10 +47,9 @@ export default [
       "prefer-const": "warn",
       semi: ["error", "always"],
       "import/no-unresolved": "error",
-      "node/no-extraneous-import": ["error", { allowModules: ["@jest/globals"] }],
       "node/no-missing-import": "off",
       "node/no-process-env": "error",
-      "node/no-unpublished-import": ["error", { allowModules: ["type-fest"] }],
+      "node/no-unpublished-import": "off",
       "node/no-unsupported-features/es-syntax": "off",
       "@typescript-eslint/ban-types": [
         "error",
@@ -121,18 +120,6 @@ export default [
       "vitest/no-focused-tests": "warn",
       "vitest/prefer-to-have-length": "warn",
       "vitest/valid-expect": "error",
-      "node/no-unpublished-import": [
-        "error",
-        {
-          allowModules: [
-            "type-fest",
-            "vitest",
-            "@graphql-tools/mock",
-            "aws-sdk-client-mock",
-            "supertest",
-          ],
-        },
-      ],
       "@typescript-eslint/no-unsafe-assignment": "off",
     },
   },
