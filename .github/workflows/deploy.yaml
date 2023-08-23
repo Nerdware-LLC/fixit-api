@@ -8,8 +8,6 @@ jobs:
   deploy:
     name: Deploy
     uses: Nerdware-LLC/reusable-action-workflows/.github/workflows/ecr_image_push.yaml@main
-    with:
-      dockerfile-path: ./docker/Dockerfile
     secrets:
       OIDC_GITHUB_ROLE_ARN: ${{ secrets.OIDC_GITHUB_ROLE_ARN }}
       AWS_ECR_PRIVATE_REPO: ${{ secrets.AWS_ECR_PRIVATE_REPO }}
