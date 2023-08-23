@@ -1,8 +1,10 @@
 {
   "include": ["src/**/*", "__mocks__/**/*"],
+
   "ts-node": {
     "files": true,
     "esm": true,
+    "swc": true,
     "experimentalSpecifierResolution": "node",
     "require": ["tsconfig-paths/register"]
   },
@@ -24,11 +26,6 @@
 
     // "Completeness" Configs:
     "skipLibCheck": false,
-
-    // Emit Configs:
-    "outDir": "./build",
-    "removeComments": true,
-    // "sourceMap": true,
 
     // Output Formatting:
     "noErrorTruncation": true,
