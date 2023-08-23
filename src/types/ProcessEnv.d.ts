@@ -1,4 +1,4 @@
-import type { EnvObject } from "@/server/env/EnvObject";
+export {};
 
 declare global {
   namespace NodeJS {
@@ -8,13 +8,14 @@ declare global {
      * on the `process.env` object.
      */
     interface ProcessEnv {
-      NODE_ENV: EnvObject["NODE_ENV"];
+      NODE_ENV: "development" | "test" | "ci" | "staging" | "production";
       npm_package_version?: string;
       PROTOCOL?: string;
       DOMAIN?: string;
       PORT?: string;
       AWS_REGION?: string;
       DYNAMODB_TABLE_NAME?: string;
+      DYNAMODB_ENDPOINT?: string;
       JWT_PRIVATE_KEY?: string;
       JWT_ALGORITHM?: string;
       JWT_ISSUER?: string;

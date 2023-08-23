@@ -1,12 +1,11 @@
-/* eslint-disable */
-import type { Assertion, AsymmetricMatchersContaining } from "vitest";
+/// <reference types="vitest" />
 
 /*
   This file adds custom matchers to the Vitest assertion interface.
   See docs: https://vitest.dev/guide/extending-matchers.html
 */
 
-interface CustomMatchers<T = any, R = unknown> {
+interface CustomMatchers<_ = any, R = unknown> {
   /** Test if the `received` array only contains elements specified in the `expected` array. */
   toOnlyContain(expected: Record<PropertyKey, unknown>): R;
   /** Test if the `received` value matches one of the values in the `expected` array. */

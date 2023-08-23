@@ -21,7 +21,7 @@ import type { Algorithm } from "jsonwebtoken";
  * @property {Object} STRIPE - Stripe-related env vars.
  */
 export class EnvObject {
-  readonly NODE_ENV: "development" | "test" | "ci" | "staging" | "production";
+  readonly NODE_ENV: typeof process.env.NODE_ENV;
   readonly IS_PROD: boolean;
   readonly CONFIG: Readonly<{
     PROJECT_VERSION?: string;
@@ -39,6 +39,7 @@ export class EnvObject {
   readonly AWS: Readonly<{
     REGION: string;
     DYNAMODB_TABLE_NAME: string;
+    DYNAMODB_ENDPOINT?: string;
   }>;
   readonly JWT: Readonly<{
     PRIVATE_KEY: string;
@@ -69,6 +70,7 @@ export class EnvObject {
     PORT,
     AWS_REGION,
     DYNAMODB_TABLE_NAME,
+    DYNAMODB_ENDPOINT,
     JWT_PRIVATE_KEY,
     JWT_ALGORITHM,
     JWT_ISSUER,
@@ -136,6 +138,7 @@ export class EnvObject {
     this.AWS = {
       REGION: AWS_REGION,
       DYNAMODB_TABLE_NAME,
+      DYNAMODB_ENDPOINT,
     };
     this.JWT = {
       PRIVATE_KEY: JWT_PRIVATE_KEY,
