@@ -1,9 +1,6 @@
 import { DdbSingleTable } from "@/lib/dynamoDB";
 import { ENV } from "@/server/env";
 
-// Use ddb-local in dev and test environments.
-const shouldUseDdbLocal = /^(dev|test)/i.test(ENV.NODE_ENV);
-
 export const ddbSingleTable = new DdbSingleTable({
   tableName: ENV.AWS.DYNAMODB_TABLE_NAME,
   tableKeysSchema: {
@@ -21,7 +18,7 @@ export const ddbSingleTable = new DdbSingleTable({
         rangeKey: "data", // TODO Double check - is any model using this GSI sk?
         global: true,
         project: true, // all attributes
-        throughput: { read: 5, write: 5 }, // <-- arbitrary throughput for ddb-local
+        throughput: { read: 5, write: 5 }, // TODO Figure out what throughput to use in demo/prod (arbitrary throughput for ddb-local)
       },
     },
     data: {
@@ -32,21 +29,22 @@ export const ddbSingleTable = new DdbSingleTable({
         rangeKey: "sk", // WO query "WorkOrdersAssignedToUser" uses this GSI SK
         global: true,
         project: true, // all attributes
-        throughput: { read: 5, write: 5 }, // <-- arbitrary throughput for ddb-local
+        throughput: { read: 5, write: 5 }, // TODO arbitrary throughput for ddb-local
       },
     },
   } as const,
   ddbClientConfigs: {
     region: ENV.AWS.REGION,
-    ...(shouldUseDdbLocal && {
-      endpoint: "http://localhost:8000",
+    endpoint: ENV.AWS.DYNAMODB_ENDPOINT,
+    // dynamodb-local is used in dev and test environments
+    ...(ENV.AWS.REGION === "local" && {
       credentials: {
         accessKeyId: "local",
         secretAccessKey: "local",
       },
     }),
   },
-  ...(!!shouldUseDdbLocal && {
+  ...(ENV.AWS.REGION === "local" && {
     tableConfigs: {
       createIfNotExists: true,
       billingMode: "PROVISIONED",
