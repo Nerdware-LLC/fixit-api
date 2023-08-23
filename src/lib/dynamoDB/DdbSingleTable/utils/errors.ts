@@ -5,11 +5,49 @@ import type { ModelSchemaAttributeConfig, ModelSchemaNestedAttributes } from "..
  * The base `error` class for `DdbSingleTable`.
  */
 export class DdbSingleTableError extends Error {
-  readonly name: string = "DdbSingleTableError";
+  readonly name: string;
 
-  constructor(message = "Unknown error") {
+  constructor(message = "An unknown error occurred") {
     super(message);
+    this.name = this.constructor.name;
     Error.captureStackTrace(this, DdbSingleTableError);
+  }
+}
+
+/**
+ * This error wraps DDB-client ECONNREFUSED errors for network/connection errors.
+ * Note: DDB-client errors do not provide `name` or `message` properties.
+ */
+export class DdbConnectionError extends DdbSingleTableError {
+  constructor(
+    arg:
+      | string
+      | {
+          message?: string;
+          /** The DDB-client error code (e.g., "ECONNREFUSED"). */
+          code?: string;
+          /** The DDB-client error number (e.g., -111). */
+          errno?: number;
+          /** The DDB-client syscall (e.g., "connect"). */
+          syscall?: string;
+          /** The DDB-client endpoint IP address (e.g., "127.0.0.1"). */
+          address?: number;
+          /** The DDB-client endpoint port number (e.g., 8000). */
+          port?: number;
+          /** DDB-client error metadata */
+          $metadata?: { attempts?: number; totalRetryDelay?: number };
+          [key: string]: unknown;
+        }
+  ) {
+    const message =
+      typeof arg === "string"
+        ? arg
+        : `Failed to connect to the provided DynamoDB endpoint${
+            typeof arg?.message === "string" ? ` (${arg.message})` : ``
+          }.`;
+
+    super(message);
+    Error.captureStackTrace(this, DdbConnectionError);
   }
 }
 
@@ -17,9 +55,7 @@ export class DdbSingleTableError extends Error {
  * This error is thrown by schema-validation functions when a `TableKeysSchema`
  * or `ModelSchema` is invalid.
  */
-export class SchemaValidationError extends Error {
-  readonly name: string = "SchemaValidationError";
-
+export class SchemaValidationError extends DdbSingleTableError {
   constructor(message = "Invalid schema") {
     super(message);
     Error.captureStackTrace(this, SchemaValidationError);
@@ -30,9 +66,7 @@ export class SchemaValidationError extends Error {
  * This error is thrown by Model `IOHookAction` functions when run-time input
  * data is invalid.
  */
-export class ItemInputError extends Error {
-  readonly name: string = "ItemInputError";
-
+export class ItemInputError extends DdbSingleTableError {
   constructor(message = "Invalid item input") {
     super(message);
     Error.captureStackTrace(this, ItemInputError);
@@ -43,9 +77,7 @@ export class ItemInputError extends Error {
  * This error is thrown by expression-generator utils when a run-time arg is invalid
  * (e.g., more than two K-V pairs for a `KeyConditionExpression`).
  */
-export class InvalidExpressionError extends Error {
-  readonly name: string = "InvalidExpressionError";
-
+export class InvalidExpressionError extends DdbSingleTableError {
   constructor(
     arg:
       | string

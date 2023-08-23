@@ -1,6 +1,6 @@
-import { logger } from "@/utils/logger";
+import { logger, isRecordObject } from "@/utils";
 import { DdbSingleTable } from "./DdbSingleTable";
-import { DdbSingleTableError } from "./utils";
+import { DdbSingleTableError, DdbConnectionError } from "./utils";
 import type { SetNonNullable, SetRequired } from "type-fest";
 import type { TableKeysSchemaType, CreateTableOpts } from "./types";
 
@@ -41,8 +41,14 @@ export const ensureTableIsActive = async function <TableKeysSchema extends Table
         setTimeout(resolve, this.waitForActive.frequency);
       });
     } catch (err: unknown) {
-      // If `e` is a "ResourceNotFoundException", Table doesn't exist - see if it should be created.
-      if (!(err instanceof Error) || err?.name !== "ResourceNotFoundException") throw err;
+      // Sanity type-check: if `err` somehow does not contain K-V fields, just throw it.
+      if (!isRecordObject(err)) throw err;
+
+      // If `err?.code` is "ECONNREFUSED", a connection could not be made to the provided endpoint.
+      if (err?.code === "ECONNREFUSED") throw new DdbConnectionError(err);
+
+      // If `err` is a "ResourceNotFoundException", Table doesn't exist - see if it should be created.
+      if (err?.name !== "ResourceNotFoundException") throw err;
 
       // Inform user Table *probably* doesn't exist
       logger.dynamodb(`Table "${this.tableName}" not found.`);
