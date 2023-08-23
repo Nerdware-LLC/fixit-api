@@ -1,4 +1,4 @@
-import type { CustomRequestProperties } from "./express";
+import type { FixitRESTRequestFlowProperties } from "./express";
 
 declare global {
   namespace Express {
@@ -6,22 +6,22 @@ declare global {
       /**
        * A User object as extracted from the database.
        */
-      _user?: CustomRequestProperties["_user"];
+      _user?: FixitRESTRequestFlowProperties["_user"];
 
       /**
        * A UserSubscription object as extracted from the database (e.g., for sub-updating mw)
        */
-      _userSubscription?: CustomRequestProperties["_userSubscription"];
+      _userSubscription?: FixitRESTRequestFlowProperties["_userSubscription"];
 
       /**
        * An AuthToken payload object as extracted from the request's auth token.
        */
-      _authenticatedUser?: CustomRequestProperties["_authenticatedUser"];
+      _authenticatedUser?: FixitRESTRequestFlowProperties["_authenticatedUser"];
 
       /**
        * A User's pre-fetched WorkOrders, Invoices, and Contacts (used on logins).
        */
-      _userQueryItems?: CustomRequestProperties["_userQueryItems"];
+      _userQueryItems?: FixitRESTRequestFlowProperties["_userQueryItems"];
     }
   }
 }

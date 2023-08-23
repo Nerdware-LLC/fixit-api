@@ -1,9 +1,9 @@
 import { hasKey, isType, UserInputError, getErrorMessage } from "@/utils";
-import type { CustomRequestProperties } from "@/types";
+import type { FixitRESTRequestFlowProperties } from "@/types";
 import type { RequestHandler, Request } from "express";
 import type { SetReturnType, SetRequired, EmptyObject, JsonPrimitive } from "type-fest";
 
-type CustomRequestAndBodyProperties<TBodyValues = unknown> = CustomRequestProperties & {
+type CustomRequestAndBodyProperties<TBodyValues = unknown> = FixitRESTRequestFlowProperties & {
   body?: Record<string, TBodyValues>;
 };
 

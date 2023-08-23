@@ -20,23 +20,23 @@ export type PreFetchedUserQueryItems = {
 };
 
 /**
- * This type contains all custom properties this application adds to Express Request
- * objects. Each of these properties is globally available on the Request object (see
- * ambient merge-declaration in `src/types/Express.d.ts`).
+ * This type contains all custom REST request-flow properties added to Express Request
+ * objects by internal middleware. Each of these properties is globally available on the
+ * Request object (see ambient merge-declaration in `src/types/Express.d.ts`).
  */
-export type CustomRequestProperties = {
+export type FixitRESTRequestFlowProperties = {
   /**
-   * A User object as extracted from the database.
+   * A User object from the database.
    */
   _user?: UserModelItem;
 
   /**
-   * A UserSubscription object as extracted from the database (e.g., for sub-updating mw)
+   * A UserSubscription object from the database (e.g., for sub-updating mw).
    */
   _userSubscription?: UserSubscriptionModelItem;
 
   /**
-   * An AuthToken payload object as extracted from the request's auth token.
+   * An AuthToken payload object from an authenticated request's auth token.
    */
   _authenticatedUser?: SetOptional<FixitApiAuthTokenPayload, "stripeConnectAccount">;
 
