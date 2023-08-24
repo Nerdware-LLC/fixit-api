@@ -1,4 +1,5 @@
-/// <reference types="vitest" />
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { Assertion, AsymmetricMatchersContaining } from "vitest";
 
 /*
   This file adds custom matchers to the Vitest assertion interface.
