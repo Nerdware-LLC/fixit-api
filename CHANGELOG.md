@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+# [1.23.0-next.3](https://github.com/Nerdware-LLC/fixit-api/compare/v1.23.0-next.2...v1.23.0-next.3) (2023-08-24)
+
+
+### Bug Fixes
+
+* have node_test use 'test:ci' script not 'test' ([116d5ae](https://github.com/Nerdware-LLC/fixit-api/commit/116d5aed2907a258df8f7301d58d89c1fd1bda7f))
+* replace triple-slash ref w explicit type import ([d35e582](https://github.com/Nerdware-LLC/fixit-api/commit/d35e582c4ee97d0d89ca4a445acf6b84d824760c))
+* replace UUID w unix TS in sub sk ([1cc2331](https://github.com/Nerdware-LLC/fixit-api/commit/1cc23319e7493ed9789a96f8d95a55388d6ba92c))
+
+
+### Features
+
+* add remaining customer-portal events ([9e88397](https://github.com/Nerdware-LLC/fixit-api/commit/9e88397c0d73002855875ec79f851cedffc2a92e))
+
+
+### Performance Improvements
+
+* update engines.node to v18+ ([8f4cc2d](https://github.com/Nerdware-LLC/fixit-api/commit/8f4cc2dcb237db23add2f80dd4bb0992b6fff9f9))
+
 # [1.23.0-next.2](https://github.com/Nerdware-LLC/fixit-api/compare/v1.23.0-next.1...v1.23.0-next.2) (2023-08-23)
 
 
