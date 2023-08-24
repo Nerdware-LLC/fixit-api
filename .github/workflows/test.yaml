@@ -16,7 +16,7 @@ jobs:
     uses: Nerdware-LLC/reusable-action-workflows/.github/workflows/node_test.yaml@main
     with:
       node-version: "18.17.1"
-      test-script: "test"
+      test-script: "test:ci"
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
