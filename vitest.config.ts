@@ -1,6 +1,6 @@
 import viteTsconfigPaths from "vite-tsconfig-paths";
 import GithubActionsReporter from "vitest-github-actions-reporter";
-import { defineConfig } from "vitest/config";
+import { defineConfig, coverageConfigDefaults } from "vitest/config";
 
 export default defineConfig({
   plugins: [
@@ -18,15 +18,10 @@ export default defineConfig({
     reporters: ["default", ...(process.env.GITHUB_ACTIONS ? [new GithubActionsReporter()] : [])],
     coverage: {
       include: ["src/**/*.{js,ts}"],
-      exclude: ["src/tests/**/*.{js,ts}", "**/__mocks__/**/*", "__mocks__/**/*"],
+      exclude: [...coverageConfigDefaults.exclude, "**/__mocks__/**/*", "__mocks__/**/*"],
       reporter: [
-        // Default reporters:
-        "text",
-        "html",
-        "clover",
-        "json",
-        // Required for vitest-coverage-report GitHub Action:
-        "json-summary",
+        ...coverageConfigDefaults.reporter,
+        "json-summary", // <-- used by vitest-coverage-report GitHub Action
       ],
     },
   },
