@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import { isType, normalize, prettifyStr, isValid } from "@/utils";
+import type { ModelSchemaAttributeConfig } from "@/lib/dynamoDB";
 
 export const COMMON_ATTRIBUTE_TYPES = {
   PHONE: {
@@ -17,7 +18,7 @@ export const COMMON_ATTRIBUTE_TYPES = {
     type: "Date",
     validate: (value: unknown) => !!value && dayjs(value as Parameters<typeof dayjs>[0]).isValid(),
   },
-} as const;
+} as const satisfies Record<string, Partial<ModelSchemaAttributeConfig>>;
 
 export const COMMON_ATTRIBUTES = {
   TIMESTAMPS: {
@@ -35,5 +36,5 @@ export const COMMON_ATTRIBUTES = {
         toDB: () => new Date(),
       },
     },
-  },
+  } satisfies Record<string, ModelSchemaAttributeConfig>,
 } as const;
