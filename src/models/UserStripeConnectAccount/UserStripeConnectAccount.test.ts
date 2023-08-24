@@ -24,9 +24,6 @@ describe("UserStripeConnectAccount Model", () => {
     });
   });
 
-  // TODO Make test for "UserStripeConnectAccount.updateItem()"
-  describe.todo("UserStripeConnectAccount.updateItem()");
-
   describe("UserStripeConnectAccount.deleteItem()", () => {
     test(`returns a deleted UserStripeConnectAccount's "userID"`, async () => {
       const { userID } = await UserStripeConnectAccount.deleteItem({
