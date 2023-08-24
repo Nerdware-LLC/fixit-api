@@ -25,8 +25,6 @@ const HELMET_DEFAULT_CSP_DIRECTIVES = helmet.contentSecurityPolicy.getDefaultDir
 /**
  * STRIPE'S REQUIRED CSP DIRECTIVES:
  *
- * // TODO ADD the Stripe-required CSP directives to lambda-edge-secure-headers
- *
  * The directives listed below are required in order for fixit-web to use the stripeJS lib.
  * https://stripe.com/docs/security/guide#content-security-policy
  *

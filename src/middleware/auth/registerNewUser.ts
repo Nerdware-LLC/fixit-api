@@ -4,8 +4,6 @@ import type { UserCreateOneParams } from "@/models/User/createOne";
 
 /**
  * This middleware function creates a new User item in the DB.
- *
- * > `req.originalUrl` = "/auth/register"
  */
 export const registerNewUser = mwAsyncCatchWrapper<{ body: UserCreateOneParams }>(
   async (req, res, next) => {
