@@ -48,9 +48,6 @@ describe("UserSubscription Model", () => {
     });
   });
 
-  // TODO Make tests for UserSubscription.updateItem()
-  describe.todo("UserSubscription.updateItem()");
-
   describe("UserSubscription.deleteItem()", () => {
     test(`returns a deleted UserSubscription's ID`, async () => {
       for (const key in MOCK_USER_SUBS) {
