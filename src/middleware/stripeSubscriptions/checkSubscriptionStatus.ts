@@ -2,6 +2,13 @@ import { stripe } from "@/lib/stripe";
 import { mwAsyncCatchWrapper } from "@/middleware/helpers";
 import { UserSubscription } from "@/models/UserSubscription";
 
+/**
+ * This middleware checks if the User is authenticated, and if so, queries Stripe for
+ * up-to-date subscription info. It then checks if the subscription's `status` and
+ * `currentPeriodEnd` details from Stripe match those present in the auth token payload.
+ * If they do not match, the UserSubscription item is updated in the db, and the User's
+ * auth token payload values are updated as well.
+ */
 export const checkSubscriptionStatus = mwAsyncCatchWrapper(async (req, res, next) => {
   if (!req?._authenticatedUser) return next("User not found");
 

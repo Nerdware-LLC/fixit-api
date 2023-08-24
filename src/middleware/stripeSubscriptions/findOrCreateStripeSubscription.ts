@@ -4,7 +4,28 @@ import { UserSubscription, type UserSubscriptionPriceLabels } from "@/models/Use
 import { logger, getTypeSafeError, PaymentRequiredError } from "@/utils";
 
 /**
- * `req.originalUrl = "/api/subscriptions/submit-payment"`
+ * This middleware serves as the primary endpoint for the checkout/payment process.
+ * If the supplied payment details result in a successful payment, the User's auth
+ * token payload is updated with the new subscription details. Otherwise, the request
+ * results in a 402 Payment Required error.
+ *
+ * After checking to make sure the User is authenticated, the Stripe API is used to
+ * attach the provided payment method to the customer and set it as their default
+ * payment method. The User may already have one ore more subscriptions (e.g., if
+ * they previously created a sub but didn't complete the payment process for it),
+ * in which case the array of subscriptions returned from Stripe is searched for a
+ * subscription that _**is not expired**_.
+ *
+ * If a non-expired subscription _**is not**_ found, one is upserted into the db.
+ * Note that `upsert` is used because a sub may already exist in the db, but it may
+ * be _**expired**_, in which case it's desirable to simply overwrite it so the db
+ * isn't populated with dangling sub items that will never be used.
+ *
+ * Once a valid, non-expired subscription has been obtained (either from Stripe or
+ * the `upsert` operation), the `status` of the `payment_intent` on the sub's latest
+ * invoice is checked - any value other than "succeeded" results in a 402 Payment
+ * Required error. If the status is "succeeded", the User's auth token payload is
+ * updated with the new subscription details - they're now able to use Fixit SaaS!
  */
 export const findOrCreateStripeSubscription = mwAsyncCatchWrapper<{
   body: {

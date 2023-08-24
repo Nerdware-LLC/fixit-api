@@ -2,7 +2,8 @@ import { stripe } from "@/lib/stripe";
 import { mwAsyncCatchWrapper } from "@/middleware/helpers";
 
 /**
- * `req.originalUrl = "/api/subscriptions/customer-portal"`
+ * This middleware creates a Stripe Customer Portal link, which allows the User to
+ * manage their subscription and payment methods.
  */
 export const createCustomerPortalLink = mwAsyncCatchWrapper<{ body: { returnURL: string } }>(
   async (req, res, next) => {
