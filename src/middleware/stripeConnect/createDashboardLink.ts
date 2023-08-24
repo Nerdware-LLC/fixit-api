@@ -4,8 +4,6 @@ import { mwAsyncCatchWrapper } from "@/middleware/helpers";
 /**
  * This middleware creates a Stripe dashboard link for authenticated users.
  *
- * > `req.originalUrl = "/api/connect/dashboard-link"`
- *
  * Example account-login-link response object:
  *
  * ```json

@@ -61,9 +61,8 @@ export const resolvers: Partial<Resolvers> = {
 };
 
 /**
- * Converts an `ContactModelItem` to a `GqlContact`. If the
- * `ContactModelItem` is not found in the `usersCache`, a
- * `GqlUserInputError` is thrown.
+ * Converts an `ContactModelItem` to a `GqlContact`. If the `ContactModelItem`
+ * is not found in the `usersCache`, a `GqlUserInputError` is thrown.
  */
 const convertContactModelItemToGqlContact = (
   contact?: Partial<ContactModelItem>,

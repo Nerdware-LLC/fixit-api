@@ -3,8 +3,6 @@ import { mwAsyncCatchWrapper } from "@/middleware/helpers";
 
 /**
  * This middleware creates a Stripe ConnectAccount link for authenticated users.
- *
- * - `req.originalUrl = "/api/connect/account-link"`
  */
 export const createAccountLink = mwAsyncCatchWrapper<{ body: { returnURL: string } }>(
   async (req, res, next) => {

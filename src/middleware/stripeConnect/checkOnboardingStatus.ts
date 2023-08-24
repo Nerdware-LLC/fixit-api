@@ -2,6 +2,10 @@ import { stripe } from "@/lib/stripe";
 import { mwAsyncCatchWrapper } from "@/middleware/helpers";
 import { UserStripeConnectAccount } from "@/models/UserStripeConnectAccount";
 
+/**
+ * Checks the status of the user's Stripe Connect account capabilities and updates the DB
+ * if the values are stale (`details_submitted`, `charges_enabled`, and `payouts_enabled`).
+ */
 export const checkOnboardingStatus = mwAsyncCatchWrapper(async (req, res, next) => {
   if (!req?._authenticatedUser) return next("User not found");
   if (!req._authenticatedUser?.stripeConnectAccount)
