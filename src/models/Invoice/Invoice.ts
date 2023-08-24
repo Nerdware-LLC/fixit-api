@@ -2,18 +2,13 @@ import { Model } from "@/lib/dynamoDB";
 import { isValidStripeID } from "@/lib/stripe";
 import { userModelHelpers } from "@/models/User/helpers";
 import { workOrderModelHelpers as woModelHelpers } from "@/models/WorkOrder/helpers";
-import { COMMON_ATTRIBUTES, type FixitUserFields } from "@/models/_common";
+import { COMMON_ATTRIBUTES, COMMON_SCHEMA_OPTS, type FixitUserFields } from "@/models/_common";
 import { ddbSingleTable } from "@/models/ddbSingleTable";
 import { INVOICE_ENUM_CONSTANTS } from "./enumConstants";
 import { invoiceModelHelpers } from "./helpers";
 import { INVOICE_SK_PREFIX_STR } from "./regex";
 import { updateOne } from "./updateOne";
-import type {
-  ItemTypeFromSchema,
-  ItemInputType,
-  ModelSchemaOptions,
-  DynamoDbItemType,
-} from "@/lib/dynamoDB";
+import type { ItemTypeFromSchema, ItemInputType, DynamoDbItemType } from "@/lib/dynamoDB";
 
 /**
  * Invoice DdbSingleTable Model
@@ -68,27 +63,7 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema, InvoiceModelItem, I
     ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
   } as const);
 
-  static readonly schemaOptions: ModelSchemaOptions = {
-    transformItem: {
-      /* fromDB, string fields `pk` (createdByUserID) and `data` (assignedToUserID)
-      are converted into GQL-API fields `createdBy` and `assignedTo`.            */
-      // IDEA Put this shared logic+type in @models/_common (share w WO)
-      fromDB: ({
-        pk: createdByUserID,
-        data: assignedToUserID,
-        ...item
-      }: {
-        pk: string;
-        data: string;
-      }) => ({
-        createdBy: { id: createdByUserID },
-        assignedTo: { id: assignedToUserID },
-        ...item,
-      }),
-    },
-    // These properties are added by transformItem, so they must be allow-listed:
-    allowUnknownAttributes: ["createdBy", "assignedTo"],
-  };
+  static readonly schemaOptions = COMMON_SCHEMA_OPTS.getOptsForItemWithCreatedByAndAssignedTo(true);
 
   constructor() {
     super("Invoice", InvoiceModel.schema, {

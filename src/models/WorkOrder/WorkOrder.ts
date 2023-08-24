@@ -1,18 +1,14 @@
 import { Model } from "@/lib/dynamoDB";
 import { Location } from "@/models/Location";
 import { userModelHelpers } from "@/models/User/helpers";
-import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES, type FixitUserFields } from "@/models/_common";
+import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES, COMMON_SCHEMA_OPTS } from "@/models/_common";
 import { ddbSingleTable } from "@/models/ddbSingleTable";
 import { WORK_ORDER_ENUM_CONSTANTS } from "./enumConstants";
 import { workOrderModelHelpers as woModelHelpers } from "./helpers";
 import { WORK_ORDER_SK_PREFIX_STR } from "./regex";
 import { updateOne } from "./updateOne";
-import type {
-  ItemTypeFromSchema,
-  ItemInputType,
-  ModelSchemaOptions,
-  DynamoDbItemType,
-} from "@/lib/dynamoDB";
+import type { ItemTypeFromSchema, ItemInputType, DynamoDbItemType } from "@/lib/dynamoDB";
+import type { FixitUserFields } from "@/models/_common";
 import type { OverrideProperties } from "type-fest";
 
 /**
@@ -128,32 +124,8 @@ class WorkOrderModel extends Model<
     ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
   } as const);
 
-  static readonly schemaOptions: ModelSchemaOptions = {
-    // This validateItem fn ensures WOs can not be assigned to the createdBy user
-    validateItem: ({ pk, data }) => pk !== data, // createdByUserID !== assignedToUserID
-    transformItem: {
-      /* fromDB, string fields `pk` (createdByUserID) and `data` (assignedToUserID) are converted
-      into GQL-API fields `createdBy` and `assignedTo`. Note that while `assignedTo` CAN BE null
-      in the GQL-API schema, `data` is an index-pk and therefore CAN'T BE null in the db, so a
-      placeholder-constant of "UNASSIGNED" is used in the db. So along with converting the keys,
-      this fn also converts the "UNASSIGNED" placeholder to null on read. */
-      fromDB: ({
-        pk: createdByUserID,
-        data: assignedToUserID,
-        ...woItem
-      }: {
-        pk: string;
-        data: string;
-      }) => ({
-        createdBy: { id: createdByUserID },
-        assignedTo:
-          !assignedToUserID || assignedToUserID === "UNASSIGNED" ? null : { id: assignedToUserID },
-        ...woItem,
-      }),
-    },
-    // These properties are added by transformItem, so they must be allow-listed:
-    allowUnknownAttributes: ["createdBy", "assignedTo"],
-  };
+  static readonly schemaOptions =
+    COMMON_SCHEMA_OPTS.getOptsForItemWithCreatedByAndAssignedTo(false);
 
   constructor() {
     super("WorkOrder", WorkOrderModel.schema, {
