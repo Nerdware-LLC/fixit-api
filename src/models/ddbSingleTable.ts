@@ -15,10 +15,10 @@ export const ddbSingleTable = new DdbSingleTable({
       isRangeKey: true,
       index: {
         name: "Overloaded_SK_GSI", // For relational queryies using "sk" as the hash key
-        rangeKey: "data", // TODO Double check - is any model using this GSI sk?
+        rangeKey: "data",
         global: true,
         project: true, // all attributes
-        throughput: { read: 5, write: 5 }, // TODO Figure out what throughput to use in demo/prod (arbitrary throughput for ddb-local)
+        throughput: { read: 5, write: 5 },
       },
     },
     data: {
@@ -29,14 +29,14 @@ export const ddbSingleTable = new DdbSingleTable({
         rangeKey: "sk", // WO query "WorkOrdersAssignedToUser" uses this GSI SK
         global: true,
         project: true, // all attributes
-        throughput: { read: 5, write: 5 }, // TODO arbitrary throughput for ddb-local
+        throughput: { read: 5, write: 5 },
       },
     },
   } as const,
   ddbClientConfigs: {
     region: ENV.AWS.REGION,
     endpoint: ENV.AWS.DYNAMODB_ENDPOINT,
-    // dynamodb-local is used in dev and test environments
+    // dynamodb-local is used in dev
     ...(ENV.AWS.REGION === "local" && {
       credentials: {
         accessKeyId: "local",

@@ -17,7 +17,7 @@ export const apolloServer = new ApolloServer<ApolloServerResolverContext>({
   schema: addMocksToSchema({
     schema: fixitSchema,
     mocks: {
-      // TODO mocks go here
+      // Manually created mocks can go here
     },
     preserveResolvers: true,
   }),

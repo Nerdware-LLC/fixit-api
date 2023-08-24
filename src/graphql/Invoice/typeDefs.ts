@@ -46,8 +46,6 @@ export const typeDefs = gql`
   ####################################################################
   ### MUTATIONS
 
-  # TODO Add mutations for adding/changing attached WO
-
   extend type Mutation {
     createInvoice(invoice: InvoiceInput!): Invoice!
     updateInvoiceAmount(invoiceID: ID!, amount: Int!): Invoice!

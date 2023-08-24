@@ -74,6 +74,3 @@ authRouter.use(
 );
 
 authRouter.use(generateAuthToken);
-
-// TODO Add route "/auth/forgot-password"
-// TODO Add route "/auth/reset-password"
