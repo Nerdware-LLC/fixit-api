@@ -42,8 +42,7 @@ export default [
       ...tsEslintPlugin.configs["recommended-requiring-type-checking"].rules,
       eqeqeq: ["error", "always"],
       "no-console": "warn",
-      "no-redeclare": "off", // @typescript-eslint/no-redeclare is used instead
-      "no-unused-vars": "off", // @typescript-eslint/no-unused-vars is used instead
+      "no-dupe-class-members": "off", // used instead: @typescript-eslint/no-dupe-class-members
       "prefer-const": "warn",
       semi: ["error", "always"],
       "import/no-unresolved": "error",
