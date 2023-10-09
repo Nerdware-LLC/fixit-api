@@ -1,3 +1,11 @@
-import { ddbSingleTable } from "@/models/ddbSingleTable";
+import { ddbTable } from "@/models/ddbTable";
 
-await ddbSingleTable.ensureTableIsActive();
+await ddbTable.ensureTableIsActive({
+  createIfNotExists: {
+    BillingMode: "PROVISIONED",
+    ProvisionedThroughput: {
+      ReadCapacityUnits: 5,
+      WriteCapacityUnits: 5,
+    },
+  },
+});
