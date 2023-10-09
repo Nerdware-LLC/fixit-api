@@ -1,4 +1,4 @@
-##################################################
+################################################################################
 # PRETTIER BASE CONFIGS
 
 printWidth: 100
@@ -11,21 +11,25 @@ trailingComma: "es5"
 bracketSpacing: true
 arrowParens: "always"
 endOfLine: "lf"
-##################################################
-# PRETTIER PLUGIN CONFIGS
+plugins: ["@serverless-guru/prettier-plugin-import-order"]
 
-# PLUGIN: @serverless-guru/prettier-plugin-import-order
+################################################################################
+# PRETTIER PLUGIN CONFIGS: @serverless-guru/prettier-plugin-import-order
+
+# This plugin will sort imports in accordance with the rules below.
+# Note: this plugin will not move side-effect imports.
+
 importOrderMergeDuplicateImports: true
 importOrderBuiltinModulesToTop: true
 importOrderTypeImportsToBottom: true
-# Note: this plugin will not move side-effect imports
 importOrder: [
-    # Below keyword applies to any imports that don't match an explicitly-provided pattern
+    # External modules at the top (keyword is plugin-specific)
     "<THIRD_PARTY_MODULES>",
-    # Project path aliases:
+    # Then Project path aliases (tend to be project-wide utils and whatnot)
     "^@/",
     # Relative imports at the bottom
     "^./",
     "^../",
   ]
-##################################################
+
+################################################################################
