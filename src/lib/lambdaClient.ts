@@ -21,9 +21,7 @@ const _invoke = async ({
   );
 
   return {
-    Payload: returnedPayload
-      ? (JSON.parse(Buffer.from(returnedPayload).toString()) as Record<PropertyKey, unknown>)
-      : null,
+    Payload: returnedPayload ? JSON.parse(Buffer.from(returnedPayload).toString()) : null,
     ...rest, // rest: { $metadata, ExecutedVersion, StatusCode, FunctionError, LogResult }
   };
 };
