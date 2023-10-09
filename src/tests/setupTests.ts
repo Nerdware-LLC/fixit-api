@@ -10,12 +10,13 @@
  *      are simply overridden where necessary.
  */
 
-//                                      MANUAL MOCK LOCATION:
-vi.mock("@/server/env"); //             <repo_root>/src/server/env/__mocks__/index.ts
-vi.mock("@aws-sdk/client-dynamodb"); // <repo_root>/__mocks__/@aws-sdk/client-dynamodb.ts
-vi.mock("@aws-sdk/client-lambda"); //   <repo_root>/__mocks__/@aws-sdk/client-lambda.ts
-vi.mock("@aws-sdk/lib-dynamodb"); //    <repo_root>/__mocks__/@aws-sdk/lib-dynamodb.ts
-vi.mock("@/lib/stripe"); //             <repo_root>/src/lib/stripe/__mocks__/index.ts
+//                                       MANUAL MOCK LOCATION:
+vi.mock("@/server/env"); //              src/server/env/__mocks__/index.ts
+vi.mock("@/lib/stripe"); //              src/lib/stripe/__mocks__/index.ts
+vi.mock("@/models/ddbTable"); //         src/models/__mocks__/ddbTable.ts
+vi.mock("@aws-sdk/client-dynamodb"); //  __mocks__/@aws-sdk/client-dynamodb.ts
+vi.mock("@aws-sdk/client-lambda"); //    __mocks__/@aws-sdk/client-lambda.ts
+vi.mock("@aws-sdk/lib-dynamodb"); //     __mocks__/@aws-sdk/lib-dynamodb.ts
 
 /**
  * This helper fn returns a `message` for the custom matchers below.
