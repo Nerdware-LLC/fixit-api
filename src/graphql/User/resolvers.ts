@@ -5,15 +5,17 @@ import type { Resolvers, Contact } from "@/types";
 
 export const resolvers: Partial<Resolvers> = {
   Query: {
-    user: async (parent, args, { user }) => {
-      const getItemResult = await User.getItem({ id: user.id });
-      if (!getItemResult) throw new GqlInternalServerError("User not found.");
-      return getItemResult;
+    user: async (_parent, _args, { user }) => {
+      const result = await User.getItem({ id: user.id });
+
+      if (!result) throw new GqlInternalServerError("User not found.");
+
+      return result;
     },
-    getUserByHandle: (parent, { handle }) => {
+    getUserByHandle: (_parent, { handle }) => {
       return usersCache.get(handle) ?? null;
     },
-    searchForUsersByHandle: (parent, { handle: handleArg, limit, offset: startIndex }) => {
+    searchForUsersByHandle: (_parent, { handle: handleArg, limit, offset: startIndex }) => {
       limit = Math.max(10, Math.min(limit ?? 10, 50)); // limit must be between 10 and 50
       startIndex = Math.max(0, startIndex ?? 0); // startIndex must be >= 0
 

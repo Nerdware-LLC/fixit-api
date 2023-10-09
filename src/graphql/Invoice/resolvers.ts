@@ -5,27 +5,30 @@ import { stripe } from "@/lib/stripe";
 import { Invoice } from "@/models/Invoice";
 import { GqlUserInputError, GqlForbiddenError } from "@/utils";
 import type { InvoiceItem } from "@/models/Invoice";
-import type { Resolvers, Invoice as GqlInvoice } from "@/types";
+import type { Resolvers } from "@/types";
 import type { FixitApiAuthTokenPayload } from "@/utils";
 
 export const resolvers: Partial<Resolvers> = {
   Query: {
-    invoice: async (parent, { invoiceID }, { user }) => {
-      const [queriedInvoice] = await Invoice.query({
+    invoice: async (_parent, { invoiceID }, { user }) => {
+      const [existingInv] = await Invoice.query({
         where: { id: invoiceID },
         limit: 1,
       });
 
-      if (!queriedInvoice) throw new GqlUserInputError("Invoice not found.");
+      if (!existingInv) {
+        throw new GqlUserInputError("An invoice with the provided ID could not be found.");
+      }
 
       return await formatAsGqlInvoice(existingInv, user);
     },
+    myInvoices: async (_parent, _args, { user }) => {
       // Query for all Invoices created by the authenticated User
       const createdByUserQueryResults = await Invoice.query({
-              where: {
-                createdByUserID: user.id,
-                id: { beginsWith: Invoice.SK_PREFIX },
-              },
+        where: {
+          createdByUserID: user.id,
+          id: { beginsWith: Invoice.SK_PREFIX },
+        },
       });
 
       // Query for all Invoices assigned to the authenticated User
@@ -56,7 +59,7 @@ export const resolvers: Partial<Resolvers> = {
     },
   },
   Mutation: {
-    createInvoice: async (parent, { invoice: invoiceInput }, { user }) => {
+    createInvoice: async (_parent, { invoice: invoiceInput }, { user }) => {
       const createdInvoice = await Invoice.createItem({
         createdByUserID: user.id,
         assignedToUserID: invoiceInput.assignedTo,
@@ -71,23 +74,42 @@ export const resolvers: Partial<Resolvers> = {
 
       return await formatAsGqlInvoice(createdInvoice, user);
     },
-    updateInvoiceAmount: async (parent, { invoiceID, amount }, { user }) => {
+    updateInvoiceAmount: async (_parent, { invoiceID, amount }, { user }) => {
       const [existingInv] = await Invoice.query({ where: { id: invoiceID }, limit: 1 });
 
       verifyUserCanPerformThisUpdate(existingInv, {
-        idOfUserWhoCanPerformThisUpdate: existingInv.createdBy.id,
+        idOfUserWhoCanPerformThisUpdate: existingInv.createdByUserID,
         authenticatedUserID: user.id,
+        forbiddenStatuses: {
+          CLOSED: "The requested invoice has already been closed.",
+          DISPUTED:
+            "The requested invoice has been disputed and cannot be updated at this time. " +
+            "Please contact the invoice's recipient for details and further assistance.",
+        },
       });
+
+      const updatedInvoice = await Invoice.updateItem(
+        { id: existingInv.id, createdByUserID: existingInv.createdByUserID },
+        {
+          update: { amount },
+        }
+      );
+
+      eventEmitter.emitInvoiceUpdated(updatedInvoice);
 
       return await formatAsGqlInvoice(updatedInvoice, user);
     },
-    payInvoice: async (parent, { invoiceID }, { user }) => {
+    payInvoice: async (_parent, { invoiceID }, { user }) => {
       // IDEA Adding "assigneeUserDefaultPaymentMethodID" to Invoice would reduce queries.
       const [existingInv] = await Invoice.query({ where: { id: invoiceID }, limit: 1 });
 
       verifyUserCanPerformThisUpdate(existingInv, {
-        idOfUserWhoCanPerformThisUpdate: existingInv.assignedTo.id,
+        idOfUserWhoCanPerformThisUpdate: existingInv.assignedToUserID,
         authenticatedUserID: user.id,
+        forbiddenStatuses: {
+          CLOSED: "The requested invoice has already been closed.",
+          DISPUTED: "The requested invoice has been disputed and cannot be paid at this time.",
+        },
       });
 
       // IDEA After default_payment_method is added to db, consider rm'ing this
@@ -112,26 +134,39 @@ export const resolvers: Partial<Resolvers> = {
         },
       });
 
-      const updatedInvoice = await Invoice.updateOne(existingInv, {
-        ...(paymentIntent.status === "succeeded" && { status: "CLOSED" }),
-        stripePaymentIntentID: paymentIntent.id,
-      });
+      const wasInvoiceSuccessfullyPaid = paymentIntent?.status === "succeeded";
+
+      const updatedInvoice = await Invoice.updateItem(
+        { id: existingInv.id, createdByUserID: existingInv.createdByUserID },
+        {
+          update: {
+            stripePaymentIntentID: paymentIntent.id,
+            ...(wasInvoiceSuccessfullyPaid && { status: "CLOSED" }),
+          },
+        }
+      );
+
+      if (wasInvoiceSuccessfullyPaid) eventEmitter.emitInvoicePaid(updatedInvoice);
 
       return await formatAsGqlInvoice(updatedInvoice, user);
     },
-    deleteInvoice: async (parent, { invoiceID }, { user }) => {
+    deleteInvoice: async (_parent, { invoiceID }, { user }) => {
       const [existingInv] = await Invoice.query({
         where: { id: invoiceID },
         limit: 1,
       });
 
       verifyUserCanPerformThisUpdate(existingInv, {
-        idOfUserWhoCanPerformThisUpdate: existingInv.createdBy.id,
+        idOfUserWhoCanPerformThisUpdate: existingInv.createdByUserID,
         authenticatedUserID: user.id,
+        forbiddenStatuses: {
+          CLOSED: "The requested invoice has already been closed.",
+          DISPUTED: "The requested invoice has been disputed and cannot be deleted at this time.",
+        },
       });
 
       const deletedInvoice = await Invoice.deleteItem({
-        createdByUserID: existingInv.createdBy.id,
+        createdByUserID: existingInv.createdByUserID,
         id: existingInv.id,
       });
 

@@ -3,24 +3,32 @@ import { DeleteMutationResponse } from "@/graphql/_common";
 import { verifyUserCanPerformThisUpdate, formatAsGqlFixitUser } from "@/graphql/_helpers";
 import { USER_ID_REGEX } from "@/models/User/regex";
 import { WorkOrder } from "@/models/WorkOrder";
+import { GqlUserInputError } from "@/utils";
 import type { WorkOrderItem } from "@/models/WorkOrder";
+import type { Resolvers } from "@/types";
 import type { FixitApiAuthTokenPayload } from "@/utils";
 
 export const resolvers: Partial<Resolvers> = {
   Query: {
-    workOrder: async (parent, { workOrderID }, { user }) => {
-      const [queriedWO] = await WorkOrder.query({
+    workOrder: async (_parent, { workOrderID }, { user }) => {
+      const [existingWO] = await WorkOrder.query({
         where: { id: workOrderID },
         limit: 1,
       });
+
+      if (!existingWO) {
+        throw new GqlUserInputError("A work order with the provided ID could not be found.");
+      }
+
       return await formatAsGqlWorkOrder(existingWO, user);
     },
+    myWorkOrders: async (_parent, _args, { user }) => {
       // Query for all WorkOrders created by the authenticated User
       const createdByUserQueryResults = await WorkOrder.query({
-              where: {
-                createdByUserID: user.id,
-                id: { beginsWith: WorkOrder.SK_PREFIX },
-              },
+        where: {
+          createdByUserID: user.id,
+          id: { beginsWith: WorkOrder.SK_PREFIX },
+        },
       });
 
       // Query for all WorkOrders assigned to the authenticated User
@@ -53,7 +61,7 @@ export const resolvers: Partial<Resolvers> = {
     },
   },
   Mutation: {
-    createWorkOrder: async (parent, { workOrder: woInput }, { user }) => {
+    createWorkOrder: async (_parent, { workOrder: woInput }, { user }) => {
       const { assignedTo = "UNASSIGNED", ...createWorkOrderInput } = woInput;
 
       const createdWO = await WorkOrder.createItem({
@@ -67,17 +75,17 @@ export const resolvers: Partial<Resolvers> = {
 
       return await formatAsGqlWorkOrder(createdWO, user);
     },
-    updateWorkOrder: async (parent, { workOrderID, workOrder: woInput }, { user }) => {
+    updateWorkOrder: async (_parent, { workOrderID, workOrder: woInput }, { user }) => {
       const [existingWO] = await WorkOrder.query({
         where: { id: workOrderID },
         limit: 1,
       });
 
       verifyUserCanPerformThisUpdate(existingWO, {
-        idOfUserWhoCanPerformThisUpdate: existingWO.createdBy.id,
+        idOfUserWhoCanPerformThisUpdate: existingWO.createdByUserID,
         authenticatedUserID: user.id,
         forbiddenStatuses: {
-          CANCELLED: "This work order has been canceled and can not be updated.",
+          CANCELLED: "The requested work order has been cancelled and cannot be updated.",
         },
       });
 
@@ -101,28 +109,36 @@ export const resolvers: Partial<Resolvers> = {
           ? "ASSIGNED"
           : existingWO.status;
 
+      // TODO Test - is this necessary? (maybe, 'location' is a required field, but why do it like this?)
       const { location, ...woFieldsToUpdate } = woInput;
 
-      const updatedWO = await WorkOrder.updateOne(existingWO, {
-        ...woFieldsToUpdate,
-        ...(!!location && { location }),
-        status: upToDateStatus,
-      });
+      const updatedWO = await WorkOrder.updateItem(
+        { id: existingWO.id, createdByUserID: existingWO.createdByUserID },
+        {
+          update: {
+            ...woFieldsToUpdate,
+            ...(!!location && { location }),
+            status: upToDateStatus,
+          },
+        }
+      );
+
+      eventEmitter.emitWorkOrderUpdated(updatedWO, existingWO);
 
       return await formatAsGqlWorkOrder(updatedWO, user);
     },
-    cancelWorkOrder: async (parent, { workOrderID }, { user }) => {
+    cancelWorkOrder: async (_parent, { workOrderID }, { user }) => {
       const [existingWO] = await WorkOrder.query({
         where: { id: workOrderID },
         limit: 1,
       });
 
       verifyUserCanPerformThisUpdate(existingWO, {
-        idOfUserWhoCanPerformThisUpdate: existingWO.createdBy.id,
+        idOfUserWhoCanPerformThisUpdate: existingWO.createdByUserID,
         authenticatedUserID: user.id,
         forbiddenStatuses: {
-          CANCELLED: "This work order has already been cancelled.",
-          COMPLETE: "Sorry, this work order has already been completed and cannot be canceled.",
+          CANCELLED: "The requested work order has already been cancelled.",
+          COMPLETE: "The requested work order has already been completed and cannot be cancelled.",
         },
       });
 
@@ -133,26 +149,46 @@ export const resolvers: Partial<Resolvers> = {
         await WorkOrder.deleteItem({ createdByUserID: user.id, id: workOrderID });
         return new DeleteMutationResponse({ id: workOrderID, wasDeleted: true });
       } else {
+        const canceledWO = await WorkOrder.updateItem(
+          { id: existingWO.id, createdByUserID: existingWO.createdByUserID },
+          {
+            update: {
+              status: "CANCELLED",
+            },
+          }
+        );
+
+        eventEmitter.emitWorkOrderCancelled(canceledWO);
+
         return await formatAsGqlWorkOrder(canceledWO, user);
       }
     },
-    setWorkOrderStatusComplete: async (parent, { workOrderID }, { user }) => {
+    setWorkOrderStatusComplete: async (_parent, { workOrderID }, { user }) => {
       const [existingWO] = await WorkOrder.query({
         where: { id: workOrderID },
         limit: 1,
       });
 
       verifyUserCanPerformThisUpdate(existingWO, {
-        idOfUserWhoCanPerformThisUpdate: existingWO?.assignedTo?.id ?? "",
+        idOfUserWhoCanPerformThisUpdate: existingWO?.assignedToUserID ?? "",
         authenticatedUserID: user.id,
         forbiddenStatuses: {
-          UNASSIGNED: "Sorry, only the work order's assignee may perform this update.",
-          CANCELLED: "Sorry, this work order was cancelled and cannot be marked as complete.",
-          COMPLETE: "This work order is already marked as complete.",
+          UNASSIGNED: "Only the work order's assignee may perform this update.",
+          CANCELLED: "The requested work order has been cancelled and cannot be marked complete.",
+          COMPLETE: "The requested work order has already been marked complete.",
         },
       });
 
-      const updatedWO = await WorkOrder.updateOne(existingWO, { status: "COMPLETE" });
+      const updatedWO = await WorkOrder.updateItem(
+        { id: existingWO.id, createdByUserID: existingWO.createdByUserID },
+        {
+          update: {
+            status: "COMPLETE",
+          },
+        }
+      );
+
+      eventEmitter.emitWorkOrderCompleted(updatedWO);
 
       return await formatAsGqlWorkOrder(updatedWO, user);
     },

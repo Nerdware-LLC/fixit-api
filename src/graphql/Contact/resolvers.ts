@@ -1,32 +1,33 @@
 import { DeleteMutationResponse } from "@/graphql/_common";
 import { usersCache } from "@/lib/cache";
-import { Contact, type ContactModelItem } from "@/models/Contact";
+import { Contact, type ContactItem } from "@/models/Contact";
 import { User } from "@/models/User";
 import { GqlUserInputError } from "@/utils/httpErrors";
 import type { Resolvers, Contact as GqlContact } from "@/types";
 
 export const resolvers: Partial<Resolvers> = {
   Query: {
-    contact: async (parent, { contactID }, { user }) => {
-      const queriedContact = await Contact.getItem({ userID: user.id, id: contactID });
-      return convertContactModelItemToGqlContact(queriedContact);
+    contact: async (_parent, { contactID }, { user }) => {
+      const existingContact = await Contact.getItem({ userID: user.id, id: contactID });
+      return formatAsGqlContact(existingContact);
     },
-    myContacts: async (parent, args, { user }) => {
-      return (
-        await Contact.query({
-          where: {
-            userID: user.id,
-            id: { beginsWith: Contact.SK_PREFIX },
-          },
-        })
-      ).map((queriedContact) => convertContactModelItemToGqlContact(queriedContact));
+    myContacts: async (_parent, _args, { user }) => {
+      const contacts = await Contact.query({
+        where: {
+          userID: user.id,
+          id: { beginsWith: Contact.SK_PREFIX },
+        },
+      });
+
+      return contacts.map((contact) => formatAsGqlContact(contact));
     },
   },
   Mutation: {
-    createContact: async (parent, { contactUserID }, { user }) => {
+    createContact: async (_parent, { contactUserID }, { user }) => {
       // First, ensure the user hasn't somehow sent their own ID
-      if (`${contactUserID}`.toUpperCase() === user.id.toUpperCase())
+      if (`${contactUserID}`.toUpperCase() === user.id.toUpperCase()) {
         throw new GqlUserInputError("Can not add yourself as a contact");
+      }
 
       const requestedUser = await User.getItem({ id: contactUserID });
 
@@ -49,7 +50,7 @@ export const resolvers: Partial<Resolvers> = {
         updatedAt: newContact.updatedAt,
       };
     },
-    deleteContact: async (parent, { contactID }, { user }) => {
+    deleteContact: async (_parent, { contactID }, { user }) => {
       // Test to ensure `contactID` is a valid contact ID
       if (!Contact.isValidID(contactID)) throw new GqlUserInputError("Invalid contact ID.");
 
@@ -61,10 +62,10 @@ export const resolvers: Partial<Resolvers> = {
 };
 
 /**
- * Converts an `ContactModelItem` to a `GqlContact`. If the `ContactModelItem`
+ * Converts an `ContactItem` to a `GqlContact`. If the `ContactItem`
  * is not found in the `usersCache`, a `GqlUserInputError` is thrown.
  */
-const convertContactModelItemToGqlContact = (
+const formatAsGqlContact = (
   contact?: Partial<ContactItem>,
   invalidContactErrMsg: string = "Contact not found."
 ): GqlContact => {
@@ -74,8 +75,9 @@ const convertContactModelItemToGqlContact = (
     !contact?.updatedAt ||
     !contact?.handle ||
     !usersCache.has(contact.handle)
-  )
+  ) {
     throw new GqlUserInputError(invalidContactErrMsg);
+  }
 
   const { email, phone, profile } = usersCache.get(contact.handle) as GqlContact;
 

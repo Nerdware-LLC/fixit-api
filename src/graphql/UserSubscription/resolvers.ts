@@ -4,7 +4,7 @@ import type { Resolvers } from "@/types";
 
 export const resolvers: Partial<Resolvers> = {
   Query: {
-    mySubscription: async (parent, args, { user }) => {
+    mySubscription: async (_parent, _args, { user }) => {
       /*
           Although unlikely, it is possible for users to have multiple subs.
           To guard against these edge cases, this query returns the most recently
