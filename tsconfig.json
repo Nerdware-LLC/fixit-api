@@ -2,7 +2,6 @@
   "include": ["src/**/*", "__mocks__/**/*"],
 
   "ts-node": {
-    "files": true,
     "esm": true,
     "swc": true,
     "experimentalSpecifierResolution": "node",
