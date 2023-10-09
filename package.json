@@ -25,7 +25,6 @@
     "start:dist": "API_COMMAND='node ./dist/index.js' docker compose up",
     "build": "rm -rf ./dist 2>/dev/null && swc src --out-dir dist",
     "test": "vitest run",
-    "test:ui": "vitest --ui",
     "test:ci": "vitest run --coverage --bail=1 --silent",
     "gql:update-schema-and-types": "npm run gql:fetch-current-schema && npm run gql:codegen",
     "gql:fetch-current-schema": "rover graph fetch fixit@current > fixit@current.graphql",
