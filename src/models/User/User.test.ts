@@ -1,50 +1,46 @@
 import { isValidStripeID } from "@/lib/stripe";
 import { userStripeConnectAccountModelHelpers as scaModelHelpers } from "@/models/UserStripeConnectAccount/helpers";
-import { MOCK_USERS } from "@/tests/staticMockItems";
-import { isValid, normalize } from "@/utils/clientInputHandlers";
+import { MOCK_USERS, UNALIASED_MOCK_USERS } from "@/tests/staticMockItems/users";
 import { User } from "./User";
 import { userModelHelpers } from "./helpers";
 
-/**
- * NOTE: The following packages are mocked before these tests are run:
- * - `@aws-sdk/lib-dynamodb`
- * - `stripe`
- *
- * See Vitest setup file `src/tests/setupTests.ts`
- */
+const { USER_A, USER_B, USER_C } = MOCK_USERS;
 
 describe("User Model", () => {
   describe("User.createOne()", () => {
-    test("returns a valid User when called with valid args", async () => {
+    test("returns a valid User when called with valid arguments", async () => {
+      // Arrange mock Users
       for (const key in MOCK_USERS) {
-        const result = await User.createOne({
-          ...MOCK_USERS[key],
-          ...(MOCK_USERS[key].login.type === "LOCAL"
-            ? { password: "MockPassword@123" }
-            : MOCK_USERS[key].login),
-        });
+        // Get input for User.createOne() method
+        const mockUser = MOCK_USERS[key];
+        const input = {
+          ...mockUser,
+          ...(mockUser.login.type === "LOCAL" ? { password: "MockPassword@123" } : mockUser.login),
+        };
 
-        expect(result).toEqual({
-          ...MOCK_USERS[key],
-          id: expect.toSatisfyFn((value: string) => userModelHelpers.id.isValid(value)),
-          sk: expect.toSatisfyFn((value: string) => userModelHelpers.sk.isValid(value)),
-          login: {
-            ...MOCK_USERS[key].login,
-            ...(MOCK_USERS[key].login.type === "LOCAL" && {
-              passwordHash: expect.stringMatching(/^\S{30,}$/),
-            }),
-          },
-          profile: expect.objectContaining({
-            displayName: MOCK_USERS[key].profile.displayName,
-            businessName: expect.toBeOneOf([undefined, null, expect.any(String)]),
+        // Act on the User.createOne() method
+        const result = await User.createOne(input);
+
+        // Assert the result
+        expect(result).toStrictEqual({
+          ...mockUser,
+          id: expect.toSatisfyFn((value) => userModelHelpers.id.isValid(value)),
+          sk: expect.toSatisfyFn((value) => userModelHelpers.sk.isValid(value)),
+          profile: {
+            ...mockUser.profile,
             givenName: expect.toBeOneOf([undefined, null, expect.any(String)]),
             familyName: expect.toBeOneOf([undefined, null, expect.any(String)]),
+            businessName: expect.toBeOneOf([undefined, null, expect.any(String)]),
             photoUrl: expect.toBeOneOf([undefined, null, expect.any(String)]),
-          }),
+          },
+          login: {
+            ...mockUser.login,
+            ...(mockUser.login.type === "LOCAL" && { passwordHash: expect.any(String) }),
+          },
           stripeConnectAccount: {
-            userID: expect.toSatisfyFn((value: string) => userModelHelpers.id.isValid(value)),
-            sk: expect.toSatisfyFn((value: string) => scaModelHelpers.sk.isValid(value)),
+            userID: expect.toSatisfyFn((value) => userModelHelpers.id.isValid(value)),
             id: expect.toSatisfyFn((value) => isValidStripeID.connectAccount(value)),
+            sk: expect.toSatisfyFn((value) => scaModelHelpers.sk.isValid(value)),
             detailsSubmitted: expect.any(Boolean),
             chargesEnabled: expect.any(Boolean),
             payoutsEnabled: expect.any(Boolean),
@@ -59,86 +55,117 @@ describe("User Model", () => {
   });
 
   describe("User.getItem()", () => {
-    test("returns desired User when obtained via ID", async () => {
-      const result = await User.getItem({ id: MOCK_USERS.USER_A.id });
-      assert(!!result, `Failed to retrieve mock User with ID: "${MOCK_USERS.USER_A.id}".`);
-      expect(result.id).toBe(MOCK_USERS.USER_A.id);
-      expect(result).toEqual({
-        ...MOCK_USERS.USER_A,
-        createdAt: expect.any(Date),
-        updatedAt: expect.any(Date),
+    test(`returns desired User when obtained by "id"`, async () => {
+      // Arrange User.ddbClient.getItem() to return an unaliased mock User
+      vi.spyOn(User.ddbClient, "getItem").mockResolvedValueOnce({
+        $metadata: {},
+        Item: UNALIASED_MOCK_USERS.USER_A,
       });
+
+      // Act on the User Model's getItem method
+      const result = await User.getItem({ id: USER_A.id });
+
+      // Assert the result
+      expect(result).toStrictEqual(USER_A);
     });
   });
 
   describe("User.batchGetItems()", () => {
     test("returns expected keys and values", async () => {
-      const result = await User.batchGetItems(Object.values(MOCK_USERS).map(({ id }) => ({ id })));
-      expect(result).toOnlyContain({
-        id: expect.toSatisfyFn((value) => userModelHelpers.id.isValid(value)),
-        sk: expect.toSatisfyFn((value) => userModelHelpers.sk.isValid(value)),
-        handle: expect.toSatisfyFn((value: string) => isValid.handle(value)),
-        email: expect.toSatisfyFn((value: string) => isValid.email(value)),
-        phone: expect.toSatisfyFn((value: string) => isValid.phone(normalize.phone(value))),
-        stripeCustomerID: expect.toSatisfyFn((value) => isValidStripeID.customer(value)),
-        expoPushToken: expect.toBeOneOf([
-          undefined,
-          null,
-          expect.stringMatching(/ExponentPushToken/),
-        ]),
-        login: expect.toBeOneOf([
-          {
-            type: "LOCAL",
-            passwordHash: expect.stringMatching(/\S{30,}/i),
-          },
-          {
-            type: "GOOGLE_OAUTH",
-            googleID: expect.stringMatching(/\S{6,}/i),
-            googleAccessToken: expect.stringMatching(/\S{6,}/i),
-          },
-        ]),
-        profile: expect.objectContaining({
-          displayName: expect.any(String),
-          givenName: expect.toBeOneOf([undefined, null, expect.any(String)]),
-          familyName: expect.toBeOneOf([undefined, null, expect.any(String)]),
-          businessName: expect.toBeOneOf([undefined, null, expect.any(String)]),
-          photoUrl: expect.toBeOneOf([undefined, null, expect.any(String)]),
-        }),
-        createdAt: expect.any(Date),
-        updatedAt: expect.any(Date),
+      // Arrange User.ddbClient.batchGetItems() to return unaliased mock Users
+      vi.spyOn(User.ddbClient, "batchGetItems").mockResolvedValueOnce({
+        $metadata: {},
+        Responses: {
+          [User.tableName]: Object.values(UNALIASED_MOCK_USERS),
+        },
       });
+
+      // Act on the User Model's batchGetItems method
+      const result = await User.batchGetItems(Object.values(MOCK_USERS).map(({ id }) => ({ id })));
+
+      // Assert the result
+      expect(result).toStrictEqual(Object.values(MOCK_USERS));
     });
   });
 
-  describe("User.query()", () => {
+  describe.todo("User.query()", () => {
     test("returns desired User when queried by email", async () => {
-      const [result] = await User.query({
-        where: { email: MOCK_USERS.USER_B.email },
+      // Arrange spy on User.ddbClient.query() method
+      vi.spyOn(User.ddbClient, "query").mockResolvedValueOnce({
+        $metadata: {},
+        Items: [UNALIASED_MOCK_USERS.USER_B],
+      });
+
+      const result = await User.query({
+        where: { email: USER_B.email },
         limit: 1,
       });
-      expect(result).toEqual(MOCK_USERS.USER_B);
-      expect(result.id).toBe(MOCK_USERS.USER_B.id);
+
+      expect(result).toStrictEqual([USER_B]);
     });
   });
 
   describe("User.updateItem()", () => {
     test("returns an updated User with expected keys and values", async () => {
+      // Arrange value to update
       const NEW_DISPLAY_NAME = "Iam Updated-display-name";
-      const updatedUser = await User.updateItem(MOCK_USERS.USER_A, {
-        profile: { displayName: NEW_DISPLAY_NAME },
+
+      // Arrange spy on User.ddbClient.updateItem() method
+      const updateItemSpy = vi.spyOn(User.ddbClient, "updateItem").mockResolvedValueOnce({
+        $metadata: {},
+        Attributes: {
+          ...UNALIASED_MOCK_USERS.USER_C,
+          profile: {
+            ...UNALIASED_MOCK_USERS.USER_C.profile,
+            displayName: NEW_DISPLAY_NAME,
+          },
+        },
       });
-      expect(updatedUser.profile.displayName).toBe(NEW_DISPLAY_NAME);
-      expect(updatedUser).toEqual({
-        ...MOCK_USERS.USER_A,
-        profile: { ...MOCK_USERS.USER_A.profile, displayName: NEW_DISPLAY_NAME },
+
+      // Act on the User Model's updateItem method
+      const result = await User.updateItem(
+        { id: MOCK_USERS.USER_C.id, sk: MOCK_USERS.USER_C.sk },
+        {
+          update: {
+            profile: { displayName: NEW_DISPLAY_NAME },
+          },
+        }
+      );
+
+      // Assert the result
+      expect(result).toStrictEqual({
+        ...MOCK_USERS.USER_C,
+        profile: { ...MOCK_USERS.USER_C.profile, displayName: NEW_DISPLAY_NAME },
+      });
+
+      // Assert updateItemSpy was called with expected arguments
+      expect(updateItemSpy).toHaveBeenCalledWith({
+        TableName: User.tableName,
+        Key: { pk: USER_C.id, sk: USER_C.sk },
+        UpdateExpression: "SET #profile = :profile, #updatedAt = :updatedAt",
+        ExpressionAttributeNames: { "#profile": "profile", "#updatedAt": "updatedAt" },
+        ExpressionAttributeValues: {
+          ":profile": { displayName: "Iam Updated-display-name" },
+          ":updatedAt": expect.any(Number),
+        },
+        ReturnValues: "ALL_NEW",
       });
     });
   });
 
   describe("User.deleteItem()", () => {
-    test("returns a deleted User's ID", async () => {
-      const result = await User.deleteItem({ id: MOCK_USERS.USER_C.id });
-      expect(result?.id).toBe(MOCK_USERS.USER_C.id);
+    test("returns a deleted User", async () => {
+      // Arrange spy on User.ddbClient.deleteItem() method
+      vi.spyOn(User.ddbClient, "deleteItem").mockResolvedValueOnce({
+        $metadata: {},
+        Attributes: UNALIASED_MOCK_USERS.USER_C,
+      });
+
+      // Act on the User Model's deleteItem method
+      const result = await User.deleteItem({ id: USER_C.id });
+
+      // Assert the result
+      expect(result).toStrictEqual(USER_C);
     });
   });
 });

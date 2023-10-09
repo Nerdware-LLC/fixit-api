@@ -21,8 +21,10 @@ describe("Location Model", () => {
         city,
         streetLine1,
         streetLine2: "", // <-- empty strings should yield null
-        // country         <-- optional fields should yield null
+        // country          <-- optional fields should yield null
       });
+
+      // toStrictEqual not used because 'strict' also asserts the prototype, not just the shape.
       expect(location).toEqual({
         ...TEST_LOCATION,
         country: null,
@@ -50,7 +52,7 @@ describe("Location Model", () => {
       });
       const result1 = Location.convertToCompoundString(location1);
       const result2 = Location.convertToCompoundString(location2);
-      expect(result1).toEqual(TEST_LOCATION_COMPOUND_STRING);
+      expect(result1).toStrictEqual(TEST_LOCATION_COMPOUND_STRING);
       expect(result2).toBe("USA#California#San_Francisco#456_Foo_Blvd.");
     });
   });
@@ -58,7 +60,7 @@ describe("Location Model", () => {
   describe("Location.parseCompoundString()", () => {
     test("returns expected Location object when called with a compound string", () => {
       const result = Location.parseCompoundString(TEST_LOCATION_COMPOUND_STRING);
-      expect(result).toEqual(TEST_LOCATION);
+      expect(result).toStrictEqual(TEST_LOCATION);
     });
 
     test("throws an error when parsing an invalid compound string into a Location object", () => {
