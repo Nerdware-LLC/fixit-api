@@ -1,4 +1,4 @@
-import type { Primitive } from "type-fest";
+import type { Primitive, Simplify } from "type-fest";
 import type {
   // gql-codegen types:
   Invoice,
@@ -35,17 +35,17 @@ type UnwrapMaybeValue<T> = T extends Maybe<infer Value>
  * - Input: `{ foo?: Maybe<string> | undefined }`
  * - Output: `{ foo?: string | undefined }`
  */
-export type NonNullableGqlType<T extends Record<string, unknown>> = {
-  [Key in keyof T]: RecursiveNonNullable<T[Key]>;
-};
+export type NonNullableGqlType<T extends Record<string, unknown>> = Simplify<{
+  [Key in keyof T]: Exclude<RecursiveNonNullable<T[Key]>, null | undefined>;
+}>;
 
 type RecursiveNonNullable<T> = T extends Primitive | Date
-  ? Exclude<T, null>
+  ? Exclude<T, null | undefined>
   : T extends Record<string, any>
-  ? Exclude<{ [Key in keyof T]: RecursiveNonNullable<T[Key]> }, null>
+  ? Exclude<NonNullableGqlType<T>, null | undefined>
   : T extends Array<infer Element>
-  ? Exclude<Array<RecursiveNonNullable<Element>>, null>
-  : Exclude<T, null>;
+  ? Exclude<Array<RecursiveNonNullable<Element>>, null | undefined>
+  : Exclude<T, null | undefined>;
 
 export type NonNullableInvoice = NonNullableGqlType<Invoice>;
 export type NonNullableProfile = NonNullableGqlType<Profile>;
