@@ -43,6 +43,8 @@ export default [
       eqeqeq: ["error", "always"],
       "no-console": "warn",
       "no-dupe-class-members": "off", // used instead: @typescript-eslint/no-dupe-class-members
+      "no-redeclare": "off", //          used instead: @typescript-eslint/no-redeclare
+      "no-unused-vars": "off", //        used instead: @typescript-eslint/no-unused-vars
       "prefer-const": "warn",
       semi: ["error", "always"],
       "import/no-unresolved": "error",
