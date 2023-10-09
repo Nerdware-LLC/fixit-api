@@ -16,7 +16,7 @@
 # STAGE: base
 
 # Source image: NodeJS v18 LTS (https://hub.docker.com/_/node)
-FROM node:18.17.1 as base
+FROM node:18.18.0 as base
 
 # Expose desired port
 EXPOSE 80
