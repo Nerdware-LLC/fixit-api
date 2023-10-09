@@ -5,7 +5,7 @@ declare global {
     /**
      * process.env fields read by the src/server/env module. These env vars are
      * often not provided in test and CI environments, and are therefore optional
-     * on the `process.env` object.
+     * (with the exception of NODE_ENV, which should always be defined).
      */
     interface ProcessEnv {
       NODE_ENV: "development" | "test" | "ci" | "staging" | "production";
@@ -29,5 +29,10 @@ declare global {
       FIXIT_SUB_PRICES_JSON?: string;
       FIXIT_SUB_PROMO_CODES_JSON?: string;
     }
+  }
+
+  // This declaration causes JSON.parse to return `unknown` instead of `any`.
+  interface JSON {
+    parse(text: string, reviver?: (this: any, key: string, value: unknown) => unknown): unknown;
   }
 }
