@@ -13,31 +13,56 @@ on:
 jobs:
   test:
     name: Run Tests
-    uses: Nerdware-LLC/reusable-action-workflows/.github/workflows/node_test.yaml@main
-    with:
-      node-version: "18.17.1"
-      test-script: "test:ci"
-    secrets:
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
-  update_pr:
-    name: Update PR with Coverage Reports
-    needs: test # only run on PRs
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
-      contents: read #       required to checkout the code
-      pull-requests: write # required to put a comment in the PR
+      contents: read #       to checkout the code
+      pull-requests: write # to add coverage reports to the PR
     steps:
-      - name: Download Artifact "coverage-reports"
-        uses: actions/download-artifact@v3
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          name: coverage-reports
-      - name: Add Coverage Report to PR
+          node-version-file: ".nvmrc"
+
+      - name: Run Tests
+        id: run-tests
+        run: |
+          npm ci --include=dev
+          npm run test:ci
+
+      - name: Update GitHub Commit Status
+        if: ${{ !cancelled() }}
+        run: |
+          if [ ${{ steps.run-tests.outcome }} == 'success' ]; then
+            commit_status_state='success'
+            description='Tests passed'
+          else
+            commit_status_state='failure'
+            description='Tests failed'
+          fi
+
+          curl --request POST \
+            --url https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }} \
+            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+            --header 'content-type: application/json' \
+            --data "{
+              \"context\": \"tests\",
+              \"state\": \"$commit_status_state\",
+              \"description\": \"$description\",
+              \"target_url\": \"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
+            }"
+
+      - name: Update CodeCov
+        if: success()
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Update PR with Coverage Reports
+        if: github.event_name == 'pull_request'
         uses: davelosert/vitest-coverage-report-action@v2
 
   release:
-    name: Release (push-only)
+    name: Release if Tests Passed (push-only)
     needs: test # only run on push events when tests pass
     if: github.event_name == 'push' && needs.test.result == 'success'
     uses: ./.github/workflows/release.yaml
