@@ -23,7 +23,8 @@
   "scripts": {
     "start": "docker compose up",
     "start:dist": "API_COMMAND='node ./dist/index.js' docker compose up",
-    "build": "rm -rf ./dist 2>/dev/null && swc src --out-dir dist",
+    "prebuild": "[ -d dist ] && rm -rf dist || true",
+    "build": "swc src --out-dir dist",
     "test": "vitest run",
     "test:ci": "vitest run --coverage --bail=1 --silent",
     "test:types": "tsc --project tsconfig.json --noEmit --skipLibCheck",
