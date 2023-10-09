@@ -1,12 +1,12 @@
 import { contactModelHelpers } from "@/models/Contact/helpers";
 import { MOCK_DATES } from "./dates";
 import { MOCK_USERS } from "./users";
-import type { ContactModelItem, UnaliasedContactModelItem } from "@/models/Contact";
+import type { ContactItem, UnaliasedContactItem } from "@/models/Contact";
 import type { MocksCollection } from "./_types";
 
 const { USER_A, USER_B, USER_C } = MOCK_USERS;
 
-export const MOCK_CONTACTS: MocksCollection<"Contact", ContactModelItem> = {
+export const MOCK_CONTACTS: MocksCollection<"Contact", ContactItem> = {
   /** USER_A contact-connection with USER_B */
   CONTACT_A: {
     id: contactModelHelpers.id.format(USER_B.id),
@@ -47,4 +47,4 @@ export const UNALIASED_MOCK_CONTACTS = Object.fromEntries(
       ...contact,
     },
   ])
-) as MocksCollection<"Contact", UnaliasedContactModelItem>;
+) as MocksCollection<"Contact", UnaliasedContactItem>;

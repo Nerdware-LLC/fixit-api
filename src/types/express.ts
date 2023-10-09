@@ -1,7 +1,5 @@
-import type { InvoiceModelItem } from "@/models/Invoice";
-import type { UserModelItem } from "@/models/User";
-import type { UserSubscriptionModelItem } from "@/models/UserSubscription";
-import type { WorkOrderModelItem } from "@/models/WorkOrder";
+import type { UserItem } from "@/models/User";
+import type { UserSubscriptionItem } from "@/models/UserSubscription";
 import type { WorkOrder, Invoice, Contact } from "@/types";
 import type { FixitApiAuthTokenPayload } from "@/utils/AuthToken";
 import type { OverrideProperties, SetOptional } from "type-fest";
@@ -13,9 +11,11 @@ import type { OverrideProperties, SetOptional } from "type-fest";
  */
 export type PreFetchedUserQueryItems = {
   workOrders?: Array<
-    OverrideProperties<WorkOrder, Pick<WorkOrderModelItem, "createdBy" | "assignedTo">>
+    OverrideProperties<WorkOrder, { createdBy: { id: string }; assignedTo: { id: string } | null }>
   >;
-  invoices?: Array<OverrideProperties<Invoice, Pick<InvoiceModelItem, "createdBy" | "assignedTo">>>;
+  invoices?: Array<
+    OverrideProperties<Invoice, { createdBy: { id: string }; assignedTo: { id: string } }>
+  >;
   contacts?: Array<Contact>;
 };
 
@@ -28,12 +28,12 @@ export type FixitRESTRequestFlowProperties = {
   /**
    * A User object from the database.
    */
-  _user?: UserModelItem;
+  _user?: UserItem;
 
   /**
    * A UserSubscription object from the database (e.g., for sub-updating mw).
    */
-  _userSubscription?: UserSubscriptionModelItem;
+  _userSubscription?: UserSubscriptionItem;
 
   /**
    * An AuthToken payload object from an authenticated request's auth token.

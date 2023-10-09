@@ -1,5 +1,5 @@
 import { UserSubscription } from "@/models/UserSubscription";
-import type { UserSubscriptionModelItem } from "@/models/UserSubscription";
+import type { UserSubscriptionItem } from "@/models/UserSubscription";
 import type { Resolvers } from "@/types";
 
 export const resolvers: Partial<Resolvers> = {
@@ -43,15 +43,15 @@ export const resolvers: Partial<Resolvers> = {
 // Below: quick utils for making above boolean expressions a little easier to read
 
 const wasCreatedEarlier = (
-  { createdAt: createdAt_1 }: UserSubscriptionModelItem,
-  { createdAt: createdAt_2 }: UserSubscriptionModelItem
+  { createdAt: createdAt_1 }: UserSubscriptionItem,
+  { createdAt: createdAt_2 }: UserSubscriptionItem
 ) => {
   return createdAt_1 < createdAt_2;
 };
 
 const wasUpdatedLater = (
-  { updatedAt: updatedAt_1 }: UserSubscriptionModelItem,
-  { updatedAt: updatedAt_2 }: UserSubscriptionModelItem
+  { updatedAt: updatedAt_1 }: UserSubscriptionItem,
+  { updatedAt: updatedAt_2 }: UserSubscriptionItem
 ) => {
   return updatedAt_1 > updatedAt_2;
 };

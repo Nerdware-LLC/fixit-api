@@ -4,8 +4,8 @@ import { mockStripeInvoice } from "./_mockStripeInvoice";
 import { mockStripePaymentIntent } from "./_mockStripePaymentIntent";
 import { MOCK_STRIPE_PLAN } from "./_mockStripePlan";
 import { MOCK_STRIPE_PRICE } from "./_mockStripePrice";
-import type { UserModelItem } from "@/models/User";
-import type { UserSubscriptionModelItem } from "@/models/UserSubscription";
+import type { UserItem } from "@/models/User";
+import type { UserSubscriptionItem } from "@/models/UserSubscription";
 import type Stripe from "stripe";
 import type { PartialDeep } from "type-fest";
 
@@ -14,7 +14,7 @@ import type { PartialDeep } from "type-fest";
  * @see https://stripe.com/docs/api/subscriptions/object
  */
 export const mockStripeSubscription = (
-  mockUser: UserModelItem & { subscription: UserSubscriptionModelItem },
+  mockUser: UserItem & { subscription: UserSubscriptionItem },
   {
     default_payment_method,
     ...customValues
@@ -96,6 +96,7 @@ export const mockStripeSubscription = (
     livemode: false,
     metadata: {},
     next_pending_invoice_item_invoice: null,
+    on_behalf_of: null,
     pause_collection: null,
     payment_settings: {
       payment_method_options: null,

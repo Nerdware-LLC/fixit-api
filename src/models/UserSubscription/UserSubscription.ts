@@ -102,8 +102,8 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
 
 export const UserSubscription = new UserSubscriptionModel();
 
-/** The shape of a `UserSubscription` object returned from Model read/write methods. */
-export type UserSubscriptionModelItem = ItemTypeFromSchema<typeof UserSubscriptionModel.schema>;
+/** The shape of a `UserSubscription` object returned from Model methods. */
+export type UserSubscriptionItem = ItemTypeFromSchema<typeof UserSubscriptionModel.schema>;
 
 /** `UserSubscription` item params for `createItem()`. */
 export type UserSubscriptionItemCreationParams = ItemCreationParameters<

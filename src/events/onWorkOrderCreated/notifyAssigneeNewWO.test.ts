@@ -1,13 +1,13 @@
 import { WorkOrderPushNotification } from "@/events/pushNotifications";
 import { lambdaClient } from "@/lib/lambdaClient";
-import { User, type UserModelItem } from "@/models/User";
+import { User, type UserItem } from "@/models/User";
 import { notifyAssigneeNewWO } from "./notifyAssigneeNewWO";
-import type { WorkOrderModelItem } from "@/models/WorkOrder";
+import type { WorkOrderItem } from "@/models/WorkOrder";
 
 describe("notifyAssigneeNewWO", () => {
   test("sends a push notification to the assignee when the assignee has an expoPushToken", async () => {
-    const newWO = { assignedTo: { id: "USER#123" } } as WorkOrderWithAssignee;
-    const assigneeUser = { id: newWO.assignedTo.id, expoPushToken: "token" } as UserModelItem;
+    const newWO = { assignedToUserID: "USER#123" } as WorkOrderWithAssignee;
+    const assigneeUser = { id: newWO.assignedToUserID, expoPushToken: "token" } as UserItem;
     const getItemSpy = vi.spyOn(User, "getItem").mockResolvedValueOnce(assigneeUser);
     const invokeEventSpy = vi.spyOn(lambdaClient, "invokeEvent");
 
@@ -48,8 +48,8 @@ describe("notifyAssigneeNewWO", () => {
   });
 
   test("does not invoke an event if the assigneeUser does not have an expoPushToken", async () => {
-    const newWO = { assignedTo: { id: "USER#123" } } as WorkOrderWithAssignee;
-    const assigneeUser = { id: newWO.assignedTo.id } as UserModelItem;
+    const newWO = { assignedToUserID: "USER#123" } as WorkOrderWithAssignee;
+    const assigneeUser = { id: newWO.assignedToUserID } as UserItem;
     const getItemSpy = vi.spyOn(User, "getItem").mockResolvedValueOnce(assigneeUser);
     const invokeEventSpy = vi.spyOn(lambdaClient, "invokeEvent");
 
@@ -61,4 +61,4 @@ describe("notifyAssigneeNewWO", () => {
   });
 });
 
-type WorkOrderWithAssignee = WorkOrderModelItem & { assignedTo: { id: string } };
+type WorkOrderWithAssignee = WorkOrderItem & { assignedToUserID: string };

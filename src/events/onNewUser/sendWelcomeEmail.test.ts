@@ -1,8 +1,6 @@
 import { lambdaClient } from "@/lib/lambdaClient";
 import { sendWelcomeEmail } from "./sendWelcomeEmail";
-import type { UserModelItem } from "@/models/User";
-
-vi.mock("@aws-sdk/client-lambda"); // <repo_root>/__mocks__/@aws-sdk/client-lambda.ts
+import type { UserItem } from "@/models/User";
 
 describe("sendWelcomeEmail", () => {
   test("invokes lambdaClient with correct arguments when newUser is valid", async () => {
@@ -10,7 +8,7 @@ describe("sendWelcomeEmail", () => {
       id: "USER#123",
       handle: "@test_user",
       email: "test_user@example.com",
-    } as UserModelItem;
+    } as UserItem;
     const invokeEventSpy = vi.spyOn(lambdaClient, "invokeEvent");
 
     const result = await sendWelcomeEmail(newUser);

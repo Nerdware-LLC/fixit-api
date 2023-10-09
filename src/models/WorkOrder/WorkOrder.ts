@@ -19,8 +19,8 @@ import type { OverrideProperties } from "type-fest";
  */
 class WorkOrderModel extends Model<
   typeof WorkOrderModel.schema,
-  WorkOrderModelItem,
-  WorkOrderModelInput
+  WorkOrderItem,
+  WorkOrderItemCreationParams
 > {
   static readonly schema = ddbTable.getModelSchema({
     pk: {
@@ -149,10 +149,10 @@ class WorkOrderModel extends Model<
 
 export const WorkOrder = new WorkOrderModel();
 
-/** The shape of a `WorkOrder` object returned from Model read/write methods. */
-export type WorkOrderModelItem = OverrideProperties<
-  FixitUserFields<ItemTypeFromSchema<typeof WorkOrderModel.schema>, true>,
-  { location: Location }
+/** The shape of a `WorkOrder` object returned from WorkOrderModel methods. */
+export type WorkOrderItem = OverrideProperties<
+  ItemTypeFromSchema<typeof WorkOrderModel.schema>,
+  { assignedToUserID: string | null; location: Location }
 >;
 
 /** `WorkOrder` item params for `createItem()`. */

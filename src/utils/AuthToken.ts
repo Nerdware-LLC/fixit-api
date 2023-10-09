@@ -1,7 +1,7 @@
 import { signAndEncodeJWT, validateAndDecodeJWT } from "./jwt";
-import type { UserModelItem } from "@/models/User";
-import type { UserStripeConnectAccountModelItem } from "@/models/UserStripeConnectAccount";
-import type { UserSubscriptionModelItem } from "@/models/UserSubscription";
+import type { UserItem } from "@/models/User";
+import type { UserStripeConnectAccountItem } from "@/models/UserStripeConnectAccount";
+import type { UserSubscriptionItem } from "@/models/UserSubscription";
 import type { Request } from "express";
 import type jwt from "jsonwebtoken";
 import type { Simplify } from "type-fest";
@@ -91,7 +91,7 @@ export class AuthToken {
    * @returns The stripped payload.
    */
   static stripInternalJwtPayloadFields = <
-    Payload extends Record<string, unknown> = FixitApiAuthTokenPayload
+    Payload extends Record<string, unknown> = FixitApiAuthTokenPayload,
   >(
     payload: Payload
   ) => {
@@ -108,15 +108,15 @@ export class AuthToken {
  */
 export type FixitApiAuthTokenPayload = Simplify<
   Pick<
-    UserModelItem,
+    UserItem,
     "id" | "handle" | "email" | "phone" | "profile" | "stripeCustomerID" | "createdAt" | "updatedAt"
   > & {
     subscription?: Pick<
-      UserSubscriptionModelItem,
+      UserSubscriptionItem,
       "id" | "status" | "currentPeriodEnd" // prettier-ignore
     >;
     stripeConnectAccount: Pick<
-      UserStripeConnectAccountModelItem,
+      UserStripeConnectAccountItem,
       "id" | "detailsSubmitted" | "chargesEnabled" | "payoutsEnabled"
     >;
   }

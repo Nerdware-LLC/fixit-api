@@ -8,12 +8,12 @@ import { WorkOrder } from "@/models/WorkOrder";
 import { skTypeGuards } from "@/models/_common/skTypeGuards";
 import { ddbSingleTable } from "@/models/ddbSingleTable";
 import { logger, AuthError } from "@/utils";
-import type { ContactModelItem } from "@/models/Contact";
-import type { InvoiceModelItem } from "@/models/Invoice";
-import type { UserModelItem } from "@/models/User";
-import type { UserStripeConnectAccountModelItem } from "@/models/UserStripeConnectAccount";
-import type { UserSubscriptionModelItem } from "@/models/UserSubscription";
-import type { WorkOrderModelItem } from "@/models/WorkOrder";
+import type { ContactItem } from "@/models/Contact";
+import type { InvoiceItem } from "@/models/Invoice";
+import type { UserItem } from "@/models/User";
+import type { UserStripeConnectAccountItem } from "@/models/UserStripeConnectAccount";
+import type { UserSubscriptionItem } from "@/models/UserSubscription";
+import type { WorkOrderItem } from "@/models/WorkOrder";
 
 /**
  * This middleware function obtains a User's StripeConnectAccount and Subscription(s).
@@ -61,12 +61,12 @@ export const queryUserItems = mwAsyncCatchWrapper(async (req, res, next) => {
   const { user, subscription, stripeConnectAccount, workOrders, invoices, contacts } = items.reduce(
     (
       accum: {
-        user: UserModelItem | null;
-        subscription: UserSubscriptionModelItem | null;
-        stripeConnectAccount: UserStripeConnectAccountModelItem | null;
-        workOrders: Array<WorkOrderModelItem>;
-        invoices: Array<InvoiceModelItem>;
-        contacts: Array<ContactModelItem>;
+        user: UserItem | null;
+        subscription: UserSubscriptionItem | null;
+        stripeConnectAccount: UserStripeConnectAccountItem | null;
+        workOrders: Array<WorkOrderItem>;
+        invoices: Array<InvoiceItem>;
+        contacts: Array<ContactItem>;
       },
       current
     ) => {

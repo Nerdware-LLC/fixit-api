@@ -3,8 +3,7 @@ import { DeleteMutationResponse } from "@/graphql/_common";
 import { verifyUserCanPerformThisUpdate, getFixitUser } from "@/graphql/_helpers";
 import { USER_ID_REGEX } from "@/models/User/regex";
 import { WorkOrder } from "@/models/WorkOrder";
-import type { WorkOrderModelItem } from "@/models/WorkOrder";
-import type { Resolvers, WorkOrder as GqlWorkOrder } from "@/types";
+import type { WorkOrderItem } from "@/models/WorkOrder";
 import type { FixitApiAuthTokenPayload } from "@/utils";
 
 export const resolvers: Partial<Resolvers> = {
@@ -170,7 +169,7 @@ export const resolvers: Partial<Resolvers> = {
  * This function gets the WorkOrder `createdBy` and `assignedTo` FixitUser fields.
  */
 const getWorkOrderCreatedByAndAssignedTo = async (
-  workOrder: WorkOrderModelItem | GqlWorkOrder,
+  workOrder: WorkOrderItem,
   userAuthToken: FixitApiAuthTokenPayload
 ) => ({
   ...workOrder,

@@ -1,9 +1,9 @@
 import { stripe } from "@/lib/stripe";
 import {
   UserStripeConnectAccount,
-  type UserStripeConnectAccountModelItem,
+  type UserStripeConnectAccountItem,
 } from "@/models/UserStripeConnectAccount";
-import type { UserModelItem } from "@/models/User";
+import type { UserItem } from "@/models/User";
 
 /**
  * This method creates a `UserStripeConnectAccount` item in both the DB and
@@ -20,12 +20,12 @@ export const createOne = async function (
     phone,
     profile,
   }: {
-    userID: UserModelItem["id"];
-    email: UserModelItem["email"];
-    phone: UserModelItem["phone"];
-    profile?: UserModelItem["profile"];
+    userID: UserItem["id"];
+    email: UserItem["email"];
+    phone: UserItem["phone"];
+    profile?: UserItem["profile"];
   }
-): Promise<Required<UserStripeConnectAccountModelItem>> {
+): Promise<Required<UserStripeConnectAccountItem>> {
   // Create Stripe Connect Account via Stripe API
   const {
     id: stripeConnectAccountID,

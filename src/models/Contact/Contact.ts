@@ -51,8 +51,8 @@ class ContactModel extends Model<typeof ContactModel.schema> {
 
 export const Contact = new ContactModel();
 
-/** The shape of a `Contact` object returned from Model read/write methods. */
-export type ContactModelItem = ItemTypeFromSchema<typeof ContactModel.schema>;
+/** The shape of a `Contact` object returned from ContactModel methods. */
+export type ContactItem = ItemTypeFromSchema<typeof ContactModel.schema>;
 
 /** `Contact` item params for `createItem()`. */
 export type ContactItemCreationParams = ItemCreationParameters<typeof ContactModel.schema>;

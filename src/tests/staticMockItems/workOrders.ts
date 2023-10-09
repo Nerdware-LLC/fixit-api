@@ -2,17 +2,17 @@ import { Location } from "@/models/Location";
 import { workOrderModelHelpers as woModelHelpers } from "@/models/WorkOrder/helpers";
 import { MOCK_DATES, MOCK_DATE_v1_UUIDs as UUIDs } from "./dates";
 import { MOCK_USERS } from "./users";
-import type { WorkOrderModelItem, UnaliasedWorkOrderModelItem } from "@/models/WorkOrder";
+import type { WorkOrderItem, UnaliasedWorkOrderItem } from "@/models/WorkOrder";
 import type { MocksCollection } from "./_types";
 
 const { USER_A, USER_B, USER_C } = MOCK_USERS;
 
-export const MOCK_WORK_ORDERS: MocksCollection<"WO", WorkOrderModelItem> = {
+export const MOCK_WORK_ORDERS: MocksCollection<"WO", WorkOrderItem> = {
   /** [MOCK WO] createdBy: `USER_A`, assignedTo: `null`, status: `"UNASSIGNED"` */
   WO_A: {
-    id: woModelHelpers.id.formatWithExistingTimestampUUID(USER_A.id, UUIDs.MAY_1_2020),
-    createdBy: { id: USER_A.id },
-    assignedTo: null,
+    id: woModelHelpers.id.format(USER_A.id, UUIDs.MAY_1_2020),
+    createdByUserID: USER_A.id,
+    assignedToUserID: null,
     status: "UNASSIGNED",
     priority: "LOW",
     location: {
@@ -35,9 +35,9 @@ export const MOCK_WORK_ORDERS: MocksCollection<"WO", WorkOrderModelItem> = {
   },
   /** [MOCK WO] createdBy: `USER_B`, assignedTo: `USER_A`, status: `"ASSIGNED"` */
   WO_B: {
-    id: woModelHelpers.id.formatWithExistingTimestampUUID(USER_B.id, UUIDs.MAY_1_2020),
-    createdBy: { id: USER_B.id },
-    assignedTo: { id: USER_A.id },
+    id: woModelHelpers.id.format(USER_B.id, UUIDs.MAY_1_2020),
+    createdByUserID: USER_B.id,
+    assignedToUserID: USER_A.id,
     status: "ASSIGNED",
     priority: "HIGH",
     location: {
@@ -51,24 +51,24 @@ export const MOCK_WORK_ORDERS: MocksCollection<"WO", WorkOrderModelItem> = {
     description: "Do cool things at the Googleplex",
     checklist: [
       {
-        id: woModelHelpers.checklistItemID.formatWithExistingTimestampUUID(
-          woModelHelpers.id.formatWithExistingTimestampUUID(USER_B.id, UUIDs.MAY_1_2020),
+        id: woModelHelpers.checklistItemID.format(
+          woModelHelpers.id.format(USER_B.id, UUIDs.MAY_1_2020),
           UUIDs.MAY_1_2020
         ),
         description: "Do a cool thing",
         isCompleted: false,
       },
       {
-        id: woModelHelpers.checklistItemID.formatWithExistingTimestampUUID(
-          woModelHelpers.id.formatWithExistingTimestampUUID(USER_B.id, UUIDs.MAY_1_2020),
+        id: woModelHelpers.checklistItemID.format(
+          woModelHelpers.id.format(USER_B.id, UUIDs.MAY_1_2020),
           UUIDs.MAY_2_2020
         ),
         description: "Engineer all the things",
         isCompleted: false,
       },
       {
-        id: woModelHelpers.checklistItemID.formatWithExistingTimestampUUID(
-          woModelHelpers.id.formatWithExistingTimestampUUID(USER_B.id, UUIDs.MAY_1_2020),
+        id: woModelHelpers.checklistItemID.format(
+          woModelHelpers.id.format(USER_B.id, UUIDs.MAY_1_2020),
           UUIDs.MAY_3_2020
         ),
         description: "Pet a doggo",
@@ -85,9 +85,9 @@ export const MOCK_WORK_ORDERS: MocksCollection<"WO", WorkOrderModelItem> = {
   },
   /** [MOCK WO] createdBy: `USER_C`, assignedTo: `USER_A`, status: `"COMPLETE"` */
   WO_C: {
-    id: woModelHelpers.id.formatWithExistingTimestampUUID(USER_C.id, UUIDs.MAY_1_2020),
-    createdBy: { id: USER_C.id },
-    assignedTo: { id: USER_A.id },
+    id: woModelHelpers.id.format(USER_C.id, UUIDs.MAY_1_2020),
+    createdByUserID: USER_C.id,
+    assignedToUserID: USER_A.id,
     status: "COMPLETE",
     priority: "NORMAL",
     location: {
@@ -113,15 +113,15 @@ export const MOCK_WORK_ORDERS: MocksCollection<"WO", WorkOrderModelItem> = {
 /** Unaliased mock WorkOrders for mocking `@aws-sdk/lib-dynamodb` responses. */
 export const UNALIASED_MOCK_WORK_ORDERS = Object.fromEntries(
   Object.entries(MOCK_WORK_ORDERS).map(
-    ([key, { id, createdBy, assignedTo, location, ...workOrder }]) => [
+    ([key, { id, createdByUserID, assignedToUserID, location, ...workOrder }]) => [
       key,
       {
-        pk: createdBy.id,
+        pk: createdByUserID,
         sk: id,
-        data: assignedTo?.id ?? "UNASSIGNED",
+        data: assignedToUserID ?? "UNASSIGNED",
         location: Location.convertToCompoundString(location),
         ...workOrder,
       },
     ]
   )
-) as MocksCollection<"WO", UnaliasedWorkOrderModelItem>;
+) as MocksCollection<"WO", UnaliasedWorkOrderItem>;

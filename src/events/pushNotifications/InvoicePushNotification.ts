@@ -1,5 +1,5 @@
 import { PushNotification, type PushNotificationRecipient } from "./PushNotification";
-import type { InvoiceModelItem } from "@/models/Invoice";
+import type { InvoiceItem } from "@/models/Invoice";
 
 /**
  * Represents a push notification for an Invoice event.
@@ -34,7 +34,7 @@ export class InvoicePushNotification extends PushNotification {
   }: {
     pushEventName: InvoicePushNotificationEventName;
     recipientUser: PushNotificationRecipient;
-    invoice: InvoiceModelItem;
+    invoice: InvoiceItem;
   }) {
     super({
       pushEventName,

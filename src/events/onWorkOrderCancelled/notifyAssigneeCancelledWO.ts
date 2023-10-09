@@ -1,15 +1,15 @@
 import { WorkOrderPushNotification } from "@/events/pushNotifications";
 import { lambdaClient } from "@/lib/lambdaClient";
 import { User } from "@/models/User";
-import type { WorkOrderModelItem } from "@/models/WorkOrder";
+import type { WorkOrderItem } from "@/models/WorkOrder";
 
 /**
  * Notify assignee of cancelled WorkOrder when `WorkOrderCancelled` event is emitted.
  * @event WorkOrderCancelled
- * @param {WorkOrderModelItem} cancelledWO - The cancelled WorkOrder
+ * @param {WorkOrderItem} cancelledWO - The cancelled WorkOrder
  * @category events
  */
-export const notifyAssigneeCancelledWO = async (cancelledWO?: WorkOrderModelItem) => {
+export const notifyAssigneeCancelledWO = async (cancelledWO?: WorkOrderItem) => {
   if (!cancelledWO) return;
 
   // If new WorkOrder was UNASSIGNED, return.

@@ -4,7 +4,7 @@ import { getFixitUser } from "@/graphql/_helpers";
 import { stripe } from "@/lib/stripe";
 import { Invoice } from "@/models/Invoice";
 import { GqlUserInputError, GqlForbiddenError } from "@/utils";
-import type { InvoiceModelItem } from "@/models/Invoice";
+import type { InvoiceItem } from "@/models/Invoice";
 import type { Resolvers, Invoice as GqlInvoice } from "@/types";
 import type { FixitApiAuthTokenPayload } from "@/utils";
 
@@ -146,44 +146,7 @@ export const resolvers: Partial<Resolvers> = {
 };
 
 /**
- * This function performs the following common validation checks for Invoice
- * update-mutations:
- *
- * 1. Ensures the Invoice exists
- * 2. Ensures the authenticated user is allowed to perform the update
- * 3. Ensures the Invoice's `status` is "OPEN"
- */
-const verifyUserCanPerformThisUpdate = (
-  invoice: InvoiceModelItem,
-  {
-    idOfUserWhoCanPerformThisUpdate: allowedID,
-    authenticatedUserID: userID,
-  }: {
-    idOfUserWhoCanPerformThisUpdate: string;
-    authenticatedUserID: string;
-  }
-) => {
-  // Ensure the Invoice exists
-  if (!invoice) throw new GqlUserInputError("Invoice not found.");
-  // Ensure the authenticated user is the creator of the Invoice
-  if (allowedID !== userID) throw new GqlForbiddenError("Access denied.");
-  // Ensure the Invoice's `status` is "OPEN"
-  if (invoice.status !== "OPEN") {
-    throw new GqlForbiddenError(
-      `Sorry, changes cannot be made to ${invoice.status} invoices.${
-        invoice.status === "DISPUTED"
-          ? " Please contact the invoice's recipient for details and further assistance."
-          : ""
-      }`
-    );
-  }
-};
-
-/**
- * This function gets the Invoice `createdBy` and `assignedTo` FixitUser fields.
- */
-const getInvoiceCreatedByAndAssignedTo = async (
-  invoice: InvoiceModelItem | GqlInvoice,
+  invoice: InvoiceItem,
   userAuthToken: FixitApiAuthTokenPayload
 ) => ({
   ...invoice,

@@ -2,14 +2,14 @@ import { userSubscriptionModelHelpers as subModelHelpers } from "@/models/UserSu
 import { MOCK_DATES } from "./dates";
 import { MOCK_USERS } from "./users";
 import type {
-  UserSubscriptionModelItem,
-  UnaliasedUserSubscriptionModelItem,
+  UserSubscriptionItem,
+  UnaliasedUserSubscriptionItem,
 } from "@/models/UserSubscription";
 import type { MocksCollection } from "./_types";
 
 const { USER_A, USER_B, USER_C } = MOCK_USERS;
 
-export const MOCK_USER_SUBS: MocksCollection<"Sub", UserSubscriptionModelItem> = {
+export const MOCK_USER_SUBS: MocksCollection<"Sub", UserSubscriptionItem> = {
   /** Mock UserSubscription for `USER_A` */
   SUB_A: {
     userID: USER_A.id,
@@ -58,4 +58,4 @@ export const UNALIASED_MOCK_USER_SUBS = Object.fromEntries(
       ...subscription,
     },
   ])
-) as MocksCollection<"Sub", UnaliasedUserSubscriptionModelItem>;
+) as MocksCollection<"Sub", UnaliasedUserSubscriptionItem>;

@@ -1,13 +1,13 @@
 import { lambdaClient } from "@/lib/lambdaClient";
-import type { UserModelItem } from "@/models/User";
+import type { UserItem } from "@/models/User";
 
 /**
  * Send welcome email to new User when `NewUser` event is emitted.
  * @event NewUser
- * @param {UserModelItem} newUser - The new User
+ * @param {UserItem} newUser - The new User
  * @category events
  */
-export const sendWelcomeEmail = async (newUser?: UserModelItem) => {
+export const sendWelcomeEmail = async (newUser?: UserItem) => {
   if (!newUser) return;
 
   await lambdaClient.invokeEvent("SendWelcomeEmail", {

@@ -1,5 +1,5 @@
 import { ENV } from "@/server/env";
-import type { UserModelItem } from "@/models/User";
+import type { UserItem } from "@/models/User";
 
 /**
  * Represents a push notification.
@@ -54,6 +54,6 @@ export class PushNotification {
 /**
  * User-fields which define the {@link PushNotification} recipient.
  */
-export type PushNotificationRecipient = Pick<UserModelItem, "id" | "expoPushToken"> & {
+export type PushNotificationRecipient = Pick<UserItem, "id" | "expoPushToken"> & {
   [key: string]: any;
 };

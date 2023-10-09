@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import merge from "lodash.merge";
-import type { UserModelItem } from "@/models/User";
-import type { UserStripeConnectAccountModelItem } from "@/models/UserStripeConnectAccount";
+import type { UserItem } from "@/models/User";
+import type { UserStripeConnectAccountItem } from "@/models/UserStripeConnectAccount";
 import type Stripe from "stripe";
 import type { PartialDeep } from "type-fest";
 
@@ -21,8 +21,7 @@ export const mockStripeConnectAccount = (
     email = "mock_user_email@gmail.com",
     phone = "1234567890",
     profile = { displayName: "Mock User" },
-  }: UserStripeConnectAccountModelItem &
-    Partial<Pick<UserModelItem, "email" | "phone" | "profile">>,
+  }: UserStripeConnectAccountItem & Partial<Pick<UserItem, "email" | "phone" | "profile">>,
   customValues?: PartialDeep<Stripe.Account> | null
 ): Stripe.Account => {
   // Default mock Account object

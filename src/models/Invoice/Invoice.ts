@@ -86,8 +86,8 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema> {
 
 export const Invoice = new InvoiceModel();
 
-/** The shape of an `Invoice` object returned from Model read/write methods. */
-export type InvoiceModelItem = FixitUserFields<ItemTypeFromSchema<typeof InvoiceModel.schema>>;
+/** The shape of an `Invoice` object returned from InvoiceModel methods. */
+export type InvoiceItem = ItemTypeFromSchema<typeof InvoiceModel.schema>;
 
 /** `Invoice` item params for `createItem()`. */
 export type InvoiceItemCreationParams = ItemCreationParameters<typeof InvoiceModel.schema>;

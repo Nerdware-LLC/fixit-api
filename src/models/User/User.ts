@@ -99,8 +99,8 @@ class UserModel extends Model<typeof UserModel.schema, UserItem, UserItemCreatio
 
 export const User = new UserModel();
 
-/** The shape of a `User` object returned from Model read/write methods. */
-export type UserModelItem = OverrideProperties<
+/** The shape of a `User` object returned from UserModel methods. */
+export type UserItem = OverrideProperties<
   ItemTypeFromSchema<typeof UserModel.schema>,
   { login: UserLoginU }
 >;

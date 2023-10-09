@@ -1,13 +1,13 @@
 import { WorkOrderPushNotification } from "@/events/pushNotifications";
 import { lambdaClient } from "@/lib/lambdaClient";
-import { User, type UserModelItem } from "@/models/User";
+import { User, type UserItem } from "@/models/User";
 import { notifyAssigneeCancelledWO } from "./notifyAssigneeCancelledWO";
-import type { WorkOrderModelItem } from "@/models/WorkOrder";
+import type { WorkOrderItem } from "@/models/WorkOrder";
 
 describe("notifyAssigneeCancelledWO", () => {
   test("sends a push notification to the assignee when the assignee has an expoPushToken", async () => {
-    const cancelledWO = { assignedTo: { id: "USER#123" } } as WorkOrderModelItem;
-    const assigneeUser = { id: "USER#123", expoPushToken: "token" } as UserModelItem;
+    const cancelledWO = { assignedToUserID: "USER#123" } as WorkOrderItem;
+    const assigneeUser = { id: "USER#123", expoPushToken: "token" } as UserItem;
     const getItemSpy = vi.spyOn(User, "getItem").mockResolvedValueOnce(assigneeUser);
     const invokeEventSpy = vi.spyOn(lambdaClient, "invokeEvent");
 
@@ -36,7 +36,7 @@ describe("notifyAssigneeCancelledWO", () => {
   });
 
   test("does not invoke an event if the assigneeUser can not be found", async () => {
-    const cancelledWO = { assignedTo: { id: "USER#123" } } as WorkOrderModelItem;
+    const cancelledWO = { assignedToUserID: "USER#123" } as WorkOrderItem;
     const getItemSpy = vi.spyOn(User, "getItem").mockResolvedValueOnce(undefined);
     const invokeEventSpy = vi.spyOn(lambdaClient, "invokeEvent");
 
@@ -48,8 +48,8 @@ describe("notifyAssigneeCancelledWO", () => {
   });
 
   test("does not invoke an event if the assigneeUser does not have an expoPushToken", async () => {
-    const cancelledWO = { assignedTo: { id: "USER#123" } } as WorkOrderModelItem;
-    const assigneeUser = { id: "USER#123" } as UserModelItem;
+    const cancelledWO = { assignedToUserID: "USER#123" } as WorkOrderItem;
+    const assigneeUser = { id: "USER#123" } as UserItem;
     const getItemSpy = vi.spyOn(User, "getItem").mockResolvedValueOnce(assigneeUser);
     const invokeEventSpy = vi.spyOn(lambdaClient, "invokeEvent");
 

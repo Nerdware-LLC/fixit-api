@@ -1,7 +1,7 @@
 import { WorkOrderPushNotification } from "@/events/pushNotifications";
 import { lambdaClient } from "@/lib/lambdaClient";
 import { User } from "@/models/User";
-import type { WorkOrderModelItem } from "@/models/WorkOrder";
+import type { WorkOrderItem } from "@/models/WorkOrder";
 
 /**
  * Sends push notifications to Users when a WorkOrder is updated. Determines which Users
@@ -32,8 +32,8 @@ import type { WorkOrderModelItem } from "@/models/WorkOrder";
  * @param prevWOstate - The previous state of the WorkOrder.
  */
 export const notifyAssigneeUpdatedWO = async (
-  newWOstate: WorkOrderModelItem,
-  prevWOstate: WorkOrderModelItem
+  newWOstate: WorkOrderItem,
+  prevWOstate: WorkOrderItem
 ) => {
   // Array of WorkOrderPushNotifications for any impacted Users
   const pushNotificationsToImpactedUsers: Array<WorkOrderPushNotification> = [];

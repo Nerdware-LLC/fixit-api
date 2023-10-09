@@ -1,15 +1,15 @@
 import { WorkOrderPushNotification } from "@/events/pushNotifications";
 import { lambdaClient } from "@/lib/lambdaClient";
 import { User } from "@/models/User";
-import type { WorkOrderModelItem } from "@/models/WorkOrder";
+import type { WorkOrderItem } from "@/models/WorkOrder";
 
 /**
  * Notify assignor of completed WorkOrder when `WorkOrderCompleted` event is emitted.
  * @event WorkOrderCompleted
- * @param {WorkOrderModelItem} completedWO - The completed WorkOrder
+ * @param {WorkOrderItem} completedWO - The completed WorkOrder
  * @category events
  */
-export const notifyAssignorCompletedWO = async (completedWO?: WorkOrderModelItem) => {
+export const notifyAssignorCompletedWO = async (completedWO?: WorkOrderItem) => {
   if (!completedWO) return;
 
   const assignorUser = await User.getItem({ id: completedWO.createdBy.id });

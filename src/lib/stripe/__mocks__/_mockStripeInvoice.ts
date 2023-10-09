@@ -1,8 +1,8 @@
 import dayjs from "dayjs";
 import merge from "lodash.merge";
 import { mockStripePaymentIntent } from "./_mockStripePaymentIntent";
-import type { UserModelItem } from "@/models/User";
-import type { UserSubscriptionModelItem } from "@/models/UserSubscription";
+import type { UserItem } from "@/models/User";
+import type { UserSubscriptionItem } from "@/models/UserSubscription";
 import type Stripe from "stripe";
 import type { PartialDeep } from "type-fest";
 
@@ -18,7 +18,7 @@ export const mockStripeInvoice = (
     phone,
     profile,
     subscription,
-  }: UserModelItem & { subscription?: UserSubscriptionModelItem },
+  }: UserItem & { subscription?: UserSubscriptionItem },
   /** Invoice object overrides */
   customValues?: PartialDeep<Stripe.Invoice, { recurseIntoArrays: true }> | null
 ): Stripe.Invoice => {

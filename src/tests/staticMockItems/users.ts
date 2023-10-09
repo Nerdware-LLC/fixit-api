@@ -1,15 +1,13 @@
 import { userModelHelpers } from "@/models/User/helpers";
 import { MOCK_DATES, MOCK_DATE_v1_UUIDs as UUIDs } from "./dates";
-import type { UserModelItem, UnaliasedUserModelItem } from "@/models/User";
+import type { UserItem, UnaliasedUserItem } from "@/models/User";
 import type { MocksCollection } from "./_types";
 
-export const MOCK_USERS: MocksCollection<"User", UserModelItem> = {
+export const MOCK_USERS: MocksCollection<"User", UserItem> = {
   /** Mock User with LOCAL login type. */
   USER_A: {
-    id: userModelHelpers.id.formatWithExistingTimestampUUID(UUIDs.JAN_1_2020),
-    sk: userModelHelpers.sk.format(
-      userModelHelpers.id.formatWithExistingTimestampUUID(UUIDs.JAN_1_2020)
-    ),
+    id: userModelHelpers.id.format(UUIDs.JAN_1_2020),
+    sk: userModelHelpers.sk.format(userModelHelpers.id.format(UUIDs.JAN_1_2020)),
     handle: "@user_A",
     email: "userA@gmail.com",
     phone: "(888) 111-1111",
@@ -31,10 +29,8 @@ export const MOCK_USERS: MocksCollection<"User", UserModelItem> = {
   },
   /** Mock User with GOOGLE_OAUTH login type. */
   USER_B: {
-    id: userModelHelpers.id.formatWithExistingTimestampUUID(UUIDs.JAN_2_2020),
-    sk: userModelHelpers.sk.format(
-      userModelHelpers.id.formatWithExistingTimestampUUID(UUIDs.JAN_2_2020)
-    ),
+    id: userModelHelpers.id.format(UUIDs.JAN_2_2020),
+    sk: userModelHelpers.sk.format(userModelHelpers.id.format(UUIDs.JAN_2_2020)),
     handle: "@user_B",
     email: "user_B@gmail.com",
     phone: "(888) 222-2222",
@@ -57,10 +53,8 @@ export const MOCK_USERS: MocksCollection<"User", UserModelItem> = {
   },
   /** Mock User with LOCAL login type. */
   USER_C: {
-    id: userModelHelpers.id.formatWithExistingTimestampUUID(UUIDs.JAN_3_2020),
-    sk: userModelHelpers.sk.format(
-      userModelHelpers.id.formatWithExistingTimestampUUID(UUIDs.JAN_3_2020)
-    ),
+    id: userModelHelpers.id.format(UUIDs.JAN_3_2020),
+    sk: userModelHelpers.sk.format(userModelHelpers.id.format(UUIDs.JAN_3_2020)),
     handle: "@user_C",
     email: "user_C@gmail.com",
     phone: "(888) 333-3333",
@@ -92,4 +86,4 @@ export const UNALIASED_MOCK_USERS = Object.fromEntries(
       ...user,
     },
   ])
-) as MocksCollection<"User", UnaliasedUserModelItem>;
+) as MocksCollection<"User", UnaliasedUserItem>;

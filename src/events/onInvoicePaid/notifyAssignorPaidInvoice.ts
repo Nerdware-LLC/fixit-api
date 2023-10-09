@@ -1,15 +1,15 @@
 import { InvoicePushNotification } from "@/events/pushNotifications";
 import { lambdaClient } from "@/lib/lambdaClient";
 import { User } from "@/models/User";
-import type { InvoiceModelItem } from "@/models/Invoice";
+import type { InvoiceItem } from "@/models/Invoice";
 
 /**
  * Notify assignor of paid Invoice when `InvoicePaid` event is emitted.
  * @event InvoicePaid
- * @param {InvoiceModelItem} paidInvoice - The paid Invoice
+ * @param {InvoiceItem} paidInvoice - The paid Invoice
  * @category events
  */
-export const notifyAssignorPaidInvoice = async (paidInvoice?: InvoiceModelItem) => {
+export const notifyAssignorPaidInvoice = async (paidInvoice?: InvoiceItem) => {
   if (!paidInvoice) return;
 
   const {

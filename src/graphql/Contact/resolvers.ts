@@ -65,7 +65,7 @@ export const resolvers: Partial<Resolvers> = {
  * is not found in the `usersCache`, a `GqlUserInputError` is thrown.
  */
 const convertContactModelItemToGqlContact = (
-  contact?: Partial<ContactModelItem>,
+  contact?: Partial<ContactItem>,
   invalidContactErrMsg: string = "Contact not found."
 ): GqlContact => {
   if (

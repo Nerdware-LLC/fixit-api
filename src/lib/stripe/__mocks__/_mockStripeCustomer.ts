@@ -1,8 +1,8 @@
 import dayjs from "dayjs";
 import merge from "lodash.merge";
 import { mockStripeSubscription } from "./_mockStripeSubscription";
-import type { UserModelItem } from "@/models/User";
-import type { UserSubscriptionModelItem } from "@/models/UserSubscription";
+import type { UserItem } from "@/models/User";
+import type { UserSubscriptionItem } from "@/models/UserSubscription";
 import type Stripe from "stripe";
 
 /**
@@ -10,7 +10,7 @@ import type Stripe from "stripe";
  * @see https://stripe.com/docs/api/customers/object
  */
 export const mockStripeCustomer = (
-  mockUser: UserModelItem & { subscription: UserSubscriptionModelItem },
+  mockUser: UserItem & { subscription: UserSubscriptionItem },
   customerUpdateParams?: Stripe.CustomerUpdateParams
 ): Stripe.Customer => {
   const { stripeCustomerID, email, phone, profile, createdAt } = mockUser;
@@ -56,7 +56,7 @@ export const mockStripeCustomer = (
  */
 export const mockStripeDeletedCustomer = ({
   stripeCustomerID,
-}: Pick<UserModelItem, "stripeCustomerID">): Stripe.DeletedCustomer => ({
+}: Pick<UserItem, "stripeCustomerID">): Stripe.DeletedCustomer => ({
   object: "customer",
   id: stripeCustomerID,
   deleted: true,

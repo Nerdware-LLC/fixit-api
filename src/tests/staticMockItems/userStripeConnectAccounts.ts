@@ -2,14 +2,14 @@ import { userStripeConnectAccountModelHelpers as scaModelHelpers } from "@/model
 import { MOCK_DATES } from "./dates";
 import { MOCK_USERS } from "./users";
 import type {
-  UserStripeConnectAccountModelItem,
-  UnaliasedUserStripeConnectAccountModelItem,
+  UserStripeConnectAccountItem,
+  UnaliasedUserStripeConnectAccountItem,
 } from "@/models/UserStripeConnectAccount";
 import type { MocksCollection } from "./_types";
 
 const { USER_A, USER_B, USER_C } = MOCK_USERS;
 
-export const MOCK_USER_SCAs: MocksCollection<"SCA", UserStripeConnectAccountModelItem> = {
+export const MOCK_USER_SCAs: MocksCollection<"SCA", UserStripeConnectAccountItem> = {
   /** Mock UserStripeConnectAccount for `USER_A` */
   SCA_A: {
     userID: USER_A.id,
@@ -55,4 +55,4 @@ export const UNALIASED_MOCK_USER_SCAs = Object.fromEntries(
       ...stripeConnectAccount,
     },
   ])
-) as MocksCollection<"SCA", UnaliasedUserStripeConnectAccountModelItem>;
+) as MocksCollection<"SCA", UnaliasedUserStripeConnectAccountItem>;

@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import merge from "lodash.merge";
-import type { UserModelItem } from "@/models/User";
+import type { UserItem } from "@/models/User";
 import type Stripe from "stripe";
 import type { SetRequired } from "type-fest";
 
@@ -9,7 +9,7 @@ import type { SetRequired } from "type-fest";
  * @see https://stripe.com/docs/api/payment_methods/object
  */
 export const mockStripePaymentMethod = (
-  { stripeCustomerID, email, phone, profile, createdAt }: UserModelItem,
+  { stripeCustomerID, email, phone, profile, createdAt }: UserItem,
   { id: paymentMethodID, ...customValues }: SetRequired<Partial<Stripe.PaymentMethod>, "id">
 ): Stripe.PaymentMethod => {
   // Default mock PaymentMethod object

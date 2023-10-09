@@ -1,6 +1,6 @@
 import { GqlUserInputError, GqlForbiddenError } from "@/utils";
-import type { InvoiceModelItem } from "@/models/Invoice";
-import type { WorkOrderModelItem } from "@/models/WorkOrder";
+import type { InvoiceItem } from "@/models/Invoice";
+import type { WorkOrderItem } from "@/models/WorkOrder";
 
 /**
  * This function performs the following common validation checks for WorkOrder

@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import type { UserModelItem } from "@/models/User";
+import type { UserItem } from "@/models/User";
 import type Stripe from "stripe";
 
 /**
@@ -8,7 +8,7 @@ import type Stripe from "stripe";
  */
 export const mockStripeBillingPortalSession = ({
   stripeCustomerID,
-}: Pick<UserModelItem, "stripeCustomerID">): Stripe.BillingPortal.Session => ({
+}: Pick<UserItem, "stripeCustomerID">): Stripe.BillingPortal.Session => ({
   object: "billing_portal.session",
   id: "bps_TestTestTest",
   configuration: "bpc_TestTestTest",

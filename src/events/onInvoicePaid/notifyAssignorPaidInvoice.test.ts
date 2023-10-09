@@ -1,15 +1,13 @@
 import { InvoicePushNotification } from "@/events/pushNotifications";
 import { lambdaClient } from "@/lib/lambdaClient";
-import { User, type UserModelItem } from "@/models/User";
+import { User, type UserItem } from "@/models/User";
 import { notifyAssignorPaidInvoice } from "./notifyAssignorPaidInvoice";
-import type { InvoiceModelItem } from "@/models/Invoice";
-
-vi.mock("@aws-sdk/client-lambda"); // <repo_root>/__mocks__/@aws-sdk/client-lambda.ts
+import type { InvoiceItem } from "@/models/Invoice";
 
 describe("notifyAssignorPaidInvoice", () => {
   test("sends a push notification to the assignor when the assignor has an expoPushToken", async () => {
-    const paidInvoice = { createdBy: { id: "USER#123" } } as InvoiceModelItem;
-    const assignorUser = { id: paidInvoice.createdBy.id, expoPushToken: "token" } as UserModelItem;
+    const paidInvoice = { createdByUserID: "USER#123" } as InvoiceItem;
+    const assignorUser = { id: paidInvoice.createdByUserID, expoPushToken: "token" } as UserItem;
     const getItemSpy = vi.spyOn(User, "getItem").mockResolvedValueOnce(assignorUser);
     const invokeEventSpy = vi.spyOn(lambdaClient, "invokeEvent");
 
@@ -38,7 +36,7 @@ describe("notifyAssignorPaidInvoice", () => {
   });
 
   test("does not invoke an event if the assignorUser can not be found", async () => {
-    const paidInvoice = { createdBy: { id: "USER#123" } } as InvoiceModelItem;
+    const paidInvoice = { createdByUserID: "USER#123" } as InvoiceItem;
     const getItemSpy = vi.spyOn(User, "getItem").mockResolvedValueOnce(undefined);
     const invokeEventSpy = vi.spyOn(lambdaClient, "invokeEvent");
 
@@ -50,8 +48,8 @@ describe("notifyAssignorPaidInvoice", () => {
   });
 
   test("does not invoke an event if the assignorUser does not have an expoPushToken", async () => {
-    const paidInvoice = { createdBy: { id: "USER#123" } } as InvoiceModelItem;
-    const assignorUser = { id: paidInvoice.createdBy.id } as UserModelItem;
+    const paidInvoice = { createdByUserID: "USER#123" } as InvoiceItem;
+    const assignorUser = { id: paidInvoice.createdByUserID } as UserItem;
     const getItemSpy = vi.spyOn(User, "getItem").mockResolvedValueOnce(assignorUser);
     const invokeEventSpy = vi.spyOn(lambdaClient, "invokeEvent");
 

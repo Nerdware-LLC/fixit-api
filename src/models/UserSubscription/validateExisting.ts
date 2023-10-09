@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import { hasKey } from "@/utils";
 import type { SubscriptionStatus } from "@/types";
-import type { UserSubscriptionModelItem } from "./UserSubscription";
+import type { UserSubscriptionItem } from "./UserSubscription";
 
 /**
  * This function is used to validate an existing UserSubscription. A valid
@@ -15,7 +15,7 @@ import type { UserSubscriptionModelItem } from "./UserSubscription";
 export const validateExisting = function ({
   status,
   currentPeriodEnd,
-}: Partial<UserSubscriptionModelItem> = {}) {
+}: Partial<UserSubscriptionItem> = {}) {
   if (
     !status ||
     !hasKey(SUBSCRIPTION_STATUS_METADATA, status) ||
