@@ -2,7 +2,7 @@ import { PushNotification, type PushNotificationRecipient } from "./PushNotifica
 import type { InvoiceItem } from "@/models/Invoice";
 
 /**
- * Represents a push notification for an Invoice event.
+ * This class represents a push notification for an Invoice event.
  * @extends PushNotification
  * @category Events
  * @subcategory PushNotification
