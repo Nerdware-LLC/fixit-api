@@ -1,4 +1,3 @@
-import { ENV } from "@/server/env";
 import { PushNotification } from "./PushNotification";
 
 describe("PushNotification", () => {
@@ -16,7 +15,7 @@ describe("PushNotification", () => {
     expect(result.to).toBe(input.recipientUser.expoPushToken);
     expect(result.title).toBe(input.title);
     expect(result.body).toBe(input.body);
-    expect(result.data._apiEnv).toEqual(ENV.NODE_ENV);
+    expect(result.data._apiEnv).toBe("test");
     expect(result.data._recipientUser).toBe(input.recipientUser.id);
     expect(result.data._pushEventName).toBe(input.pushEventName);
   });
