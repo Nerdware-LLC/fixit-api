@@ -31,8 +31,8 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
     },
     sk: {
       type: "string",
-      default: (subItem: { pk: string; createdAt: Date }) =>
-        subModelHelpers.sk.format(subItem.pk, subItem.createdAt),
+      default: (sub: { pk?: string; createdAt?: Date }) =>
+        sub?.pk && sub?.createdAt ? subModelHelpers.sk.format(sub.pk, sub.createdAt) : undefined,
       validate: subModelHelpers.sk.isValid,
       required: true,
     },

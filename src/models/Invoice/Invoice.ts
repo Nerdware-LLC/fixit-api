@@ -28,8 +28,10 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema> {
     sk: {
       type: "string",
       alias: "id",
-      default: ({ pk, createdAt }: { pk: string; createdAt: Date }) =>
-        invoiceModelHelpers.id.format(pk, createdAt),
+      default: (invoice: { pk: string; createdAt: Date }) =>
+        invoice?.pk && invoice?.createdAt
+          ? invoiceModelHelpers.id.format(invoice.pk, invoice.createdAt)
+          : undefined,
       validate: invoiceModelHelpers.id.isValid,
       required: true,
     },

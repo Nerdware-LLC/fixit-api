@@ -32,8 +32,10 @@ class WorkOrderModel extends Model<
     sk: {
       type: "string",
       alias: "id",
-      default: (woItem: { pk: string; createdAt: Date }) =>
-        woModelHelpers.id.format(woItem.pk, woItem.createdAt),
+      default: (woItem: { pk?: string; createdAt?: Date }) =>
+        woItem?.pk && woItem?.createdAt
+          ? woModelHelpers.id.format(woItem.pk, woItem.createdAt)
+          : undefined,
       validate: woModelHelpers.id.isValid,
       required: true,
     },

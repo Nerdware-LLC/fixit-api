@@ -24,7 +24,8 @@ class UserModel extends Model<typeof UserModel.schema, UserItem, UserItemCreatio
     },
     sk: {
       type: "string",
-      default: (userItem: { pk: string }) => userModelHelpers.sk.format(userItem.pk),
+      default: (userItem: { pk: string }) =>
+        userItem?.pk ? userModelHelpers.sk.format(userItem.pk) : undefined,
       validate: userModelHelpers.sk.isValid,
       required: true,
     },

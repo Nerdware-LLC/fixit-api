@@ -21,7 +21,8 @@ class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccoun
     },
     sk: {
       type: "string",
-      default: (scaItem: { pk: string }) => scaModelHelpers.sk.format(scaItem.pk),
+      default: (userSCA: { pk?: string }) =>
+        userSCA?.pk ? scaModelHelpers.sk.format(userSCA.pk) : undefined,
       validate: scaModelHelpers.sk.isValid,
       required: true,
     },

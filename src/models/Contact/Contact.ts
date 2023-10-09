@@ -21,7 +21,8 @@ class ContactModel extends Model<typeof ContactModel.schema> {
     sk: {
       type: "string",
       alias: "id", // Contact "sk" contains the "contactUserID"
-      default: (contact: { data: string }) => contactModelHelpers.id.format(contact.data),
+      default: (contact: { data?: string }) =>
+        contact?.data ? contactModelHelpers.id.format(contact.data) : undefined,
       validate: contactModelHelpers.id.isValid,
       required: true,
     },
