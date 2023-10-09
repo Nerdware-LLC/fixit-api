@@ -1,4 +1,10 @@
-import type { FixitUser, Profile as NullableProfile, NonNullableProfile } from "@/types";
+import type {
+  FixitUser,
+  Profile as NullableProfile,
+  NonNullableProfile,
+  UnwrapGqlMaybeType,
+} from "@/types";
+import type { Simplify } from "type-fest";
 
 /**
  * // IDEA Ideas for potential profile fields:
@@ -48,10 +54,15 @@ export class Profile implements NonNullableProfile {
       ? businessName
       : givenName
       ? `${givenName}${familyName ? ` ${familyName}` : ""}`
-      : handle;
+      : handle
+      ? handle
+      : "";
   };
 
-  static readonly createProfile = (params: ProfileParams) => new Profile(params);
+  /**
+   * Returns a `Profile`-shaped object from the given params.
+   */
+  static readonly fromParams = (params: ProfileParams) => new Profile(params);
 
   constructor({
     handle,
@@ -77,4 +88,6 @@ export class Profile implements NonNullableProfile {
 }
 
 /** The parameters that go into creating a new `Profile` object. */
-export type ProfileParams = Partial<NullableProfile> & Pick<FixitUser, "handle">;
+export type ProfileParams = Simplify<
+  Partial<UnwrapGqlMaybeType<NullableProfile> & Pick<FixitUser, "handle">>
+>;

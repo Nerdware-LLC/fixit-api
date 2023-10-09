@@ -4,31 +4,31 @@ import type { Resolvers } from "@/types";
 
 export const resolvers: Partial<Resolvers> = {
   Query: {
-    myProfile: async (parent, args, { user }) => {
-      const getItemResult = await User.getItem({
-        id: user.id,
-        sk: User.getFormattedSK(user.id),
-      });
-
+    myProfile: async (_parent, _args, { user }) => {
+      const result = await User.getItem({ id: user.id });
       // The user's token fields are used as a fallback if User.getItem fails for some reason
-      return getItemResult?.profile ?? user.profile;
+      return result?.profile ?? user.profile;
     },
   },
   Mutation: {
-    updateProfile: async (parent, { profile: profileInput }, { user }) => {
-      const { profile: updatedProfile } = await User.updateItem(
+    updateProfile: async (_parent, { profile: profileInput }, { user }) => {
+      const result = await User.updateItem(
         { id: user.id, sk: User.getFormattedSK(user.id) },
         {
-          profile: Object.fromEntries(
-            Object.entries(profileInput).filter((entry) => typeof entry[1] === "string")
-          ),
+          update: {
+            profile: Profile.fromParams(profileInput),
+          },
         }
       );
-      return { ...user.profile, ...updatedProfile };
+
+      return {
+        ...user.profile,
+        ...(result?.profile ?? {}),
+      };
     },
   },
   Profile: {
-    displayName: ({ givenName, familyName, businessName }, _, { user: { handle } }) => {
+    displayName: ({ givenName, familyName, businessName }, _args, { user: { handle } }) => {
       return Profile.getDisplayName({
         handle,
         businessName,
