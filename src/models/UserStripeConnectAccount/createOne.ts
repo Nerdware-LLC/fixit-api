@@ -6,11 +6,8 @@ import {
 import type { UserItem } from "@/models/User";
 
 /**
- * This method creates a `UserStripeConnectAccount` item in both the DB and
- * Stripe's API (via `stripe.accounts.create`).
- *
- * Note: this function does not use arrow syntax because `this` is the
- * UserStripeConnectAccount Model.
+ * This method creates a `UserStripeConnectAccount` item in both the Fixit database
+ * and Stripe's API (via `stripe.accounts.create`).
  */
 export const createOne = async function (
   this: typeof UserStripeConnectAccount,

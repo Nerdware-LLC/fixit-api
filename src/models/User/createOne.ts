@@ -4,11 +4,11 @@ import { Profile } from "@/models/Profile";
 import { UserLogin, type CreateLoginParams } from "@/models/UserLogin";
 import {
   UserStripeConnectAccount,
-  type UserStripeConnectAccountModelItem,
+  type UserStripeConnectAccountItem,
 } from "@/models/UserStripeConnectAccount";
 import { normalize, logger } from "@/utils";
-import type { UserModelItem, User } from "@/models/User";
-import type { SetOptional } from "type-fest";
+import type { UserItem, User } from "@/models/User";
+import type { Simplify, SetOptional } from "type-fest";
 
 /**
  * `User.createOne` creates the following items:
@@ -28,11 +28,11 @@ export const createOne = async function (
     googleAccessToken, // Only Google logins will have this
   }: UserCreateOneParams
 ) {
-  let newUser: UserModelItem;
-  let newUserStripeConnectAccount: UserStripeConnectAccountModelItem;
+  let newUser: UserItem;
+  let newUserStripeConnectAccount: UserStripeConnectAccountItem;
 
   // Create Profile object
-  const newUserProfile = Profile.createProfile({ handle, ...(profile ?? {}) });
+  const newUserProfile = Profile.fromParams({ handle, ...(profile ?? {}) });
 
   // Create Stripe Customer via Stripe API
   const { id: stripeCustomerID } = await stripe.customers.create({
@@ -100,9 +100,11 @@ export const createOne = async function (
   };
 };
 
-/** The params for the User.createOne method. */
-export type UserCreateOneParams = CreateLoginParams &
-  SetOptional<
-    Pick<UserModelItem, "handle" | "email" | "phone" | "expoPushToken" | "profile">,
-    "profile"
-  >;
+/** `User.createOne()` method params. */
+export type UserCreateOneParams = Simplify<
+  CreateLoginParams &
+    SetOptional<
+      Pick<UserItem, "handle" | "email" | "phone" | "expoPushToken" | "profile">,
+      "profile"
+    >
+>;

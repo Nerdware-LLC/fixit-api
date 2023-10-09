@@ -9,7 +9,6 @@ import { SUBSCRIPTION_ENUM_CONSTANTS } from "./enumConstants";
 import { userSubscriptionModelHelpers as subModelHelpers } from "./helpers";
 import { normalizeStripeFields } from "./normalizeStripeFields";
 import { USER_SUB_SK_PREFIX_STR as SUB_SK_PREFIX } from "./regex";
-import { updateOne } from "./updateOne";
 import { upsertOne } from "./upsertOne";
 import { validateExisting } from "./validateExisting";
 import type { ItemTypeFromSchema, ItemCreationParameters } from "@nerdware/ddb-single-table";

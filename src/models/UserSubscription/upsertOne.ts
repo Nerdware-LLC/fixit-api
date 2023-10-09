@@ -2,18 +2,17 @@ import { stripe } from "@/lib/stripe";
 import { UserInputError } from "@/utils/httpErrors";
 import {
   UserSubscription,
-  type UserSubscriptionModelItem,
+  type UserSubscriptionItem,
   type UserSubscriptionPriceLabels,
 } from "./UserSubscription";
-import type { UserModelItem } from "@/models/User";
+import type { UserItem } from "@/models/User";
 import type Stripe from "stripe";
 
 /**
  * `upsertOne`
  *
- * **priceID** can be explicitly provided, or it can be looked up if
- * a valid name key is provided ("TRIAL", "MONTHLY", or "ANNUAL") to
- * the **selectedSubscription** property.
+ * **priceID** can be explicitly provided, or it can be looked up if a valid name key is
+ * provided ("TRIAL", "MONTHLY", or "ANNUAL") to the **selectedSubscription** property.
  */
 export const upsertOne = async function (
   this: typeof UserSubscription,
@@ -23,15 +22,16 @@ export const upsertOne = async function (
     priceID,
     promoCode,
   }: {
-    user: Pick<UserModelItem, "id" | "stripeCustomerID">;
+    user: Pick<UserItem, "id" | "stripeCustomerID">;
     selectedSubscription?: UserSubscriptionPriceLabels;
     priceID?: string;
     promoCode?: string;
   }
-): Promise<Stripe.Response<Stripe.Subscription> & UserSubscriptionModelItem> {
+): Promise<Stripe.Response<Stripe.Subscription> & UserSubscriptionItem> {
   // Ascertain the subscription's Stripe price ID
-  if (!priceID && !!selectedSubscription)
+  if (!priceID && !!selectedSubscription) {
     priceID = UserSubscription.PRICE_IDS[selectedSubscription];
+  }
 
   if (!priceID) throw new UserInputError("Invalid subscription");
 
