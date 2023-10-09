@@ -3,11 +3,7 @@ import GithubActionsReporter from "vitest-github-actions-reporter";
 import { defineConfig, coverageConfigDefaults } from "vitest/config";
 
 export default defineConfig({
-  plugins: [
-    viteTsconfigPaths({
-      projects: ["./tsconfig.json"],
-    }),
-  ],
+  plugins: [viteTsconfigPaths()],
   test: {
     globals: true,
     clearMocks: true,
