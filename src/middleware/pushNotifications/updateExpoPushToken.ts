@@ -17,7 +17,7 @@ export const updateExpoPushToken = mwAsyncCatchWrapper<{ body: { expoPushToken?:
     } = req;
 
     if (expoPushToken) {
-      await User.updateItem({ id: userID }, { expoPushToken });
+      await User.updateItem({ id: userID }, { update: { expoPushToken } });
     }
 
     next();

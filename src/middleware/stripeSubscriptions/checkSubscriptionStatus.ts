@@ -43,8 +43,10 @@ export const checkSubscriptionStatus = mwAsyncCatchWrapper(async (req, res, next
           sk: UserSubscription.getFormattedSK(userID, req._userSubscription.createdAt),
         },
         {
-          status: upToDateSubInfo.status,
-          currentPeriodEnd: upToDateSubInfo.currentPeriodEnd,
+          update: {
+            status: upToDateSubInfo.status,
+            currentPeriodEnd: upToDateSubInfo.currentPeriodEnd,
+          },
         }
       );
 

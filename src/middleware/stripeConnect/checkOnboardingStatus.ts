@@ -25,12 +25,14 @@ export const checkOnboardingStatus = mwAsyncCatchWrapper(async (req, res, next) 
     charges_enabled !== !!chargesEnabled ||
     payouts_enabled !== !!payoutsEnabled
   ) {
-    const updatedStripeConnectAccount = await UserStripeConnectAccount.updateOne(
+    const updatedStripeConnectAccount = await UserStripeConnectAccount.updateItem(
       { userID },
       {
-        detailsSubmitted: !!details_submitted,
-        chargesEnabled: !!charges_enabled,
-        payoutsEnabled: !!payouts_enabled,
+        update: {
+          detailsSubmitted: !!details_submitted,
+          chargesEnabled: !!charges_enabled,
+          payoutsEnabled: !!payouts_enabled,
+        },
       }
     );
 

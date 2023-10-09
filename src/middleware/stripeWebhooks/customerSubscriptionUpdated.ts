@@ -40,17 +40,19 @@ export const customerSubscriptionUpdated = async (
     // If no user ID, throw an error
     if (!userID) throw new Error(`User ID not found for UserSubscription with ID "${subID}".`);
 
-    await UserSubscription.updateOne(
+    await UserSubscription.updateItem(
       {
         userID,
-        createdAt,
+        sk: UserSubscription.getFormattedSK(userID, createdAt),
       },
       {
-        id: subID,
-        currentPeriodEnd,
-        productID,
-        priceID,
-        status,
+        update: {
+          id: subID,
+          currentPeriodEnd,
+          productID,
+          priceID,
+          status,
+        },
       }
     );
   } catch (err) {

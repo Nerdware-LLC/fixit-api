@@ -37,12 +37,14 @@ export const connectAccountUpdated = async (rawStripeConnectAccountObj: Stripe.A
     }
 
     // Now update the user's Stripe Connect Account item in the db
-    await UserStripeConnectAccount.updateOne(
+    await UserStripeConnectAccount.updateItem(
       { userID },
       {
-        detailsSubmitted,
-        chargesEnabled,
-        payoutsEnabled,
+        update: {
+          detailsSubmitted,
+          chargesEnabled,
+          payoutsEnabled,
+        },
       }
     );
   } catch (err) {
