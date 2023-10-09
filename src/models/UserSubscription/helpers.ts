@@ -10,7 +10,8 @@ export const userSubscriptionModelHelpers = createModelHelpers({
     regex: SUB_SK_REGEX,
 
     /** Returns a formatted UserSubscription "sk" value */
-    format: (userID: string, createdAt: Date) =>
-      `${SUB_SK_PREFIX}#${userID}#${dayjs(createdAt).unix()}`,
+    format: (userID: string, createdAt: Date) => {
+      return `${SUB_SK_PREFIX}#${userID}#${dayjs(createdAt).unix()}`;
+    },
   },
 });
