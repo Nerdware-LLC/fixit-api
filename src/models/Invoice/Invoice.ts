@@ -1,20 +1,24 @@
-import { Model } from "@/lib/dynamoDB";
+import { Model } from "@nerdware/ddb-single-table";
 import { isValidStripeID } from "@/lib/stripe";
 import { userModelHelpers } from "@/models/User/helpers";
 import { workOrderModelHelpers as woModelHelpers } from "@/models/WorkOrder/helpers";
 import { COMMON_ATTRIBUTES, COMMON_SCHEMA_OPTS, type FixitUserFields } from "@/models/_common";
-import { ddbSingleTable } from "@/models/ddbSingleTable";
+import { ddbTable } from "@/models/ddbTable";
 import { INVOICE_ENUM_CONSTANTS } from "./enumConstants";
 import { invoiceModelHelpers } from "./helpers";
 import { INVOICE_SK_PREFIX_STR } from "./regex";
-import { updateOne } from "./updateOne";
-import type { ItemTypeFromSchema, ItemInputType, DynamoDbItemType } from "@/lib/dynamoDB";
+import type {
+  ItemTypeFromSchema,
+  ItemCreationParameters,
+  ItemParameters,
+  ModelSchemaOptions,
+} from "@nerdware/ddb-single-table";
 
 /**
  * Invoice DdbSingleTable Model
  */
-class InvoiceModel extends Model<typeof InvoiceModel.schema, InvoiceModelItem, InvoiceModelInput> {
-  static readonly schema = ddbSingleTable.getModelSchema({
+class InvoiceModel extends Model<typeof InvoiceModel.schema> {
+  static readonly schema = ddbTable.getModelSchema({
     pk: {
       type: "string",
       alias: "createdByUserID",
@@ -68,7 +72,7 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema, InvoiceModelItem, I
   constructor() {
     super("Invoice", InvoiceModel.schema, {
       ...InvoiceModel.schemaOptions,
-      ...ddbSingleTable,
+      ...ddbTable,
     });
   }
 
@@ -85,11 +89,21 @@ export const Invoice = new InvoiceModel();
 /** The shape of an `Invoice` object returned from Model read/write methods. */
 export type InvoiceModelItem = FixitUserFields<ItemTypeFromSchema<typeof InvoiceModel.schema>>;
 
-/** The shape of an `Invoice` input arg for Model write methods. */
-export type InvoiceModelInput = ItemInputType<typeof InvoiceModel.schema>;
+/** `Invoice` item params for `createItem()`. */
+export type InvoiceItemCreationParams = ItemCreationParameters<typeof InvoiceModel.schema>;
+
+/** `Invoice` item params for `updateItem()`. */
+export type InvoiceItemUpdateParams = ItemParameters<InvoiceItemCreationParams>;
 
 /**
  * The shape of an `Invoice` object in the DB.
  * > This type is used to mock `@aws-sdk/lib-dynamodb` responses.
  */
-export type UnaliasedInvoiceModelItem = DynamoDbItemType<typeof InvoiceModel.schema>;
+export type UnaliasedInvoiceItem = ItemTypeFromSchema<
+  typeof InvoiceModel.schema,
+  {
+    aliasKeys: false;
+    optionalIfDefault: false;
+    nullableIfOptional: true;
+  }
+>;

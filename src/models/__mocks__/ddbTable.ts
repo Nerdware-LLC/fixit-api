@@ -1,8 +1,10 @@
-import { DdbSingleTable } from "@/lib/dynamoDB";
-import { ENV } from "@/server/env";
+import { Table } from "@nerdware/ddb-single-table";
 
-export const ddbSingleTable = new DdbSingleTable({
-  tableName: ENV.AWS.DYNAMODB_TABLE_NAME,
+/**
+ * Mock DDB Table instance for testing purposes.
+ */
+export const ddbTable = new Table({
+  tableName: "MockTable",
   tableKeysSchema: {
     pk: {
       type: "string",
@@ -33,22 +35,4 @@ export const ddbSingleTable = new DdbSingleTable({
       },
     },
   } as const,
-  ddbClientConfigs: {
-    region: ENV.AWS.REGION,
-    endpoint: ENV.AWS.DYNAMODB_ENDPOINT,
-    // dynamodb-local is used in dev
-    ...(ENV.AWS.REGION === "local" && {
-      credentials: {
-        accessKeyId: "local",
-        secretAccessKey: "local",
-      },
-    }),
-  },
-  ...(ENV.AWS.REGION === "local" && {
-    tableConfigs: {
-      createIfNotExists: true,
-      billingMode: "PROVISIONED",
-      provisionedThroughput: { read: 20, write: 20 },
-    },
-  }),
 });

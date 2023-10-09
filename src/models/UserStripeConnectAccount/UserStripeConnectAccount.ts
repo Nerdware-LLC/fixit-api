@@ -1,19 +1,18 @@
-import { Model } from "@/lib/dynamoDB";
+import { Model } from "@nerdware/ddb-single-table";
 import { isValidStripeID } from "@/lib/stripe";
 import { userModelHelpers } from "@/models/User/helpers";
 import { COMMON_ATTRIBUTES } from "@/models/_common";
-import { ddbSingleTable } from "@/models/ddbSingleTable";
+import { ddbTable } from "@/models/ddbTable";
 import { createOne } from "./createOne";
 import { userStripeConnectAccountModelHelpers as scaModelHelpers } from "./helpers";
 import { STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR } from "./regex";
-import { updateOne } from "./updateOne";
-import type { ItemTypeFromSchema, ItemInputType, DynamoDbItemType } from "@/lib/dynamoDB";
+import type { ItemTypeFromSchema } from "@nerdware/ddb-single-table";
 
 /**
  * UserStripeConnectAccount DdbSingleTable Model
  */
 class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccountModel.schema> {
-  static readonly schema = ddbSingleTable.getModelSchema({
+  static readonly schema = ddbTable.getModelSchema({
     pk: {
       type: "string",
       required: true,
@@ -48,7 +47,7 @@ class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccoun
   } as const);
 
   constructor() {
-    super("UserStripeConnectAccount", UserStripeConnectAccountModel.schema, ddbSingleTable);
+    super("UserStripeConnectAccount", UserStripeConnectAccountModel.schema, ddbTable);
   }
 
   // USER STRIPE CONNECT ACCOUNT MODEL — Instance properties and methods:
@@ -60,13 +59,8 @@ class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccoun
 
 export const UserStripeConnectAccount = new UserStripeConnectAccountModel();
 
-/** The shape of a `UserStripeConnectAccount` object returned from Model read/write methods. */
-export type UserStripeConnectAccountModelItem = ItemTypeFromSchema<
-  typeof UserStripeConnectAccountModel.schema
->;
-
-/** The shape of a `UserStripeConnectAccount` input arg for Model write methods. */
-export type UserStripeConnectAccountModelInput = ItemInputType<
+/** The shape of a `UserStripeConnectAccount` object returned from Model methods. */
+export type UserStripeConnectAccountItem = ItemTypeFromSchema<
   typeof UserStripeConnectAccountModel.schema
 >;
 
@@ -74,6 +68,11 @@ export type UserStripeConnectAccountModelInput = ItemInputType<
  * The shape of a `UserStripeConnectAccount` object in the DB.
  * > This type is used to mock `@aws-sdk/lib-dynamodb` responses.
  */
-export type UnaliasedUserStripeConnectAccountModelItem = DynamoDbItemType<
-  typeof UserStripeConnectAccountModel.schema
+export type UnaliasedUserStripeConnectAccountItem = ItemTypeFromSchema<
+  typeof UserStripeConnectAccountModel.schema,
+  {
+    aliasKeys: false;
+    optionalIfDefault: false;
+    nullableIfOptional: true;
+  }
 >;

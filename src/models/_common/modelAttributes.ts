@@ -1,6 +1,5 @@
 import dayjs from "dayjs";
-import { isType, normalize, prettifyStr, isValid } from "@/utils";
-import type { ModelSchemaAttributeConfig } from "@/lib/dynamoDB";
+import type { ModelSchemaAttributeConfig } from "@nerdware/ddb-single-table";
 
 export const COMMON_ATTRIBUTE_TYPES = {
   PHONE: {

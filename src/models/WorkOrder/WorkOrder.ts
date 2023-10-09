@@ -1,14 +1,17 @@
-import { Model } from "@/lib/dynamoDB";
+import { Model } from "@nerdware/ddb-single-table";
 import { Location } from "@/models/Location";
 import { userModelHelpers } from "@/models/User/helpers";
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES, COMMON_SCHEMA_OPTS } from "@/models/_common";
-import { ddbSingleTable } from "@/models/ddbSingleTable";
+import { ddbTable } from "@/models/ddbTable";
 import { WORK_ORDER_ENUM_CONSTANTS } from "./enumConstants";
 import { workOrderModelHelpers as woModelHelpers } from "./helpers";
 import { WORK_ORDER_SK_PREFIX_STR } from "./regex";
-import { updateOne } from "./updateOne";
-import type { ItemTypeFromSchema, ItemInputType, DynamoDbItemType } from "@/lib/dynamoDB";
-import type { FixitUserFields } from "@/models/_common";
+import type {
+  ItemTypeFromSchema,
+  ItemCreationParameters,
+  ItemParameters,
+  ModelSchemaOptions,
+} from "@nerdware/ddb-single-table";
 import type { OverrideProperties } from "type-fest";
 
 /**
@@ -19,7 +22,7 @@ class WorkOrderModel extends Model<
   WorkOrderModelItem,
   WorkOrderModelInput
 > {
-  static readonly schema = ddbSingleTable.getModelSchema({
+  static readonly schema = ddbTable.getModelSchema({
     pk: {
       type: "string",
       alias: "createdByUserID",
@@ -152,14 +155,24 @@ export type WorkOrderModelItem = OverrideProperties<
   { location: Location }
 >;
 
-/** The shape of a `WorkOrder` input arg for Model write methods. */
-export type WorkOrderModelInput = OverrideProperties<
-  ItemInputType<typeof WorkOrderModel.schema>,
-  { location: Location }
+/** `WorkOrder` item params for `createItem()`. */
+export type WorkOrderItemCreationParams = OverrideProperties<
+  ItemCreationParameters<typeof WorkOrderModel.schema>,
+  { assignedToUserID: string | null; location: Location }
 >;
+
+/** `WorkOrder` item params for `updateItem()`. */
+export type WorkOrderItemUpdateParams = ItemParameters<WorkOrderItemCreationParams>;
 
 /**
  * The shape of a `WorkOrder` object in the DB.
  * > This type is used to mock `@aws-sdk/lib-dynamodb` responses.
  */
-export type UnaliasedWorkOrderModelItem = DynamoDbItemType<typeof WorkOrderModel.schema>;
+export type UnaliasedWorkOrderItem = ItemTypeFromSchema<
+  typeof WorkOrderModel.schema,
+  {
+    aliasKeys: false;
+    optionalIfDefault: false;
+    nullableIfOptional: true;
+  }
+>;

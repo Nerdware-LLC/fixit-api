@@ -1,8 +1,8 @@
-import { Model } from "@/lib/dynamoDB";
+import { Model } from "@nerdware/ddb-single-table";
 import { isValidStripeID } from "@/lib/stripe";
 import { userModelHelpers } from "@/models/User/helpers";
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@/models/_common";
-import { ddbSingleTable } from "@/models/ddbSingleTable";
+import { ddbTable } from "@/models/ddbTable";
 import { ENV } from "@/server/env";
 import { hasKey } from "@/utils";
 import { SUBSCRIPTION_ENUM_CONSTANTS } from "./enumConstants";
@@ -12,7 +12,7 @@ import { USER_SUB_SK_PREFIX_STR as SUB_SK_PREFIX } from "./regex";
 import { updateOne } from "./updateOne";
 import { upsertOne } from "./upsertOne";
 import { validateExisting } from "./validateExisting";
-import type { ItemTypeFromSchema, ItemInputType, DynamoDbItemType } from "@/lib/dynamoDB";
+import type { ItemTypeFromSchema, ItemCreationParameters } from "@nerdware/ddb-single-table";
 
 /**
  * UserSubscription DdbSingleTable Model
@@ -22,7 +22,7 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
   static readonly PRICE_IDS = ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.priceIDs;
   static readonly PROMO_CODES = ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.promoCodes;
 
-  static readonly schema = ddbSingleTable.getModelSchema({
+  static readonly schema = ddbTable.getModelSchema({
     pk: {
       type: "string",
       alias: "userID",
@@ -85,7 +85,7 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
   } as const);
 
   constructor() {
-    super("UserSubscription", UserSubscriptionModel.schema, ddbSingleTable);
+    super("UserSubscription", UserSubscriptionModel.schema, ddbTable);
   }
 
   // USER SUBSCRIPTION MODEL — Instance properties and methods:
@@ -105,15 +105,22 @@ export const UserSubscription = new UserSubscriptionModel();
 /** The shape of a `UserSubscription` object returned from Model read/write methods. */
 export type UserSubscriptionModelItem = ItemTypeFromSchema<typeof UserSubscriptionModel.schema>;
 
-/** The shape of a `UserSubscription` input arg for Model write methods. */
-export type UserSubscriptionModelInput = ItemInputType<typeof UserSubscriptionModel.schema>;
+/** `UserSubscription` item params for `createItem()`. */
+export type UserSubscriptionItemCreationParams = ItemCreationParameters<
+  typeof UserSubscriptionModel.schema
+>;
 
 /**
  * The shape of a `UserSubscription` object in the DB.
  * > This type is used to mock `@aws-sdk/lib-dynamodb` responses.
  */
-export type UnaliasedUserSubscriptionModelItem = DynamoDbItemType<
-  typeof UserSubscriptionModel.schema
+export type UnaliasedUserSubscriptionItem = ItemTypeFromSchema<
+  typeof UserSubscriptionModel.schema,
+  {
+    aliasKeys: false;
+    optionalIfDefault: false;
+    nullableIfOptional: true;
+  }
 >;
 
 /** The names of UserSubscription Stripe prices: "TRIAL", "MONTHLY", "ANNUAL" */

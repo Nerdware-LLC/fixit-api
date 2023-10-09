@@ -1,20 +1,20 @@
+import { Model } from "@nerdware/ddb-single-table";
 import { Expo } from "expo-server-sdk";
-import { Model } from "@/lib/dynamoDB";
 import { isValidStripeID } from "@/lib/stripe";
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@/models/_common";
-import { ddbSingleTable } from "@/models/ddbSingleTable";
+import { ddbTable } from "@/models/ddbTable";
 import { hasKey, isValid } from "@/utils";
 import { createOne } from "./createOne";
 import { userModelHelpers } from "./helpers";
-import type { ItemTypeFromSchema, ItemInputType, DynamoDbItemType } from "@/lib/dynamoDB";
 import type { UserLoginU } from "@/models/UserLogin";
+import type { ItemTypeFromSchema, ItemCreationParameters } from "@nerdware/ddb-single-table";
 import type { OverrideProperties } from "type-fest";
 
 /**
  * User DdbSingleTable Model
  */
-class UserModel extends Model<typeof UserModel.schema, UserModelItem, UserModelInput> {
-  static readonly schema = ddbSingleTable.getModelSchema({
+class UserModel extends Model<typeof UserModel.schema, UserItem, UserItemCreationParams> {
+  static readonly schema = ddbTable.getModelSchema({
     pk: {
       type: "string",
       alias: "id",
@@ -89,7 +89,7 @@ class UserModel extends Model<typeof UserModel.schema, UserModelItem, UserModelI
   } as const);
 
   constructor() {
-    super("User", UserModel.schema, ddbSingleTable);
+    super("User", UserModel.schema, ddbTable);
   }
 
   // USER MODEL — Instance methods:
@@ -105,9 +105,9 @@ export type UserModelItem = OverrideProperties<
   { login: UserLoginU }
 >;
 
-/** The shape of a `User` input arg for Model write methods. */
-export type UserModelInput = OverrideProperties<
-  ItemInputType<typeof UserModel.schema>,
+/** `User` item params for `createItem()`. */
+export type UserItemCreationParams = OverrideProperties<
+  ItemCreationParameters<typeof UserModel.schema>,
   { login: UserLoginU }
 >;
 
@@ -115,4 +115,11 @@ export type UserModelInput = OverrideProperties<
  * The shape of a `User` object in the DB.
  * > This type is used to mock `@aws-sdk/lib-dynamodb` responses.
  */
-export type UnaliasedUserModelItem = DynamoDbItemType<typeof UserModel.schema>;
+export type UnaliasedUserItem = ItemTypeFromSchema<
+  typeof UserModel.schema,
+  {
+    aliasKeys: false;
+    optionalIfDefault: false;
+    nullableIfOptional: true;
+  }
+>;
