@@ -12,7 +12,8 @@ type CustomRequestAndBodyProperties<TBodyValues = unknown> = FixitRESTRequestFlo
  * - Optional type param: `ReqBody`, passed to `RequestHandler` type-param of the same name.
  */
 export const mwAsyncCatchWrapper = <
-  TCustomRequestProperties extends CustomRequestAndBodyProperties<any> = CustomRequestAndBodyProperties
+  TCustomRequestProperties extends
+    CustomRequestAndBodyProperties<any> = CustomRequestAndBodyProperties,
 >(
   asyncMiddlewareFn: SetReturnType<
     RequestHandler<EmptyObject, Record<string, unknown>, TCustomRequestProperties["body"]> &
@@ -84,8 +85,9 @@ export const sanitizeAndValidateRequestBody = <Schema extends RequestBodyFieldsS
 
   return (req: Request<{}, {}, Record<string, unknown>>, res, next) => {
     // Ensure the request body is valid
-    if (!hasKey(req, "body") || !isType.object(req.body))
+    if (!hasKey(req, "body") || !isType.object(req.body)) {
       throw new UserInputError("Invalid request body");
+    }
 
     const reqBodyFields = {} as { [Key in keyof Schema]: unknown };
 
