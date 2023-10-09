@@ -1,11 +1,12 @@
 import { usersCache } from "@/lib/cache";
-import { ddbSingleTable } from "@/models/ddbSingleTable";
+import { ddbTable } from "@/models/ddbTable";
 import { logger } from "@/utils/logger";
 import type { Profile } from "@/types";
 
 logger.server(`initCacheForUsersSearch: initializing cache ...`);
 
-const dbUserItems = await ddbSingleTable.ddbClient.scan({
+const { Items: items } = await ddbTable.ddbClient.scan({
+  TableName: ddbTable.tableName,
   ProjectionExpression: "pk, sk, #data, handle, phone, profile",
   FilterExpression: "begins_with(pk, :user_pk_prefix)",
   ExpressionAttributeNames: {
@@ -16,8 +17,8 @@ const dbUserItems = await ddbSingleTable.ddbClient.scan({
   },
 });
 
-if (dbUserItems && dbUserItems.length > 0) {
-  dbUserItems.forEach((item) => {
+if (Array.isArray(items) && items.length > 0) {
+  items.forEach((item) => {
     const {
       pk: id,
       data: email,
