@@ -19,8 +19,9 @@ export const apolloServer = new ApolloServer<ApolloServerResolverContext>({
 await apolloServer.start();
 
 /**
- * The context available to all GQL resolvers.
+ * The execution context object available to all GQL resolvers.
  */
 export interface ApolloServerResolverContext extends BaseContext, Partial<Request> {
+  /** The currently authenticated User's AuthToken payload. */
   user: FixitApiAuthTokenPayload;
 }
