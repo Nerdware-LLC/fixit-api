@@ -13,6 +13,8 @@ Author: [Trevor Anderson](https://github.com/trevor-anderson), Solopreneur & Fou
 &nbsp;
 ![test_workflow_status](https://github.com/Nerdware-LLC/fixit-api/actions/workflows/test.yaml/badge.svg?branch=main)
 &nbsp;
+[![codecov](https://codecov.io/gh/Nerdware-LLC/fixit-api/graph/badge.svg?token=L6GXTG836B)](https://codecov.io/gh/Nerdware-LLC/fixit-api)
+&nbsp;
 [![graphql][graphql-shield]](https://graphql.org/)
 &nbsp;
 [![apollo][apollo-shield]](https://www.apollographql.com/)
