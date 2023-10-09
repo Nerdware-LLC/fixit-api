@@ -7,14 +7,8 @@ import type { Assertion, AsymmetricMatchersContaining } from "vitest";
 */
 
 interface CustomMatchers<_ = any, R = unknown> {
-  /** Test if the `received` array only contains elements specified in the `expected` array. */
-  toOnlyContain(expected: Record<PropertyKey, unknown>): R;
   /** Test if the `received` value matches one of the values in the `expected` array. */
   toBeOneOf(expected: Array<unknown>): R;
-  /** Test if the `received` value matches one of the match-objects in the `expected` array. */
-  toMatchOneOf(expected: Array<Record<PropertyKey, unknown>>): R;
-  /** Test if the `received` value is a valid Date object OR ISO 8601 date string. */
-  toBeValidDate(): R;
 }
 
 declare module "vitest" {

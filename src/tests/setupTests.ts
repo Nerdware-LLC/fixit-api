@@ -1,6 +1,3 @@
-import dayjs from "dayjs";
-import { isDate } from "@/utils/typeSafety";
-
 /**
  * This Vitest setup file accomplishes the following:
  *   1. Implements commonly-used custom matchers.
@@ -39,21 +36,6 @@ export const getCustomMatcherMessage = ({
 };
 
 expect.extend({
-  /** Test if the `received` array only contains elements specified in the `expected` array. */
-  toOnlyContain(received: unknown = [], matchObject: Record<PropertyKey, unknown>) {
-    return {
-      pass: this.equals(received, expect.arrayContaining([expect.objectContaining(matchObject)])),
-      message: () =>
-        getCustomMatcherMessage({
-          received,
-          expected: matchObject,
-          predicate: "contain objects matching",
-          ...this,
-        }),
-      actual: received,
-      expected: matchObject,
-    };
-  },
   /** Test if the `received` value matches one of the values in the `expected` array. */
   toBeOneOf(received: unknown, matchers: Array<unknown>) {
     return {
@@ -62,36 +44,6 @@ expect.extend({
         getCustomMatcherMessage({ received, expected: matchers, predicate: "be one of", ...this }),
       actual: received,
       expected: matchers,
-    };
-  },
-  /** Test if the `received` value matches one of the match-objects in the `expected` array. */
-  toMatchOneOf(received: unknown, matchObjects: Array<Record<PropertyKey, unknown>>) {
-    return {
-      pass:
-        matchObjects.findIndex((obj) => this.equals(received, expect.objectContaining(obj))) > -1,
-      message: () =>
-        getCustomMatcherMessage({
-          received,
-          expected: matchObjects,
-          predicate: "match one of",
-          ...this,
-        }),
-      actual: received,
-      expected: matchObjects,
-    };
-  },
-  /** Test if the `received` value is a valid Date object OR ISO 8601 date string. */
-  toBeValidDate(received: unknown) {
-    return {
-      pass: isDate(received) || (typeof received === "string" && dayjs(received).isValid()),
-      message: () =>
-        getCustomMatcherMessage({
-          received,
-          predicate: "be",
-          expected: "a valid Date object or ISO 8601 date string",
-          ...this,
-        }),
-      actual: received,
     };
   },
   /**
