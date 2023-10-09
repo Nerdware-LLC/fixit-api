@@ -1,11 +1,11 @@
-import { mockClient } from "aws-sdk-client-mock";
+import dayjs from "dayjs";
 import request from "supertest";
 import { expressApp } from "@/expressApp";
 import { usersCache } from "@/lib/cache";
 import { stripe } from "@/lib/stripe";
-import { User, type UserModelItem } from "@/models/User";
+import { User } from "@/models/User";
 import { USER_ID_REGEX } from "@/models/User/regex";
-import { ddbSingleTable } from "@/models/ddbSingleTable";
+import { ddbTable } from "@/models/ddbTable";
 import { ENV } from "@/server/env";
 import {
   MOCK_USERS,
@@ -13,6 +13,7 @@ import {
   MOCK_WORK_ORDERS,
   MOCK_INVOICES,
   MOCK_USER_SUBS,
+  UNALIASED_MOCK_USERS,
   UNALIASED_MOCK_USER_SCAs,
   UNALIASED_MOCK_USER_SUBS,
   UNALIASED_MOCK_CONTACTS,
@@ -50,30 +51,16 @@ describe("[e2e] Server Requests /api/auth/*", () => {
       const MOCK_STRIPE_CUSTOMER_ID = "cus_TestTestTest";
       const MOCK_STRIPE_CONNECT_ACCOUNT_ID = "acct_TestTestTest";
 
-      // Stub the ddb query in findUserByEmail middleware
-      vi.mock("@aws-sdk/lib-dynamodb", async () => {
-        // Import the necessary actuals
-        const { DynamoDBDocumentClient, QueryCommand, ...exports } = await vi.importActual<
-          typeof import("@aws-sdk/lib-dynamodb")
-        >("@aws-sdk/lib-dynamodb");
-        // Re-export everything with a mocked DdbDocClient QueryCommand response
-        return {
-          ...exports,
-          QueryCommand,
-          DynamoDBDocumentClient: {
-            from: vi.fn(() =>
-              mockClient(DynamoDBDocumentClient).on(QueryCommand).resolves({ Items: [] })
-            ),
-          },
-        };
-      });
+      // Stub empty response from User.query in findUserByEmail middleware
+      vi.spyOn(User, "query").mockResolvedValueOnce([]);
 
       // Stub stripe.customers.create for invocation in User.createOne method
-      vi.spyOn(stripe.customers, "create").mockResolvedValue({
+      vi.spyOn(stripe.customers, "create").mockResolvedValueOnce({
         id: MOCK_STRIPE_CUSTOMER_ID,
       } as any);
+
       // Stub stripe.accounts.create for invocation in UserStripeConnectAccount.createOne method
-      vi.spyOn(stripe.accounts, "create").mockResolvedValue({
+      vi.spyOn(stripe.accounts, "create").mockResolvedValueOnce({
         id: MOCK_STRIPE_CONNECT_ACCOUNT_ID,
         details_submitted: false,
         charges_enabled: false,
@@ -91,6 +78,7 @@ describe("[e2e] Server Requests /api/auth/*", () => {
 
       // Assert the token payload
       const tokenPayload = await AuthToken.validateAndDecodeAuthToken(response.body.token);
+
       expect(tokenPayload).toStrictEqual({
         id: expect.stringMatching(USER_ID_REGEX),
         handle: MOCK_REGISTER_REQUEST_ARGS.handle,
@@ -104,15 +92,15 @@ describe("[e2e] Server Requests /api/auth/*", () => {
           chargesEnabled: false,
           payoutsEnabled: false,
         },
-        createdAt: expect.toBeValidDate(),
-        updatedAt: expect.toBeValidDate(),
+        createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+        updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
       });
     });
   });
 
   describe("POST /api/auth/login", () => {
     test("returns a valid Fixit AuthToken and pre-fetched user-items in response body", async () => {
-      // Mock client request args to provide in req.body:
+      // Arrange mock client request args to provide in req.body:
       const MOCK_LOGIN_REQUEST_ARGS = {
         email: MOCK_USERS.USER_A.email,
         password: "MockPassword@1",
@@ -122,19 +110,22 @@ describe("[e2e] Server Requests /api/auth/*", () => {
       vi.spyOn(User, "query").mockResolvedValueOnce([MOCK_USERS.USER_A]);
       // Stub the passwordHasher.validate response in validatePassword middleware
       vi.spyOn(passwordHasher, "validate").mockResolvedValueOnce(true);
-      // Stub ddbSingleTable.ddbClient.query response in queryUserItems middleware
-      vi.spyOn(ddbSingleTable.ddbClient, "query").mockResolvedValueOnce([
-        MOCK_USERS.USER_A,
-        UNALIASED_MOCK_USER_SCAs.SCA_A,
-        UNALIASED_MOCK_USER_SUBS.SUB_A,
-        UNALIASED_MOCK_CONTACTS.CONTACT_A,
-        UNALIASED_MOCK_WORK_ORDERS.WO_A,
-        UNALIASED_MOCK_INVOICES.INV_A,
-      ]);
+      // Stub ddbTable.ddbClient.query response in queryUserItems middleware
+      vi.spyOn(ddbTable.ddbClient, "query").mockResolvedValueOnce({
+        $metadata: {},
+        Items: [
+          UNALIASED_MOCK_USERS.USER_A,
+          UNALIASED_MOCK_USER_SCAs.SCA_A,
+          UNALIASED_MOCK_USER_SUBS.SUB_A,
+          UNALIASED_MOCK_CONTACTS.CONTACT_A,
+          UNALIASED_MOCK_WORK_ORDERS.WO_A,
+          UNALIASED_MOCK_INVOICES.INV_A,
+        ],
+      });
       // Stub usersCache.get response in queryUserItems middleware
       vi.spyOn(usersCache, "get").mockReturnValueOnce(MOCK_USERS.USER_B);
       // Stub User.updateItem into a no-op in updateExpoPushToken middleware
-      vi.spyOn(User, "updateItem").mockResolvedValueOnce({} as UserModelItem);
+      vi.spyOn(User, "updateItem").mockResolvedValueOnce({} as any);
 
       // Send the request
       const { status, body: responseBody } = await request(expressApp)
@@ -148,6 +139,7 @@ describe("[e2e] Server Requests /api/auth/*", () => {
 
       // Assert the token payload
       const tokenPayload = await AuthToken.validateAndDecodeAuthToken(responseBody.token);
+
       expect(tokenPayload).toStrictEqual({
         id: expect.stringMatching(USER_ID_REGEX),
         handle: MOCK_USERS.USER_A.handle,
@@ -156,46 +148,61 @@ describe("[e2e] Server Requests /api/auth/*", () => {
         profile: MOCK_USERS.USER_A.profile,
         stripeCustomerID: MOCK_USERS.USER_A.stripeCustomerID,
         stripeConnectAccount: {
-          id: UNALIASED_MOCK_USER_SCAs.SCA_A.data,
+          id: MOCK_USER_SCAs.SCA_A.id,
           detailsSubmitted: true,
           chargesEnabled: true,
           payoutsEnabled: true,
         },
         subscription: {
-          id: UNALIASED_MOCK_USER_SUBS.SUB_A.data,
+          id: MOCK_USER_SUBS.SUB_A.id,
           status: "active",
-          currentPeriodEnd: expect.toBeValidDate(),
+          currentPeriodEnd: expect.toSatisfyFn((value) => dayjs(value).isValid()),
         },
-        createdAt: expect.toBeValidDate(),
-        updatedAt: expect.toBeValidDate(),
+        createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+        updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
       });
+
+      // Expected userItems:
+      const {
+        createdByUserID: WO_A_createdByUserID,
+        assignedToUserID: WO_A_assignedToUserID, // null
+        ...WO_A_fields
+      } = MOCK_WORK_ORDERS.WO_A;
+      const {
+        createdByUserID: INV_A_createdByUserID,
+        assignedToUserID: INV_A_assignedToUserID,
+        ...INV_A_fields
+      } = MOCK_INVOICES.INV_A;
 
       // Assert the pre-fetched userItems
       expect(responseBody.userItems).toStrictEqual({
         workOrders: [
           {
-            ...MOCK_WORK_ORDERS.WO_A,
-            createdAt: expect.toBeValidDate(),
-            updatedAt: expect.toBeValidDate(),
+            ...WO_A_fields,
+            createdBy: { id: WO_A_createdByUserID },
+            assignedTo: null,
+            createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+            updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
           },
         ],
         invoices: [
           {
-            ...MOCK_INVOICES.INV_A,
-            createdAt: expect.toBeValidDate(),
-            updatedAt: expect.toBeValidDate(),
+            ...INV_A_fields,
+            createdBy: { id: INV_A_createdByUserID },
+            assignedTo: { id: INV_A_assignedToUserID },
+            createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+            updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
           },
         ],
         contacts: [
           {
-            ...MOCK_CONTACTS.CONTACT_A,
+            id: MOCK_CONTACTS.CONTACT_A.id,
+            handle: MOCK_CONTACTS.CONTACT_A.handle,
             email: MOCK_USERS.USER_B.email,
             phone: MOCK_USERS.USER_B.phone,
-            profile: expect.objectContaining({
-              displayName: MOCK_USERS.USER_B.profile.displayName,
-            }),
-            createdAt: expect.toBeValidDate(),
-            updatedAt: expect.toBeValidDate(),
+            profile: MOCK_USERS.USER_B.profile,
+            createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+            updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
           },
         ],
       });
@@ -211,19 +218,22 @@ describe("[e2e] Server Requests /api/auth/*", () => {
         subscription: MOCK_USER_SUBS.SUB_A,
       });
 
-      // Stub ddbSingleTable.ddbClient.query response in queryUserItems middleware
-      vi.spyOn(ddbSingleTable.ddbClient, "query").mockResolvedValueOnce([
-        MOCK_USERS.USER_A,
-        UNALIASED_MOCK_USER_SCAs.SCA_A,
-        UNALIASED_MOCK_USER_SUBS.SUB_A,
-        UNALIASED_MOCK_CONTACTS.CONTACT_A,
-        UNALIASED_MOCK_WORK_ORDERS.WO_A,
-        UNALIASED_MOCK_INVOICES.INV_A,
-      ]);
+      // Stub ddbTable.ddbClient.query response in queryUserItems middleware
+      vi.spyOn(ddbTable.ddbClient, "query").mockResolvedValueOnce({
+        $metadata: {},
+        Items: [
+          UNALIASED_MOCK_USERS.USER_A,
+          UNALIASED_MOCK_USER_SCAs.SCA_A,
+          UNALIASED_MOCK_USER_SUBS.SUB_A,
+          UNALIASED_MOCK_CONTACTS.CONTACT_A,
+          UNALIASED_MOCK_WORK_ORDERS.WO_A,
+          UNALIASED_MOCK_INVOICES.INV_A,
+        ],
+      });
       // Stub usersCache.get response in queryUserItems middleware
       vi.spyOn(usersCache, "get").mockReturnValueOnce(MOCK_USERS.USER_B);
       // Stub User.updateItem into a no-op in updateExpoPushToken middleware
-      vi.spyOn(User, "updateItem").mockResolvedValueOnce({} as UserModelItem);
+      vi.spyOn(User, "updateItem").mockResolvedValueOnce({} as any);
 
       // Send the request
       const { status, body: responseBody } = await request(expressApp)
@@ -253,38 +263,53 @@ describe("[e2e] Server Requests /api/auth/*", () => {
         subscription: {
           id: UNALIASED_MOCK_USER_SUBS.SUB_A.data,
           status: "active",
-          currentPeriodEnd: expect.toBeValidDate(),
+          currentPeriodEnd: expect.toSatisfyFn((value) => dayjs(value).isValid()),
         },
-        createdAt: expect.toBeValidDate(),
-        updatedAt: expect.toBeValidDate(),
+        createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+        updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
       });
+
+      // Expected userItems:
+      const {
+        createdByUserID: WO_A_createdByUserID,
+        assignedToUserID: WO_A_assignedToUserID, // null
+        ...WO_A_fields
+      } = MOCK_WORK_ORDERS.WO_A;
+      const {
+        createdByUserID: INV_A_createdByUserID,
+        assignedToUserID: INV_A_assignedToUserID,
+        ...INV_A_fields
+      } = MOCK_INVOICES.INV_A;
 
       // Assert the pre-fetched userItems
       expect(responseBody.userItems).toStrictEqual({
         workOrders: [
           {
-            ...MOCK_WORK_ORDERS.WO_A,
-            createdAt: expect.toBeValidDate(),
-            updatedAt: expect.toBeValidDate(),
+            ...WO_A_fields,
+            createdBy: { id: WO_A_createdByUserID },
+            assignedTo: null,
+            createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+            updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
           },
         ],
         invoices: [
           {
-            ...MOCK_INVOICES.INV_A,
-            createdAt: expect.toBeValidDate(),
-            updatedAt: expect.toBeValidDate(),
+            ...INV_A_fields,
+            createdBy: { id: INV_A_createdByUserID },
+            assignedTo: { id: INV_A_assignedToUserID },
+            createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+            updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
           },
         ],
         contacts: [
           {
-            ...MOCK_CONTACTS.CONTACT_A,
+            id: MOCK_CONTACTS.CONTACT_A.id,
+            handle: MOCK_CONTACTS.CONTACT_A.handle,
             email: MOCK_USERS.USER_B.email,
             phone: MOCK_USERS.USER_B.phone,
-            profile: expect.objectContaining({
-              displayName: MOCK_USERS.USER_B.profile.displayName,
-            }),
-            createdAt: expect.toBeValidDate(),
-            updatedAt: expect.toBeValidDate(),
+            profile: MOCK_USERS.USER_B.profile,
+            createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+            updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
           },
         ],
       });
