@@ -15,7 +15,7 @@ import type {
 import type { OverrideProperties } from "type-fest";
 
 /**
- * WorkOrder DdbSingleTable Model
+ * WorkOrder Model
  */
 class WorkOrderModel extends Model<
   typeof WorkOrderModel.schema,

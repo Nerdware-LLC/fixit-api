@@ -9,7 +9,7 @@ import { STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR } from "./regex";
 import type { ItemTypeFromSchema } from "@nerdware/ddb-single-table";
 
 /**
- * UserStripeConnectAccount DdbSingleTable Model
+ * UserStripeConnectAccount Model
  */
 class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccountModel.schema> {
   static readonly schema = ddbTable.getModelSchema({

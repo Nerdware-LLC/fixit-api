@@ -15,7 +15,7 @@ import { validateExisting } from "./validateExisting";
 import type { ItemTypeFromSchema, ItemCreationParameters } from "@nerdware/ddb-single-table";
 
 /**
- * UserSubscription DdbSingleTable Model
+ * UserSubscription Model
  */
 class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
   static readonly PRODUCT_IDS = { FIXIT_SUBSCRIPTION: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.productID }; // prettier-ignore

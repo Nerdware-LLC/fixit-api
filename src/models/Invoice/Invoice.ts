@@ -15,7 +15,7 @@ import type {
 } from "@nerdware/ddb-single-table";
 
 /**
- * Invoice DdbSingleTable Model
+ * Invoice Model
  */
 class InvoiceModel extends Model<typeof InvoiceModel.schema> {
   static readonly schema = ddbTable.getModelSchema({

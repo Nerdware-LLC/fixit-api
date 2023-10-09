@@ -1,7 +1,7 @@
 import type { FixitUser, Profile as NullableProfile, NonNullableProfile } from "@/types";
 
 /**
- * Ideas for potential profile fields:
+ * // IDEA Ideas for potential profile fields:
  * - businessAddress
  * - businessPhone
  * - businessWebsite

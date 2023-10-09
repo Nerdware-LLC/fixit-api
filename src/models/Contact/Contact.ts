@@ -8,7 +8,7 @@ import { CONTACT_SK_PREFIX_STR } from "./regex";
 import type { ItemTypeFromSchema, ItemCreationParameters } from "@nerdware/ddb-single-table";
 
 /**
- * Contact DdbSingleTable Model
+ * Contact Model
  */
 class ContactModel extends Model<typeof ContactModel.schema> {
   static readonly schema = ddbTable.getModelSchema({

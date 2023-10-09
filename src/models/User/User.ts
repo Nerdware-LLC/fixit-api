@@ -11,7 +11,7 @@ import type { ItemTypeFromSchema, ItemCreationParameters } from "@nerdware/ddb-s
 import type { OverrideProperties } from "type-fest";
 
 /**
- * User DdbSingleTable Model
+ * User Model
  */
 class UserModel extends Model<typeof UserModel.schema, UserItem, UserItemCreationParams> {
   static readonly schema = ddbTable.getModelSchema({
