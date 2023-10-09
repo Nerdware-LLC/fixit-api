@@ -28,8 +28,8 @@
     "test": "vitest run",
     "test:ci": "vitest run --coverage --bail=1 --silent",
     "test:types": "tsc --project tsconfig.json --noEmit --skipLibCheck",
-    "gql:fetch-current-schema": "rover graph fetch fixit@current > fixit@current.graphql",
-    "gql:codegen": "graphql-codegen --config codegen.yaml"
+    "gql:update-schema": "rover graph fetch fixit@current > fixit@current.graphql",
+    "postgql:update-schema": "graphql-codegen --config codegen.yaml"
   },
   "dependencies": {
     "@apollo/server": "^4.9.1",
