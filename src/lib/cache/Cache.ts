@@ -26,7 +26,7 @@ export class Cache<StoredDataType = any, CacheKeyType = string> {
 
   /**
    * Retrieves data from the cache.
-   * @param {CacheKeyType} key - The cache key under which the data will be stored.
+   * @param {CacheKeyType} key - The cache key to use to retrieve the data.
    * @returns {StoredDataType|undefined} The data stored under the provided key, or undefined if no unexpired data is found.
    */
   get(key: CacheKeyType): StoredDataType | undefined {
