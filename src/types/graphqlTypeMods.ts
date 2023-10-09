@@ -2,6 +2,7 @@ import type { Primitive, Simplify } from "type-fest";
 import type {
   // gql-codegen types:
   Invoice,
+  Location,
   Profile,
   User,
   WorkOrder,
@@ -48,6 +49,7 @@ type RecursiveNonNullable<T> = T extends Primitive | Date
   : Exclude<T, null | undefined>;
 
 export type NonNullableInvoice = NonNullableGqlType<Invoice>;
+export type NonNullableLocation = NonNullableGqlType<Location>;
 export type NonNullableProfile = NonNullableGqlType<Profile>;
 export type NonNullableUser = NonNullableGqlType<User>;
 export type NonNullableWorkOrder = NonNullableGqlType<WorkOrder>;
