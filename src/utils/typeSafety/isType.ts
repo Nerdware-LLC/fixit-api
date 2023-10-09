@@ -80,9 +80,9 @@ export const isDate = (value?: unknown): value is Date => {
  *  - `Object.create(null)` // <-- Why checking the 'constructor' property won't work.
  */
 export const isRecordObject = <KeyTypes extends PropertyKey = string>(
-  value: unknown
+  value?: unknown
 ): value is Record<KeyTypes, unknown> => {
-  return typeof value === "object" && !Array.isArray(value) && value !== null;
+  return typeof value === "object" && Object.prototype.toString.call(value) === "[object Object]";
 };
 
 /** Type guard functions */
