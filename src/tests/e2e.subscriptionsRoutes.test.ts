@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import request from "supertest";
 import { expressApp } from "@/expressApp";
 import { stripe, isValidStripeID } from "@/lib/stripe";
@@ -62,13 +63,13 @@ describe("[e2e][Server Requests] Routes /api/subscriptions/*", () => {
           chargesEnabled: true,
           payoutsEnabled: true,
         },
-        createdAt: expect.toBeValidDate(),
-        updatedAt: expect.toBeValidDate(),
+        createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+        updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
         // AuthToken payload should NOW have subscription info:
         subscription: {
           id: expect.toSatisfyFn((value) => isValidStripeID.subscription(value)),
           status: "active",
-          currentPeriodEnd: expect.toBeValidDate(),
+          currentPeriodEnd: expect.toSatisfyFn((value) => dayjs(value).isValid()),
         },
       });
     });
