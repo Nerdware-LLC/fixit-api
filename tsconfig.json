@@ -24,7 +24,9 @@
       "@/*": ["src/*"]
     },
 
-    // "Completeness" Configs:
+    // Emit:
+    "noEmitOnError": true,
+
     "skipLibCheck": false,
 
     // Output Formatting:
