@@ -10,7 +10,7 @@ import type { WorkOrderItem } from "@/models/WorkOrder";
  * 2. Ensures the authenticated user is allowed to perform the update
  * 3. Ensures the item's existing `status` does not forbid the update
  */
-export const verifyUserCanPerformThisUpdate = <TItem extends WorkOrderModelItem | InvoiceModelItem>(
+export const verifyUserCanPerformThisUpdate = <TItem extends WorkOrderItem | InvoiceItem>(
   item: TItem,
   {
     idOfUserWhoCanPerformThisUpdate: allowedID,
@@ -24,7 +24,9 @@ export const verifyUserCanPerformThisUpdate = <TItem extends WorkOrderModelItem 
 ) => {
   // Ensure the item exists
   if (!item) {
-    throw new GqlUserInputError(`${"amount" in item ? "Invoice" : "Work Order"} not found.`);
+    throw new GqlUserInputError(
+      `${"amount" in item ? "An invoice" : "A work order"} with the provided ID could not be found.`
+    );
   }
   // Ensure the authenticated user is allowed to perform the update
   if (allowedID !== userID) {
