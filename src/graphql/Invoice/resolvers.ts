@@ -1,6 +1,6 @@
 import { eventEmitter } from "@/events/eventEmitter";
 import { DeleteMutationResponse } from "@/graphql/_common";
-import { getFixitUser } from "@/graphql/_helpers";
+import { verifyUserCanPerformThisUpdate, formatAsGqlFixitUser } from "@/graphql/_helpers";
 import { stripe } from "@/lib/stripe";
 import { Invoice } from "@/models/Invoice";
 import { GqlUserInputError, GqlForbiddenError } from "@/utils";
@@ -18,35 +18,37 @@ export const resolvers: Partial<Resolvers> = {
 
       if (!queriedInvoice) throw new GqlUserInputError("Invoice not found.");
 
-      return await getInvoiceCreatedByAndAssignedTo(queriedInvoice, user);
+      return await formatAsGqlInvoice(existingInv, user);
     },
-    myInvoices: async (parent, args, { user }) => {
-      return {
-        createdByUser: await Promise.all(
-          (
-            await Invoice.query({
+      // Query for all Invoices created by the authenticated User
+      const createdByUserQueryResults = await Invoice.query({
               where: {
                 createdByUserID: user.id,
                 id: { beginsWith: Invoice.SK_PREFIX },
               },
-            })
-          ).map(async (inv) => ({
-            ...inv,
+      });
+
+      // Query for all Invoices assigned to the authenticated User
+      const assignedToUserQueryResults = await Invoice.query({
+        where: {
+          assignedToUserID: user.id,
+          id: { beginsWith: Invoice.SK_PREFIX },
+        },
+      });
+
+      // Map each query's results into the GraphQL schema's WorkOrder shape // TODO maybe let resolvers do this?
+      return {
+        createdByUser: await Promise.all(
+          createdByUserQueryResults.map(async (invCreatedByUser) => ({
+            ...invCreatedByUser,
             createdBy: { ...user },
-            assignedTo: await getFixitUser(inv.assignedTo, user),
+            assignedTo: await formatAsGqlFixitUser({ id: invCreatedByUser.assignedToUserID }, user),
           }))
         ),
         assignedToUser: await Promise.all(
-          (
-            await Invoice.query({
-              where: {
-                assignedToUserID: user.id,
-                id: { beginsWith: Invoice.SK_PREFIX },
-              },
-            })
-          ).map(async (inv) => ({
-            ...inv,
-            createdBy: await getFixitUser(inv.createdBy, user),
+          assignedToUserQueryResults.map(async (invAssignedToUser) => ({
+            ...invAssignedToUser,
+            createdBy: await formatAsGqlFixitUser({ id: invAssignedToUser.createdByUserID }, user),
             assignedTo: { ...user },
           }))
         ),
@@ -67,7 +69,7 @@ export const resolvers: Partial<Resolvers> = {
 
       eventEmitter.emitInvoiceCreated(createdInvoice);
 
-      return await getInvoiceCreatedByAndAssignedTo(createdInvoice, user);
+      return await formatAsGqlInvoice(createdInvoice, user);
     },
     updateInvoiceAmount: async (parent, { invoiceID, amount }, { user }) => {
       const [existingInv] = await Invoice.query({ where: { id: invoiceID }, limit: 1 });
@@ -77,9 +79,7 @@ export const resolvers: Partial<Resolvers> = {
         authenticatedUserID: user.id,
       });
 
-      const updatedInvoice = await Invoice.updateOne(existingInv, { amount });
-
-      return await getInvoiceCreatedByAndAssignedTo(updatedInvoice, user);
+      return await formatAsGqlInvoice(updatedInvoice, user);
     },
     payInvoice: async (parent, { invoiceID }, { user }) => {
       // IDEA Adding "assigneeUserDefaultPaymentMethodID" to Invoice would reduce queries.
@@ -117,7 +117,7 @@ export const resolvers: Partial<Resolvers> = {
         stripePaymentIntentID: paymentIntent.id,
       });
 
-      return await getInvoiceCreatedByAndAssignedTo(updatedInvoice, user);
+      return await formatAsGqlInvoice(updatedInvoice, user);
     },
     deleteInvoice: async (parent, { invoiceID }, { user }) => {
       const [existingInv] = await Invoice.query({
@@ -146,10 +146,14 @@ export const resolvers: Partial<Resolvers> = {
 };
 
 /**
+ * This function converts `Invoice` objects from their internal database shape/format into the
+ * GraphQL schema's `Invoice` shape/format.
+ */
+const formatAsGqlInvoice = async (
   invoice: InvoiceItem,
   userAuthToken: FixitApiAuthTokenPayload
 ) => ({
   ...invoice,
-  createdBy: await getFixitUser(invoice.createdBy, userAuthToken),
-  assignedTo: await getFixitUser(invoice.assignedTo, userAuthToken),
+  createdBy: await formatAsGqlFixitUser({ id: invoice.createdByUserID }, userAuthToken),
+  assignedTo: await formatAsGqlFixitUser({ id: invoice.assignedToUserID }, userAuthToken),
 });

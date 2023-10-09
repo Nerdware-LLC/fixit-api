@@ -14,7 +14,7 @@ describe("notifyAssignorCompletedWO", () => {
     const result = await notifyAssignorCompletedWO(completedWO);
 
     expect(result).toBeUndefined();
-    expect(getItemSpy).toHaveBeenCalledWith({ id: completedWO.createdBy.id });
+    expect(getItemSpy).toHaveBeenCalledWith({ id: completedWO.createdByUserID });
     expect(invokeEventSpy).toHaveBeenCalledWith("PushNotificationService", [
       new WorkOrderPushNotification({
         pushEventName: "WorkOrderCompleted",
@@ -43,7 +43,7 @@ describe("notifyAssignorCompletedWO", () => {
     const result = await notifyAssignorCompletedWO(completedWO);
 
     expect(result).toBeUndefined();
-    expect(getItemSpy).toHaveBeenCalledWith({ id: completedWO.createdBy.id });
+    expect(getItemSpy).toHaveBeenCalledWith({ id: completedWO.createdByUserID });
     expect(invokeEventSpy).not.toHaveBeenCalled();
   });
 
@@ -56,7 +56,7 @@ describe("notifyAssignorCompletedWO", () => {
     const result = await notifyAssignorCompletedWO(completedWO);
 
     expect(result).toBeUndefined();
-    expect(getItemSpy).toHaveBeenCalledWith({ id: completedWO.createdBy.id });
+    expect(getItemSpy).toHaveBeenCalledWith({ id: completedWO.createdByUserID });
     expect(invokeEventSpy).not.toHaveBeenCalled();
   });
 });

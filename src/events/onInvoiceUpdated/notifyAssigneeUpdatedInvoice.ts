@@ -12,9 +12,7 @@ import type { InvoiceItem } from "@/models/Invoice";
 export const notifyAssigneeUpdatedInvoice = async (updatedInvoice?: InvoiceItem) => {
   if (!updatedInvoice) return;
 
-  const {
-    assignedTo: { id: assignedToUserID },
-  } = updatedInvoice;
+  const { assignedToUserID } = updatedInvoice;
 
   const assigneeUser = await User.getItem({ id: assignedToUserID });
 

@@ -2,7 +2,7 @@ import { Model } from "@nerdware/ddb-single-table";
 import { isValidStripeID } from "@/lib/stripe";
 import { userModelHelpers } from "@/models/User/helpers";
 import { workOrderModelHelpers as woModelHelpers } from "@/models/WorkOrder/helpers";
-import { COMMON_ATTRIBUTES, COMMON_SCHEMA_OPTS, type FixitUserFields } from "@/models/_common";
+import { COMMON_ATTRIBUTES } from "@/models/_common";
 import { ddbTable } from "@/models/ddbTable";
 import { INVOICE_ENUM_CONSTANTS } from "./enumConstants";
 import { invoiceModelHelpers } from "./helpers";
@@ -67,7 +67,10 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema> {
     ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
   } as const);
 
-  static readonly schemaOptions = COMMON_SCHEMA_OPTS.getOptsForItemWithCreatedByAndAssignedTo(true);
+  static readonly schemaOptions: ModelSchemaOptions = {
+    /** This validateItem fn ensures `createdByUserID` !== `assignedToUserID` */
+    validateItem: ({ pk, data }) => pk !== data,
+  };
 
   constructor() {
     super("Invoice", InvoiceModel.schema, {

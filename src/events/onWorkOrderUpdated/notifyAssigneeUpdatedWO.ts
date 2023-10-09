@@ -38,39 +38,39 @@ export const notifyAssigneeUpdatedWO = async (
   // Array of WorkOrderPushNotifications for any impacted Users
   const pushNotificationsToImpactedUsers: Array<WorkOrderPushNotification> = [];
 
-  const { assignedTo: newAssignee } = newWOstate;
-  const { assignedTo: prevAssignee } = prevWOstate;
+  const { assignedToUserID: newAssigneeUserID } = newWOstate;
+  const { assignedToUserID: prevAssigneeUserID } = prevWOstate;
 
   /* If the new and previous assignments are not the same, then
   the possible notifications to send are UNASSIGNED/ASSIGNED.  */
-  if (newAssignee !== prevAssignee) {
+  if (newAssigneeUserID !== prevAssigneeUserID) {
     // Check if previous assignee exists
-    if (prevAssignee?.id) {
+    if (prevAssigneeUserID) {
       pushNotificationsToImpactedUsers.push(
         new WorkOrderPushNotification({
           pushEventName: "WorkOrderUnassigned",
-          recipientUser: prevAssignee,
+          recipientUser: { id: prevAssigneeUserID },
           workOrder: prevWOstate,
         })
       );
     }
     // Check if new assignee exists
-    if (newAssignee?.id) {
+    if (newAssigneeUserID) {
       pushNotificationsToImpactedUsers.push(
         new WorkOrderPushNotification({
           pushEventName: "WorkOrderAssigned",
-          recipientUser: newAssignee,
+          recipientUser: { id: newAssigneeUserID },
           workOrder: newWOstate,
         })
       );
     }
     // If there's been no re-assignment, see if an UPDATE notification needs to be sent
-  } else if (newAssignee) {
-    if (newAssignee?.id) {
+  } else if (newAssigneeUserID) {
+    if (newAssigneeUserID) {
       pushNotificationsToImpactedUsers.push(
         new WorkOrderPushNotification({
           pushEventName: "WorkOrderUpdated",
-          recipientUser: newAssignee,
+          recipientUser: { id: newAssigneeUserID },
           workOrder: newWOstate,
         })
       );
@@ -87,7 +87,7 @@ export const notifyAssigneeUpdatedWO = async (
     // Update PNs for Users with valid push tokens, remove PNs for Users without valid tokens.
     // Note: per Expo's recommendation, bad/invalid tokens are removed by the push service.
     const deliverablePNs = pushNotificationsToImpactedUsers.reduce(
-      (accum, pushNotification) => {
+      (accum: Array<WorkOrderPushNotification>, pushNotification) => {
         // Find the User Item
         const user = impactedUsers.find((user) => user.id === pushNotification.data._recipientUser);
 
@@ -101,7 +101,7 @@ export const notifyAssigneeUpdatedWO = async (
 
         return accum;
       },
-      [] as Array<WorkOrderPushNotification> // <-- reducer init accum is empty array
+      [] // <-- reducer accum is initialized as an empty array
     );
 
     // If there are any deliverable push notifications, send them to the PushService

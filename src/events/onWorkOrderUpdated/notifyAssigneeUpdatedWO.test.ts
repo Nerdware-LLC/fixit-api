@@ -20,7 +20,7 @@ describe("notifyAssigneeUpdatedWO", () => {
   test(`sends a "WO-Unassigned" PN to a User unassigned from a WO if they have a valid push token`, async () => {
     const prevAssignee = { id: "USER#111", expoPushToken: "token" } as UserItem;
     const prevWOstate = { id: "WO#123", assignedToUserID: prevAssignee.id } as WorkOrderItem;
-    const newWOstate = { ...prevWOstate, assignedTo: null };
+    const newWOstate = { ...prevWOstate, assignedToUserID: null };
     const batchGetItemsSpy = vi.spyOn(User, "batchGetItems").mockResolvedValueOnce([prevAssignee]);
     const invokeEventSpy = vi.spyOn(lambdaClient, "invokeEvent");
 
@@ -55,7 +55,7 @@ describe("notifyAssigneeUpdatedWO", () => {
   test(`sends a "WO-Assigned" PN to a User newly assigned to a WO if they have a valid push token`, async () => {
     const prevWOstate = { id: "WO#123", assignedToUserID: null } as WorkOrderItem;
     const newAssignee = { id: "USER#111", expoPushToken: "token" } as UserItem;
-    const newWOstate = { ...prevWOstate, assignedTo: { id: newAssignee.id } };
+    const newWOstate = { ...prevWOstate, assignedToUserID: newAssignee.id };
     const batchGetItemsSpy = vi.spyOn(User, "batchGetItems").mockResolvedValueOnce([newAssignee]);
     const invokeEventSpy = vi.spyOn(lambdaClient, "invokeEvent");
 
@@ -76,7 +76,7 @@ describe("notifyAssigneeUpdatedWO", () => {
   test(`does not send a "WO-Assigned" PN to a User newly assigned to a WO if they don't have a valid push token`, async () => {
     const prevWOstate = { id: "WO#123", assignedToUserID: null } as WorkOrderItem;
     const newAssignee = { id: "USER#111", expoPushToken: null } as UserItem;
-    const newWOstate = { ...prevWOstate, assignedTo: { id: newAssignee.id } };
+    const newWOstate = { ...prevWOstate, assignedToUserID: newAssignee.id };
     const batchGetItemsSpy = vi.spyOn(User, "batchGetItems").mockResolvedValueOnce([newAssignee]);
     const invokeEventSpy = vi.spyOn(lambdaClient, "invokeEvent");
 

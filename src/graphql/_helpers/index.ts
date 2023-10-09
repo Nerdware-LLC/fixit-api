@@ -1,2 +1,2 @@
-export * from "./getFixitUser";
+export * from "./formatAsGqlFixitUser";
 export * from "./verifyUserCanPerformThisUpdate";

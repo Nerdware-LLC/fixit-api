@@ -1,6 +1,6 @@
 import { eventEmitter } from "@/events/eventEmitter";
 import { DeleteMutationResponse } from "@/graphql/_common";
-import { verifyUserCanPerformThisUpdate, getFixitUser } from "@/graphql/_helpers";
+import { verifyUserCanPerformThisUpdate, formatAsGqlFixitUser } from "@/graphql/_helpers";
 import { USER_ID_REGEX } from "@/models/User/regex";
 import { WorkOrder } from "@/models/WorkOrder";
 import type { WorkOrderItem } from "@/models/WorkOrder";
@@ -13,35 +13,39 @@ export const resolvers: Partial<Resolvers> = {
         where: { id: workOrderID },
         limit: 1,
       });
-      return await getWorkOrderCreatedByAndAssignedTo(queriedWO, user);
+      return await formatAsGqlWorkOrder(existingWO, user);
     },
-    myWorkOrders: async (parent, args, { user }) => {
-      return {
-        createdByUser: await Promise.all(
-          (
-            await WorkOrder.query({
+      // Query for all WorkOrders created by the authenticated User
+      const createdByUserQueryResults = await WorkOrder.query({
               where: {
                 createdByUserID: user.id,
                 id: { beginsWith: WorkOrder.SK_PREFIX },
               },
-            })
-          ).map(async (wo) => ({
-            ...wo,
+      });
+
+      // Query for all WorkOrders assigned to the authenticated User
+      const assignedToUserQueryResults = await WorkOrder.query({
+        where: {
+          assignedToUserID: user.id,
+          id: { beginsWith: WorkOrder.SK_PREFIX },
+        },
+      });
+
+      // Map each query's results into the GraphQL schema's WorkOrder shape // TODO maybe let resolvers do this?
+      return {
+        createdByUser: await Promise.all(
+          createdByUserQueryResults.map(async (woCreatedByUser) => ({
+            ...woCreatedByUser,
             createdBy: { ...user },
-            assignedTo: !wo?.assignedTo?.id ? null : await getFixitUser(wo.assignedTo, user),
+            assignedTo: !woCreatedByUser?.assignedToUserID
+              ? null
+              : await formatAsGqlFixitUser({ id: woCreatedByUser.assignedToUserID }, user),
           }))
         ),
         assignedToUser: await Promise.all(
-          (
-            await WorkOrder.query({
-              where: {
-                assignedToUserID: user.id,
-                id: { beginsWith: WorkOrder.SK_PREFIX },
-              },
-            })
-          ).map(async (wo) => ({
-            ...wo,
-            createdBy: await getFixitUser(wo.createdBy, user),
+          assignedToUserQueryResults.map(async (woAssignedToUser) => ({
+            ...woAssignedToUser,
+            createdBy: await formatAsGqlFixitUser({ id: woAssignedToUser.createdByUserID }, user),
             assignedTo: { ...user },
           }))
         ),
@@ -61,7 +65,7 @@ export const resolvers: Partial<Resolvers> = {
 
       eventEmitter.emitWorkOrderCreated(createdWO);
 
-      return await getWorkOrderCreatedByAndAssignedTo(createdWO, user);
+      return await formatAsGqlWorkOrder(createdWO, user);
     },
     updateWorkOrder: async (parent, { workOrderID, workOrder: woInput }, { user }) => {
       const [existingWO] = await WorkOrder.query({
@@ -105,7 +109,7 @@ export const resolvers: Partial<Resolvers> = {
         status: upToDateStatus,
       });
 
-      return await getWorkOrderCreatedByAndAssignedTo(updatedWO, user);
+      return await formatAsGqlWorkOrder(updatedWO, user);
     },
     cancelWorkOrder: async (parent, { workOrderID }, { user }) => {
       const [existingWO] = await WorkOrder.query({
@@ -129,8 +133,7 @@ export const resolvers: Partial<Resolvers> = {
         await WorkOrder.deleteItem({ createdByUserID: user.id, id: workOrderID });
         return new DeleteMutationResponse({ id: workOrderID, wasDeleted: true });
       } else {
-        const canceledWO = await WorkOrder.updateOne(existingWO, { status: "CANCELLED" });
-        return await getWorkOrderCreatedByAndAssignedTo(canceledWO, user);
+        return await formatAsGqlWorkOrder(canceledWO, user);
       }
     },
     setWorkOrderStatusComplete: async (parent, { workOrderID }, { user }) => {
@@ -151,7 +154,7 @@ export const resolvers: Partial<Resolvers> = {
 
       const updatedWO = await WorkOrder.updateOne(existingWO, { status: "COMPLETE" });
 
-      return await getWorkOrderCreatedByAndAssignedTo(updatedWO, user);
+      return await formatAsGqlWorkOrder(updatedWO, user);
     },
   },
   CancelWorkOrderResponse: {
@@ -166,15 +169,16 @@ export const resolvers: Partial<Resolvers> = {
 };
 
 /**
- * This function gets the WorkOrder `createdBy` and `assignedTo` FixitUser fields.
+ * This function converts `WorkOrder` objects from their internal database shape/format into the
+ * GraphQL schema's `WorkOrder` shape/format.
  */
-const getWorkOrderCreatedByAndAssignedTo = async (
+const formatAsGqlWorkOrder = async (
   workOrder: WorkOrderItem,
   userAuthToken: FixitApiAuthTokenPayload
 ) => ({
   ...workOrder,
-  createdBy: await getFixitUser(workOrder.createdBy, userAuthToken),
-  assignedTo: !workOrder?.assignedTo?.id
+  createdBy: await formatAsGqlFixitUser({ id: workOrder.createdByUserID }, userAuthToken),
+  assignedTo: !workOrder?.assignedToUserID
     ? null
-    : await getFixitUser(workOrder.assignedTo, userAuthToken),
+    : await formatAsGqlFixitUser({ id: workOrder.assignedToUserID }, userAuthToken),
 });

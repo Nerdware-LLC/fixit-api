@@ -12,9 +12,7 @@ import type { InvoiceItem } from "@/models/Invoice";
 export const notifyAssigneeDeletedInvoice = async (deletedInvoice?: InvoiceItem) => {
   if (!deletedInvoice) return;
 
-  const {
-    assignedTo: { id: assignedToUserID },
-  } = deletedInvoice;
+  const { assignedToUserID } = deletedInvoice;
 
   const assigneeUser = await User.getItem({ id: assignedToUserID });
 

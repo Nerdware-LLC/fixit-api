@@ -14,7 +14,7 @@ describe("notifyAssigneeNewWO", () => {
     const result = await notifyAssigneeNewWO(newWO);
 
     expect(result).toBeUndefined();
-    expect(getItemSpy).toHaveBeenCalledWith({ id: newWO.assignedTo.id });
+    expect(getItemSpy).toHaveBeenCalledWith({ id: newWO.assignedToUserID });
     expect(invokeEventSpy).toHaveBeenCalledWith("PushNotificationService", [
       new WorkOrderPushNotification({
         pushEventName: "WorkOrderAssigned",
@@ -36,14 +36,14 @@ describe("notifyAssigneeNewWO", () => {
   });
 
   test("does not invoke an event if the assigneeUser can not be found", async () => {
-    const newWO = { assignedTo: { id: "USER#123" } } as WorkOrderWithAssignee;
+    const newWO = { assignedToUserID: "USER#123" } as WorkOrderWithAssignee;
     const getItemSpy = vi.spyOn(User, "getItem").mockResolvedValueOnce(undefined);
     const invokeEventSpy = vi.spyOn(lambdaClient, "invokeEvent");
 
     const result = await notifyAssigneeNewWO(newWO);
 
     expect(result).toBeUndefined();
-    expect(getItemSpy).toHaveBeenCalledWith({ id: newWO.assignedTo.id });
+    expect(getItemSpy).toHaveBeenCalledWith({ id: newWO.assignedToUserID });
     expect(invokeEventSpy).not.toHaveBeenCalled();
   });
 
@@ -56,7 +56,7 @@ describe("notifyAssigneeNewWO", () => {
     const result = await notifyAssigneeNewWO(newWO);
 
     expect(result).toBeUndefined();
-    expect(getItemSpy).toHaveBeenCalledWith({ id: newWO.assignedTo.id });
+    expect(getItemSpy).toHaveBeenCalledWith({ id: newWO.assignedToUserID });
     expect(invokeEventSpy).not.toHaveBeenCalled();
   });
 });

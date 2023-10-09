@@ -13,9 +13,9 @@ export const notifyAssigneeCancelledWO = async (cancelledWO?: WorkOrderItem) => 
   if (!cancelledWO) return;
 
   // If new WorkOrder was UNASSIGNED, return.
-  if (!cancelledWO?.assignedTo?.id) return;
+  if (!cancelledWO?.assignedToUserID) return;
 
-  const assigneeUser = await User.getItem({ id: cancelledWO.assignedTo.id });
+  const assigneeUser = await User.getItem({ id: cancelledWO.assignedToUserID });
 
   // If assignee does not currently have a registered pushToken, return.
   if (!assigneeUser?.expoPushToken) return;

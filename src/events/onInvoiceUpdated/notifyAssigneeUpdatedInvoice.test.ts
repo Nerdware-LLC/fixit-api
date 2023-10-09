@@ -14,7 +14,7 @@ describe("notifyAssigneeUpdatedInvoice", () => {
     const result = await notifyAssigneeUpdatedInvoice(updatedInv);
 
     expect(result).toBeUndefined();
-    expect(getItemSpy).toHaveBeenCalledWith({ id: updatedInv.assignedTo.id });
+    expect(getItemSpy).toHaveBeenCalledWith({ id: updatedInv.assignedToUserID });
     expect(invokeEventSpy).toHaveBeenCalledWith("PushNotificationService", [
       new InvoicePushNotification({
         pushEventName: "InvoiceUpdated",
@@ -43,7 +43,7 @@ describe("notifyAssigneeUpdatedInvoice", () => {
     const result = await notifyAssigneeUpdatedInvoice(updatedInvoice);
 
     expect(result).toBeUndefined();
-    expect(getItemSpy).toHaveBeenCalledWith({ id: updatedInvoice.assignedTo.id });
+    expect(getItemSpy).toHaveBeenCalledWith({ id: updatedInvoice.assignedToUserID });
     expect(invokeEventSpy).not.toHaveBeenCalled();
   });
 
@@ -56,7 +56,7 @@ describe("notifyAssigneeUpdatedInvoice", () => {
     const result = await notifyAssigneeUpdatedInvoice(updatedInvoice);
 
     expect(result).toBeUndefined();
-    expect(getItemSpy).toHaveBeenCalledWith({ id: updatedInvoice.assignedTo.id });
+    expect(getItemSpy).toHaveBeenCalledWith({ id: updatedInvoice.assignedToUserID });
     expect(invokeEventSpy).not.toHaveBeenCalled();
   });
 });

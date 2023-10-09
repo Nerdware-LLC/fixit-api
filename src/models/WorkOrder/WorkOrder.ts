@@ -1,7 +1,7 @@
 import { Model } from "@nerdware/ddb-single-table";
 import { Location } from "@/models/Location";
 import { userModelHelpers } from "@/models/User/helpers";
-import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES, COMMON_SCHEMA_OPTS } from "@/models/_common";
+import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@/models/_common";
 import { ddbTable } from "@/models/ddbTable";
 import { WORK_ORDER_ENUM_CONSTANTS } from "./enumConstants";
 import { workOrderModelHelpers as woModelHelpers } from "./helpers";
@@ -127,13 +127,15 @@ class WorkOrderModel extends Model<
     ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
   } as const);
 
-  static readonly schemaOptions =
-    COMMON_SCHEMA_OPTS.getOptsForItemWithCreatedByAndAssignedTo(false);
+  static readonly schemaOptions: ModelSchemaOptions = {
+    /** This validateItem fn ensures `createdByUserID` !== `assignedToUserID` */
+    validateItem: ({ pk, data }) => pk !== data,
+  };
 
   constructor() {
     super("WorkOrder", WorkOrderModel.schema, {
       ...WorkOrderModel.schemaOptions,
-      ...ddbSingleTable,
+      ...ddbTable,
     });
   }
 

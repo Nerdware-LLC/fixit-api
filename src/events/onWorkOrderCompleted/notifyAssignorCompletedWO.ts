@@ -12,7 +12,7 @@ import type { WorkOrderItem } from "@/models/WorkOrder";
 export const notifyAssignorCompletedWO = async (completedWO?: WorkOrderItem) => {
   if (!completedWO) return;
 
-  const assignorUser = await User.getItem({ id: completedWO.createdBy.id });
+  const assignorUser = await User.getItem({ id: completedWO.createdByUserID });
 
   // If assignor does not currently have a registered pushToken, return.
   if (!assignorUser?.expoPushToken) return;
