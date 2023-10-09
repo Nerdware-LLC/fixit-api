@@ -1,5 +1,6 @@
+import { hasKey } from "@/utils";
 import { LOCATION_COMPOSITE_REGEX } from "./regex";
-import type { Location as GqlSchemaLocationType } from "@/types";
+import type { Location as GqlSchemaLocationType, UnwrapGqlMaybeType } from "@/types";
 
 /**
  * Location Model
@@ -14,23 +15,25 @@ import type { Location as GqlSchemaLocationType } from "@/types";
  * This is done to facilitate flexible querying of the DDB db for access patterns like "Find all
  * work orders on Foo Street".
  */
-export class Location implements GqlSchemaLocationType {
+export class Location implements LocationItem {
   country?: string | null;
   region: string;
   city: string;
   streetLine1: string;
   streetLine2?: string | null;
 
+  public static DEFAULT_COUNTRY = "USA";
+
   public static get KEYS(): Array<keyof Location> {
     return ["country", "region", "city", "streetLine1", "streetLine2"];
   }
 
   /**
-   * - Converts a Location object into a DDB compound attribute string.
-   * - Use this function in `transformValue.toDB` methods of DdbSingleTable model schema.
+   * Convert a Location object into a DDB compound attribute string.
+   * This is used in `transformValue.toDB` methods of DdbSingleTable model schema.
    */
   public static convertToCompoundString = ({
-    country: countryRawInput = "USA",
+    country: countryRawInput = Location.DEFAULT_COUNTRY,
     region: regionRawInput,
     city: cityRawInput,
     streetLine1: streetLine1RawInput,
@@ -78,23 +81,22 @@ export class Location implements GqlSchemaLocationType {
   };
 
   /**
-   * - Converts a Location DDB-compound-string into a Location object.
-   * - Use this function in `transformValue.fromDB` methods of DdbSingleTable model schema.
+   * Convert a Location DDB-compound-string into a Location object.
+   * This is used in `transformValue.fromDB` methods of DdbSingleTable model schema.
    */
   public static parseCompoundString = (locationCompoundStr: string) => {
     if (typeof locationCompoundStr !== "string") return locationCompoundStr;
     // Split the composite value string using the "#" delimeter
-    const locationComponents: Array<string | null> = locationCompoundStr.split("#");
+    const locationComponents = locationCompoundStr.split("#");
     // If length is less than 4, throw an error
     if (locationComponents.length < 4) {
       throw new Error(
         `Invalid Location: "${locationCompoundStr}" is not a valid Location compound string.`
       );
     }
-    // If length is 4, append `null` for streetLine2
-    if (locationComponents.length === 4) locationComponents.push(null);
 
-    return locationComponents.reduce((accum, dbValue, index) => {
+    // Reduce the array into a Location object
+    const locationObject = locationComponents.reduce((accum, dbValue, index) => {
       let formattedOutput = dbValue;
 
       // Format non-null values
@@ -106,10 +108,15 @@ export class Location implements GqlSchemaLocationType {
       }
 
       // Get location key from array, and set the Location K-V
-      accum[Location.KEYS[index]] = formattedOutput as string;
+      accum[Location.KEYS[index]] = formattedOutput;
 
       return accum;
     }, {} as Location);
+
+    // If optional field `streetLine2` is missing, set default `null`
+    if (!hasKey(locationObject, "streetLine2")) locationObject.streetLine2 = null;
+
+    return locationObject;
   };
 
   /**
@@ -142,3 +149,5 @@ export class Location implements GqlSchemaLocationType {
     this.streetLine2 = streetLine2 || null;
   }
 }
+
+export type LocationItem = UnwrapGqlMaybeType<GqlSchemaLocationType>;
