@@ -1,7 +1,6 @@
 // Mock data for testing:
 export * from "./contacts";
 export * from "./dates";
-export * from "./ddbTable";
 export * from "./invoices";
 export * from "./users";
 export * from "./userStripeConnectAccounts";
