@@ -16,6 +16,12 @@ export default defineConfig({
     environment: "node",
     include: ["**/?(*.){test,spec}.?(c|m)[tj]s?(x)"],
     setupFiles: ["src/tests/setupTests.ts"],
+    // This server.deps.inline config allows mocking the package's underlying @aws-sdk imports
+    server: {
+      deps: {
+        inline: ["@nerdware/ddb-single-table"],
+      },
+    },
     reporters: ["default", ...(process.env.GITHUB_ACTIONS ? [new GithubActionsReporter()] : [])],
     coverage: {
       include: ["src/**/*.{js,ts}"],
