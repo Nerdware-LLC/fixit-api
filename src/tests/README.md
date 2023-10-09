@@ -7,6 +7,6 @@ This dir contains the following:
 - End-to-end tests (the files prefixed with `e2e.`)
 - Static mock items, which are commonly used as inputs for various test suites.
 
-This dir and its contents are explicitly ignored by [tsconfig.build.json](../../tsconfig.build.json).
+This dir and its contents are explicitly ignored by [SWC when creating builds](../../.swcrc).
 
 > In this project, all test suite files are suffixed with `.test.ts`.
