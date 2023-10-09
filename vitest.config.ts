@@ -5,9 +5,14 @@ import { defineConfig, coverageConfigDefaults } from "vitest/config";
 export default defineConfig({
   plugins: [viteTsconfigPaths()],
   test: {
+    /* `restoreMocks` accomplishes the following:
+      - clears all spies of `spy.mock.calls` and `spy.mock.results` (same as clearMocks:true)
+      - removes any mocked implementations (same as mockReset:true)
+      - restores the original implementation so fns don't return undefined like with mockReset
+    */
+    restoreMocks: true,
     globals: true,
-    clearMocks: true,
-    mockReset: true,
+    silent: true,
     environment: "node",
     include: ["**/?(*.){test,spec}.?(c|m)[tj]s?(x)"],
     setupFiles: ["src/tests/setupTests.ts"],
