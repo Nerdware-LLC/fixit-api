@@ -10,7 +10,7 @@ describe("JWT", () => {
     test("returns a valid signed JWT when called with a valid payload arg", async () => {
       const token = signAndEncodeJWT(MOCK_JWT_PAYLOAD);
       const result = await validateAndDecodeJWT(token);
-      expect(result).toEqual(expect.objectContaining(MOCK_JWT_PAYLOAD));
+      expect(result).toStrictEqual(expect.objectContaining(MOCK_JWT_PAYLOAD));
     });
   });
 
@@ -23,7 +23,7 @@ describe("JWT", () => {
         expiresIn: "5m",
       });
       const result = await validateAndDecodeJWT(token);
-      expect(result).toEqual(expect.objectContaining(MOCK_JWT_PAYLOAD));
+      expect(result).toStrictEqual(expect.objectContaining(MOCK_JWT_PAYLOAD));
     });
 
     test("throws an error when called with an invalid token arg", async () => {

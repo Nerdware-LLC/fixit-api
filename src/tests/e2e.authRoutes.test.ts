@@ -91,7 +91,7 @@ describe("[e2e] Server Requests /api/auth/*", () => {
 
       // Assert the token payload
       const tokenPayload = await AuthToken.validateAndDecodeAuthToken(response.body.token);
-      expect(tokenPayload).toEqual({
+      expect(tokenPayload).toStrictEqual({
         id: expect.stringMatching(USER_ID_REGEX),
         handle: MOCK_REGISTER_REQUEST_ARGS.handle,
         email: MOCK_REGISTER_REQUEST_ARGS.email,
@@ -148,7 +148,7 @@ describe("[e2e] Server Requests /api/auth/*", () => {
 
       // Assert the token payload
       const tokenPayload = await AuthToken.validateAndDecodeAuthToken(responseBody.token);
-      expect(tokenPayload).toEqual({
+      expect(tokenPayload).toStrictEqual({
         id: expect.stringMatching(USER_ID_REGEX),
         handle: MOCK_USERS.USER_A.handle,
         email: MOCK_LOGIN_REQUEST_ARGS.email,
@@ -171,7 +171,7 @@ describe("[e2e] Server Requests /api/auth/*", () => {
       });
 
       // Assert the pre-fetched userItems
-      expect(responseBody.userItems).toEqual({
+      expect(responseBody.userItems).toStrictEqual({
         workOrders: [
           {
             ...MOCK_WORK_ORDERS.WO_A,
@@ -237,7 +237,7 @@ describe("[e2e] Server Requests /api/auth/*", () => {
 
       // Assert the token payload
       const tokenPayload = await AuthToken.validateAndDecodeAuthToken(responseBody.token);
-      expect(tokenPayload).toEqual({
+      expect(tokenPayload).toStrictEqual({
         id: expect.stringMatching(USER_ID_REGEX),
         handle: MOCK_USERS.USER_A.handle,
         email: MOCK_USERS.USER_A.email,
@@ -260,7 +260,7 @@ describe("[e2e] Server Requests /api/auth/*", () => {
       });
 
       // Assert the pre-fetched userItems
-      expect(responseBody.userItems).toEqual({
+      expect(responseBody.userItems).toStrictEqual({
         workOrders: [
           {
             ...MOCK_WORK_ORDERS.WO_A,

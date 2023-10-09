@@ -7,7 +7,7 @@ describe("Cache", () => {
       const key = "testKey";
       const data = { test: "data" };
       cache.set(key, data);
-      expect(cache.get(key)).toEqual(data);
+      expect(cache.get(key)).toStrictEqual(data);
     });
   });
 
@@ -17,7 +17,7 @@ describe("Cache", () => {
       const key = "testKey";
       const data = { test: "data" };
       cache.set(key, data);
-      expect(cache.get(key)).toEqual(data);
+      expect(cache.get(key)).toStrictEqual(data);
     });
     test("returns undefined when called with a non-existent key", () => {
       const cache = new Cache();

@@ -41,7 +41,7 @@ describe("[e2e][Server Requests] Routes /api/connect/*", () => {
 
       // Assert the response
       expect(status).toBe(200);
-      expect(responseBody).toEqual({ stripeLink: mockStripeLink });
+      expect(responseBody).toStrictEqual({ stripeLink: mockStripeLink });
     });
   });
 
@@ -68,7 +68,7 @@ describe("[e2e][Server Requests] Routes /api/connect/*", () => {
 
       // Assert the response
       expect(status).toBe(200);
-      expect(responseBody).toEqual({ stripeLink: mockStripeLink });
+      expect(responseBody).toStrictEqual({ stripeLink: mockStripeLink });
     });
   });
 });

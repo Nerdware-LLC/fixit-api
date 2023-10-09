@@ -36,7 +36,7 @@ describe("AuthToken", () => {
   describe("authToken.toString()", () => {
     test("returns encoded token string when called", () => {
       const authToken = new AuthToken(MOCK_AUTH_TOKEN_USER_DATA);
-      expect(authToken.toString()).toEqual(expect.any(String));
+      expect(authToken.toString()).toStrictEqual(expect.any(String));
     });
   });
 
@@ -44,7 +44,7 @@ describe("AuthToken", () => {
     test("returns decoded auth token payload when called with a valid token arg", async () => {
       const authToken = new AuthToken(MOCK_AUTH_TOKEN_USER_DATA);
       const result = await AuthToken.validateAndDecodeAuthToken(authToken.toString());
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         ...MOCK_AUTH_TOKEN_USER_DATA,
         createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
         updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
@@ -58,7 +58,7 @@ describe("AuthToken", () => {
       const result = await AuthToken.getValidatedRequestAuthTokenPayload({
         get: vi.fn().mockReturnValue(`Bearer ${authToken.toString()}`),
       } as any);
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         ...MOCK_AUTH_TOKEN_USER_DATA,
         createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
         updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
@@ -72,7 +72,7 @@ describe("AuthToken", () => {
         ...MOCK_AUTH_TOKEN_USER_DATA,
         aud: "test",
       });
-      expect(result).toEqual(MOCK_AUTH_TOKEN_USER_DATA);
+      expect(result).toStrictEqual(MOCK_AUTH_TOKEN_USER_DATA);
       expect(result).not.toHaveProperty("aud");
     });
   });

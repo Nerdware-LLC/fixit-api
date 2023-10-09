@@ -21,6 +21,6 @@ describe("getUnixTimestampUUID()", () => {
     const timestamp = new Date();
     const result1 = getUnixTimestampUUID(timestamp);
     const result2 = getUnixTimestampUUID(timestamp);
-    expect(result1).not.toEqual(result2);
+    expect(result1).not.toStrictEqual(result2);
   });
 });

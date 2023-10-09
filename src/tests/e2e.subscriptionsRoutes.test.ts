@@ -49,7 +49,7 @@ describe("[e2e][Server Requests] Routes /api/subscriptions/*", () => {
 
       // Assert the token payload
       const tokenPayload = await AuthToken.validateAndDecodeAuthToken(responseBody.token);
-      expect(tokenPayload).toEqual({
+      expect(tokenPayload).toStrictEqual({
         id: MOCK_USERS.USER_A.id,
         handle: MOCK_USERS.USER_A.handle,
         email: MOCK_USERS.USER_A.email,
@@ -98,7 +98,7 @@ describe("[e2e][Server Requests] Routes /api/subscriptions/*", () => {
 
       // Assert the response
       expect(status).toBe(200);
-      expect(responseBody).toEqual({ stripeLink: mockStripeLink });
+      expect(responseBody).toStrictEqual({ stripeLink: mockStripeLink });
     });
   });
 });
