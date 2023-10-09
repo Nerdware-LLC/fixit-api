@@ -35,7 +35,6 @@
     "forceConsistentCasingInFileNames": true,
 
     // Type Checking:
-    "noImplicitAny": true,
     "strict": true
   }
 }
