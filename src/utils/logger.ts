@@ -118,7 +118,7 @@ export const logger = {
     messageColor: chalk.magenta,
   }),
   warn: getLoggerUtil({
-    label: "SERVER",
+    label: "WARN",
     messageColor: chalk.yellow,
   }),
   security: getLoggerUtil({
