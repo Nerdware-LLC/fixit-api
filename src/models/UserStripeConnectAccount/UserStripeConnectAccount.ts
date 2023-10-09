@@ -55,7 +55,6 @@ class UserStripeConnectAccountModel extends Model<typeof UserStripeConnectAccoun
   readonly SK_PREFIX = STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR;
   readonly getFormattedSK = scaModelHelpers.sk.format;
   readonly createOne = createOne;
-  readonly updateOne = updateOne;
 }
 
 export const UserStripeConnectAccount = new UserStripeConnectAccountModel();

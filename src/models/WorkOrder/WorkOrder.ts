@@ -146,9 +146,6 @@ class WorkOrderModel extends Model<
   readonly STATUSES = WORK_ORDER_ENUM_CONSTANTS.STATUSES;
   readonly CATEGORIES = WORK_ORDER_ENUM_CONSTANTS.CATEGORIES;
   readonly SK_PREFIX = WORK_ORDER_SK_PREFIX_STR;
-  readonly getFormattedID = woModelHelpers.id.format;
-  readonly isValidID = woModelHelpers.id.isValid;
-  readonly updateOne = updateOne;
 }
 
 export const WorkOrder = new WorkOrderModel();

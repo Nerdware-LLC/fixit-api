@@ -95,7 +95,6 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
   readonly SK_PREFIX = SUB_SK_PREFIX;
   readonly getFormattedSK = subModelHelpers.sk.format;
   readonly normalizeStripeFields = normalizeStripeFields;
-  readonly updateOne = updateOne;
   readonly upsertOne = upsertOne;
   readonly validateExisting = validateExisting;
 }

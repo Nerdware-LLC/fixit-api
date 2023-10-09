@@ -84,9 +84,6 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema> {
   // INVOICE MODEL — Instance properties and methods:
   readonly STATUSES = INVOICE_ENUM_CONSTANTS.STATUSES;
   readonly SK_PREFIX = INVOICE_SK_PREFIX_STR;
-  readonly getFormattedID = invoiceModelHelpers.id.format;
-  readonly isValidID = invoiceModelHelpers.id.isValid;
-  readonly updateOne = updateOne;
 }
 
 export const Invoice = new InvoiceModel();
