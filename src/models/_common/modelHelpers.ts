@@ -1,3 +1,11 @@
+/**
+ * This function serves as a factory for creating {@link ModelHelpers} objects, which consist
+ * of model attribute names as keys, each of which is given `format` and `isValid` methods for
+ * formatting and validating attribute values respectively.
+ *
+ * @param modelHelperConfigs - A record of attribute names to {@link ModelHelperConfigInput} objects.
+ * @returns A {@link ModelHelpers} object.
+ */
 export const createModelHelpers = <ModelHelperConfigs extends ModelHelperConfigInput>(
   modelHelperConfigs: ModelHelperConfigs
 ): ModelHelpers<ModelHelperConfigs> => {
@@ -15,6 +23,9 @@ export const createModelHelpers = <ModelHelperConfigs extends ModelHelperConfigI
   return modelHelpers;
 };
 
+/**
+ * Parameters for {@link createModelHelpers}.
+ */
 type ModelHelperConfigInput = Record<
   string,
   {
@@ -26,7 +37,7 @@ type ModelHelperConfigInput = Record<
 >;
 
 /**
- * Record of attrName keys to methods for creating and validating attr values.
+ * Record of attrName keys to methods for validating and formatting attr values.
  */
 export type ModelHelpers<AttrConfigs extends ModelHelperConfigInput> = {
   [Key in keyof AttrConfigs]: Omit<AttrConfigs[Key], "regex"> & {
