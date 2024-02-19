@@ -12,15 +12,15 @@ describe("UserSubscription Model", () => {
       // Arrange mock UserSubscriptions
       for (const key in MOCK_USER_SUBS) {
         // Get upsertOne inputs from mock UserSub
-        const mockSub = MOCK_USER_SUBS[key];
+        const mockSub = MOCK_USER_SUBS[key as keyof typeof MOCK_USER_SUBS];
 
         // Ascertain the mock User associated with this mock UserSub
         const associatedMockUser =
           key === "SUB_A"
             ? MOCK_USERS.USER_A
             : key === "SUB_B"
-            ? MOCK_USERS.USER_B
-            : MOCK_USERS.USER_C;
+              ? MOCK_USERS.USER_B
+              : MOCK_USERS.USER_C;
 
         // Act on the UserSubscription Model's upsertOne method (check sub name AND priceID):
 
@@ -54,12 +54,12 @@ describe("UserSubscription Model", () => {
       // Arrange mock UserSubscriptions
       for (const key in MOCK_USER_SUBS) {
         // Get the mock UserSub
-        const mockSub = MOCK_USER_SUBS[key];
+        const mockSub = MOCK_USER_SUBS[key as keyof typeof MOCK_USER_SUBS];
 
         // Arrange spy on UserSubscription.ddbClient.query() method
         const querySpy = vi.spyOn(UserSubscription.ddbClient, "query").mockResolvedValueOnce({
           $metadata: {},
-          Items: [UNALIASED_MOCK_USER_SUBS[key]],
+          Items: [UNALIASED_MOCK_USER_SUBS[key as keyof typeof MOCK_USER_SUBS]],
         });
 
         // Act on the UserSubscription Model's query method
