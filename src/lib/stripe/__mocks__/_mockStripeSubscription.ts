@@ -1,3 +1,4 @@
+import { isPlainObject, isString } from "@nerdware/ts-type-safety-utils";
 import dayjs from "dayjs";
 import merge from "lodash.merge";
 import { mockStripeInvoice } from "./_mockStripeInvoice";
@@ -26,9 +27,9 @@ export const mockStripeSubscription = (
   const currentPeriodStart = currentPeriodEndDayObject.subtract(1, "month").unix(); // <-- 1 month is arbitrary here
 
   const defaultPaymentMethodID: string =
-    typeof default_payment_method === "object" && typeof default_payment_method?.id === "string"
+    isPlainObject(default_payment_method) && isString(default_payment_method?.id)
       ? default_payment_method.id
-      : typeof default_payment_method === "string"
+      : isString(default_payment_method)
         ? default_payment_method
         : "pm_TestTestTest";
 

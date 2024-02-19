@@ -1,4 +1,5 @@
 import { isValidPassword } from "@nerdware/ts-string-helpers";
+import { isString } from "@nerdware/ts-type-safety-utils";
 import { passwordHasher } from "@/utils/passwordHasher";
 
 /**
@@ -19,7 +20,7 @@ export class UserLogin {
   }: Params): Promise<CreateLoginResult<Params>> => {
     let userLogin;
 
-    if (typeof password === "string") {
+    if (isString(password)) {
       // Validate the password
       if (!isValidPassword(password)) {
         throw new Error("The provided password does not meet the required criteria");
@@ -29,7 +30,7 @@ export class UserLogin {
         type: "LOCAL",
         passwordHash: await passwordHasher.getHash(password),
       };
-    } else if (typeof googleID === "string" && typeof googleAccessToken === "string") {
+    } else if (isString(googleID) && isString(googleAccessToken)) {
       // Perform some basic validation on the Google OAuth params
       if (googleID.length < 5) throw new Error("Invalid Google ID");
       if (googleAccessToken.length < 5) throw new Error("Invalid Google access token");

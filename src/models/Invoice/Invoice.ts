@@ -1,4 +1,5 @@
 import { Model } from "@nerdware/ddb-single-table";
+import { isString } from "@nerdware/ts-type-safety-utils";
 import { isValidStripeID } from "@/lib/stripe";
 import { userModelHelpers } from "@/models/User/helpers";
 import { workOrderModelHelpers as woModelHelpers } from "@/models/WorkOrder/helpers";
@@ -64,7 +65,7 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema> {
       validate: (value?: unknown) =>
         value === null ||
         value === undefined ||
-        (typeof value === "string" && isValidStripeID.paymentIntent(value)),
+        (isString(value) && isValidStripeID.paymentIntent(value)),
     },
     ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
   } as const);

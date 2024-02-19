@@ -1,4 +1,5 @@
 import { Model } from "@nerdware/ddb-single-table";
+import { isString } from "@nerdware/ts-type-safety-utils";
 import { Location } from "@/models/Location";
 import { userModelHelpers } from "@/models/User/helpers";
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@/models/_common";
@@ -48,7 +49,7 @@ class WorkOrderModel extends Model<
       transformValue: {
         /* `data` can't be null on an index-pk, but `assignedTo` is nullable
         in the GQL schema, hence the placeholder "UNASSIGNED". */
-        toDB: (value?: unknown) => (typeof value === "string" ? value : "UNASSIGNED"),
+        toDB: (value?: unknown) => (isString(value) ? value : "UNASSIGNED"),
         fromDB: (value: string) => (value === "UNASSIGNED" ? null : value),
       },
     },
