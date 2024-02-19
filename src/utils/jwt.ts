@@ -11,7 +11,7 @@ import { ENV } from "@/server/env";
  * @throws An error if the token is invalid.
  */
 export const validateAndDecodeJWT = async <
-  DecodedPayload extends Record<string, unknown> = Record<string, unknown>
+  DecodedPayload extends Record<string, unknown> = Record<string, unknown>,
 >(
   token: string
 ): Promise<DecodedPayload & jwt.JwtPayload> => {
@@ -32,8 +32,8 @@ export const validateAndDecodeJWT = async <
               err?.name === "TokenExpiredError"
                 ? "Token expired"
                 : err?.name === "JsonWebTokenError"
-                ? "Signature verification failed"
-                : "Invalid token"
+                  ? "Signature verification failed"
+                  : "Invalid token"
             )
           );
         }
