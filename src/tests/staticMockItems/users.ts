@@ -1,9 +1,9 @@
 import { userModelHelpers } from "@/models/User/helpers";
+import { normalize } from "@/utils/normalize";
 import { MOCK_DATES, MOCK_DATE_v1_UUIDs as UUIDs } from "./dates";
 import type { UserItem, UnaliasedUserItem } from "@/models/User";
-import type { MocksCollection } from "./_types";
 
-export const MOCK_USERS: MocksCollection<"User", UserItem> = {
+export const MOCK_USERS = {
   /** Mock User with LOCAL login type. */
   USER_A: {
     id: userModelHelpers.id.format(UUIDs.JAN_1_2020),
@@ -74,16 +74,17 @@ export const MOCK_USERS: MocksCollection<"User", UserItem> = {
     createdAt: MOCK_DATES.JAN_3_2020,
     updatedAt: MOCK_DATES.JAN_3_2020,
   },
-};
+} as const satisfies Record<string, UserItem>;
 
 /** Unaliased mock Users for mocking `@aws-sdk/lib-dynamodb` responses. */
 export const UNALIASED_MOCK_USERS = Object.fromEntries(
-  Object.entries(MOCK_USERS).map(([key, { id, email, ...user }]) => [
+  Object.entries(MOCK_USERS).map(([key, { id, email, phone, ...user }]) => [
     key,
     {
       pk: id,
       data: email,
+      phone: normalize.phone(phone),
       ...user,
     },
   ])
-) as MocksCollection<"User", UnaliasedUserItem>;
+) as { [Key in keyof typeof MOCK_USERS]: UnaliasedUserItem };

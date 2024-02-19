@@ -2,11 +2,10 @@ import { contactModelHelpers } from "@/models/Contact/helpers";
 import { MOCK_DATES } from "./dates";
 import { MOCK_USERS } from "./users";
 import type { ContactItem, UnaliasedContactItem } from "@/models/Contact";
-import type { MocksCollection } from "./_types";
 
 const { USER_A, USER_B, USER_C } = MOCK_USERS;
 
-export const MOCK_CONTACTS: MocksCollection<"Contact", ContactItem> = {
+export const MOCK_CONTACTS = {
   /** USER_A contact-connection with USER_B */
   CONTACT_A: {
     id: contactModelHelpers.id.format(USER_B.id),
@@ -34,7 +33,7 @@ export const MOCK_CONTACTS: MocksCollection<"Contact", ContactItem> = {
     createdAt: MOCK_DATES.JAN_3_2020,
     updatedAt: MOCK_DATES.JAN_3_2020,
   },
-};
+} as const satisfies Record<string, ContactItem>;
 
 /** Unaliased mock Contacts for mocking `@aws-sdk/lib-dynamodb` responses. */
 export const UNALIASED_MOCK_CONTACTS = Object.fromEntries(
@@ -47,4 +46,4 @@ export const UNALIASED_MOCK_CONTACTS = Object.fromEntries(
       ...contact,
     },
   ])
-) as MocksCollection<"Contact", UnaliasedContactItem>;
+) as { [Key in keyof typeof MOCK_CONTACTS]: UnaliasedContactItem };

@@ -5,11 +5,10 @@ import type {
   UserStripeConnectAccountItem,
   UnaliasedUserStripeConnectAccountItem,
 } from "@/models/UserStripeConnectAccount";
-import type { MocksCollection } from "./_types";
 
 const { USER_A, USER_B, USER_C } = MOCK_USERS;
 
-export const MOCK_USER_SCAs: MocksCollection<"SCA", UserStripeConnectAccountItem> = {
+export const MOCK_USER_SCAs = {
   /** Mock UserStripeConnectAccount for `USER_A` */
   SCA_A: {
     userID: USER_A.id,
@@ -43,7 +42,7 @@ export const MOCK_USER_SCAs: MocksCollection<"SCA", UserStripeConnectAccountItem
     createdAt: MOCK_DATES.JAN_3_2020,
     updatedAt: MOCK_DATES.JAN_3_2020,
   },
-};
+} as const satisfies Record<string, UserStripeConnectAccountItem>;
 
 /** Unaliased mock UserStripeConnectAccounts for mocking `@aws-sdk/lib-dynamodb` responses. */
 export const UNALIASED_MOCK_USER_SCAs = Object.fromEntries(
@@ -55,4 +54,4 @@ export const UNALIASED_MOCK_USER_SCAs = Object.fromEntries(
       ...stripeConnectAccount,
     },
   ])
-) as MocksCollection<"SCA", UnaliasedUserStripeConnectAccountItem>;
+) as { [Key in keyof typeof MOCK_USER_SCAs]: UnaliasedUserStripeConnectAccountItem };

@@ -1,13 +1,13 @@
 import { Location } from "@/models/Location";
 import { workOrderModelHelpers as woModelHelpers } from "@/models/WorkOrder/helpers";
+import { normalize } from "@/utils/normalize";
 import { MOCK_DATES, MOCK_DATE_v1_UUIDs as UUIDs } from "./dates";
 import { MOCK_USERS } from "./users";
 import type { WorkOrderItem, UnaliasedWorkOrderItem } from "@/models/WorkOrder";
-import type { MocksCollection } from "./_types";
 
 const { USER_A, USER_B, USER_C } = MOCK_USERS;
 
-export const MOCK_WORK_ORDERS: MocksCollection<"WO", WorkOrderItem> = {
+export const MOCK_WORK_ORDERS = {
   /** [MOCK WO] createdBy: `USER_A`, assignedTo: `null`, status: `"UNASSIGNED"` */
   WO_A: {
     id: woModelHelpers.id.format(USER_A.id, UUIDs.MAY_1_2020),
@@ -108,20 +108,26 @@ export const MOCK_WORK_ORDERS: MocksCollection<"WO", WorkOrderItem> = {
     createdAt: MOCK_DATES.MAY_1_2020,
     updatedAt: MOCK_DATES.MAY_1_2020,
   },
-};
+} as const satisfies Record<string, WorkOrderItem>;
 
 /** Unaliased mock WorkOrders for mocking `@aws-sdk/lib-dynamodb` responses. */
 export const UNALIASED_MOCK_WORK_ORDERS = Object.fromEntries(
   Object.entries(MOCK_WORK_ORDERS).map(
-    ([key, { id, createdByUserID, assignedToUserID, location, ...workOrder }]) => [
+    ([
+      key,
+      { id, createdByUserID, assignedToUserID, location, entryContactPhone, ...workOrder },
+    ]) => [
       key,
       {
         pk: createdByUserID,
         sk: id,
         data: assignedToUserID ?? "UNASSIGNED",
         location: Location.convertToCompoundString(location),
+        entryContactPhone: entryContactPhone
+          ? normalize.phone(entryContactPhone)
+          : entryContactPhone,
         ...workOrder,
       },
     ]
   )
-) as MocksCollection<"WO", UnaliasedWorkOrderItem>;
+) as { [Key in keyof typeof MOCK_WORK_ORDERS]: UnaliasedWorkOrderItem };

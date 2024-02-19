@@ -5,11 +5,10 @@ import type {
   UserSubscriptionItem,
   UnaliasedUserSubscriptionItem,
 } from "@/models/UserSubscription";
-import type { MocksCollection } from "./_types";
 
 const { USER_A, USER_B, USER_C } = MOCK_USERS;
 
-export const MOCK_USER_SUBS: MocksCollection<"Sub", UserSubscriptionItem> = {
+export const MOCK_USER_SUBS = {
   /** Mock UserSubscription for `USER_A` */
   SUB_A: {
     userID: USER_A.id,
@@ -46,7 +45,7 @@ export const MOCK_USER_SUBS: MocksCollection<"Sub", UserSubscriptionItem> = {
     createdAt: MOCK_DATES.JAN_3_2020,
     updatedAt: MOCK_DATES.JAN_3_2020,
   },
-};
+} as const satisfies Record<string, UserSubscriptionItem>;
 
 /** Unaliased mock UserSubscriptions for mocking `@aws-sdk/lib-dynamodb` responses. */
 export const UNALIASED_MOCK_USER_SUBS = Object.fromEntries(
@@ -58,4 +57,4 @@ export const UNALIASED_MOCK_USER_SUBS = Object.fromEntries(
       ...subscription,
     },
   ])
-) as MocksCollection<"Sub", UnaliasedUserSubscriptionItem>;
+) as { [Key in keyof typeof MOCK_USER_SUBS]: UnaliasedUserSubscriptionItem };
