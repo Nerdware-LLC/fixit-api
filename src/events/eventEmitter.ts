@@ -57,7 +57,7 @@ export class FixitEventEmitter
           eventName,
           // Wrap each event handler in a try/catch block to prevent unhandled errors
           async (...args: any[]) => {
-            await eventHandler(args?.[0], args?.[1]).catch((error) => logger.error(error));
+            await eventHandler(args[0], args[1]).catch((error) => logger.error(error));
           }
         )
       );
