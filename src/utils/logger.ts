@@ -1,4 +1,4 @@
-import { safeJsonStringify } from "@nerdware/ts-type-safety-utils";
+import { safeJsonStringify, getErrorMessage } from "@nerdware/ts-type-safety-utils";
 import * as Sentry from "@sentry/node";
 import chalk, { type ChalkInstance } from "chalk";
 import dayjs from "dayjs";
@@ -29,12 +29,8 @@ const getLogMessage = ({
   let labelAndTimestamp = `[${dayjs().format(LOG_TIMESTAMP_FORMAT)}][${label}]`;
 
   let message = messagePrefix ? `${messagePrefix} ` : "";
-  message +=
-    input instanceof Error
-      ? input.message
-      : typeof input === "string"
-        ? input
-        : safeJsonStringify(input);
+
+  message += getErrorMessage(input) || safeJsonStringify(input);
 
   if (labelColor) labelAndTimestamp = labelColor(labelAndTimestamp);
   if (messageColor) message = messageColor(message);
