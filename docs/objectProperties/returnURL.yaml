@@ -1,0 +1,4 @@
+type: string
+format: uri
+description: |
+  The URL Stripe should redirect the user to upon exiting the Stripe portal.

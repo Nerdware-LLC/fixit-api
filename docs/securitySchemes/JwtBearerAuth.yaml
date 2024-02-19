@@ -1,0 +1,5 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/security-scheme
+
+type: http
+scheme: bearer
+bearerFormat: JWT

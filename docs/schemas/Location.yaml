@@ -1,0 +1,29 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
+
+# REST Schema: Location
+
+type: object
+description: An object containing the components of an address.
+externalDocs:
+  description: GQL Apollo Studio Schema Reference for the Location object.
+  url: "https://studio.apollographql.com/public/fixit/variant/current/schema/reference/objects/Location"
+required: [streetLine1, city, region, country]
+properties:
+  streetLine1:
+    type: string
+    description: The first line of the location's street address.
+  streetLine2:
+    type:
+      - string
+      - "null"
+    description: The second line of the location's street address.
+  city:
+    type: string
+    description: The location's city.
+  region:
+    type: string
+    description: The location's region.
+  country:
+    type: string
+    description: The location's country.
+    default: USA

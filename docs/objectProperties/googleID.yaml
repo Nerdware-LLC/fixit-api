@@ -1,0 +1,2 @@
+type: string
+description: "The user's OAuth Google ID (auth: google-oauth)."

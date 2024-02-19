@@ -1,0 +1,12 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
+
+# REST Schema: CheckoutCompletionInfoResponseField
+
+type: object
+description: |
+  An object which contains data used for completing checkout/payment flows.
+properties:
+  checkoutCompletionInfo:
+    $ref: "../open-api.yaml#/components/schemas/CheckoutCompletionInfo"
+required:
+  - checkoutCompletionInfo

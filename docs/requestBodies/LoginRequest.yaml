@@ -1,0 +1,8 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/request-body
+
+# req.body for /auth/login
+
+required: true
+content:
+  application/json:
+    schema: { $ref: "../open-api.yaml#/components/schemas/LoginParams" }

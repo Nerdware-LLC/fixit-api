@@ -1,0 +1,12 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
+
+# REST Schema: AuthTokenResponseField
+
+type: object
+description: An object which contains an encoded and stringified auth token.
+properties:
+  token:
+    type: string
+    description: An encoded and stringified auth token.
+required:
+  - token

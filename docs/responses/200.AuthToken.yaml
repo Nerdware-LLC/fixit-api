@@ -1,0 +1,9 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/response
+
+# 200 response for successful user registration
+
+description: OK
+content:
+  application/json:
+    schema:
+      $ref: "../open-api.yaml#/components/schemas/AuthTokenResponseField"

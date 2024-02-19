@@ -1,0 +1,3 @@
+type: string
+format: date-time
+description: The timestamp which indicates when the resource was last updated.

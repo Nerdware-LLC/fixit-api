@@ -1,0 +1,11 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/response
+
+# 200 response for payment-method submission
+
+description: OK
+content:
+  application/json:
+    schema:
+      allOf:
+        - $ref: "../open-api.yaml#/components/schemas/AuthTokenResponseField"
+        - $ref: "../open-api.yaml#/components/schemas/CheckoutCompletionInfoResponseField"

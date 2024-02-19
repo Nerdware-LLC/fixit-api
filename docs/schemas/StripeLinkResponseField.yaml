@@ -1,0 +1,12 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
+
+# REST Schema: StripeLinkResponseField
+
+type: object
+description: An object which contains a link to a Stripe-provided portal.
+properties:
+  stripeLink:
+    type: string
+    description: A link to a Stripe-provided portal.
+required:
+  - stripeLink
