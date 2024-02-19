@@ -1,3 +1,4 @@
+import { isString } from "@nerdware/ts-type-safety-utils";
 import { signAndEncodeJWT, validateAndDecodeJWT } from "./jwt";
 import type { UserItem } from "@/models/User";
 import type { UserStripeConnectAccountItem } from "@/models/UserStripeConnectAccount";
@@ -87,7 +88,7 @@ export class AuthToken {
   ) => {
     // Get token from "Authorization" header
     let token = request.get("Authorization");
-    if (!token || typeof token !== "string") throw new Error("Invalid token");
+    if (!token || !isString(token)) throw new Error("Invalid token");
 
     // Remove Bearer from string
     if (token.startsWith("Bearer ")) token = token.split(" ")[1]!;
