@@ -23,11 +23,15 @@ jobs:
         with:
           node-version-file: ".nvmrc"
 
+      - run: npm ci --include=dev
+
+      - name: Lint
+        run: npm run lint
+
       - name: Run Tests
+        if: success()
         id: run-tests
-        run: |
-          npm ci --include=dev
-          npm run test:ci
+        run: npm run test:ci
 
       - name: Update GitHub Commit Status
         if: ${{ !cancelled() }}
