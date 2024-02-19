@@ -21,13 +21,13 @@ describe("Location Model", () => {
         city,
         streetLine1,
         streetLine2: "", // <-- empty strings should yield null
-        // country          <-- optional fields should yield null
+        // country          <-- optional field should be populated with default
       });
 
       // toStrictEqual not used because 'strict' also asserts the prototype, not just the shape.
       expect(location).toEqual({
         ...TEST_LOCATION,
-        country: null,
+        country: Location.DEFAULT_COUNTRY,
         streetLine2: null,
       });
     });
@@ -48,7 +48,7 @@ describe("Location Model", () => {
       const location2 = new Location({
         ...TEST_LOCATION,
         streetLine1: "456 Foo Blvd.",
-        streetLine2: undefined,
+        streetLine2: undefined as any,
       });
       const result1 = Location.convertToCompoundString(location1);
       const result2 = Location.convertToCompoundString(location2);
