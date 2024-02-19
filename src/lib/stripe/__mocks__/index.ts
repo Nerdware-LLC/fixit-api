@@ -206,3 +206,21 @@ type MockStripeMethod<StripeMethod extends (...args: any[]) => any> = <
 type MockStripeMethodParam<Param> = Param extends { email?: string }
   ? SetRequired<Exclude<Param, undefined>, "email">
   : Exclude<Param, undefined>;
+
+/**
+ * This generic util type is like `Parameters`, but when provided a function type
+ * with overloads, it returns the parameters of the _first_ overload rather than the
+ * _last_ overload.
+ *
+ * This is useful for working with Stripe API typings, which currently place function
+ * overloads with _more_ args before those with _fewer_ args (resulting in `Parameters`
+ * defaulting to the _least_ specific overload).
+ */
+type ParamsOfFirstOverload<T> = T extends {
+  (...args: infer Params): unknown;
+  (...args: any[]): any;
+}
+  ? Params
+  : T extends (...args: any[]) => any
+    ? Parameters<T>
+    : never;
