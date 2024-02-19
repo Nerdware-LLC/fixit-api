@@ -10,11 +10,11 @@
 
   "compilerOptions": {
     // Language and Environment:
-    "target": "ES2022",
-    "lib": ["ES2022"],
+    "target": "ESNext",
+    "lib": ["ESNext"],
 
     // Modules:
-    "module": "ES2022",
+    "module": "ESNext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "types": ["node", "vitest/globals"],
@@ -23,20 +23,26 @@
       "@/*": ["src/*"]
     },
 
+    // Type Checking:
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "strict": true,
+
     // Emit:
     "noEmitOnError": true,
-
-    // Completeness:
-    "skipLibCheck": false,
-
-    // Output Formatting:
-    "noErrorTruncation": true,
+    "removeComments": true,
 
     // Interop Constraints:
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
 
-    // Type Checking:
-    "strict": true
+    // Output Formatting:
+    "noErrorTruncation": true,
+
+    // Completeness:
+    "skipLibCheck": false
   }
 }
