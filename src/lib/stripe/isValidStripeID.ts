@@ -1,4 +1,4 @@
-import { getRegexValidatorFn } from "@/utils/clientInputHandlers/validate";
+import { getRegexValidatorFn } from "@nerdware/ts-string-helpers";
 
 /**
  * An object with methods which return `true` if the given value is a string which
