@@ -1,12 +1,12 @@
-import type {
-  FixitUser,
-  Profile as NullableProfile,
-  NonNullableProfile,
-  UnwrapGqlMaybeType,
-} from "@/types";
+import type { Profile as GqlSchemaProfileType } from "@/types";
 import type { Simplify } from "type-fest";
 
 /**
+ * A `Profile` object represents a user's profile information.
+ *
+ * > This class implements {@link NonNullableProfile}, which reflects the GraphQL
+ *   {@link GqlSchemaProfileType|Profile} type with all fields made `NonNullable`.
+ *
  * // IDEA Ideas for potential profile fields:
  * - businessAddress
  * - businessPhone
@@ -51,12 +51,12 @@ export class Profile implements NonNullableProfile {
     return displayName
       ? displayName
       : businessName
-      ? businessName
-      : givenName
-      ? `${givenName}${familyName ? ` ${familyName}` : ""}`
-      : handle
-      ? handle
-      : "";
+        ? businessName
+        : givenName
+          ? `${givenName}${familyName ? ` ${familyName}` : ""}`
+          : handle
+            ? handle
+            : "";
   };
 
   /**
@@ -87,7 +87,17 @@ export class Profile implements NonNullableProfile {
   }
 }
 
-/** The parameters that go into creating a new `Profile` object. */
-export type ProfileParams = Simplify<
-  Partial<UnwrapGqlMaybeType<NullableProfile> & Pick<FixitUser, "handle">>
->;
+/**
+ * The {@link Profile} class implements this type, which reflects the GraphQL
+ * {@link GqlSchemaProfileType|Profile} type with all fields made `NonNullable`.
+ */
+type NonNullableProfile = {
+  [Key in keyof GqlSchemaProfileType]: NonNullable<GqlSchemaProfileType[Key]>;
+};
+
+/**
+ * The parameters that go into creating a new {@link Profile|`Profile`} object.
+ */
+export type ProfileParams = Simplify<{
+  [Key in "handle" | keyof GqlSchemaProfileType]?: string | null | undefined;
+}>;
