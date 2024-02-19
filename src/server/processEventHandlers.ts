@@ -1,4 +1,5 @@
-import { logger, getTypeSafeError } from "@/utils";
+import { getTypeSafeError } from "@nerdware/ts-type-safety-utils";
+import { logger } from "@/utils/logger";
 
 Object.entries({
   uncaughtException: 1,
@@ -25,8 +26,8 @@ process.on("exit", (exitCode) => {
       exitCode === 1
         ? "UNCAUGHT_EXCEPTION"
         : exitCode === 2
-        ? "UNHANDLED_REJECTION"
-        : "UNHANDLED_ERROR_EXIT_CODE";
+          ? "UNHANDLED_REJECTION"
+          : "UNHANDLED_ERROR_EXIT_CODE";
 
     logger.error(`EXITING PROCESS: ${errorDescription} (EXIT_CODE: ${exitCode})`);
   }
