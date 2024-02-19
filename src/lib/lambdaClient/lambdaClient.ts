@@ -1,6 +1,6 @@
 import { LambdaClient, InvokeCommand, type InvokeCommandInput } from "@aws-sdk/client-lambda";
+import { safeJsonStringify } from "@nerdware/ts-type-safety-utils";
 import { ENV } from "@/server/env";
-import { safeJsonStringify } from "@/utils/typeSafety";
 import type { OverrideProperties, Except } from "type-fest";
 
 const _lambdaClient = new LambdaClient({ region: ENV.AWS.REGION });
@@ -31,23 +31,21 @@ const _invoke = async ({
  * @method `invokeEvent` Invoke Lambda fn using asynchronous "Event" invocation.
  * @method `invokeRequestResponse` Invoke Lambda fn using synchronous "RequestResponse" invocation.
  */
-export const lambdaClient: Readonly<
-  Record<
-    "invokeEvent" | "invokeRequestResponse",
-    (
-      lambdaFnName: LambdaClientInvokeOpts["FunctionName"],
-      lambdaFnPayload: LambdaClientInvokeOpts["Payload"],
-      invokeCmdOpts?: Except<InvokeCommandInput, "InvocationType" | "FunctionName" | "Payload">
-    ) => ReturnType<typeof _invoke>
-  >
-> = {
+export const lambdaClient = {
   invokeEvent: async (FunctionName, Payload, invokeOpts = {}) => {
     return _invoke({ InvocationType: "Event", FunctionName, Payload, ...invokeOpts });
   },
   invokeRequestResponse: async (FunctionName, Payload, invokeOpts = {}) => {
     return _invoke({ InvocationType: "RequestResponse", FunctionName, Payload, ...invokeOpts });
   },
-} as const;
+} as const satisfies Record<
+  string,
+  (
+    lambdaFnName: LambdaClientInvokeOpts["FunctionName"],
+    lambdaFnPayload: LambdaClientInvokeOpts["Payload"],
+    invokeCmdOpts?: Except<InvokeCommandInput, "InvocationType" | "FunctionName" | "Payload">
+  ) => ReturnType<typeof _invoke>
+>;
 
 export type LambdaClientInvokeOpts = OverrideProperties<
   InvokeCommandInput,
