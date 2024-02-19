@@ -1,4 +1,4 @@
-import merge from "lodash.merge";
+import deepMerge from "lodash.merge";
 import { logger } from "@/utils/logger";
 import * as contact from "./Contact/resolvers";
 import * as fixitUser from "./FixitUser/resolvers";
@@ -16,7 +16,7 @@ import * as emailCustomScalar from "./_customScalars/Email/resolvers";
  */
 export const resolvers = Object.fromEntries(
   Object.entries(
-    merge(
+    deepMerge(
       // CUSTOM SCALARS
       dateTimeCustomScalar.resolvers,
       emailCustomScalar.resolvers,
