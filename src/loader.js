@@ -11,7 +11,7 @@ export function resolve(specifier, ctx, defaultResolve) {
   const match = matchPath(specifier);
   /* eslint-disable @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call */
   return match
-    ? resolveTS(pathToFileURL(`${match}`).href, ctx, defaultResolve)
+    ? resolveTS(pathToFileURL(match).href, ctx, defaultResolve)
     : resolveTS(specifier, ctx, defaultResolve);
 }
 
