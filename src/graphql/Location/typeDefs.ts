@@ -6,7 +6,7 @@ export const typeDefs = gql`
     streetLine2: String
     city: String!
     region: String!
-    country: String
+    country: String!
   }
 
   input CreateLocationInput {
