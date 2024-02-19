@@ -1,4 +1,4 @@
-import { safeJsonStringify } from "@/utils/typeSafety";
+import { safeJsonStringify } from "@nerdware/ts-type-safety-utils";
 
 /**
  * GQL Custom Scalar Helper Methods
@@ -8,7 +8,7 @@ export const helpers = {
     return (
       `[${scalarType.toUpperCase()} SCALAR ERROR]: ` +
       `Client provided an invalid ${scalarType.toLowerCase()}: ` +
-      `${safeJsonStringify(invalidValue)}`
+      safeJsonStringify(invalidValue)
     );
   },
 };
