@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+
 /**
  * This Vitest setup file accomplishes the following:
  *   1. Implements commonly-used custom matchers.
@@ -41,10 +43,24 @@ expect.extend({
   toBeOneOf(received: unknown, matchers: Array<unknown>) {
     return {
       pass: matchers.findIndex((matcher) => this.equals(received, matcher)) > -1,
-      message: () =>
-        getCustomMatcherMessage({ received, expected: matchers, predicate: "be one of", ...this }),
       actual: received,
       expected: matchers,
+      message: () =>
+        getCustomMatcherMessage({ received, expected: matchers, predicate: "be one of", ...this }),
+    };
+  },
+  /** Test if the `received` value is a valid date via `dayjs(value).isValid()`. */
+  toBeValidDate(received: unknown) {
+    return {
+      pass: dayjs(received as any).isValid(),
+      actual: received,
+      message: () =>
+        getCustomMatcherMessage({
+          received,
+          expected: "valid date",
+          predicate: "be a valid date",
+          ...this,
+        }),
     };
   },
   /**
@@ -54,6 +70,7 @@ expect.extend({
   toSatisfyFn(received: unknown, matcherFn: (value: unknown) => boolean) {
     return {
       pass: matcherFn.call(this, received),
+      actual: received,
       message: () =>
         getCustomMatcherMessage({
           received,
@@ -61,7 +78,6 @@ expect.extend({
           predicate: "pass the function",
           ...this,
         }),
-      actual: received,
     };
   },
 });
