@@ -1,8 +1,8 @@
+import { safeJsonStringify } from "@nerdware/ts-type-safety-utils";
 import * as Sentry from "@sentry/node";
 import chalk, { type ChalkInstance } from "chalk";
 import dayjs from "dayjs";
 import { ENV } from "@/server/env";
-import { safeJsonStringify } from "@/utils/typeSafety";
 
 /* eslint-disable no-console */
 
@@ -33,8 +33,8 @@ const getLogMessage = ({
     input instanceof Error
       ? input.message
       : typeof input === "string"
-      ? input
-      : safeJsonStringify(input);
+        ? input
+        : safeJsonStringify(input);
 
   if (labelColor) labelAndTimestamp = labelColor(labelAndTimestamp);
   if (messageColor) message = messageColor(message);
@@ -63,7 +63,7 @@ const getLoggerUtil = ({
   isEnabledInProduction = false,
   nonProdConsoleMethod = console.log,
   messageColor = chalk.white,
-  labelColor = messageColor?.bold ?? messageColor,
+  labelColor = messageColor.bold,
 }: GetLogMessageArgsProvidedByLoggerUtil & {
   /** Bool flag to enable logging non-errors in prod. */
   isEnabledInProduction?: boolean;
@@ -85,14 +85,13 @@ const getLoggerUtil = ({
           Sentry.captureException(input);
           Sentry.captureMessage(getLogMessage({ label, input, messagePrefix }));
         },
-        handleLogMessage:
-          isEnabledInProduction === true
-            ? (input, messagePrefix) => {
-                Sentry.captureMessage(getLogMessage({ label, input, messagePrefix }));
-              }
-            : () => {
-                /* noop, function is disabled */
-              },
+        handleLogMessage: isEnabledInProduction
+          ? (input, messagePrefix) => {
+              Sentry.captureMessage(getLogMessage({ label, input, messagePrefix }));
+            }
+          : () => {
+              /* noop, function is disabled */
+            },
       }
     : {
         handleLogError: (input, messagePrefix) => {
@@ -126,6 +125,11 @@ export const logger = {
     messageColor: chalk.red.bold,
     labelColor: chalk.bgRed.black.bold,
     isEnabledInProduction: true,
+  }),
+  info: getLoggerUtil({
+    label: "INFO",
+    messageColor: chalk.cyan,
+    nonProdConsoleMethod: console.info,
   }),
   debug: getLoggerUtil({
     label: "DEBUG",
