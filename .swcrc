@@ -4,7 +4,7 @@
   "exclude": ["src\\/loader.js$", ".*\\/(tests|__mocks__)\\/.*", ".*\\.(test|spec).[tj]s$"],
 
   "jsc": {
-    "target": "es2022",
+    "target": "esnext",
     "parser": {
       "syntax": "typescript",
       "dynamicImport": true
