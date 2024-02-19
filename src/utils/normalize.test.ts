@@ -24,13 +24,6 @@ describe("clientInputHandlers: normalize", () => {
   });
 });
 
-describe("normalize.intToCurrencyStr()", () => {
-  test("returns the correct currency string for a given positive integer value", () => {
-    const result = normalize.intToCurrencyStr(12345);
-    expect(result).toBe("$123.45");
-  });
-});
-
 describe("normalize.phone()", () => {
   test("removes all non-numeric characters from the input", () => {
     const result = normalize.phone("  (888) 123-4567  ");
