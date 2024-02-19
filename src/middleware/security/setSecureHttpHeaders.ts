@@ -19,7 +19,7 @@ import type { RequestHandler } from "express";
  */
 const HELMET_DEFAULT_CSP_DIRECTIVES = helmet.contentSecurityPolicy.getDefaultDirectives() as Record<
   string,
-  string[]
+  Array<string>
 >;
 
 /**
@@ -97,15 +97,15 @@ const helmetMW = helmet({
       FIXIT_API_SRC_CSP_DIRECTIVES,
       CSP_VIOLATION_REPORTING_DIRECTIVES,
       STRIPE_REQUIRED_CSP_DIRECTIVES,
-    ].reduce<Record<string, string[]>>((accum, cspDirectivesObject) => {
+    ].reduce((accum: Record<string, Array<string>>, cspDirectivesObject) => {
       // Deep merge each set of CSP directives
       Object.entries(cspDirectivesObject).forEach(([cspKey, cspValues]) => {
         // Wrap single cspValue strings in an array
         if (!Array.isArray(cspValues)) cspValues = [cspValues] as Array<string>;
-        // Add the cspKey if it hasn't already been added; merge in cspValues.
-        if (cspKey in accum) accum[cspKey].concat(cspValues);
-        else accum[cspKey] = cspValues;
+        // Merge in cspValues
+        accum[cspKey] = [...(accum?.[cspKey] ?? []), ...cspValues];
       });
+
       return accum;
     }, {}),
   },
