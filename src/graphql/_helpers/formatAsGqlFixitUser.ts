@@ -1,8 +1,8 @@
-import { usersCache } from "@/lib/cache";
+import { usersCache } from "@/lib/cache/usersCache";
 import { contactModelHelpers } from "@/models/Contact/helpers";
 import { User } from "@/models/User";
-import type { FixitUser } from "@/types";
-import type { FixitApiAuthTokenPayload } from "@/utils";
+import type { FixitUser } from "@/types/graphql";
+import type { FixitApiAuthTokenPayload } from "@/utils/AuthToken";
 import type { SetOptional } from "type-fest";
 
 /**
@@ -25,8 +25,8 @@ export const formatAsGqlFixitUser = async (
    * param belongs to the currently authenticated User or not.
    */
   userAuthToken: FixitApiAuthTokenPayload
-): Promise<FixitUserWithTypename> => {
-  let fixitUser: FixitUserWithTypename | undefined = undefined;
+): Promise<FixitUser> => {
+  let fixitUser: (FixitUser & Record<string, unknown>) | undefined;
 
   // If auth'd user is the FixitUser, use authToken fields
   if (itemUserID === userAuthToken.id) {
@@ -73,5 +73,3 @@ export const formatAsGqlFixitUser = async (
 
   return fixitUser;
 };
-
-type FixitUserWithTypename = FixitUser & { __typename: "User" | "Contact" };

@@ -1,26 +1,26 @@
 import { eventEmitter } from "@/events/eventEmitter";
 import { DeleteMutationResponse } from "@/graphql/_common";
-import { verifyUserCanPerformThisUpdate, formatAsGqlFixitUser } from "@/graphql/_helpers";
+import {
+  verifyUserIsAuthorizedToPerformThisUpdate,
+  formatAsGqlFixitUser,
+} from "@/graphql/_helpers";
+import { Location } from "@/models/Location";
 import { USER_ID_REGEX } from "@/models/User/regex";
-import { WorkOrder } from "@/models/WorkOrder";
-import { GqlUserInputError } from "@/utils";
-import type { WorkOrderItem } from "@/models/WorkOrder";
+import { WorkOrder, type WorkOrderItem } from "@/models/WorkOrder";
+import { GqlUserInputError } from "@/utils/httpErrors";
 import type { Resolvers } from "@/types";
-import type { FixitApiAuthTokenPayload } from "@/utils";
 
 export const resolvers: Partial<Resolvers> = {
   Query: {
-    workOrder: async (_parent, { workOrderID }, { user }) => {
+    workOrder: async (_parent, { workOrderID }) => {
       const [existingWO] = await WorkOrder.query({
         where: { id: workOrderID },
         limit: 1,
       });
 
-      if (!existingWO) {
-        throw new GqlUserInputError("A work order with the provided ID could not be found.");
-      }
+      assertWorkOrderWasFound(existingWO);
 
-      return await formatAsGqlWorkOrder(existingWO, user);
+      return existingWO;
     },
     myWorkOrders: async (_parent, _args, { user }) => {
       // Query for all WorkOrders created by the authenticated User
@@ -62,18 +62,19 @@ export const resolvers: Partial<Resolvers> = {
   },
   Mutation: {
     createWorkOrder: async (_parent, { workOrder: woInput }, { user }) => {
-      const { assignedTo = "UNASSIGNED", ...createWorkOrderInput } = woInput;
+      const { assignedTo = "UNASSIGNED", location, ...createWorkOrderInput } = woInput;
 
       const createdWO = await WorkOrder.createItem({
         createdByUserID: user.id,
         assignedToUserID: assignedTo,
         status: assignedTo === "UNASSIGNED" ? "UNASSIGNED" : "ASSIGNED",
+        location: Location.fromParams(location),
         ...createWorkOrderInput,
       });
 
       eventEmitter.emitWorkOrderCreated(createdWO);
 
-      return await formatAsGqlWorkOrder(createdWO, user);
+      return createdWO;
     },
     updateWorkOrder: async (_parent, { workOrderID, workOrder: woInput }, { user }) => {
       const [existingWO] = await WorkOrder.query({
@@ -81,8 +82,9 @@ export const resolvers: Partial<Resolvers> = {
         limit: 1,
       });
 
-      verifyUserCanPerformThisUpdate(existingWO, {
-        idOfUserWhoCanPerformThisUpdate: existingWO.createdByUserID,
+      verifyUserIsAuthorizedToPerformThisUpdate(existingWO, {
+        itemNotFoundErrorMessage: WORK_ORDER_NOT_FOUND_ERROR_MSG,
+        idOfUserWhoCanPerformThisUpdate: existingWO?.createdByUserID,
         authenticatedUserID: user.id,
         forbiddenStatuses: {
           CANCELLED: "The requested work order has been cancelled and cannot be updated.",
@@ -90,26 +92,25 @@ export const resolvers: Partial<Resolvers> = {
       });
 
       /* Check if woInput args necessitate updating the STATUS:
-
         - If the existingWO.status is ASSIGNED and woInput.assignedToUserID is UNASSIGNED,
           then the status should be updated to UNASSIGNED.
-
         - If the existingWO.status is UNASSIGNED and woInput.assignedToUserID is a valid
           User/Contact ID, then the status should be updated to ASSIGNED.
-
-        - Otherwise, the status should remain unchanged.
-      */
-
+        - Otherwise, the status should remain unchanged. */
       const upToDateStatus =
         existingWO.status === "ASSIGNED" && woInput?.assignedToUserID === "UNASSIGNED"
           ? "UNASSIGNED"
           : existingWO.status === "UNASSIGNED" &&
-            typeof woInput?.assignedToUserID === "string" &&
-            USER_ID_REGEX.test(woInput.assignedToUserID.replace(/CONTACT#/, ""))
-          ? "ASSIGNED"
-          : existingWO.status;
+              typeof woInput?.assignedToUserID === "string" &&
+              USER_ID_REGEX.test(woInput.assignedToUserID.replace(/CONTACT#/, ""))
+            ? "ASSIGNED"
+            : existingWO.status;
 
-      // TODO Test - is this necessary? (maybe, 'location' is a required field, but why do it like this?)
+      /* Extract `location`, and if provided, provide it to Location.fromParams.
+      Note that `fromParams` will throw if required fields are not present. Since
+      Location's are stored as compound-string attributes, they can not be partially
+      updated, i.e., if it's desirable to only change `streetLine1`, it can not be
+      updated without all the other Location fields being provided as well. */
       const { location, ...woFieldsToUpdate } = woInput;
 
       const updatedWO = await WorkOrder.updateItem(
@@ -117,7 +118,7 @@ export const resolvers: Partial<Resolvers> = {
         {
           update: {
             ...woFieldsToUpdate,
-            ...(!!location && { location }),
+            ...(!!location && { location: Location.fromParams(location) }),
             status: upToDateStatus,
           },
         }
@@ -125,7 +126,7 @@ export const resolvers: Partial<Resolvers> = {
 
       eventEmitter.emitWorkOrderUpdated(updatedWO, existingWO);
 
-      return await formatAsGqlWorkOrder(updatedWO, user);
+      return updatedWO;
     },
     cancelWorkOrder: async (_parent, { workOrderID }, { user }) => {
       const [existingWO] = await WorkOrder.query({
@@ -133,8 +134,9 @@ export const resolvers: Partial<Resolvers> = {
         limit: 1,
       });
 
-      verifyUserCanPerformThisUpdate(existingWO, {
-        idOfUserWhoCanPerformThisUpdate: existingWO.createdByUserID,
+      verifyUserIsAuthorizedToPerformThisUpdate(existingWO, {
+        itemNotFoundErrorMessage: WORK_ORDER_NOT_FOUND_ERROR_MSG,
+        idOfUserWhoCanPerformThisUpdate: existingWO?.createdByUserID,
         authenticatedUserID: user.id,
         forbiddenStatuses: {
           CANCELLED: "The requested work order has already been cancelled.",
@@ -160,7 +162,7 @@ export const resolvers: Partial<Resolvers> = {
 
         eventEmitter.emitWorkOrderCancelled(canceledWO);
 
-        return await formatAsGqlWorkOrder(canceledWO, user);
+        return canceledWO;
       }
     },
     setWorkOrderStatusComplete: async (_parent, { workOrderID }, { user }) => {
@@ -169,8 +171,9 @@ export const resolvers: Partial<Resolvers> = {
         limit: 1,
       });
 
-      verifyUserCanPerformThisUpdate(existingWO, {
-        idOfUserWhoCanPerformThisUpdate: existingWO?.assignedToUserID ?? "",
+      verifyUserIsAuthorizedToPerformThisUpdate(existingWO, {
+        itemNotFoundErrorMessage: WORK_ORDER_NOT_FOUND_ERROR_MSG,
+        idOfUserWhoCanPerformThisUpdate: existingWO?.assignedToUserID,
         authenticatedUserID: user.id,
         forbiddenStatuses: {
           UNASSIGNED: "Only the work order's assignee may perform this update.",
@@ -190,7 +193,17 @@ export const resolvers: Partial<Resolvers> = {
 
       eventEmitter.emitWorkOrderCompleted(updatedWO);
 
-      return await formatAsGqlWorkOrder(updatedWO, user);
+      return updatedWO;
+    },
+  },
+  WorkOrder: {
+    createdBy: async (workOrder, _args, { user }) => {
+      return await formatAsGqlFixitUser({ id: workOrder.createdByUserID }, user);
+    },
+    assignedTo: async (workOrder, _args, { user }) => {
+      return workOrder?.assignedToUserID
+        ? await formatAsGqlFixitUser({ id: workOrder.assignedToUserID }, user)
+        : null;
     },
   },
   CancelWorkOrderResponse: {
@@ -198,23 +211,21 @@ export const resolvers: Partial<Resolvers> = {
       return "createdBy" in parent
         ? "WorkOrder"
         : parent.id && "wasDeleted" in parent
-        ? "DeleteMutationResponse"
-        : null; // null --> GraphQLError is thrown
+          ? "DeleteMutationResponse"
+          : null; // null --> GraphQLError is thrown
     },
   },
 };
 
+const WORK_ORDER_NOT_FOUND_ERROR_MSG = "A work order with the provided ID could not be found.";
+
 /**
- * This function converts `WorkOrder` objects from their internal database shape/format into the
- * GraphQL schema's `WorkOrder` shape/format.
+ * Asserts that a WorkOrder was found in the database.
  */
-const formatAsGqlWorkOrder = async (
-  workOrder: WorkOrderItem,
-  userAuthToken: FixitApiAuthTokenPayload
-) => ({
-  ...workOrder,
-  createdBy: await formatAsGqlFixitUser({ id: workOrder.createdByUserID }, userAuthToken),
-  assignedTo: !workOrder?.assignedToUserID
-    ? null
-    : await formatAsGqlFixitUser({ id: workOrder.assignedToUserID }, userAuthToken),
-});
+export function assertWorkOrderWasFound<W extends WorkOrderItem>(
+  workOrder: W | undefined
+): asserts workOrder is NonNullable<W> {
+  if (!workOrder) {
+    throw new GqlUserInputError(WORK_ORDER_NOT_FOUND_ERROR_MSG);
+  }
+}

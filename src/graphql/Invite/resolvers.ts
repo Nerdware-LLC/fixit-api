@@ -1,5 +1,5 @@
+import { isValidPhone, isValidEmail } from "@nerdware/ts-string-helpers";
 import { GenericSuccessResponse } from "@/graphql/_common";
-import { isValid } from "@/utils/clientInputHandlers";
 import { GqlUserInputError } from "@/utils/httpErrors";
 import type { Resolvers } from "@/types";
 
@@ -11,11 +11,11 @@ export const resolvers: Partial<Resolvers> = {
       }
 
       // Determine if arg is a valid US phone or email address
-      const argType = isValid.phone(phoneOrEmail)
+      const argType = isValidPhone(phoneOrEmail)
         ? "phone"
-        : isValid.email(phoneOrEmail)
-        ? "email"
-        : null;
+        : isValidEmail(phoneOrEmail)
+          ? "email"
+          : null;
 
       if (argType === "phone") {
         // Send text SMS invite

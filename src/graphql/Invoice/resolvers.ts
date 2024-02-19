@@ -1,26 +1,26 @@
 import { eventEmitter } from "@/events/eventEmitter";
 import { DeleteMutationResponse } from "@/graphql/_common";
-import { verifyUserCanPerformThisUpdate, formatAsGqlFixitUser } from "@/graphql/_helpers";
+import {
+  verifyUserIsAuthorizedToPerformThisUpdate,
+  formatAsGqlFixitUser,
+} from "@/graphql/_helpers";
 import { stripe } from "@/lib/stripe";
-import { Invoice } from "@/models/Invoice";
-import { GqlUserInputError, GqlForbiddenError } from "@/utils";
-import type { InvoiceItem } from "@/models/Invoice";
+import { Invoice, type InvoiceItem } from "@/models/Invoice";
+import { WorkOrder } from "@/models/WorkOrder";
+import { GqlUserInputError, GqlForbiddenError } from "@/utils/httpErrors";
 import type { Resolvers } from "@/types";
-import type { FixitApiAuthTokenPayload } from "@/utils";
 
 export const resolvers: Partial<Resolvers> = {
   Query: {
-    invoice: async (_parent, { invoiceID }, { user }) => {
+    invoice: async (_parent, { invoiceID }) => {
       const [existingInv] = await Invoice.query({
         where: { id: invoiceID },
         limit: 1,
       });
 
-      if (!existingInv) {
-        throw new GqlUserInputError("An invoice with the provided ID could not be found.");
-      }
+      assertInvoiceWasFound(existingInv);
 
-      return await formatAsGqlInvoice(existingInv, user);
+      return existingInv;
     },
     myInvoices: async (_parent, _args, { user }) => {
       // Query for all Invoices created by the authenticated User
@@ -65,20 +65,21 @@ export const resolvers: Partial<Resolvers> = {
         assignedToUserID: invoiceInput.assignedTo,
         amount: invoiceInput.amount,
         status: "OPEN",
-        ...(invoiceInput?.workOrderID && {
+        ...(!!invoiceInput?.workOrderID && {
           workOrderID: invoiceInput.workOrderID,
         }),
       });
 
       eventEmitter.emitInvoiceCreated(createdInvoice);
 
-      return await formatAsGqlInvoice(createdInvoice, user);
+      return createdInvoice;
     },
     updateInvoiceAmount: async (_parent, { invoiceID, amount }, { user }) => {
       const [existingInv] = await Invoice.query({ where: { id: invoiceID }, limit: 1 });
 
-      verifyUserCanPerformThisUpdate(existingInv, {
-        idOfUserWhoCanPerformThisUpdate: existingInv.createdByUserID,
+      verifyUserIsAuthorizedToPerformThisUpdate(existingInv, {
+        itemNotFoundErrorMessage: INVOICE_NOT_FOUND_ERROR_MSG,
+        idOfUserWhoCanPerformThisUpdate: existingInv?.createdByUserID,
         authenticatedUserID: user.id,
         forbiddenStatuses: {
           CLOSED: "The requested invoice has already been closed.",
@@ -97,14 +98,15 @@ export const resolvers: Partial<Resolvers> = {
 
       eventEmitter.emitInvoiceUpdated(updatedInvoice);
 
-      return await formatAsGqlInvoice(updatedInvoice, user);
+      return updatedInvoice;
     },
     payInvoice: async (_parent, { invoiceID }, { user }) => {
       // IDEA Adding "assigneeUserDefaultPaymentMethodID" to Invoice would reduce queries.
       const [existingInv] = await Invoice.query({ where: { id: invoiceID }, limit: 1 });
 
-      verifyUserCanPerformThisUpdate(existingInv, {
-        idOfUserWhoCanPerformThisUpdate: existingInv.assignedToUserID,
+      verifyUserIsAuthorizedToPerformThisUpdate(existingInv, {
+        itemNotFoundErrorMessage: INVOICE_NOT_FOUND_ERROR_MSG,
+        idOfUserWhoCanPerformThisUpdate: existingInv?.assignedToUserID,
         authenticatedUserID: user.id,
         forbiddenStatuses: {
           CLOSED: "The requested invoice has already been closed.",
@@ -148,7 +150,7 @@ export const resolvers: Partial<Resolvers> = {
 
       if (wasInvoiceSuccessfullyPaid) eventEmitter.emitInvoicePaid(updatedInvoice);
 
-      return await formatAsGqlInvoice(updatedInvoice, user);
+      return updatedInvoice;
     },
     deleteInvoice: async (_parent, { invoiceID }, { user }) => {
       const [existingInv] = await Invoice.query({
@@ -156,8 +158,9 @@ export const resolvers: Partial<Resolvers> = {
         limit: 1,
       });
 
-      verifyUserCanPerformThisUpdate(existingInv, {
-        idOfUserWhoCanPerformThisUpdate: existingInv.createdByUserID,
+      verifyUserIsAuthorizedToPerformThisUpdate(existingInv, {
+        itemNotFoundErrorMessage: INVOICE_NOT_FOUND_ERROR_MSG,
+        idOfUserWhoCanPerformThisUpdate: existingInv?.createdByUserID,
         authenticatedUserID: user.id,
         forbiddenStatuses: {
           CLOSED: "The requested invoice has already been closed.",
@@ -178,17 +181,37 @@ export const resolvers: Partial<Resolvers> = {
       });
     },
   },
+  Invoice: {
+    createdBy: async (invoice, _args, { user }) => {
+      return await formatAsGqlFixitUser({ id: invoice.createdByUserID }, user);
+    },
+
+    assignedTo: async (invoice, _args, { user }) => {
+      return await formatAsGqlFixitUser({ id: invoice.assignedToUserID }, user);
+    },
+
+    workOrder: async (invoice, _args) => {
+      if (!invoice?.workOrderID) return null;
+
+      const [workOrder] = await WorkOrder.query({
+        where: { id: invoice.workOrderID },
+        limit: 1,
+      });
+
+      return workOrder ?? null;
+    },
+  },
 };
 
+const INVOICE_NOT_FOUND_ERROR_MSG = "An invoice with the provided ID could not be found.";
+
 /**
- * This function converts `Invoice` objects from their internal database shape/format into the
- * GraphQL schema's `Invoice` shape/format.
+ * Asserts that an Invoice was found in the database.
  */
-const formatAsGqlInvoice = async (
-  invoice: InvoiceItem,
-  userAuthToken: FixitApiAuthTokenPayload
-) => ({
-  ...invoice,
-  createdBy: await formatAsGqlFixitUser({ id: invoice.createdByUserID }, userAuthToken),
-  assignedTo: await formatAsGqlFixitUser({ id: invoice.assignedToUserID }, userAuthToken),
-});
+export function assertInvoiceWasFound<Inv extends InvoiceItem>(
+  invoice: Inv | undefined
+): asserts invoice is NonNullable<Inv> {
+  if (!invoice) {
+    throw new GqlUserInputError(INVOICE_NOT_FOUND_ERROR_MSG);
+  }
+}
