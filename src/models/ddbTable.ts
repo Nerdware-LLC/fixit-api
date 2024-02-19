@@ -36,7 +36,7 @@ export const ddbTable = new Table({
   } as const,
   ddbClient: {
     region: ENV.AWS.REGION,
-    endpoint: ENV.AWS.DYNAMODB_ENDPOINT,
+    ...(ENV.AWS?.DYNAMODB_ENDPOINT && { endpoint: ENV.AWS.DYNAMODB_ENDPOINT }),
     // dynamodb-local is used in dev
     ...(ENV.AWS.REGION === "local" && {
       credentials: {
@@ -46,4 +46,15 @@ export const ddbTable = new Table({
     }),
   },
   logger: logger.dynamodb,
+});
+
+// Ensure the target DDB table is connected and configured:
+await ddbTable.ensureTableIsActive({
+  createIfNotExists: {
+    BillingMode: "PROVISIONED",
+    ProvisionedThroughput: {
+      ReadCapacityUnits: 5,
+      WriteCapacityUnits: 5,
+    },
+  },
 });
