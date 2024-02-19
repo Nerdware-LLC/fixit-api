@@ -26,12 +26,12 @@ export class AuthToken {
       profile: userData.profile,
       stripeCustomerID: userData.stripeCustomerID,
       ...(userData.stripeConnectAccount && {
-      stripeConnectAccount: {
-        id: userData.stripeConnectAccount.id,
-        detailsSubmitted: !!userData.stripeConnectAccount.detailsSubmitted,
-        chargesEnabled: !!userData.stripeConnectAccount.chargesEnabled,
-        payoutsEnabled: !!userData.stripeConnectAccount.payoutsEnabled,
-      },
+        stripeConnectAccount: {
+          id: userData.stripeConnectAccount.id,
+          detailsSubmitted: !!userData.stripeConnectAccount.detailsSubmitted,
+          chargesEnabled: !!userData.stripeConnectAccount.chargesEnabled,
+          payoutsEnabled: !!userData.stripeConnectAccount.payoutsEnabled,
+        },
       }),
       ...(userData.subscription && {
         subscription: {
@@ -60,9 +60,17 @@ export class AuthToken {
    * @param encodedAuthToken - The encoded auth token to validate and decode.
    * @returns The decoded auth token payload.
    */
-  static validateAndDecodeAuthToken = async (encodedAuthToken: string) => {
+  static validateAndDecodeAuthToken = async <
+    IsSubscriptionDefinitelyPresent extends boolean = false,
+    IsStripeConnectAccountDefinitelyPresent extends boolean = false,
+  >(
+    encodedAuthToken: string
+  ) => {
     const decodedPayload = await validateAndDecodeJWT(encodedAuthToken);
-    return AuthToken.stripInternalJwtPayloadFields(decodedPayload) as FixitApiAuthTokenPayload;
+    return AuthToken.stripInternalJwtPayloadFields(decodedPayload) as FixitApiAuthTokenPayload<
+      IsSubscriptionDefinitelyPresent,
+      IsStripeConnectAccountDefinitelyPresent
+    >;
   };
 
   /**
@@ -71,18 +79,24 @@ export class AuthToken {
    * @returns The decoded auth token payload.
    * @throws Error if the token is invalid.
    */
-  static getValidatedRequestAuthTokenPayload = async (request: Request) => {
+  static getValidatedRequestAuthTokenPayload = async <
+    IsSubscriptionDefinitelyPresent extends boolean = false,
+    IsStripeConnectAccountDefinitelyPresent extends boolean = false,
+  >(
+    request: Request
+  ) => {
     // Get token from "Authorization" header
     let token = request.get("Authorization");
     if (!token || typeof token !== "string") throw new Error("Invalid token");
 
     // Remove Bearer from string
-    if (token.startsWith("Bearer ")) token = token.split(" ")[1];
+    if (token.startsWith("Bearer ")) token = token.split(" ")[1]!;
 
     // Validate the token; if valid, return decoded payload
-    const authTokenPayload = await this.validateAndDecodeAuthToken(token);
-
-    if (!authTokenPayload) throw new Error("Invalid token");
+    const authTokenPayload = await this.validateAndDecodeAuthToken<
+      IsSubscriptionDefinitelyPresent,
+      IsStripeConnectAccountDefinitelyPresent
+    >(token);
 
     return authTokenPayload;
   };
@@ -108,18 +122,39 @@ export class AuthToken {
 /**
  * The decoded payload of a Fixit API auth token.
  */
-export type FixitApiAuthTokenPayload = Simplify<
-  Pick<
-    UserItem,
-    "id" | "handle" | "email" | "phone" | "profile" | "stripeCustomerID" | "createdAt" | "updatedAt"
-  > & {
-    subscription?: Pick<
-      UserSubscriptionItem,
-      "id" | "status" | "currentPeriodEnd" // prettier-ignore
-    >;
-    stripeConnectAccount: Pick<
-      UserStripeConnectAccountItem,
-      "id" | "detailsSubmitted" | "chargesEnabled" | "payoutsEnabled"
-    >;
-  }
+export type FixitApiAuthTokenPayload<
+  IsSubscriptionDefinitelyPresent extends boolean = false,
+  IsStripeConnectAccountDefinitelyPresent extends boolean = false,
+> = Simplify<
+  AuthTokenUserFields &
+    (IsStripeConnectAccountDefinitelyPresent extends true
+      ? { stripeConnectAccount: AuthTokenStripeConnectAccountFields }
+      : { stripeConnectAccount?: AuthTokenStripeConnectAccountFields }) &
+    (IsSubscriptionDefinitelyPresent extends true
+      ? { subscription: AuthTokenSubscriptionFields }
+      : { subscription?: AuthTokenSubscriptionFields })
+>;
+
+/**
+ * The {@link UserItem} fields in the auth token payload.
+ */
+export type AuthTokenUserFields = Pick<
+  UserItem,
+  "id" | "handle" | "email" | "phone" | "profile" | "stripeCustomerID" | "createdAt" | "updatedAt"
+>;
+
+/**
+ * The {@link UserStripeConnectAccountItem} fields in the auth token payload.
+ */
+export type AuthTokenStripeConnectAccountFields = Pick<
+  UserStripeConnectAccountItem,
+  "id" | "detailsSubmitted" | "chargesEnabled" | "payoutsEnabled"
+>;
+
+/**
+ * The {@link UserSubscriptionItem} fields in the auth token payload.
+ */
+export type AuthTokenSubscriptionFields = Pick<
+  UserSubscriptionItem,
+  "id" | "status" | "currentPeriodEnd"
 >;
