@@ -1,8 +1,8 @@
-import { logger, safeJsonStringify } from "@/utils";
+import { safeJsonStringify } from "@nerdware/ts-type-safety-utils";
+import { logger } from "@/utils/logger";
 
-const { FixitEventEmitter } = await vi.importActual<typeof import("@/events/eventEmitter")>(
-  "@/events/eventEmitter"
-);
+const { FixitEventEmitter } =
+  await vi.importActual<typeof import("@/events/eventEmitter")>("@/events/eventEmitter");
 
 export const eventEmitter = new FixitEventEmitter(
   Object.fromEntries(
