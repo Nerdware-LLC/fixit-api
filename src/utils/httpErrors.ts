@@ -1,7 +1,8 @@
 import { ApolloServerErrorCode } from "@apollo/server/errors";
+import { getErrorMessage } from "@nerdware/ts-type-safety-utils";
 import { GraphQLError, type GraphQLErrorOptions } from "graphql";
-import merge from "lodash.merge";
-import { getErrorMessage } from "@/utils/typeSafety";
+import deepMerge from "lodash.merge";
+import { logger } from "@/utils/logger";
 import type { Class } from "type-fest";
 
 /**
@@ -63,14 +64,14 @@ const createHttpErrorClass = <IsGqlError extends boolean = false>(
   const NewClass =
     isGqlError === true
       ? class NewGraphqlHttpErrorClass extends GraphQLError implements HttpErrorInterface {
-          readonly name: string = `Gql${errName}`; // <-- errName is prefixed with "Gql"
+          override readonly name: string = `Gql${errName}`; // <-- errName is prefixed with "Gql"
           readonly statusCode: number = statusCode;
           readonly gqlErrorCode: string = gqlErrCode;
 
           constructor(message?: unknown, gqlErrorOpts?: GraphQLErrorOptions) {
             super(
               getErrorMessage(message) || defaultErrMsg,
-              merge(
+              deepMerge(
                 {
                   extensions: {
                     code: gqlErrCode,
@@ -79,7 +80,7 @@ const createHttpErrorClass = <IsGqlError extends boolean = false>(
                     },
                   },
                 },
-                gqlErrorOpts || {}
+                gqlErrorOpts ?? {}
               )
             );
             // Get stack trace starting where Error was created, omitting the error constructor.
@@ -87,12 +88,13 @@ const createHttpErrorClass = <IsGqlError extends boolean = false>(
           }
         }
       : class NewHttpErrorClass extends Error implements HttpErrorInterface {
-          readonly name: string = errName;
+          override readonly name: string = errName;
           readonly statusCode: number = statusCode;
 
           constructor(message?: unknown) {
             super(getErrorMessage(message) || defaultErrMsg);
             Error.captureStackTrace(this, NewHttpErrorClass);
+            if (statusCode >= 500) logger.error(this);
           }
         };
 
@@ -110,29 +112,19 @@ export interface HttpErrorInterface extends Error {
 // -----------------------------------------------------------------------------
 // Throwable HTTP error classes:
 
-export const UserInputError = createHttpErrorClass(400);
-export const GqlUserInputError = createHttpErrorClass(400, {
-  gql: true,
-});
+export const UserInputError = createHttpErrorClass(400, { gql: false });
+export const GqlUserInputError = createHttpErrorClass(400, { gql: true });
 
-export const AuthError = createHttpErrorClass(401);
-export const GqlAuthError = createHttpErrorClass(401, {
-  gql: true,
-});
+export const AuthError = createHttpErrorClass(401, { gql: false });
+export const GqlAuthError = createHttpErrorClass(401, { gql: true });
 
-export const PaymentRequiredError = createHttpErrorClass(402);
-export const GqlPaymentRequiredError = createHttpErrorClass(402, {
-  gql: true,
-});
+export const PaymentRequiredError = createHttpErrorClass(402, { gql: false });
+export const GqlPaymentRequiredError = createHttpErrorClass(402, { gql: true });
 
-export const ForbiddenError = createHttpErrorClass(403);
-export const GqlForbiddenError = createHttpErrorClass(403, {
-  gql: true,
-});
+export const ForbiddenError = createHttpErrorClass(403, { gql: false });
+export const GqlForbiddenError = createHttpErrorClass(403, { gql: true });
 
-export const NotFoundError = createHttpErrorClass(404);
+export const NotFoundError = createHttpErrorClass(404, { gql: false });
 
-export const InternalServerError = createHttpErrorClass(500);
-export const GqlInternalServerError = createHttpErrorClass(500, {
-  gql: true,
-});
+export const InternalServerError = createHttpErrorClass(500, { gql: false });
+export const GqlInternalServerError = createHttpErrorClass(500, { gql: true });
