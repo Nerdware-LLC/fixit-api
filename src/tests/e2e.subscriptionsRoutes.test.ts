@@ -1,10 +1,9 @@
-import dayjs from "dayjs";
 import request from "supertest";
 import { expressApp } from "@/expressApp";
 import { stripe, isValidStripeID } from "@/lib/stripe";
 import { ENV } from "@/server/env";
 import { MOCK_USERS, MOCK_USER_SUBS, MOCK_USER_SCAs } from "@/tests/staticMockItems";
-import { AuthToken } from "@/utils";
+import { AuthToken } from "@/utils/AuthToken";
 import type { Server } from "http";
 
 vi.mock("@/apolloServer");
@@ -42,7 +41,7 @@ describe("[e2e][Server Requests] Routes /api/subscriptions/*", () => {
       const { status, body: responseBody } = await request(expressApp)
         .post("/api/subscriptions/submit-payment")
         .set("Authorization", `Bearer ${mockAuthToken.toString()}`)
-        .send({ selectedSubscription: "ANNUAL", paymentMethodID: "pm_TestTestTest" });
+        .send({ selectedSubscription: "ANNUAL", paymentMethodID: "pm_TestTestTest" })
 
       // Assert the response
       expect(status).toBe(200);
@@ -63,13 +62,13 @@ describe("[e2e][Server Requests] Routes /api/subscriptions/*", () => {
           chargesEnabled: true,
           payoutsEnabled: true,
         },
-        createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
-        updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+        createdAt: expect.toBeValidDate(),
+        updatedAt: expect.toBeValidDate(),
         // AuthToken payload should NOW have subscription info:
         subscription: {
           id: expect.toSatisfyFn((value) => isValidStripeID.subscription(value)),
           status: "active",
-          currentPeriodEnd: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+          currentPeriodEnd: expect.toBeValidDate(),
         },
       });
     });

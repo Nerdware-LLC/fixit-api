@@ -1,7 +1,6 @@
-import dayjs from "dayjs";
 import request from "supertest";
 import { expressApp } from "@/expressApp";
-import { usersCache } from "@/lib/cache";
+import { usersCache } from "@/lib/cache/usersCache";
 import { stripe } from "@/lib/stripe";
 import { User } from "@/models/User";
 import { USER_ID_REGEX } from "@/models/User/regex";
@@ -21,7 +20,8 @@ import {
   UNALIASED_MOCK_INVOICES,
   MOCK_USER_SCAs,
 } from "@/tests/staticMockItems";
-import { AuthToken, passwordHasher } from "@/utils";
+import { AuthToken } from "@/utils/AuthToken";
+import { passwordHasher } from "@/utils/passwordHasher";
 import type { Server } from "http";
 
 vi.mock("@/apolloServer");
@@ -92,8 +92,8 @@ describe("[e2e] Server Requests /api/auth/*", () => {
           chargesEnabled: false,
           payoutsEnabled: false,
         },
-        createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
-        updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+        createdAt: expect.toBeValidDate(),
+        updatedAt: expect.toBeValidDate(),
       });
     });
   });
@@ -156,10 +156,10 @@ describe("[e2e] Server Requests /api/auth/*", () => {
         subscription: {
           id: MOCK_USER_SUBS.SUB_A.id,
           status: "active",
-          currentPeriodEnd: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+          currentPeriodEnd: expect.toBeValidDate(),
         },
-        createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
-        updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+        createdAt: expect.toBeValidDate(),
+        updatedAt: expect.toBeValidDate(),
       });
 
       // Expected userItems:
@@ -171,6 +171,7 @@ describe("[e2e] Server Requests /api/auth/*", () => {
       const {
         createdByUserID: INV_A_createdByUserID,
         assignedToUserID: INV_A_assignedToUserID,
+        workOrderID: INV_A_workOrderID, // null
         ...INV_A_fields
       } = MOCK_INVOICES.INV_A;
 
@@ -181,8 +182,8 @@ describe("[e2e] Server Requests /api/auth/*", () => {
             ...WO_A_fields,
             createdBy: { id: WO_A_createdByUserID },
             assignedTo: null,
-            createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
-            updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+            createdAt: expect.toBeValidDate(),
+            updatedAt: expect.toBeValidDate(),
           },
         ],
         invoices: [
@@ -190,8 +191,9 @@ describe("[e2e] Server Requests /api/auth/*", () => {
             ...INV_A_fields,
             createdBy: { id: INV_A_createdByUserID },
             assignedTo: { id: INV_A_assignedToUserID },
-            createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
-            updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+            workOrder: INV_A_workOrderID, // null
+            createdAt: expect.toBeValidDate(),
+            updatedAt: expect.toBeValidDate(),
           },
         ],
         contacts: [
@@ -201,8 +203,8 @@ describe("[e2e] Server Requests /api/auth/*", () => {
             email: MOCK_USERS.USER_B.email,
             phone: MOCK_USERS.USER_B.phone,
             profile: MOCK_USERS.USER_B.profile,
-            createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
-            updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+            createdAt: expect.toBeValidDate(),
+            updatedAt: expect.toBeValidDate(),
           },
         ],
       });
@@ -263,10 +265,10 @@ describe("[e2e] Server Requests /api/auth/*", () => {
         subscription: {
           id: UNALIASED_MOCK_USER_SUBS.SUB_A.data,
           status: "active",
-          currentPeriodEnd: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+          currentPeriodEnd: expect.toBeValidDate(),
         },
-        createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
-        updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+        createdAt: expect.toBeValidDate(),
+        updatedAt: expect.toBeValidDate(),
       });
 
       // Expected userItems:
@@ -278,6 +280,7 @@ describe("[e2e] Server Requests /api/auth/*", () => {
       const {
         createdByUserID: INV_A_createdByUserID,
         assignedToUserID: INV_A_assignedToUserID,
+        workOrderID: INV_A_workOrderID, // null
         ...INV_A_fields
       } = MOCK_INVOICES.INV_A;
 
@@ -288,8 +291,8 @@ describe("[e2e] Server Requests /api/auth/*", () => {
             ...WO_A_fields,
             createdBy: { id: WO_A_createdByUserID },
             assignedTo: null,
-            createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
-            updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+            createdAt: expect.toBeValidDate(),
+            updatedAt: expect.toBeValidDate(),
           },
         ],
         invoices: [
@@ -297,8 +300,9 @@ describe("[e2e] Server Requests /api/auth/*", () => {
             ...INV_A_fields,
             createdBy: { id: INV_A_createdByUserID },
             assignedTo: { id: INV_A_assignedToUserID },
-            createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
-            updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+            workOrder: INV_A_workOrderID, // null
+            createdAt: expect.toBeValidDate(),
+            updatedAt: expect.toBeValidDate(),
           },
         ],
         contacts: [
@@ -308,8 +312,8 @@ describe("[e2e] Server Requests /api/auth/*", () => {
             email: MOCK_USERS.USER_B.email,
             phone: MOCK_USERS.USER_B.phone,
             profile: MOCK_USERS.USER_B.profile,
-            createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
-            updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+            createdAt: expect.toBeValidDate(),
+            updatedAt: expect.toBeValidDate(),
           },
         ],
       });
