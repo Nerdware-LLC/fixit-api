@@ -85,7 +85,7 @@ export class Location implements GqlSchemaLocationType {
    * This is used in `transformValue.fromDB` methods of DdbSingleTable model schema.
    */
   public static parseCompoundString = (locationCompoundStr: string) => {
-    if (typeof locationCompoundStr !== "string") return locationCompoundStr;
+    if (!isString(locationCompoundStr)) return locationCompoundStr;
     // Split the composite value string using the "#" delimeter
     const locationComponents = locationCompoundStr.split("#");
     // If length is less than 4, throw an error
