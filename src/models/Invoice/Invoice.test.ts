@@ -10,7 +10,7 @@ describe("Invoice Model", () => {
       // Arrange mock Invoices
       for (const key in MOCK_INVOICES) {
         // Get createItem inputs from mock Invoice
-        const mockInvoice = MOCK_INVOICES[key];
+        const mockInvoice = MOCK_INVOICES[key as keyof typeof MOCK_INVOICES];
 
         // Act on the Invoice Model's createItem method
         const result = await Invoice.createItem(mockInvoice);
