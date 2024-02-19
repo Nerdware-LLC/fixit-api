@@ -14,7 +14,7 @@ const isValidGqlDateTimeScalar = (value: unknown) => {
 export const resolvers = {
   DateTime: new GraphQLScalarType({
     name: "DateTime",
-    description: "Custom DateTime scalar; pass a string or js date instance obj",
+    description: "Custom DateTime scalar with handling for Date objects and datetime strings",
 
     // parseValue = value from the client
     parseValue(value: unknown) {
