@@ -5,7 +5,7 @@ import { gql } from "graphql-tag";
 export const typeDefs = gql`
   "A WorkOrder is a request one User submits to another for work to be performed at a location"
   type WorkOrder {
-    "(Immutable) WorkOrder ID, in the format of 'WO#{createdBy.id}#{unixTimestamp(createdAt)}'"
+    "(Immutable) WorkOrder ID, in the format of 'WO#{createdBy.id}#{unixTimestampUUID(createdAt)}'"
     id: ID!
     "(Immutable) The FixitUser who created/sent the WorkOrder"
     createdBy: FixitUser!
