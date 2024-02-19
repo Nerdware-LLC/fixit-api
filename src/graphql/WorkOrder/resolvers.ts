@@ -1,3 +1,4 @@
+import { isString } from "@nerdware/ts-type-safety-utils";
 import { eventEmitter } from "@/events/eventEmitter";
 import { DeleteMutationResponse } from "@/graphql/_common";
 import {
@@ -101,7 +102,7 @@ export const resolvers: Partial<Resolvers> = {
         existingWO.status === "ASSIGNED" && woInput?.assignedToUserID === "UNASSIGNED"
           ? "UNASSIGNED"
           : existingWO.status === "UNASSIGNED" &&
-              typeof woInput?.assignedToUserID === "string" &&
+              isString(woInput?.assignedToUserID) &&
               USER_ID_REGEX.test(woInput.assignedToUserID.replace(/CONTACT#/, ""))
             ? "ASSIGNED"
             : existingWO.status;
