@@ -1,4 +1,5 @@
 import { isValidPhone, isValidEmail } from "@nerdware/ts-string-helpers";
+import { isString } from "@nerdware/ts-type-safety-utils";
 import { GenericSuccessResponse } from "@/graphql/_common";
 import { GqlUserInputError } from "@/utils/httpErrors";
 import type { Resolvers } from "@/types";
@@ -6,7 +7,7 @@ import type { Resolvers } from "@/types";
 export const resolvers: Partial<Resolvers> = {
   Mutation: {
     createInvite: (_parent, { phoneOrEmail }) => {
-      if (typeof phoneOrEmail !== "string" || phoneOrEmail.length === 0) {
+      if (!phoneOrEmail || !isString(phoneOrEmail)) {
         throw new GqlUserInputError("Unable to create invite with the provided input.");
       }
 
@@ -18,9 +19,9 @@ export const resolvers: Partial<Resolvers> = {
           : null;
 
       if (argType === "phone") {
-        // Send text SMS invite
+        // TODO Send text SMS invite
       } else if (argType === "email") {
-        // Send email invite
+        // TODO Send email invite
       } else {
         throw new GqlUserInputError(
           "Unable to send invite - a valid phone number or email address must be provided."
