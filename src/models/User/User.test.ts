@@ -12,7 +12,7 @@ describe("User Model", () => {
       // Arrange mock Users
       for (const key in MOCK_USERS) {
         // Get input for User.createOne() method
-        const mockUser = MOCK_USERS[key];
+        const mockUser = MOCK_USERS[key as keyof typeof MOCK_USERS];
         const input = {
           ...mockUser,
           ...(mockUser.login.type === "LOCAL" ? { password: "MockPassword@123" } : mockUser.login),
@@ -23,9 +23,13 @@ describe("User Model", () => {
 
         // Assert the result
         expect(result).toStrictEqual({
-          ...mockUser,
           id: expect.toSatisfyFn((value) => userModelHelpers.id.isValid(value)),
           sk: expect.toSatisfyFn((value) => userModelHelpers.sk.isValid(value)),
+          handle: mockUser.handle,
+          email: mockUser.email,
+          phone: mockUser.phone,
+          stripeCustomerID: mockUser.stripeCustomerID,
+          ...(mockUser.expoPushToken && { expoPushToken: mockUser.expoPushToken }),
           profile: {
             ...mockUser.profile,
             givenName: expect.toBeOneOf([undefined, null, expect.any(String)]),
