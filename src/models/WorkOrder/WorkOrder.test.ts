@@ -11,7 +11,7 @@ describe("WorkOrder Model", () => {
       // Arrange mock WorkOrders
       for (const key in MOCK_WORK_ORDERS) {
         // Get createItem inputs from mock WorkOrder
-        const mockWorkOrder = MOCK_WORK_ORDERS[key];
+        const mockWorkOrder = MOCK_WORK_ORDERS[key as keyof typeof MOCK_WORK_ORDERS];
 
         // Act on the WorkOrder Model's createItem method
         const result = await WorkOrder.createItem(mockWorkOrder);
@@ -156,7 +156,7 @@ describe("WorkOrder Model", () => {
       // Act on the WorkOrder Model's query method
       const result = await WorkOrder.query({
         where: {
-          assignedToUserID: WO_B.assignedToUserID as string, // assigned to mock USER_A
+          assignedToUserID: WO_B.assignedToUserID, // assigned to mock USER_A
           id: { beginsWith: WorkOrder.SK_PREFIX },
         },
       });
