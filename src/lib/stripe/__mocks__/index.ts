@@ -6,8 +6,10 @@ import { mockStripeConnectLoginLink } from "./_mockStripeConnectLoginLink";
 import { mockStripeCustomer, mockStripeDeletedCustomer } from "./_mockStripeCustomer";
 import { mockStripePaymentIntent } from "./_mockStripePaymentIntent";
 import { mockStripePaymentMethod } from "./_mockStripePaymentMethod";
+import { mockStripePrice } from "./_mockStripePrice";
+import { mockStripeProduct } from "./_mockStripeProduct";
+import { mockStripePromotionCode } from "./_mockStripePromotionCode";
 import { mockStripeSubscription } from "./_mockStripeSubscription";
-import type { ParamsOfFirstOverload } from "@/types";
 import type Stripe from "stripe";
 import type { SetRequired, AsyncReturnType } from "type-fest";
 
@@ -134,6 +136,22 @@ export const stripe: MockStripeAPI = {
     },
   },
   paymentIntents: {
+    confirm: async (paymentIntentID, { payment_method: paymentMethodID }) => {
+      return Promise.resolve(
+        mockStripePaymentIntent(
+          {
+            amount: 5000,
+            confirmation_method: "manual",
+            payment_method: paymentMethodID || "pm_TestTestTest",
+          },
+          {
+            id: paymentIntentID,
+            status: "succeeded",
+            invoice: { paid: true },
+          }
+        )
+      );
+    },
     create: async (args) => {
       return Promise.resolve(mockStripePaymentIntent(args));
     },
@@ -149,6 +167,52 @@ export const stripe: MockStripeAPI = {
           { id: paymentMethodID }
         )
       );
+    },
+  },
+  prices: {
+    list: async () => {
+      return Promise.resolve({
+        object: "list",
+        data: [
+          mockStripePrice({
+            id: "price_TestMONTHLY",
+            nickname: "MONTHLY",
+            recurring: { interval: "month" },
+          }),
+          mockStripePrice({
+            id: "price_TestANNUAL",
+            nickname: "ANNUAL",
+            recurring: { interval: "year" },
+          }),
+        ],
+      });
+    },
+  },
+  products: {
+    list: async () => {
+      return Promise.resolve({
+        object: "list",
+        data: [mockStripeProduct({ name: "Fixit Subscription", id: "prod_TestTestTest" })],
+      });
+    },
+  },
+  promotionCodes: {
+    list: async () => {
+      return Promise.resolve({
+        object: "list",
+        data: [
+          mockStripePromotionCode({
+            id: "promo_TestPROMO10",
+            code: "PROMO10",
+            coupon: { percent_off: 10 },
+          }),
+          mockStripePromotionCode({
+            id: "promo_TestPROMO20",
+            code: "PROMO20",
+            coupon: { percent_off: 20 },
+          }),
+        ],
+      });
     },
   },
   subscriptions: {
@@ -190,17 +254,17 @@ export type MockStripeAPI<StripeApiObj extends Record<string, any> = Stripe> = {
   [Key in keyof StripeApiObj]?: StripeApiObj[Key] extends (...args: any[]) => any
     ? MockStripeMethod<StripeApiObj[Key]>
     : StripeApiObj[Key] extends Record<string, any>
-    ? MockStripeAPI<StripeApiObj[Key]>
-    : never;
+      ? MockStripeAPI<StripeApiObj[Key]>
+      : never;
 };
 
 /** See jsdoc for {@link stripe | the mock Stripe API object }. */
 type MockStripeMethod<StripeMethod extends (...args: any[]) => any> = <
-  Params extends ParamsOfFirstOverload<StripeMethod>
+  Params extends ParamsOfFirstOverload<StripeMethod>,
 >(
   arg1: MockStripeMethodParam<Params[0]>,
   arg2: MockStripeMethodParam<Params[1]>
-) => Promise<Omit<AsyncReturnType<StripeMethod>, "lastResponse">>;
+) => Promise<Omit<AsyncReturnType<StripeMethod>, "lastResponse" | "has_more" | "url">>;
 
 /** See jsdoc for {@link stripe | the mock Stripe API object }. */
 type MockStripeMethodParam<Param> = Param extends { email?: string }

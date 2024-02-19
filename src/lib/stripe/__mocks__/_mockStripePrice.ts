@@ -1,11 +1,22 @@
+import deepMerge from "lodash.merge";
 import { MOCK_DATE_UNIX_TIMESTAMPS } from "@/tests/staticMockItems/dates";
 import type Stripe from "stripe";
+import type { PartialDeep } from "type-fest";
 
 /**
- * Default mock Stripe Price object.
+ * Returns a mock Stripe Price object. Any provided args are deep-merged with
+ * {@link DEFAULT_MOCK_STRIPE_PRICE_FIELDS|this default Price object}.
+ *
  * @see https://stripe.com/docs/api/prices/object
  */
-export const MOCK_STRIPE_PRICE: Stripe.Price = {
+export const mockStripePrice = ({ ...priceArgs }: PartialDeep<Stripe.Price>) => {
+  return deepMerge({ ...DEFAULT_MOCK_STRIPE_PRICE_FIELDS }, priceArgs);
+};
+
+/**
+ * Default mock Stripe Price object
+ */
+const DEFAULT_MOCK_STRIPE_PRICE_FIELDS: Stripe.Price = {
   object: "price",
   id: "price_TestANNUAL",
   active: true,
@@ -16,7 +27,7 @@ export const MOCK_STRIPE_PRICE: Stripe.Price = {
   livemode: false,
   lookup_key: null,
   metadata: {},
-  nickname: "Mock Subscription Price",
+  nickname: "ANNUAL",
   product: "prod_TestTestTest",
   recurring: {
     aggregate_usage: null,

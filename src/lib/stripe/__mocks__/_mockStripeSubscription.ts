@@ -3,7 +3,7 @@ import merge from "lodash.merge";
 import { mockStripeInvoice } from "./_mockStripeInvoice";
 import { mockStripePaymentIntent } from "./_mockStripePaymentIntent";
 import { MOCK_STRIPE_PLAN } from "./_mockStripePlan";
-import { MOCK_STRIPE_PRICE } from "./_mockStripePrice";
+import { mockStripePrice } from "./_mockStripePrice";
 import type { UserItem } from "@/models/User";
 import type { UserSubscriptionItem } from "@/models/UserSubscription";
 import type Stripe from "stripe";
@@ -29,8 +29,8 @@ export const mockStripeSubscription = (
     typeof default_payment_method === "object" && typeof default_payment_method?.id === "string"
       ? default_payment_method.id
       : typeof default_payment_method === "string"
-      ? default_payment_method
-      : "pm_TestTestTest";
+        ? default_payment_method
+        : "pm_TestTestTest";
 
   // Default mock Subscription object
   const defaultMockSubscriptionObj: Stripe.Subscription = {
@@ -78,13 +78,12 @@ export const mockStripeSubscription = (
           created: createdAtUnixTimestamp,
           metadata: {},
           plan: { ...MOCK_STRIPE_PLAN },
-          price: {
-            ...MOCK_STRIPE_PRICE,
+          price: mockStripePrice({
             id: subscription.priceID,
             product: subscription.productID,
             active: subscription.status === "active",
             created: createdAtUnixTimestamp,
-          },
+          }),
           quantity: 1,
           subscription: subscription.id, // <-- not expandable
           tax_rates: [],
