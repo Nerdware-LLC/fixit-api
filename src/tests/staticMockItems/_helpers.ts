@@ -43,4 +43,4 @@ export const findMock = {
   user: getFindMockItemFn(MOCK_USERS),
   /** Finds a mock WorkOrder from within the `MOCK_WORK_ORDERS` object. */
   workOrder: getFindMockItemFn(MOCK_WORK_ORDERS),
-};
+} as const;
