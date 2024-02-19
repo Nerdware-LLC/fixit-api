@@ -1,4 +1,3 @@
-import dayjs from "dayjs";
 import { AuthToken } from "./AuthToken";
 
 /** A valid AuthToken constructor arg. */
@@ -46,8 +45,8 @@ describe("AuthToken", () => {
       const result = await AuthToken.validateAndDecodeAuthToken(authToken.toString());
       expect(result).toStrictEqual({
         ...MOCK_AUTH_TOKEN_USER_DATA,
-        createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
-        updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+        createdAt: expect.toBeValidDate(),
+        updatedAt: expect.toBeValidDate(),
       });
     });
   });
@@ -60,8 +59,8 @@ describe("AuthToken", () => {
       } as any);
       expect(result).toStrictEqual({
         ...MOCK_AUTH_TOKEN_USER_DATA,
-        createdAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
-        updatedAt: expect.toSatisfyFn((value) => dayjs(value).isValid()),
+        createdAt: expect.toBeValidDate(),
+        updatedAt: expect.toBeValidDate(),
       });
     });
   });
