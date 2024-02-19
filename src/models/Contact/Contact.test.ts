@@ -10,7 +10,7 @@ describe("Contact Model", () => {
       // Arrange mock Contacts
       for (const key in MOCK_CONTACTS) {
         // Get createItem inputs from mock Contact
-        const mockContact = MOCK_CONTACTS[key];
+        const mockContact = MOCK_CONTACTS[key as keyof typeof MOCK_CONTACTS];
         const { userID, handle, contactUserID } = mockContact;
 
         // Act on the Contact Model's createItem method
