@@ -23,5 +23,5 @@ await apolloServer.start();
  */
 export interface ApolloServerResolverContext extends BaseContext, Partial<Request> {
   /** The currently authenticated User's AuthToken payload. */
-  user: FixitApiAuthTokenPayload;
+  user: FixitApiAuthTokenPayload<true, true>;
 }
