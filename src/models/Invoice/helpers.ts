@@ -1,5 +1,5 @@
+import { isDate } from "@nerdware/ts-type-safety-utils";
 import { createModelHelpers } from "@/models/_common";
-import { isDate } from "@/utils/typeSafety/isType";
 import { getUnixTimestampUUID } from "@/utils/uuid";
 import { INVOICE_SK_PREFIX_STR as SK_PREFIX, INVOICE_SK_REGEX } from "./regex";
 

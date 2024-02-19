@@ -1,9 +1,10 @@
-import { stripe } from "@/lib/stripe";
+import { promoCodesCache } from "@/lib/cache/promoCodesCache";
+import { stripe, type StripeSubscriptionWithClientSecret } from "@/lib/stripe";
 import { UserInputError } from "@/utils/httpErrors";
 import {
   UserSubscription,
   type UserSubscriptionItem,
-  type UserSubscriptionPriceLabels,
+  type SubscriptionPriceLabels,
 } from "./UserSubscription";
 import type { UserItem } from "@/models/User";
 import type Stripe from "stripe";
@@ -23,11 +24,11 @@ export const upsertOne = async function (
     promoCode,
   }: {
     user: Pick<UserItem, "id" | "stripeCustomerID">;
-    selectedSubscription?: UserSubscriptionPriceLabels;
-    priceID?: string;
-    promoCode?: string;
+    selectedSubscription?: SubscriptionPriceLabels;
+    priceID?: string | undefined;
+    promoCode?: string | undefined;
   }
-): Promise<Stripe.Response<Stripe.Subscription> & UserSubscriptionItem> {
+): Promise<Stripe.Response<StripeSubscriptionWithClientSecret> & UserSubscriptionItem> {
   // Ascertain the subscription's Stripe price ID
   if (!priceID && !!selectedSubscription) {
     priceID = UserSubscription.PRICE_IDS[selectedSubscription];
@@ -36,16 +37,18 @@ export const upsertOne = async function (
   if (!priceID) throw new UserInputError("Invalid subscription");
 
   // Ascertain the subscription's Stripe promoCode ID if applicable
-  const promoCodeID = UserSubscription.PROMO_CODES?.[promoCode ?? ""];
+  const promoCodeID = promoCodesCache.get(promoCode ?? "")?.id;
 
   // Submit info to Stripe API for new subscription
-  const stripeSubObject = await stripe.subscriptions.create({
+  const stripeSubObject = (await stripe.subscriptions.create({
     customer: stripeCustomerID,
     items: [{ price: priceID }],
-    expand: ["latest_invoice.payment_intent", "customer"],
     ...(promoCodeID && { promotion_code: promoCodeID }),
     ...(selectedSubscription === "TRIAL" && { trial_period_days: 14 }),
-  });
+    payment_behavior: "default_incomplete",
+    payment_settings: { save_default_payment_method: "on_subscription" },
+    expand: ["latest_invoice.payment_intent", "customer"],
+  })) as Stripe.Response<StripeSubscriptionWithClientSecret>;
 
   // Get the fields needed from the returned object
   const { createdAt, currentPeriodEnd, productID } =

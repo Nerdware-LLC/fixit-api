@@ -1,6 +1,6 @@
-import { hasKey } from "@/utils";
+import { hasKey, isString } from "@nerdware/ts-type-safety-utils";
 import { LOCATION_COMPOSITE_REGEX } from "./regex";
-import type { Location as GqlSchemaLocationType, UnwrapGqlMaybeType } from "@/types";
+import type { Location as GqlSchemaLocationType } from "@/types/graphql";
 
 /**
  * Location Model
@@ -15,8 +15,8 @@ import type { Location as GqlSchemaLocationType, UnwrapGqlMaybeType } from "@/ty
  * This is done to facilitate flexible querying of the DDB db for access patterns like "Find all
  * work orders on Foo Street".
  */
-export class Location implements LocationItem {
-  country?: string | null;
+export class Location implements GqlSchemaLocationType {
+  country: string;
   region: string;
   city: string;
   streetLine1: string;
@@ -100,7 +100,7 @@ export class Location implements LocationItem {
       let formattedOutput = dbValue;
 
       // Format non-null values
-      if (typeof formattedOutput === "string") {
+      if (isString(formattedOutput)) {
         // Replace "NUMSIGN" string literal with "#" (for streetLine2)
         formattedOutput = formattedOutput.replace(/NUMSIGN/g, "#");
         // Replace underscores with spaces
@@ -108,7 +108,7 @@ export class Location implements LocationItem {
       }
 
       // Get location key from array, and set the Location K-V
-      accum[Location.KEYS[index]] = formattedOutput;
+      accum[Location.KEYS[index]!] = formattedOutput;
 
       return accum;
     }, {} as Location);
@@ -127,7 +127,18 @@ export class Location implements LocationItem {
     return LOCATION_COMPOSITE_REGEX.test(locationCompoundStr as string);
   };
 
-  constructor({ country, region, city, streetLine1, streetLine2 }: Location) {
+  /**
+   * Returns a `Location`-shaped object from the given params.
+   */
+  static readonly fromParams = (params?: unknown) => new Location(params as Location);
+
+  constructor({
+    country = Location.DEFAULT_COUNTRY,
+    region,
+    city,
+    streetLine1,
+    streetLine2,
+  }: Omit<Location, "country"> & { country?: string }) {
     // Ensure values have been provided for all required Location fields
     const missingRequiredFields: Array<string> = [];
 
@@ -142,12 +153,10 @@ export class Location implements LocationItem {
       );
     }
 
-    this.country = country || null;
+    this.country = country || Location.DEFAULT_COUNTRY;
     this.region = region;
     this.city = city;
     this.streetLine1 = streetLine1;
     this.streetLine2 = streetLine2 || null;
   }
 }
-
-export type LocationItem = UnwrapGqlMaybeType<GqlSchemaLocationType>;

@@ -1,5 +1,5 @@
+import { isDate, isString } from "@nerdware/ts-type-safety-utils";
 import { createModelHelpers } from "@/models/_common";
-import { isDate, isString } from "@/utils/typeSafety/isType";
 import { getUnixTimestampUUID } from "@/utils/uuid";
 import {
   WORK_ORDER_SK_PREFIX_STR as WO_SK_PREFIX,

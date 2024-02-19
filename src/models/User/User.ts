@@ -1,9 +1,10 @@
 import { Model } from "@nerdware/ddb-single-table";
+import { isValidEmail, isValidHandle } from "@nerdware/ts-string-helpers";
+import { hasKey } from "@nerdware/ts-type-safety-utils";
 import { Expo } from "expo-server-sdk";
 import { isValidStripeID } from "@/lib/stripe";
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@/models/_common";
 import { ddbTable } from "@/models/ddbTable";
-import { hasKey, isValid } from "@/utils";
 import { createOne } from "./createOne";
 import { userModelHelpers } from "./helpers";
 import type { UserLoginU } from "@/models/UserLogin";
@@ -32,12 +33,12 @@ class UserModel extends Model<typeof UserModel.schema, UserItem, UserItemCreatio
     data: {
       type: "string",
       alias: "email",
-      validate: (value: string) => isValid.email(value),
+      validate: (value: string) => isValidEmail(value),
       required: true,
     },
     handle: {
       type: "string",
-      validate: (value: string) => isValid.handle(value),
+      validate: (value: string) => isValidHandle(value),
       required: true, // NOTE: User.handle is case-sensitive
     },
     phone: {
@@ -72,8 +73,8 @@ class UserModel extends Model<typeof UserModel.schema, UserItem, UserItemCreatio
         (login?.type === "LOCAL"
           ? hasKey(login, "passwordHash")
           : login?.type === "GOOGLE_OAUTH"
-          ? hasKey(login, "googleID") && hasKey(login, "googleAccessToken")
-          : false),
+            ? hasKey(login, "googleID") && hasKey(login, "googleAccessToken")
+            : false),
     },
     profile: {
       type: "map",

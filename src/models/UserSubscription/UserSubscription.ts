@@ -1,25 +1,31 @@
 import { Model } from "@nerdware/ddb-single-table";
+import { hasKey } from "@nerdware/ts-type-safety-utils";
+import { pricesCache } from "@/lib/cache/pricesCache";
+import { productsCache } from "@/lib/cache/productsCache";
 import { isValidStripeID } from "@/lib/stripe";
 import { userModelHelpers } from "@/models/User/helpers";
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@/models/_common";
 import { ddbTable } from "@/models/ddbTable";
-import { ENV } from "@/server/env";
-import { hasKey } from "@/utils";
 import { SUBSCRIPTION_ENUM_CONSTANTS } from "./enumConstants";
 import { userSubscriptionModelHelpers as subModelHelpers } from "./helpers";
 import { normalizeStripeFields } from "./normalizeStripeFields";
 import { USER_SUB_SK_PREFIX_STR as SUB_SK_PREFIX } from "./regex";
 import { upsertOne } from "./upsertOne";
-import { validateExisting } from "./validateExisting";
+import { validateSubscription, validatePriceID, validatePromoCode } from "./validators";
+import type { OpenApiSchemas } from "@/types/open-api";
 import type { ItemTypeFromSchema, ItemCreationParameters } from "@nerdware/ddb-single-table";
+import type Stripe from "stripe";
 
 /**
  * UserSubscription Model
  */
 class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
-  static readonly PRODUCT_IDS = { FIXIT_SUBSCRIPTION: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.productID }; // prettier-ignore
-  static readonly PRICE_IDS = ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.priceIDs;
-  static readonly PROMO_CODES = ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.promoCodes;
+  static readonly PRODUCT_ID = productsCache.get("Fixit Subscription")!.id;
+  static readonly PRICE_IDS: Record<SubscriptionPriceLabels, Stripe.Price["id"]> = {
+    ANNUAL: pricesCache.get("ANNUAL")!.id,
+    MONTHLY: pricesCache.get("MONTHLY")!.id,
+    TRIAL: pricesCache.get("TRIAL")!.id,
+  };
 
   static readonly schema = ddbTable.getModelSchema({
     pk: {
@@ -38,7 +44,7 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
     data: {
       type: "string",
       alias: "id", // Sub IDs comes from Stripe
-      validate: (value: string) => isValidStripeID.subscription(value),
+      validate: (value) => isValidStripeID.subscription(value),
       required: true,
     },
     currentPeriodEnd: {
@@ -48,30 +54,24 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
     productID: {
       type: "string",
       required: true,
-      validate: (value: string) => Object.values(UserSubscriptionModel.PRODUCT_IDS).includes(value),
-      /* productID is not using type=enum at this time for two reasons:
-        1, PRODUCT_IDS is env-dependent and not "known" until runtime, and
-        2, Provided values may be either a key OR value from PRODUCT_IDS */
+      validate: (value) => value === UserSubscriptionModel.PRODUCT_ID,
+      // Not using type=enum here bc Product IDs are env-dependent and not known until runtime.
       transformValue: {
-        // This toDB allows the value to be an actual product-id OR a key from PRODUCT_IDS
+        // This toDB allows the value to be a Product `id` OR `name`
         toDB: (value: string) =>
-          hasKey(UserSubscriptionModel.PRODUCT_IDS, value)
-            ? (UserSubscriptionModel.PRODUCT_IDS[value] as string)
-            : value,
+          productsCache.has(value as any) ? productsCache.get(value as any)!.id : value,
       },
     },
     priceID: {
       type: "string",
       required: true,
-      validate: (value: string) => Object.values(UserSubscriptionModel.PRICE_IDS).includes(value),
-      /* priceID is not using type=enum at this time for two reasons:
-        1, PRICE_IDS is env-dependent and not "known" until runtime, and
-        2, Provided values may be either a key OR value from PRICE_IDS */
+      validate: validatePriceID,
+      // Not using type=enum here bc Price IDs are env-dependent and not known until runtime.
       transformValue: {
-        // This toDB allows the value to be an actual price-id OR a key from PRICE_IDS
+        // This toDB allows the value to be a Price `id` OR `name`
         toDB: (value: string) =>
           hasKey(UserSubscriptionModel.PRICE_IDS, value)
-            ? (UserSubscriptionModel.PRICE_IDS[value] as string)
+            ? UserSubscriptionModel.PRICE_IDS[value]
             : value,
       },
     },
@@ -88,14 +88,15 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
   }
 
   // USER SUBSCRIPTION MODEL — Instance properties and methods:
-  readonly PRODUCT_IDS = UserSubscriptionModel.PRODUCT_IDS;
+  readonly PRODUCT_ID = UserSubscriptionModel.PRODUCT_ID;
   readonly PRICE_IDS = UserSubscriptionModel.PRICE_IDS;
-  readonly PROMO_CODES = UserSubscriptionModel.PROMO_CODES;
   readonly SK_PREFIX = SUB_SK_PREFIX;
   readonly getFormattedSK = subModelHelpers.sk.format;
   readonly normalizeStripeFields = normalizeStripeFields;
   readonly upsertOne = upsertOne;
-  readonly validateExisting = validateExisting;
+  readonly validateExisting = validateSubscription;
+  readonly validatePriceID = validatePriceID;
+  readonly validatePromoCode = validatePromoCode;
 }
 
 export const UserSubscription = new UserSubscriptionModel();
@@ -121,5 +122,5 @@ export type UnaliasedUserSubscriptionItem = ItemTypeFromSchema<
   }
 >;
 
-/** The names of UserSubscription Stripe prices: "TRIAL", "MONTHLY", "ANNUAL" */
-export type UserSubscriptionPriceLabels = keyof typeof UserSubscriptionModel.PRICE_IDS;
+/** The names of Fixit Subscription prices: "TRIAL", "MONTHLY", "ANNUAL" */
+export type SubscriptionPriceLabels = OpenApiSchemas["SubscriptionPriceName"];

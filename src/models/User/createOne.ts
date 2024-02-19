@@ -1,4 +1,4 @@
-import { usersCache } from "@/lib/cache";
+import { usersCache } from "@/lib/cache/usersCache";
 import { stripe } from "@/lib/stripe";
 import { Profile } from "@/models/Profile";
 import { UserLogin, type CreateLoginParams } from "@/models/UserLogin";
@@ -6,7 +6,7 @@ import {
   UserStripeConnectAccount,
   type UserStripeConnectAccountItem,
 } from "@/models/UserStripeConnectAccount";
-import { normalize, logger } from "@/utils";
+import { logger } from "@/utils/logger";
 import type { UserItem, User } from "@/models/User";
 import type { Simplify, SetOptional } from "type-fest";
 
@@ -37,11 +37,13 @@ export const createOne = async function (
   // Create Stripe Customer via Stripe API
   const { id: stripeCustomerID } = await stripe.customers.create({
     email,
-    phone: normalize.phone(phone), // <-- don't send non-digit chars to Stripe
+    phone,
     ...(newUserProfile.displayName.length > 0 && { name: newUserProfile.displayName }),
   });
 
-  // The new Stripe Customer obj should be deleted if user creation fails, so try-catch.
+  // Var the catch block can use to "undo" created resources if an error is thrown:
+  let newUserID: string | undefined;
+  let wasUserScaCreated = false;
 
   try {
     // Create User
@@ -49,11 +51,13 @@ export const createOne = async function (
       handle,
       email,
       phone,
-      expoPushToken,
+      ...(expoPushToken && { expoPushToken }),
       stripeCustomerID,
       profile: { ...newUserProfile },
       login: await UserLogin.createLogin({ password, googleID, googleAccessToken }),
     });
+
+    newUserID = newUser.id;
 
     // Create newUser's Stripe Connect Account
     newUserStripeConnectAccount = await UserStripeConnectAccount.createOne({
@@ -62,6 +66,8 @@ export const createOne = async function (
       phone: newUser.phone,
       profile: newUser.profile,
     });
+
+    wasUserScaCreated = true;
 
     // Add newUser to usersCache for search-by-handle
     usersCache.set(newUser.handle, {
@@ -77,17 +83,31 @@ export const createOne = async function (
     // Log the error, and delete the Stripe Customer on fail
     logger.error(error, "User.createOne");
 
-    logger.stripe(
-      `Failed to create User with email "${email}". Attempting to delete Stripe Customer "${stripeCustomerID}"...`
-    );
-
-    const { deleted } = await stripe.customers.del(stripeCustomerID);
+    // Delete the Stripe Customer:
 
     logger.stripe(
-      deleted === true
-        ? `SUCCESS: Deleted Stripe Customer "${stripeCustomerID}"`
-        : `ERROR: FAILED TO DELETE Stripe Customer "${stripeCustomerID}"`
+      `Failed to create User with email "${email}". Deleting Stripe Customer "${stripeCustomerID}"...`
     );
+
+    await stripe.customers.del(stripeCustomerID);
+
+    logger.stripe(`Deleted Stripe Customer "${stripeCustomerID}".`);
+
+    // Delete the User, if it was created:
+    if (newUserID) {
+      logger.info(`Deleting User "${newUserID}" due to failed User.createOne()...`);
+      this.deleteItem({ id: newUserID })
+        .then(() => logger.info(`SUCCESS: Deleted User "${newUserID}"`))
+        .catch(() => logger.error(`ERROR: FAILED TO DELETE User "${newUserID}"`));
+
+      // Delete the UserStripeConnectAccount, if it was created:
+      if (wasUserScaCreated) {
+        logger.info(`Deleting SCA of User "${newUserID}" due to failed User.createOne()...`);
+        UserStripeConnectAccount.deleteItem({ userID: newUserID })
+          .then(() => logger.info(`SUCCESS: Deleted SCA of User "${newUserID}"`))
+          .catch(() => logger.error(`ERROR: FAILED TO DELETE SCA of User "${newUserID}"`));
+      }
+    }
 
     // Re-throw to allow MW to handle the error sent to the user
     throw error;

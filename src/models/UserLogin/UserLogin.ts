@@ -1,4 +1,5 @@
-import { passwordHasher, isValid } from "@/utils";
+import { isValidPassword } from "@nerdware/ts-string-helpers";
+import { passwordHasher } from "@/utils/passwordHasher";
 
 /**
  * Represents a User login object that can be created with either a password or
@@ -20,7 +21,7 @@ export class UserLogin {
 
     if (typeof password === "string") {
       // Validate the password
-      if (!isValid.password(password)) {
+      if (!isValidPassword(password)) {
         throw new Error("The provided password does not meet the required criteria");
       }
 
@@ -46,22 +47,30 @@ export class UserLogin {
   };
 }
 
-export type FixitAuthSource = "LOCAL" | "GOOGLE_OAUTH";
+// TODO Use open-api schema types to replace/modify the Login types below
 
+/** This type is used in `User.createOne()`. */
 export type CreateLoginParams =
-  | { password: string; [key: string]: string }
-  | { googleID: string; googleAccessToken: string; [key: string]: string }
-  | { password?: string; googleID?: string; googleAccessToken?: string };
+  | { password: string; [key: string]: string | undefined }
+  | { googleID: string; googleAccessToken: string; [key: string]: string | undefined }
+  | {
+      password?: string | undefined;
+      googleID?: string | undefined;
+      googleAccessToken?: string | undefined;
+    };
 
-export type CreateLoginResult<T extends CreateLoginParams> = T extends { password: string }
+type CreateLoginResult<T extends CreateLoginParams> = T extends { password: string }
   ? UserLoginLocal
   : T extends { googleID: string; googleAccessToken: string }
-  ? UserLoginGoogleOAuth
-  : never;
+    ? UserLoginGoogleOAuth
+    : never;
 
+/** This type is used in `UserItem`. */
 export type UserLoginU = UserLoginLocal | UserLoginGoogleOAuth;
-export type UserLoginLocal = { type: "LOCAL"; passwordHash: string };
-export type UserLoginGoogleOAuth = {
+
+type UserLoginLocal = { type: "LOCAL"; passwordHash: string };
+
+type UserLoginGoogleOAuth = {
   type: "GOOGLE_OAUTH";
   googleID: string;
   googleAccessToken: string;

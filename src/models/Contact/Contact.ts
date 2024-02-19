@@ -1,8 +1,8 @@
 import { Model } from "@nerdware/ddb-single-table";
+import { isValidHandle } from "@nerdware/ts-string-helpers";
 import { userModelHelpers } from "@/models/User/helpers";
 import { COMMON_ATTRIBUTES } from "@/models/_common";
 import { ddbTable } from "@/models/ddbTable";
-import { isValid } from "@/utils/clientInputHandlers";
 import { contactModelHelpers } from "./helpers";
 import { CONTACT_SK_PREFIX_STR } from "./regex";
 import type { ItemTypeFromSchema, ItemCreationParameters } from "@nerdware/ddb-single-table";
@@ -34,7 +34,7 @@ class ContactModel extends Model<typeof ContactModel.schema> {
     },
     handle: {
       type: "string",
-      validate: (value: string) => isValid.handle(value),
+      validate: (value: string) => isValidHandle(value),
       required: true,
     },
     ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps

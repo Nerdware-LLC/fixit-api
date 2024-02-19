@@ -1,5 +1,5 @@
+import { isDate } from "@nerdware/ts-type-safety-utils";
 import { createModelHelpers } from "@/models/_common/modelHelpers";
-import { isDate } from "@/utils/typeSafety/isType";
 import { getUnixTimestampUUID } from "@/utils/uuid";
 import {
   USER_ID_PREFIX_STR as ID_PREFIX,
