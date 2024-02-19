@@ -7,7 +7,7 @@ import { EnvObject } from "../EnvObject";
 */
 
 const {
-  NODE_ENV,
+  NODE_ENV = "test",
   npm_package_version,
   VITE_PROTOCOL: PROTOCOL = "http",
   VITE_DOMAIN: DOMAIN = "localhost",
@@ -24,15 +24,11 @@ const {
   VITE_STRIPE_WEBHOOKS_SECRET: STRIPE_WEBHOOKS_SECRET = "whsec_TestTestTest",
   VITE_STRIPE_PUBLISHABLE_KEY: STRIPE_PUBLISHABLE_KEY = "pk_fake_TestTestTest",
   VITE_STRIPE_SECRET_KEY: STRIPE_SECRET_KEY = "sk_fake_TestTestTest",
-  VITE_FIXIT_SUB_PRODUCT_ID: FIXIT_SUB_PRODUCT_ID = "prod_TestTestTest",
-  VITE_FIXIT_SUB_PROMO_CODES_JSON: FIXIT_SUB_PROMO_CODES_JSON = `{"TEST":"promo_TestTestTest"}`,
-  VITE_FIXIT_SUB_PRICES_JSON:
-    FIXIT_SUB_PRICES_JSON = `{"ANNUAL":"price_TestANNUAL","MONTHLY":"price_TestMONTHLY"}`,
 } = process.env; // eslint-disable-line node/no-process-env
 
 export const ENV = new EnvObject({
   NODE_ENV,
-  npm_package_version,
+  ...(npm_package_version && { npm_package_version }),
   PROTOCOL,
   DOMAIN,
   PORT,
@@ -48,7 +44,4 @@ export const ENV = new EnvObject({
   STRIPE_WEBHOOKS_SECRET,
   STRIPE_PUBLISHABLE_KEY,
   STRIPE_SECRET_KEY,
-  FIXIT_SUB_PRODUCT_ID,
-  FIXIT_SUB_PRICES_JSON,
-  FIXIT_SUB_PROMO_CODES_JSON,
 });

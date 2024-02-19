@@ -21,7 +21,7 @@ import type { Algorithm } from "jsonwebtoken";
  * @property {Object} STRIPE - Stripe-related env vars.
  */
 export class EnvObject {
-  readonly NODE_ENV: typeof process.env.NODE_ENV;
+  readonly NODE_ENV: Extract<typeof process.env.NODE_ENV, string>; // omit undefined
   readonly IS_PROD: boolean;
   readonly CONFIG: Readonly<{
     PROJECT_VERSION?: string;
@@ -53,13 +53,6 @@ export class EnvObject {
     WEBHOOKS_SECRET: string;
     PUBLISHABLE_KEY: string;
     SECRET_KEY: string;
-    BILLING: Readonly<{
-      FIXIT_SUBSCRIPTION: Readonly<{
-        productID: string;
-        promoCodes: Record<string, string>;
-        priceIDs: Record<"TRIAL" | "MONTHLY" | "ANNUAL", string>;
-      }>;
-    }>;
   }>;
 
   constructor({
@@ -80,9 +73,6 @@ export class EnvObject {
     STRIPE_WEBHOOKS_SECRET,
     STRIPE_PUBLISHABLE_KEY,
     STRIPE_SECRET_KEY,
-    FIXIT_SUB_PRODUCT_ID,
-    FIXIT_SUB_PRICES_JSON,
-    FIXIT_SUB_PROMO_CODES_JSON,
   }: typeof process.env) {
     // Ensure necessary env vars have been provided
     if (
@@ -100,10 +90,7 @@ export class EnvObject {
       !SENTRY_DSN ||
       !STRIPE_WEBHOOKS_SECRET ||
       !STRIPE_PUBLISHABLE_KEY ||
-      !STRIPE_SECRET_KEY ||
-      !FIXIT_SUB_PRODUCT_ID ||
-      !FIXIT_SUB_PRICES_JSON ||
-      !FIXIT_SUB_PROMO_CODES_JSON
+      !STRIPE_SECRET_KEY
     ) {
       throw new Error("Missing required environment variables.");
     }
@@ -115,16 +102,11 @@ export class EnvObject {
 
     const API_BASE_URL = `${PROTOCOL}://${DOMAIN}`;
 
-    const FIXIT_SUB_PRICES = JSON.parse(FIXIT_SUB_PRICES_JSON) as {
-      MONTHLY: string;
-      ANNUAL: string;
-    };
-
     this.NODE_ENV = NODE_ENV;
     this.IS_PROD = /^prod/i.test(NODE_ENV);
     this.CONFIG = {
       ...(npm_package_version && { PROJECT_VERSION: `v${npm_package_version}` }),
-      TIMEZONE: `${new Date().toString().match(/([A-Z]+[+-][0-9]+.*)/)?.[1] ?? "-"}`,
+      TIMEZONE: new Date().toString().match(/([A-Z]+[+-][0-9]+.*)/)?.[1] ?? "-",
       PROTOCOL,
       DOMAIN,
       PORT,
@@ -138,7 +120,7 @@ export class EnvObject {
     this.AWS = {
       REGION: AWS_REGION,
       DYNAMODB_TABLE_NAME,
-      DYNAMODB_ENDPOINT,
+      ...(DYNAMODB_ENDPOINT && { DYNAMODB_ENDPOINT }),
     };
     this.JWT = {
       PRIVATE_KEY: JWT_PRIVATE_KEY,
@@ -152,16 +134,6 @@ export class EnvObject {
       WEBHOOKS_SECRET: STRIPE_WEBHOOKS_SECRET,
       PUBLISHABLE_KEY: STRIPE_PUBLISHABLE_KEY,
       SECRET_KEY: STRIPE_SECRET_KEY,
-      BILLING: {
-        FIXIT_SUBSCRIPTION: {
-          productID: FIXIT_SUB_PRODUCT_ID,
-          promoCodes: JSON.parse(FIXIT_SUB_PROMO_CODES_JSON) as Record<string, string>,
-          priceIDs: {
-            TRIAL: FIXIT_SUB_PRICES.MONTHLY,
-            ...FIXIT_SUB_PRICES,
-          },
-        },
-      },
     };
   }
 }
