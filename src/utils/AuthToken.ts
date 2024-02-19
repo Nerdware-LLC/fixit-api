@@ -25,12 +25,14 @@ export class AuthToken {
       phone: userData.phone,
       profile: userData.profile,
       stripeCustomerID: userData.stripeCustomerID,
+      ...(userData.stripeConnectAccount && {
       stripeConnectAccount: {
         id: userData.stripeConnectAccount.id,
         detailsSubmitted: !!userData.stripeConnectAccount.detailsSubmitted,
         chargesEnabled: !!userData.stripeConnectAccount.chargesEnabled,
         payoutsEnabled: !!userData.stripeConnectAccount.payoutsEnabled,
       },
+      }),
       ...(userData.subscription && {
         subscription: {
           id: userData.subscription.id,
