@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-################################################################################
+###############################################################################
 # IMAGE: nerdware/fixit-api
 #
 # This Dockerfile is used to create a production image for the Fixit API which
@@ -12,11 +12,11 @@
 # After being uploaded to the AWS ECR image repo by the relevant GitHub Action,
 # the image is scanned for conformance with relevant CIS benchmarks and other
 # security standards. Once all checks pass, the image is deployed to AWS ECS.
-################################################################################
+###############################################################################
 # STAGE: base
 
-# Source image: NodeJS v18 LTS (https://hub.docker.com/_/node)
-FROM node:18.18.0 as base
+# Source image: NodeJS v20 LTS (https://hub.docker.com/_/node)
+FROM node:20.11.0 as base
 
 # Expose desired port
 EXPOSE 80
@@ -24,7 +24,7 @@ EXPOSE 80
 # Explicitly set workdir
 WORKDIR /home/node/app
 
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # STAGE: builder
 
 # This build stage creates the dist build artifact for "prod" build stage
@@ -42,7 +42,7 @@ COPY src src/
 # Create dist/ for "prod" stage and remove dev dependencies
 RUN npm run build && npm prune --production
 
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # STAGE: prod
 
 # This build stage creates the final "prod" image for ECS tasks
@@ -72,4 +72,4 @@ ENV NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings'
 # Run the API directly with node executable
 CMD ["node", "dist/index.js"]
 
-################################################################################
+###############################################################################
