@@ -4,11 +4,12 @@ import express from "express";
 import { apolloServer } from "@/apolloServer";
 import {
   corsMW,
-  setSecureHttpHeaders,
-  logReqReceived,
-  validateGqlReqContext,
   errorHandler,
   handle404,
+  logReqReceived,
+  sendRESTJsonResponse,
+  setSecureHttpHeaders,
+  validateGqlReqContext,
 } from "@/middleware";
 import {
   adminRouter,
@@ -32,12 +33,15 @@ expressApp.use(corsMW, setSecureHttpHeaders);
 // BODY-PARSING (admin and webhooks routers handle their own body parsing)
 expressApp.use([/^\/api$/, /^\/api\/(auth|connect|subscriptions)/], express.json());
 
-// EXPRESS ROUTE HANDLERS
+// REST ROUTE HANDLERS
 expressApp.use("/api/admin", adminRouter);
 expressApp.use("/api/auth", authRouter);
 expressApp.use("/api/connect", connectRouter);
 expressApp.use("/api/subscriptions", subscriptionsRouter);
 expressApp.use("/api/webhooks", webhooksRouter);
+
+// REST RESPONSE HANDLER (admin and webhooks routers handle their own responses)
+expressApp.use(/^\/api\/(auth|connect|subscriptions)/, sendRESTJsonResponse);
 
 // APOLLO SERVER (root path: /api)
 expressApp.use(
