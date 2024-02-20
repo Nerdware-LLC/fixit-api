@@ -1,17 +1,26 @@
+import {
+  sanitizeAlphabetic,
+  isValidAlphabetic,
+  sanitizeID,
+  sanitizeURL,
+  isValidURL,
+} from "@nerdware/ts-string-helpers";
 import express from "express";
+import { pricesCache } from "@/lib/cache/pricesCache";
 import { isValidStripeID } from "@/lib/stripe";
 import {
-  getUserFromAuthHeaderToken,
+  checkPromoCode,
+  createCustomerPortalLink,
   findOrCreateStripeSubscription,
   generateAuthToken,
-  createCustomerPortalLink,
+  getUserFromAuthHeaderToken,
 } from "@/middleware";
 import { sanitizeAndValidateRequestBody } from "@/middleware/helpers";
 import { UserSubscription } from "@/models/UserSubscription";
-import { hasKey, sanitize, isValid } from "@/utils";
 
 /**
  * This router handles all `/api/subscriptions` request paths:
+ * - `/api/subscriptions/check-promo-code`
  * - `/api/subscriptions/submit-payment`
  * - `/api/subscriptions/customer-portal`
  */
@@ -20,34 +29,41 @@ export const subscriptionsRouter = express.Router();
 subscriptionsRouter.use(getUserFromAuthHeaderToken);
 
 subscriptionsRouter.post(
+  "/check-promo-code",
+  sanitizeAndValidateRequestBody({
+    requestBodySchema: {
+      promoCode: {
+        required: true,
+        type: "string",
+        sanitize: sanitizeAlphabetic,
+        validate: isValidAlphabetic,
+      },
+    },
+  }),
+  checkPromoCode
+);
+
+subscriptionsRouter.post(
   "/submit-payment",
   sanitizeAndValidateRequestBody({
     requestBodySchema: {
       selectedSubscription: {
         required: true,
         type: "string",
-        sanitize: sanitize.alphabetic,
-        validate: (value) => {
-          if (!hasKey(UserSubscription.PRICE_IDS, value as string)) {
-            throw new Error("Invalid subscription");
-          }
-        },
+        sanitize: sanitizeAlphabetic,
+        validate: pricesCache.has,
       },
       paymentMethodID: {
         required: true,
         type: "string",
-        sanitize: sanitize.id,
+        sanitize: sanitizeID,
         validate: isValidStripeID.paymentMethod,
       },
       promoCode: {
         required: false,
         type: "string",
-        sanitize: sanitize.id,
-        validate: (value) => {
-          if (!hasKey(UserSubscription.PROMO_CODES, value as string)) {
-            throw new Error("Invalid promo code");
-          }
-        },
+        sanitize: sanitizeAlphabetic,
+        validate: UserSubscription.validatePromoCode,
       },
     },
   }),
@@ -62,8 +78,8 @@ subscriptionsRouter.post(
       returnURL: {
         required: true,
         type: "string",
-        sanitize: sanitize.url,
-        validate: isValid.url,
+        sanitize: sanitizeURL,
+        validate: isValidURL,
       },
     },
   }),

@@ -1,7 +1,7 @@
+import { sanitizeURL, isValidURL } from "@nerdware/ts-string-helpers";
 import express from "express";
 import { getUserFromAuthHeaderToken, createAccountLink, createDashboardLink } from "@/middleware";
 import { sanitizeAndValidateRequestBody } from "@/middleware/helpers";
-import { sanitize, isValid } from "@/utils";
 
 /**
  * This router handles all `/api/connect` request paths:
@@ -19,8 +19,8 @@ connectRouter.post(
       returnURL: {
         required: true,
         type: "string",
-        sanitize: sanitize.url,
-        validate: isValid.url,
+        sanitize: sanitizeURL,
+        validate: isValidURL,
       },
     },
   }),

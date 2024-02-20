@@ -1,5 +1,6 @@
+import { hasKey } from "@nerdware/ts-type-safety-utils";
 import express from "express";
-import { logger, hasKey } from "@/utils";
+import { logger } from "@/utils/logger";
 import type { Request } from "express";
 import type { JsonObject } from "type-fest";
 
@@ -36,16 +37,9 @@ adminRouter.use(
   express.json({
     type: ["application/json", "application/csp-report", "application/reports+json"],
   }),
-  (
-    req: Request<
-      unknown,
-      unknown,
-      { "csp-report"?: JsonObject | string | undefined; [K: string]: unknown }
-    >,
-    res
-  ) => {
+  (req: Request<never, never, { "csp-report"?: JsonObject }>, res) => {
+    // Get `req.body["csp-report"]` - if not present, use the entire `req.body` object:
     const report = hasKey(req.body, "csp-report") ? req.body["csp-report"] : { ...req.body };
-
     logger.security(report, "CSP VIOLATION REPORT");
     res.end();
   }
