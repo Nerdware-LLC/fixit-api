@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.23.1](https://github.com/Nerdware-LLC/fixit-api/compare/v1.23.0...v1.23.1) (2024-02-20)
+
+
+### Bug Fixes
+
+* impl isError util in err-check logic ([79ad8b0](https://github.com/Nerdware-LLC/fixit-api/commit/79ad8b0c53d69988782e46e37b737a111b9d7ff1))
+
 ## [1.23.1-next.1](https://github.com/Nerdware-LLC/fixit-api/compare/v1.23.0...v1.23.1-next.1) (2024-02-20)
 
 
