@@ -1,4 +1,4 @@
-import { safeJsonStringify, getErrorMessage } from "@nerdware/ts-type-safety-utils";
+import { safeJsonStringify, getErrorMessage, isError } from "@nerdware/ts-type-safety-utils";
 import * as Sentry from "@sentry/node";
 import chalk, { type ChalkInstance } from "chalk";
 import dayjs from "dayjs";
@@ -102,7 +102,7 @@ const getLoggerUtil = ({
 
   // The returned fn simply checks if input is an Error, and calls handleLogMessage/handleLogError accordingly
   return (input, messagePrefix) => {
-    if (input instanceof Error) handleLogError(input, messagePrefix);
+    if (isError(input)) handleLogError(input, messagePrefix);
     else handleLogMessage(input, messagePrefix);
   };
 };

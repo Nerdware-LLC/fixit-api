@@ -68,28 +68,32 @@ The Fixit API provides a robust, scalable, and secure backend for the Fixit SaaS
 > <table align="center">
 >   <tr>
 >   <td align="center">
-> 
->   [<img src="https://upload.wikimedia.org/wikipedia/commons/a/ab/Swagger-logo.png" width="70" alt="Check out the REST API OpenAPI Schema on SwaggerHub" />](https://app.swaggerhub.com/apis/Nerdware/Fixit "Check out the REST API OpenAPI Schema on SwaggerHub")
-> 
->   <code>REST API OpenAPI</code><br><code>Schema Explorer</code>
+>
+> [<img src="https://upload.wikimedia.org/wikipedia/commons/a/ab/Swagger-logo.png" width="70" alt="Check out the Fixit REST API OpenAPI Schema on SwaggerHub" />](https://app.swaggerhub.com/apis/Nerdware/Fixit "Check out the Fixit REST API OpenAPI Schema on SwaggerHub")
+>
+> <code>Fixit REST API OpenAPI</code><br><code>Schema Explorer</code>
+>
 >   </td>
 >   <td align="center">
 >
->   [<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/GraphQL_Logo.svg/220px-GraphQL_Logo.svg.png" width="70" alt="Check out the GraphQL API Schema-Explorer on Apollo Studio" />](https://studio.apollographql.com/public/fixit/variant/current "Check out the GraphQL API Schema-Explorer on Apollo Studio")
+> [<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/GraphQL_Logo.svg/220px-GraphQL_Logo.svg.png" width="70" alt="Check out the Fixit GraphQL API Schema-Explorer on Apollo Studio" />](https://studio.apollographql.com/public/fixit/variant/current "Check out the Fixit GraphQL API Schema-Explorer on Apollo Studio")
 >
->   <code>GraphQL API</code><br><code>Schema Explorer</code>
+> <code>Fixit GraphQL API</code><br><code>Schema Explorer</code>
+>
 >   </td>
 >   <td align="center">
 >
->   [<img src="https://avatars.githubusercontent.com/u/22632046?s=200&v=4" width="70" alt="Check out the Fixit front-end Storybook on Chromatic" />](https://659981450c81cefabec86fa2-hayufvwzje.chromatic.com "Check out the Fixit front-end Storybook on Chromatic")
+> [<img src="https://avatars.githubusercontent.com/u/22632046?s=200&v=4" width="70" alt="Check out the Fixit front-end Storybook on Chromatic" />](https://659981450c81cefabec86fa2-hayufvwzje.chromatic.com "Check out the Fixit front-end Storybook on Chromatic")
 >
->   <code>Fixit Frontend</code><br><code>Component Storybook</code>
+> <code>Fixit Frontend</code><br><code>Component Storybook</code>
+>
 >   </td>
 >   <td align="center">
 >
->   [<img src="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png" width="70" alt="Check out the Fixit web app GitHub repo" />](https://github.com/Nerdware-LLC/fixit-web#readme "Check out the Fixit web app GitHub repo")
+> [<img src="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png" width="70" alt="Check out the Fixit web app GitHub repo" />](https://github.com/Nerdware-LLC/fixit-web#readme "Check out the Fixit web app GitHub repo")
 >
->   <code>Fixit Web App</code><br><code>GitHub Repo</code>
+> <code>Fixit Web App</code><br><code>GitHub Repo</code>
+>
 >   </td>
 >   </tr>
 > </table>
@@ -116,12 +120,12 @@ This API exposes both **REST** and **GraphQL** endpoints:
   </th>
   <td align="center">
 
-  [View OpenAPI Schema](https://app.swaggerhub.com/apis/Nerdware/Fixit "Check out the REST API OpenAPI Schema on SwaggerHub")
+[View OpenAPI Schema](https://app.swaggerhub.com/apis/Nerdware/Fixit "Check out the REST API OpenAPI Schema on SwaggerHub")
 
   </td>
   <td align="center">
 
-  [ExpressJS](https://expressjs.com/)
+[ExpressJS](https://expressjs.com/)
 
   </td>
   <td>
@@ -134,13 +138,13 @@ This API exposes both **REST** and **GraphQL** endpoints:
   </th>
   <td align="center">
 
-  [View GQL Schema](https://studio.apollographql.com/public/fixit/variant/current "Check out the GraphQL API Schema-Explorer on Apollo Studio")
+[View GQL Schema](https://studio.apollographql.com/public/fixit/variant/current "Check out the GraphQL API Schema-Explorer on Apollo Studio")
 
   </td>
   <td align="center">
-    
-  [Apollo Server](https://www.apollographql.com/docs/apollo-server/)
-        
+
+[Apollo Server](https://www.apollographql.com/docs/apollo-server/)
+
   </td>
   <td>
     Handles queries and mutations for core items like <code>WorkOrders</code>, <code>Invoices</code>, and <code>Contacts</code>.
@@ -156,10 +160,10 @@ The below diagram outlines every available REST API endpoint. Endpoint graph nod
 - ![#f1ff2e](https://via.placeholder.com/15/f1ff2e/f1ff2e.png "🔒") Endpoints outlined in <span style="color:#f1ff2e">yellow</span> require authentication via auth token (for more info, see [Fixit-API User Authentication](#-user-authentication))
 - ![#ec4dbf](https://via.placeholder.com/15/ec4dbf/ec4dbf.png "🔒💲") Endpoints outlined in <span style="color:#ec4dbf">pink</span> require both authentication _and_ an active subscription (for more info, see [Fixit SaaS Products](#-premium-saas-products))
 
-<!-- 
+<!--
   NOTE RE: BELOW MERMAID CHART
-  To ensure GitHub doesn't collapse the newlines in the below mermaid diagram, each pair of newline 
-  chars ("\n­\n") contains an invisible, zero-width "soft hyphen" character in between the "\n" chars. 
+  To ensure GitHub doesn't collapse the newlines in the below mermaid diagram, each pair of newline
+  chars ("\n­\n") contains an invisible, zero-width "soft hyphen" character in between the "\n" chars.
   It's hacky, but for now it's the only solution that actually works. See https://symbl.cc/en/00AD/
 -->
 
