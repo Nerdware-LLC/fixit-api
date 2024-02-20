@@ -1,6 +1,6 @@
 import { UserSubscription } from "@/models/UserSubscription";
 import { ENV } from "@/server/env";
-import { AuthToken } from "@/utils/AuthToken";
+import { AuthToken, type FixitApiAuthTokenPayload } from "@/utils/AuthToken";
 import { GqlAuthError, GqlPaymentRequiredError } from "@/utils/httpErrors";
 import type { ApolloServerResolverContext } from "@/apolloServer";
 import type { Request } from "express";
@@ -41,7 +41,7 @@ const validateGqlRequest = async ({
 
   return {
     ...req,
-    user: tokenPayload,
+    user: tokenPayload as FixitApiAuthTokenPayload<true, true>,
   };
 };
 
@@ -64,11 +64,11 @@ const isIntrospectionQuery = ({
   const isIntrospectionQueryFromApolloStudio =
     req.get("origin") === "https://studio.apollographql.com" &&
     !!req?.body?.query &&
-    /query IntrospectionQuery/.test(req.body.query);
+    req.body.query.includes("query IntrospectionQuery");
 
   // Manual schema-update introspection queries submitted via Rover CLI:
   const isIntrospectionQueryFromRoverCLI =
-    (/^rover/.test(req.get("user-agent") ?? "") || req.hostname === "localhost") &&
+    ((req.get("user-agent") ?? "").startsWith("rover") || req.hostname === "localhost") &&
     !!req?.body?.operationName &&
     req.body.operationName === "GraphIntrospectQuery";
 
@@ -80,7 +80,7 @@ const isIntrospectionQuery = ({
  * - Permits ApolloStudio and ApolloSandbox introspection queries in the dev env.
  */
 export const validateGqlReqContext =
-  /^dev/i.test(ENV.NODE_ENV) === false
+  ENV.NODE_ENV.startsWith("dev")
     ? validateGqlRequest
     : async ({ req }: { req: Request }) => {
         return isIntrospectionQuery({ req })

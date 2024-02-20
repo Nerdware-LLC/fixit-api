@@ -1,5 +1,6 @@
+import { getTypeSafeError } from "@nerdware/ts-type-safety-utils";
 import { UserSubscription } from "@/models/UserSubscription";
-import { logger, getTypeSafeError } from "@/utils";
+import { logger } from "@/utils/logger";
 import type Stripe from "stripe";
 
 /**
@@ -28,14 +29,17 @@ export const customerSubscriptionUpdated = async (
   let userID;
 
   try {
-    // Get "userID" needed for the primary key
-    const [{ userID }] = await UserSubscription.query({
+    // Submit query for the UserSubscription item
+    const [userSubscription] = await UserSubscription.query({
       where: {
         id: subID,
         sk: { beginsWith: UserSubscription.SK_PREFIX },
       },
       limit: 1,
     });
+
+    // Get "userID" needed for the primary key
+    const { userID } = userSubscription ?? {};
 
     // If no user ID, throw an error
     if (!userID) throw new Error(`User ID not found for UserSubscription with ID "${subID}".`);

@@ -10,9 +10,9 @@ import { UserSubscription } from "@/models/UserSubscription";
  * auth token payload values are updated as well.
  */
 export const checkSubscriptionStatus = mwAsyncCatchWrapper(async (req, res, next) => {
-  if (!req?._authenticatedUser) return next("User not found");
+  if (!res.locals?.authenticatedUser) return next("User not found");
 
-  const { subscription, id: userID } = req._authenticatedUser;
+  const { subscription, id: userID } = res.locals.authenticatedUser;
 
   if (subscription) {
     const {
@@ -32,15 +32,15 @@ export const checkSubscriptionStatus = mwAsyncCatchWrapper(async (req, res, next
       upToDateSubInfo.status !== status_inDB ||
       upToDateSubInfo.currentPeriodEnd.getTime() !== new Date(currentPeriodEnd_inDB).getTime()
     ) {
-      /* Do NOT use Stripe's `createdAt` value for the Sub-SK, because it may not
-      match the value in the DB. Instead, use the value from req._userSubscription
-      (should always be present here).  */
-      if (!req?._userSubscription?.createdAt) return next("Invalid subscription details");
+      /* Do NOT use Stripe's `createdAt` value for the UserSubscription SK, because it may
+      not match the value in the DB. Instead, use the value from res.locals.userSubscription
+      (should always be present here). */
+      if (!res.locals?.userSubscription?.createdAt) return next("Invalid subscription details");
 
       const updatedSub = await UserSubscription.updateItem(
         {
           userID,
-          sk: UserSubscription.getFormattedSK(userID, req._userSubscription.createdAt),
+          sk: UserSubscription.getFormattedSK(userID, res.locals.userSubscription.createdAt),
         },
         {
           update: {
@@ -50,8 +50,8 @@ export const checkSubscriptionStatus = mwAsyncCatchWrapper(async (req, res, next
         }
       );
 
-      req._authenticatedUser.subscription = {
-        ...req._authenticatedUser.subscription,
+      res.locals.authenticatedUser.subscription = {
+        ...res.locals.authenticatedUser.subscription,
         ...updatedSub,
       };
     }

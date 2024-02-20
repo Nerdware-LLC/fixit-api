@@ -1,5 +1,6 @@
 import { mwAsyncCatchWrapper } from "@/middleware/helpers";
 import { User } from "@/models/User";
+import type { RestApiRequestBodyByPath } from "@/types/open-api";
 
 /**
  * On the Fixit mobile app, if the user's ExpoPushToken has changed/expired
@@ -7,19 +8,18 @@ import { User } from "@/models/User";
  * This middleware checks the request body for `expoPushToken`, and updates
  * the value in the database if one was provided.
  */
-export const updateExpoPushToken = mwAsyncCatchWrapper<{ body: { expoPushToken?: string } }>(
-  async (req, res, next) => {
-    if (!req?._authenticatedUser) return next("User not found");
+export const updateExpoPushToken = mwAsyncCatchWrapper<
+  RestApiRequestBodyByPath["/auth/login" | "/auth/token"]
+>(async (req, res, next) => {
+  const { authenticatedUser } = res.locals;
 
-    const {
-      body: { expoPushToken },
-      _authenticatedUser: { id: userID },
-    } = req;
+  if (!authenticatedUser) return next("User not found");
 
-    if (expoPushToken) {
-      await User.updateItem({ id: userID }, { update: { expoPushToken } });
-    }
+  const { expoPushToken } = req.body;
 
-    next();
+  if (expoPushToken) {
+    await User.updateItem({ id: authenticatedUser.id }, { update: { expoPushToken } });
   }
-);
+
+  next();
+});

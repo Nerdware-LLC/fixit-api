@@ -1,26 +1,27 @@
-import { hasKey, isType, UserInputError, getErrorMessage } from "@/utils";
-import type { FixitRESTRequestFlowProperties } from "@/types";
-import type { RequestHandler, Request } from "express";
-import type { SetReturnType, SetRequired, EmptyObject, JsonPrimitive } from "type-fest";
-
-type CustomRequestAndBodyProperties<TBodyValues = unknown> = FixitRESTRequestFlowProperties & {
-  body?: Record<string, TBodyValues>;
-};
+import {
+  hasKey,
+  isString,
+  isSafeInteger,
+  isFunction,
+  isPlainObject,
+  isArray,
+  isBoolean,
+  getErrorMessage,
+} from "@nerdware/ts-type-safety-utils";
+import { UserInputError } from "@/utils/httpErrors";
+import type { RestApiLocals } from "@/types/express";
+import type { AllRestApiResponses } from "@/types/open-api";
+import type { RequestHandler } from "express";
+import type { JsonPrimitive, SetRequired, SetReturnType } from "type-fest";
 
 /**
  * Generic catch wrapper for async middleware functions.
- * - Optional type param: `ReqBody`, passed to `RequestHandler` type-param of the same name.
  */
 export const mwAsyncCatchWrapper = <
-  TCustomRequestProperties extends
-    CustomRequestAndBodyProperties<any> = CustomRequestAndBodyProperties,
+  ReqBody extends Record<string, unknown> = Record<string, unknown>,
 >(
-  asyncMiddlewareFn: SetReturnType<
-    RequestHandler<EmptyObject, Record<string, unknown>, TCustomRequestProperties["body"]> &
-      TCustomRequestProperties,
-    Promise<void>
-  >
-): RequestHandler => {
+  asyncMiddlewareFn: SetReturnType<RestApiRequestHandler<ReqBody>, Promise<void>>
+): RestApiRequestHandler<ReqBody> => {
   return (req, res, next) => {
     asyncMiddlewareFn(req, res, next).catch(next);
   };
@@ -28,11 +29,10 @@ export const mwAsyncCatchWrapper = <
 
 /**
  * Generic catch wrapper for non-async middleware functions.
- * - Optional type param: `ReqBody`, passed to `RequestHandler` type-param of the same name.
  */
-export const mwCatchWrapper = <ReqBody extends Record<string, any> = Record<string, unknown>>(
-  middlewareFn: RequestHandler<EmptyObject, Record<string, unknown>, ReqBody>
-): RequestHandler<EmptyObject, Record<string, unknown>, ReqBody> => {
+export const mwCatchWrapper = <ReqBody extends Record<string, unknown> = Record<string, unknown>>(
+  middlewareFn: RestApiRequestHandler<ReqBody>
+): RestApiRequestHandler<ReqBody> => {
   return (req, res, next) => {
     try {
       middlewareFn(req, res, next);
@@ -41,6 +41,23 @@ export const mwCatchWrapper = <ReqBody extends Record<string, any> = Record<stri
     }
   };
 };
+
+/**
+ * This type wraps the Express `RequestHandler` type with app global defaults.
+ * Provide the `ReqBody` type param to specify a `req.body` object type.
+ *
+ * **Note:** The `P` and `ReqQuery` type params are set to `never` since this app currently
+ *   does not use route or query params.
+ */
+export type RestApiRequestHandler<
+  ReqBody extends Record<string, unknown> = Record<string, unknown>,
+> = RequestHandler<
+  never, // route params (req.params)
+  AllRestApiResponses,
+  ReqBody,
+  never, // query params (req.query)
+  RestApiLocals
+>;
 
 /**
  * This function provides middleware for validating and sanitizing request body parameters.
@@ -66,26 +83,28 @@ export const sanitizeAndValidateRequestBody = <Schema extends RequestBodyFieldsS
   requestBodySchema,
   validateRequestBody,
 }: SanitizeAndValidateReqBodyParams<Schema>): RequestHandler => {
-  // Validate each field config, and replace "type" with a type-validator function.
+  // Validate each field config, add a type-validator function based on the "type"
   const reqBodySchemaWithTypeValidator = Object.fromEntries(
     Object.entries(requestBodySchema).map(
-      ([key, { type: fieldType, sanitize, ...fieldConfig }]) => {
-        // Obtain the type-validator from the `isType` util
-        const isValidType = isType?.[fieldType];
+      ([key, { type: fieldType, nullable, sanitize, ...fieldConfig }]) => {
+        // Obtain the type-validator from the `TYPE_VALIDATORS` dict:
+        const isValidType = TYPE_VALIDATORS?.[fieldType];
         // If isValidType is undefined, then fieldType is not valid, throw an error
         if (!isValidType) throw new Error(`Invalid "type" for field "${key}": "${fieldType}"`);
         // If fieldType is string/object/array, ensure a sanitize function is provided
-        if (["string", "object", "array"].includes(fieldType) && !isType.function(sanitize))
+        if (["string", "object", "array"].includes(fieldType) && !isFunction(sanitize))
           throw new Error(`Field "${key}" is missing a "sanitize" function`);
         // Return the field config with the type-validator function
-        return [key, { ...fieldConfig, sanitize, isValidType }];
+        return [key, { ...fieldConfig, type: fieldType, nullable, sanitize, isValidType }];
       }
     )
-  );
+  ) as unknown as {
+    [Key in keyof Schema]: Schema[Key] & { isValidType: (arg: unknown) => boolean };
+  };
 
-  return (req: Request<{}, {}, Record<string, unknown>>, res, next) => {
+  return (req, res, next) => {
     // Ensure the request body is valid
-    if (!hasKey(req, "body") || !isType.object(req.body)) {
+    if (!hasKey(req, "body") || !isPlainObject(req.body)) {
       throw new UserInputError("Invalid request body");
     }
 
@@ -93,33 +112,42 @@ export const sanitizeAndValidateRequestBody = <Schema extends RequestBodyFieldsS
 
     try {
       for (const key in requestBodySchema) {
-        const { required, isValidType, sanitize, validate } = reqBodySchemaWithTypeValidator[key];
+        // Destructure the field config
+        const { required, nullable, isValidType, sanitize, validate } =
+          reqBodySchemaWithTypeValidator[key];
 
-        // Check if field is required
-        if (required === true) {
-          // If required, throw error if field is undefined.
-          if (!hasKey(req.body, key) || req.body[key] === undefined)
-            throw new UserInputError(`Missing required field: "${key}"`);
-          // If optional, continue if field is undefined.
-        } else if (!hasKey(req.body, key) || req.body[key] === undefined) {
-          continue;
+        // Check is the field is defined in req.body
+        if (!hasKey(req.body, key) || req.body[key] === undefined) {
+          // If not defined, throw error if field is required, else continue
+          if (required === true) throw new UserInputError(`Missing required field: "${key}"`);
+          else continue;
         }
 
-        // The field is present - check if field value is the correct type
-        if (!isValidType(req.body[key]))
-          throw new UserInputError(`Invalid value for field: "${key}"`);
+        // The field is defined, get from req.body using `let` so `sanitize` can overwrite it
+        let fieldValue = req.body[key];
 
-        // The field value is the correct type - now sanitize and validate
-        const fieldValue = sanitize ? sanitize(req.body[key] as any) : req.body[key];
-        if (isType.function(validate) && validate(fieldValue) === false)
-          throw new UserInputError(`Invalid value for field: "${key}"`);
+        // Check if fieldValue is null
+        if (fieldValue === null) {
+          // If fieldValue is null, and the field is not nullable, throw error
+          if (nullable !== true) throw new UserInputError(`Invalid value for field: "${key}"`);
+        } else {
+          // If fieldValue is not null, sanitize and validate the value
+          if (!isValidType(fieldValue))
+            throw new UserInputError(`Invalid value for field: "${key}"`);
+
+          if (isFunction(sanitize)) fieldValue = sanitize(fieldValue as any);
+
+          if (isFunction(validate) && (validate as (v: unknown) => boolean)(fieldValue) === false) {
+            throw new UserInputError(`Invalid value for field: "${key}"`);
+          }
+        }
 
         // The field is valid - add to reqBodyFields
         reqBodyFields[key] = fieldValue;
       }
 
       // Validate the entire request body if a validateReqBody function was provided
-      if (isType.function(validateRequestBody) && validateRequestBody(reqBodyFields) === false) {
+      if (isFunction(validateRequestBody) && validateRequestBody(reqBodyFields) === false) {
         throw new UserInputError("Invalid request body");
       }
 
@@ -132,6 +160,15 @@ export const sanitizeAndValidateRequestBody = <Schema extends RequestBodyFieldsS
     }
   };
 };
+
+/** Dictionary of type validators for request body fields. @internal */
+const TYPE_VALIDATORS = {
+  string: isString,
+  number: isSafeInteger,
+  boolean: isBoolean,
+  object: isPlainObject,
+  array: isArray,
+} as const satisfies Record<JsonTypeStringLiteral, (arg: unknown) => boolean>;
 
 /** Params for {@link sanitizeAndValidateReqBody}. */
 export type SanitizeAndValidateReqBodyParams<Schema extends RequestBodyFieldsSchema> = {
@@ -163,8 +200,7 @@ export interface RequestBodyFieldsSchema {
     | SetRequired<RequestBodyFieldConfig<"object">, "sanitize">
     | SetRequired<RequestBodyFieldConfig<"array">, "sanitize">
     | RequestBodyFieldConfig<"number">
-    | RequestBodyFieldConfig<"boolean">
-    | RequestBodyFieldConfig<"null">;
+    | RequestBodyFieldConfig<"boolean">;
 }
 
 /** Config object for field-level sanitization and validation for fields in `req.body`. */
@@ -173,15 +209,15 @@ export interface RequestBodyFieldConfig<T extends JsonTypeStringLiteral> {
   type: T;
   /** If `true`, an error will be thrown if the field is not present. */
   required: boolean;
+  /** If `true`, an error will not be thrown if the field's value is `null`. */
+  nullable?: boolean;
   /**
    * A function to strip client-provided values of undesirable characters/patterns.
    * This function is required for "string", "object", and "array" types.
    * @param value - The client-provided value to sanitize (the type will have already been checked)
    * @returns The sanitized value.
    */
-  sanitize?: T extends "string" | "object" | "array"
-    ? (value: StringLiteralToType<T>) => StringLiteralToType<T>
-    : never;
+  sanitize?: T extends "string" | "object" | "array" ? RequestBodyFieldSanitizerFn<T> : never;
   /**
    * A function which validates the client-provided value for the field. If the function returns
    * `false`, an error will be thrown with a generic _"invalid value for x"_ error message. You
@@ -190,23 +226,31 @@ export interface RequestBodyFieldConfig<T extends JsonTypeStringLiteral> {
    * @param value - The client-provided value to validate (the type will have already been checked)
    * @returns true or undefined if the client-provided value is valid for the field, false otherwise.
    */
-  validate?: <V = StringLiteralToType<T>>(value: V) => boolean | void;
+  validate?: RequestBodyFieldValidatorFn<T>;
 }
 
-/** Union of JSON-type string literals. */
-type JsonTypeStringLiteral = "string" | "number" | "boolean" | "null" | "object" | "array";
+/** A sanitizer function for a {@link RequestBodyFieldConfig}. */
+export type RequestBodyFieldSanitizerFn<T extends "string" | "object" | "array"> = (
+  value: StringLiteralToType<T>
+) => StringLiteralToType<T>;
+
+/** A validator function for a {@link RequestBodyFieldConfig}. */
+export type RequestBodyFieldValidatorFn<T extends JsonTypeStringLiteral> = (
+  value: StringLiteralToType<T>
+) => boolean | void;
 
 /** Generic util which converts a {@link JsonTypeStringLiteral} to its corresponding type. */
 type StringLiteralToType<T extends JsonTypeStringLiteral> = T extends "string"
   ? string
   : T extends "number"
-  ? number
-  : T extends "boolean"
-  ? boolean
-  : T extends "null"
-  ? null
-  : T extends "object"
-  ? Record<string, JsonPrimitive | Record<string, unknown> | Array<unknown>>
-  : T extends "array"
-  ? Array<JsonPrimitive | Record<string, unknown> | Array<unknown>>
-  : never;
+    ? number
+    : T extends "boolean"
+      ? boolean
+      : T extends "object"
+        ? Record<string, JsonPrimitive | Record<string, unknown> | Array<unknown>>
+        : T extends "array"
+          ? Array<JsonPrimitive | Record<string, unknown> | Array<unknown>>
+          : never;
+
+/** Union of JSON-type string literals for implemented types. */
+type JsonTypeStringLiteral = "string" | "number" | "boolean" | "object" | "array";

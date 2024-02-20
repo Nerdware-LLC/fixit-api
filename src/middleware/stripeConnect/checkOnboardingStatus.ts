@@ -7,14 +7,17 @@ import { UserStripeConnectAccount } from "@/models/UserStripeConnectAccount";
  * if the values are stale (`details_submitted`, `charges_enabled`, and `payouts_enabled`).
  */
 export const checkOnboardingStatus = mwAsyncCatchWrapper(async (req, res, next) => {
-  if (!req?._authenticatedUser) return next("User not found");
-  if (!req._authenticatedUser?.stripeConnectAccount)
+  if (!res.locals?.authenticatedUser) return next("User not found");
+
+  const { authenticatedUser } = res.locals;
+
+  if (!authenticatedUser?.stripeConnectAccount)
     return next("User's Stripe Connect account not found");
 
   const {
     id: userID,
     stripeConnectAccount: { id, detailsSubmitted, chargesEnabled, payoutsEnabled },
-  } = req._authenticatedUser;
+  } = authenticatedUser;
 
   // prettier-ignore
   const { details_submitted, charges_enabled, payouts_enabled } = await stripe.accounts.retrieve(id);
@@ -36,8 +39,8 @@ export const checkOnboardingStatus = mwAsyncCatchWrapper(async (req, res, next) 
       }
     );
 
-    req._authenticatedUser.stripeConnectAccount = {
-      ...req._authenticatedUser.stripeConnectAccount,
+    res.locals.authenticatedUser.stripeConnectAccount = {
+      ...authenticatedUser.stripeConnectAccount,
       ...(updatedStripeConnectAccount ?? {}),
     };
   }

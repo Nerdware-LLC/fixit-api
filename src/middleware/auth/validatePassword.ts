@@ -1,25 +1,33 @@
 import { mwAsyncCatchWrapper } from "@/middleware/helpers";
-import { passwordHasher, AuthError } from "@/utils";
+import { AuthError } from "@/utils/httpErrors";
+import { passwordHasher } from "@/utils/passwordHasher";
+import type { RestApiRequestBodyByPath } from "@/types/open-api";
 
 /**
  * This middleware checks if the authenticated User's login type is "LOCAL",
  * and if so, compares the provided password against the passwordHash stored
  * in the db. If it's invalid, an AuthError is thrown.
  */
-export const validatePassword = mwAsyncCatchWrapper<{ body: { password: string } }>(
+export const validatePassword = mwAsyncCatchWrapper<RestApiRequestBodyByPath["/auth/login"]>(
   async (req, res, next) => {
-    if (!req?._user) return next("User not found");
+    const userItem = res.locals?.user;
 
-    if (req._user.login.type === "LOCAL") {
+    if (!userItem) return next("User not found");
+
+    if (userItem.login.type === "LOCAL") {
+      // Ensure password was provided
+      if (!("password" in req.body) || !req.body.password)
+        return next(new AuthError("Password is required"));
+
       const isValidPassword = await passwordHasher.validate(
         req.body.password,
-        req._user.login.passwordHash
+        userItem.login.passwordHash
       );
 
       if (isValidPassword === true) {
-        /* Note: req._user does not have `subscription`/`stripeConnectAccount` fields.
-        For `generateAuthToken`, these fields are obtained from `queryUserItems`.   */
-        req._authenticatedUser = req._user;
+        /* Note: res.locals.user does not have `subscription`/`stripeConnectAccount` fields.
+        For `generateAuthToken`, these fields are obtained from the `queryUserItems` mw. */
+        res.locals.authenticatedUser = userItem;
       } else {
         next(new AuthError("Invalid email or password"));
       }

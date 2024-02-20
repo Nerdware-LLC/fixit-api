@@ -1,5 +1,6 @@
+import { getTypeSafeError } from "@nerdware/ts-type-safety-utils";
 import { UserStripeConnectAccount } from "@/models/UserStripeConnectAccount";
-import { logger, getTypeSafeError } from "@/utils";
+import { logger } from "@/utils/logger";
 import type Stripe from "stripe";
 
 /**

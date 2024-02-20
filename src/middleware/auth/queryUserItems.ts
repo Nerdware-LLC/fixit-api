@@ -1,4 +1,5 @@
-import { usersCache } from "@/lib/cache";
+import { safeJsonStringify } from "@nerdware/ts-type-safety-utils";
+import { usersCache } from "@/lib/cache/usersCache";
 import { mwAsyncCatchWrapper } from "@/middleware/helpers";
 import { Contact } from "@/models/Contact";
 import { Invoice } from "@/models/Invoice";
@@ -7,7 +8,8 @@ import { UserSubscription } from "@/models/UserSubscription";
 import { WorkOrder } from "@/models/WorkOrder";
 import { skTypeGuards } from "@/models/_common/skTypeGuards";
 import { ddbTable } from "@/models/ddbTable";
-import { logger, AuthError } from "@/utils";
+import { AuthError } from "@/utils/httpErrors";
+import { logger } from "@/utils/logger";
 import type { ContactItem } from "@/models/Contact";
 import type { InvoiceItem } from "@/models/Invoice";
 import type { UserItem } from "@/models/User";
@@ -37,15 +39,15 @@ import type { WorkOrderItem } from "@/models/WorkOrder";
  * interactions with the API.
  */
 export const queryUserItems = mwAsyncCatchWrapper(async (req, res, next) => {
-  if (!req?._authenticatedUser) return next("User not found");
+  if (!res.locals?.authenticatedUser) return next("User not found");
 
   // We want to retrieve items of multiple types, so we don't use a Model-instance here.
   const response = await ddbTable.ddbClient.query({
     TableName: ddbTable.tableName,
     KeyConditionExpression: `pk = :userID AND sk BETWEEN :skStart AND :skEnd`,
     ExpressionAttributeValues: {
-      ":userID": req._authenticatedUser.id,
-      ":skStart": `#DATA#${req._authenticatedUser.id}`,
+      ":userID": res.locals.authenticatedUser.id,
+      ":skStart": `#DATA#${res.locals.authenticatedUser.id}`,
       ":skEnd": "~",
       // In utf8 byte order, tilde comes after numbers, upper+lowercase letters, #, and $.
     },
@@ -77,7 +79,7 @@ export const queryUserItems = mwAsyncCatchWrapper(async (req, res, next) => {
       else if (skTypeGuards.isUserSubscription(current)) accum.subscription = current;
       else if (skTypeGuards.isUserStripeConnectAccount(current)) accum.stripeConnectAccount = current; // prettier-ignore
       else if (skTypeGuards.isWorkOrder(current)) accum.workOrders.push(current);
-      else logger.warn(`[queryUserItems] The following ITEM was returned by the "queryUserItems" DDB query, but items of this type are not handled by the reducer. ${JSON.stringify(current, null, 2)}`); // prettier-ignore
+      else logger.warn(`[queryUserItems] The following ITEM was returned by the "queryUserItems" DDB query, but items of this type are not handled by the reducer. ${safeJsonStringify(current, null, 2)}`); // prettier-ignore
 
       return accum;
     },
@@ -99,13 +101,13 @@ export const queryUserItems = mwAsyncCatchWrapper(async (req, res, next) => {
     const formattedSubItem =
       UserSubscription.processItemAttributes.fromDB<UserSubscriptionItem>(subscription);
 
-    req._authenticatedUser.subscription = formattedSubItem;
-    req._userSubscription = formattedSubItem;
+    res.locals.authenticatedUser.subscription = formattedSubItem;
+    res.locals.userSubscription = formattedSubItem;
   }
 
   // Format the user's stripeConnectAccount object
   if (stripeConnectAccount) {
-    req._authenticatedUser.stripeConnectAccount =
+    res.locals.authenticatedUser.stripeConnectAccount =
       UserStripeConnectAccount.processItemAttributes.fromDB<UserStripeConnectAccountItem>(
         stripeConnectAccount
       );
@@ -119,7 +121,7 @@ export const queryUserItems = mwAsyncCatchWrapper(async (req, res, next) => {
   fetching it here can delay auth request response times, especially if the authenticating user
   has a large number of workOrders/invoices. */
 
-  req._userQueryItems = {
+  res.locals.userItems = {
     ...(workOrders.length > 0 && {
       workOrders: workOrders.map((rawWorkOrder) => {
         // Process workOrder from its raw internal shape:
@@ -146,18 +148,18 @@ export const queryUserItems = mwAsyncCatchWrapper(async (req, res, next) => {
     ...(invoices.length > 0 && {
       invoices: invoices.map((rawInvoice) => {
         // Process invoice from its raw internal shape:
-        const { createdByUserID, assignedToUserID, ...invoiceFields } =
+        const { createdByUserID, assignedToUserID, workOrderID, ...invoiceFields } =
           Invoice.processItemAttributes.fromDB<InvoiceItem>(rawInvoice);
 
         return {
           // Fields which are nullable/optional in GQL schema must be provided, default to null:
           stripePaymentIntentID: null,
-          workOrderID: null,
           // invoice values override above defaults:
           ...invoiceFields,
           // createdBy and assignedTo objects are formatted for the GQL client cache:
           createdBy: { id: createdByUserID },
           assignedTo: { id: assignedToUserID },
+          workOrder: workOrderID ? { id: workOrderID } : null,
         };
       }),
     }),
@@ -171,7 +173,7 @@ export const queryUserItems = mwAsyncCatchWrapper(async (req, res, next) => {
           email = "", // These defaults shouldn't be necessary, but are included for type-safety
           phone = "",
           profile = { displayName: contact.handle }, // displayName defaults to handle if n/a
-        } = usersCache.get(contact.handle) || {};
+        } = usersCache.get(contact.handle) ?? {};
 
         return {
           id: contact.id,
