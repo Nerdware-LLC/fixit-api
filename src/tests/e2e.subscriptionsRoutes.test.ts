@@ -1,3 +1,4 @@
+import { isString } from "@nerdware/ts-type-safety-utils";
 import request from "supertest";
 import { expressApp } from "@/expressApp";
 import { stripe, isValidStripeID } from "@/lib/stripe";
@@ -41,11 +42,11 @@ describe("[e2e][Server Requests] Routes /api/subscriptions/*", () => {
       const { status, body: responseBody } = await request(expressApp)
         .post("/api/subscriptions/submit-payment")
         .set("Authorization", `Bearer ${mockAuthToken.toString()}`)
-        .send({ selectedSubscription: "ANNUAL", paymentMethodID: "pm_TestTestTest" })
+        .send({ selectedSubscription: "ANNUAL", paymentMethodID: "pm_TestTestTest" });
 
       // Assert the response
       expect(status).toBe(200);
-      assert(typeof responseBody?.token === "string", "response.body.token is not present");
+      assert(isString(responseBody?.token), "response.body.token is not present");
 
       // Assert the token payload
       const tokenPayload = await AuthToken.validateAndDecodeAuthToken(responseBody.token);

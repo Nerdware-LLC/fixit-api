@@ -1,3 +1,4 @@
+import { isString, isPlainObject } from "@nerdware/ts-type-safety-utils";
 import request from "supertest";
 import { expressApp } from "@/expressApp";
 import { usersCache } from "@/lib/cache/usersCache";
@@ -74,7 +75,7 @@ describe("[e2e] Server Requests /api/auth/*", () => {
 
       // Assert the response
       expect(response.statusCode).toBe(200);
-      assert(typeof response.body?.token === "string", "response.body.token is not a string");
+      assert(isString(response.body?.token), "response.body.token is not a string");
 
       // Assert the token payload
       const tokenPayload = await AuthToken.validateAndDecodeAuthToken(response.body.token);
@@ -134,8 +135,8 @@ describe("[e2e] Server Requests /api/auth/*", () => {
 
       // Assert the response
       expect(status).toBe(200);
-      assert(typeof responseBody?.token === "string", "response.body.token is not present");
-      assert(typeof responseBody?.userItems === "object", "response.body.userItems is not present");
+      assert(isString(responseBody?.token), "response.body.token is not present");
+      assert(isPlainObject(responseBody?.userItems), "response.body.userItems is not present");
 
       // Assert the token payload
       const tokenPayload = await AuthToken.validateAndDecodeAuthToken(responseBody.token);
@@ -244,8 +245,8 @@ describe("[e2e] Server Requests /api/auth/*", () => {
 
       // Assert the response
       expect(status).toBe(200);
-      assert(typeof responseBody?.token === "string", "response.body.token is not present");
-      assert(typeof responseBody?.userItems === "object", "response.body.userItems is not present");
+      assert(isString(responseBody?.token), "response.body.token is not present");
+      assert(isPlainObject(responseBody?.userItems), "response.body.userItems is not present");
 
       // Assert the token payload
       const tokenPayload = await AuthToken.validateAndDecodeAuthToken(responseBody.token);
