@@ -1,0 +1,12 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
+
+# REST Schema: PromoCodeInfoResponseField
+
+type: object
+description: |
+  An object which contains `promoCode` info under the key `promoCodeInfo`.
+properties:
+  promoCodeInfo:
+    $ref: "../open-api.yaml#/components/schemas/PromoCodeInfo"
+required:
+  - promoCodeInfo

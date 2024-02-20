@@ -1,0 +1,31 @@
+version: "3.8"
+name: fixit-backend
+
+# This docker-compose file provides quick all-in-one setup for local development.
+
+services:
+  api:
+    container_name: fixit-api
+    depends_on:
+      - dynamodb-local
+    image: node:20
+    command: ${API_COMMAND:- npx nodemon ./src/index.ts}
+    working_dir: /home/node/app
+    volumes:
+      - ".:/home/node/app:ro"
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env.dev
+    environment:
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      DYNAMODB_ENDPOINT: "http://dynamodb-local:8000"
+      NODE_OPTIONS: "--experimental-specifier-resolution=node --no-warnings"
+    tty: true
+
+  dynamodb-local:
+    container_name: dynamodb-local
+    image: "amazon/dynamodb-local:latest"
+    ports:
+      - "8000:8000"

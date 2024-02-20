@@ -1,5 +1,6 @@
-import { UserStripeConnectAccount } from "@models/UserStripeConnectAccount";
-import { logger, getTypeSafeError } from "@utils";
+import { getTypeSafeError } from "@nerdware/ts-type-safety-utils";
+import { UserStripeConnectAccount } from "@/models/UserStripeConnectAccount";
+import { logger } from "@/utils/logger";
 import type Stripe from "stripe";
 
 /**
@@ -20,17 +21,31 @@ export const connectAccountUpdated = async (rawStripeConnectAccountObj: Stripe.A
 
   try {
     // Get "userID" needed for the primary key
-    const { userID } = await UserStripeConnectAccount.queryByStripeConnectAccountID(
-      stripeConnectAccountID
-    );
+    const queryResult = await UserStripeConnectAccount.query({
+      where: {
+        id: stripeConnectAccountID,
+        sk: { beginsWith: UserStripeConnectAccount.SK_PREFIX },
+      },
+      limit: 1,
+    });
+
+    const userID = queryResult?.[0]?.userID;
+
+    if (!userID) {
+      throw new Error(
+        `UserStripeConnectAccount not found for StripeConnectAccount ID: "${stripeConnectAccountID}"`
+      );
+    }
 
     // Now update the user's Stripe Connect Account item in the db
-    await UserStripeConnectAccount.updateOne(
+    await UserStripeConnectAccount.updateItem(
       { userID },
       {
-        detailsSubmitted,
-        chargesEnabled,
-        payoutsEnabled,
+        update: {
+          detailsSubmitted,
+          chargesEnabled,
+          payoutsEnabled,
+        },
       }
     );
   } catch (err) {

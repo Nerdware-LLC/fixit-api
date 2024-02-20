@@ -1,17 +1,20 @@
-import { InvoicePushNotification } from "@events/pushNotifications";
-import { lambdaClient } from "@lib/lambdaClient";
-import { User } from "@models";
-import type { InvoiceModelItem } from "@models/Invoice";
+import { InvoicePushNotification } from "@/events/pushNotifications";
+import { lambdaClient } from "@/lib/lambdaClient";
+import { User } from "@/models/User";
+import type { InvoiceItem } from "@/models/Invoice";
 
-export const notifyAssignorPaidInvoice = async (paidInvoice: InvoiceModelItem) => {
-  const {
-    createdBy: { id: createdByUserID },
-  } = paidInvoice;
+/**
+ * Notify assignor of paid Invoice when `InvoicePaid` event is emitted.
+ * @event InvoicePaid
+ * @param {InvoiceItem} paidInvoice - The paid Invoice
+ * @category events
+ */
+export const notifyAssignorPaidInvoice = async (paidInvoice?: InvoiceItem) => {
+  if (!paidInvoice) return;
 
-  const assignorUser = await User.getItem({
-    id: createdByUserID,
-    sk: User.getFormattedSK(createdByUserID),
-  });
+  const { createdByUserID } = paidInvoice;
+
+  const assignorUser = await User.getItem({ id: createdByUserID });
 
   // If assignor does not currently have a registered pushToken, return.
   if (!assignorUser?.expoPushToken) return;
@@ -19,10 +22,7 @@ export const notifyAssignorPaidInvoice = async (paidInvoice: InvoiceModelItem) =
   await lambdaClient.invokeEvent("PushNotificationService", [
     new InvoicePushNotification({
       pushEventName: "InvoicePaid",
-      recipientUser: {
-        id: createdByUserID,
-        expoPushToken: assignorUser.expoPushToken,
-      },
+      recipientUser: assignorUser,
       invoice: paidInvoice,
     }),
   ]);

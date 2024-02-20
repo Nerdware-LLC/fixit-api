@@ -1,19 +1,19 @@
-import { stripe } from "@lib/stripe";
-import { UserInputError } from "@utils/customErrors";
+import { promoCodesCache } from "@/lib/cache/promoCodesCache";
+import { stripe, type StripeSubscriptionWithClientSecret } from "@/lib/stripe";
+import { UserInputError } from "@/utils/httpErrors";
 import {
   UserSubscription,
-  type UserSubscriptionModelItem,
-  type UserSubscriptionPriceLabels,
+  type UserSubscriptionItem,
+  type SubscriptionPriceLabels,
 } from "./UserSubscription";
-import type { UserModelItem } from "@models/User";
+import type { UserItem } from "@/models/User";
 import type Stripe from "stripe";
 
 /**
  * `upsertOne`
  *
- * **priceID** can be explicitly provided, or it can be looked up if
- * a valid name key is provided ("TRIAL", "MONTHLY", or "ANNUAL") to
- * the **selectedSubscription** property.
+ * **priceID** can be explicitly provided, or it can be looked up if a valid name key is
+ * provided ("TRIAL", "MONTHLY", or "ANNUAL") to the **selectedSubscription** property.
  */
 export const upsertOne = async function (
   this: typeof UserSubscription,
@@ -23,33 +23,36 @@ export const upsertOne = async function (
     priceID,
     promoCode,
   }: {
-    user: Pick<UserModelItem, "id" | "stripeCustomerID">;
-    selectedSubscription?: UserSubscriptionPriceLabels;
-    priceID?: string;
-    promoCode?: string;
+    user: Pick<UserItem, "id" | "stripeCustomerID">;
+    selectedSubscription?: SubscriptionPriceLabels;
+    priceID?: string | undefined;
+    promoCode?: string | undefined;
   }
-): Promise<Stripe.Response<Stripe.Subscription> & UserSubscriptionModelItem> {
+): Promise<Stripe.Response<StripeSubscriptionWithClientSecret> & UserSubscriptionItem> {
   // Ascertain the subscription's Stripe price ID
-  if (!priceID && !!selectedSubscription)
+  if (!priceID && !!selectedSubscription) {
     priceID = UserSubscription.PRICE_IDS[selectedSubscription];
+  }
 
   if (!priceID) throw new UserInputError("Invalid subscription");
 
   // Ascertain the subscription's Stripe promoCode ID if applicable
-  const promoCodeID = UserSubscription.PROMO_CODES?.[promoCode ?? ""];
+  const promoCodeID = promoCodesCache.get(promoCode ?? "")?.id;
 
   // Submit info to Stripe API for new subscription
-  const stripeSubObject = await stripe.subscriptions.create({
+  const stripeSubObject = (await stripe.subscriptions.create({
     customer: stripeCustomerID,
     items: [{ price: priceID }],
-    expand: ["latest_invoice.payment_intent", "customer"],
     ...(promoCodeID && { promotion_code: promoCodeID }),
     ...(selectedSubscription === "TRIAL" && { trial_period_days: 14 }),
-  });
+    payment_behavior: "default_incomplete",
+    payment_settings: { save_default_payment_method: "on_subscription" },
+    expand: ["latest_invoice.payment_intent", "customer"],
+  })) as Stripe.Response<StripeSubscriptionWithClientSecret>;
 
   // Get the fields needed from the returned object
-  // prettier-ignore
-  const { createdAt, currentPeriodEnd, productID } = UserSubscription.normalizeStripeFields(stripeSubObject);
+  const { createdAt, currentPeriodEnd, productID } =
+    UserSubscription.normalizeStripeFields(stripeSubObject);
 
   const userSubscription = {
     userID,

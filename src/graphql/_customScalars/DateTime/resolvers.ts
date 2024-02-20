@@ -1,17 +1,24 @@
+import dayjs from "dayjs";
 import { GraphQLScalarType } from "graphql";
 import { Kind } from "graphql/language";
-import moment from "moment";
-import { logger } from "@utils/logger";
+import { logger } from "@/utils/logger";
 import { helpers } from "../helpers";
+
+/** @returns boolean indicating whether the value is a valid DateTime scalar. */
+const isValidGqlDateTimeScalar = (value: unknown) => {
+  return (
+    value !== undefined && value !== null && !dayjs(value as Parameters<typeof dayjs>[0]).isValid()
+  );
+};
 
 export const resolvers = {
   DateTime: new GraphQLScalarType({
     name: "DateTime",
-    description: "Custom DateTime scalar; pass a string or js date instance obj",
+    description: "Custom DateTime scalar with handling for Date objects and datetime strings",
 
     // parseValue = value from the client
     parseValue(value: unknown) {
-      if (!!value && !moment(value).isValid()) {
+      if (!isValidGqlDateTimeScalar(value)) {
         const errMsg = helpers.getScalarErrMsg("DateTime", value);
         logger.gql(errMsg);
         throw new TypeError(errMsg);
@@ -21,7 +28,7 @@ export const resolvers = {
 
     // serialize = value sent to the client
     serialize(value: unknown) {
-      if (!!value && !moment(value).isValid()) {
+      if (!isValidGqlDateTimeScalar(value)) {
         const errMsg = helpers.getScalarErrMsg("DateTime", value);
         logger.gql(errMsg);
         throw new TypeError(errMsg);

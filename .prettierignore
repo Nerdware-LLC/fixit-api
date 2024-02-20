@@ -1,0 +1,2 @@
+# Ensure codegen'd files aren't modified by prettier:
+src/**/__codegen__/**/*

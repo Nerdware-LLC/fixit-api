@@ -1,6 +1,6 @@
-// GQL Codegen Types
-export * from "./graphql";
-// GQL Codegen Type Mods
-export * from "./graphqlTypeMods";
-// Other Types
+// REST Codegen Types
+export * from "./open-api";
 export * from "./express";
+
+// GraphQL Codegen Types
+export * from "./graphql";

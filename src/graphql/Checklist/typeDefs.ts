@@ -13,7 +13,7 @@ export const typeDefs = gql`
   }
 
   input UpdateChecklistItemInput {
-    id: ID!
+    id: ID
     description: String!
     isCompleted: Boolean
   }

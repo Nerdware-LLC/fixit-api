@@ -1,5 +1,6 @@
-import { UserSubscription } from "@models/UserSubscription";
-import { logger, getTypeSafeError } from "@utils";
+import { getTypeSafeError } from "@nerdware/ts-type-safety-utils";
+import { UserSubscription } from "@/models/UserSubscription";
+import { logger } from "@/utils/logger";
 import type Stripe from "stripe";
 
 /**
@@ -17,7 +18,7 @@ export const customerSubscriptionUpdated = async (
 ) => {
   // Normalize the Stripe-provided fields first
   const {
-    id: subscriptionID,
+    id: subID,
     currentPeriodEnd,
     productID,
     priceID,
@@ -28,19 +29,34 @@ export const customerSubscriptionUpdated = async (
   let userID;
 
   try {
-    const { userID } = await UserSubscription.queryBySubscriptionID(subscriptionID);
+    // Submit query for the UserSubscription item
+    const [userSubscription] = await UserSubscription.query({
+      where: {
+        id: subID,
+        sk: { beginsWith: UserSubscription.SK_PREFIX },
+      },
+      limit: 1,
+    });
 
-    await UserSubscription.updateOne(
+    // Get "userID" needed for the primary key
+    const { userID } = userSubscription ?? {};
+
+    // If no user ID, throw an error
+    if (!userID) throw new Error(`User ID not found for UserSubscription with ID "${subID}".`);
+
+    await UserSubscription.updateItem(
       {
         userID,
-        createdAt,
+        sk: UserSubscription.getFormattedSK(userID, createdAt),
       },
       {
-        id: subscriptionID,
-        currentPeriodEnd,
-        productID,
-        priceID,
-        status,
+        update: {
+          id: subID,
+          currentPeriodEnd,
+          productID,
+          priceID,
+          status,
+        },
       }
     );
   } catch (err) {
@@ -49,7 +65,7 @@ export const customerSubscriptionUpdated = async (
     // If err, log it, do not re-throw from here.
     logger.error(
       `Failed to update UserSubscription.
-        Subscription ID: "${subscriptionID}"
+        Subscription ID: "${subID}"
         User ID:         "${userID ?? "unknown"}"
         Error:           ${error.message}`,
       "StripeWebhookHandler.customerSubscriptionUpdated"

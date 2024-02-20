@@ -1,95 +1,90 @@
-import { DeleteMutationResponse } from "@graphql/_common";
-import { usersCache } from "@lib/cache";
-import { Contact, CONTACT_SK_REGEX, type ContactModelItem } from "@models/Contact";
-import { User } from "@models/User";
-import { GqlUserInputError } from "@utils/customErrors";
-import type { Resolvers, Contact as GqlContact } from "@types";
+import { DeleteMutationResponse } from "@/graphql/_common";
+import { usersCache } from "@/lib/cache/usersCache";
+import { Contact } from "@/models/Contact";
+import { User } from "@/models/User";
+import { GqlUserInputError, GqlInternalServerError } from "@/utils/httpErrors";
+import type { Resolvers } from "@/types";
 
 export const resolvers: Partial<Resolvers> = {
   Query: {
-    contact: async (parent, { contactID }, { user }) => {
-      const queriedContact = await Contact.getItem({ userID: user.id, id: contactID });
-      return convertContactModelItemToGqlContact(queriedContact);
+    contact: async (_parent, { contactID }, { user }) => {
+      const contact = await Contact.getItem({ userID: user.id, id: contactID });
+
+      if (!contact) {
+        throw new GqlUserInputError("A contact with the provided ID could not be found.");
+      }
+
+      return contact;
     },
-    myContacts: async (parent, args, { user }) => {
-      return (
-        await Contact.query({
-          where: {
-            userID: user.id,
-            id: { beginsWith: Contact.SK_PREFIX },
-          },
-        })
-      ).map((queriedContact) => convertContactModelItemToGqlContact(queriedContact));
+    myContacts: async (_parent, _args, { user }) => {
+      return await Contact.query({
+        where: {
+          userID: user.id,
+          id: { beginsWith: Contact.SK_PREFIX },
+        },
+      });
     },
   },
   Mutation: {
-    createContact: async (parent, { contactUserID }, { user }) => {
+    createContact: async (_parent, { contactUserID }, { user }) => {
       // First, ensure the user hasn't somehow sent their own ID
-      if (`${contactUserID}`.toUpperCase() === user.id.toUpperCase())
+      if (contactUserID.toUpperCase() === user.id.toUpperCase()) {
         throw new GqlUserInputError("Can not add yourself as a contact");
+      }
 
-      const requestedUser = await User.getItem({
-        id: contactUserID,
-        sk: User.getFormattedSK(contactUserID),
-      });
+      const requestedUser = await User.getItem({ id: contactUserID });
 
       if (!requestedUser) throw new GqlUserInputError("Requested user not found.");
 
       // create method won't overwrite existing, if Contact already exists.
-      const newContact = await Contact.createItem({
+      return await Contact.createItem({
         userID: user.id,
         contactUserID: requestedUser.id,
         handle: requestedUser.handle,
       });
-
-      return {
-        id: newContact.id,
-        handle: requestedUser.handle,
-        email: requestedUser.email,
-        phone: requestedUser.phone,
-        profile: requestedUser.profile,
-        createdAt: newContact.createdAt,
-        updatedAt: newContact.updatedAt,
-      };
     },
-    deleteContact: async (parent, { contactID }, { user }) => {
+    deleteContact: async (_parent, { contactID }, { user }) => {
       // Test to ensure `contactID` is a valid contact ID
-      if (!CONTACT_SK_REGEX.test(contactID)) throw new GqlUserInputError("Invalid contact ID.");
+      if (!Contact.isValidID(contactID)) throw new GqlUserInputError("Invalid contact ID.");
 
       await Contact.deleteItem({ userID: user.id, id: contactID });
 
       return new DeleteMutationResponse({ id: contactID, wasDeleted: true });
     },
   },
-};
+  Contact: {
+    email: async (parent) => {
+      let user = usersCache.get(parent.handle);
 
-/**
- * Converts an `ContactModelItem` to a `GqlContact`. If the
- * `ContactModelItem` is not found in the `usersCache`, a
- * `GqlUserInputError` is thrown.
- */
-const convertContactModelItemToGqlContact = (
-  contact?: Partial<ContactModelItem>,
-  invalidContactErrMsg: string = "Contact not found."
-): GqlContact => {
-  if (
-    !contact?.id ||
-    !contact?.createdAt ||
-    !contact?.updatedAt ||
-    !contact?.handle ||
-    !usersCache.has(contact.handle)
-  )
-    throw new GqlUserInputError(invalidContactErrMsg);
+      user ||= await User.getItem({ id: parent.contactUserID });
 
-  const { email, phone, profile } = usersCache.get(contact.handle) as GqlContact;
+      if (!user?.email) {
+        throw new GqlInternalServerError("Contact email could not be found.");
+      }
 
-  return {
-    id: contact.id,
-    handle: contact.handle,
-    email,
-    phone,
-    profile,
-    createdAt: contact.createdAt,
-    updatedAt: contact.updatedAt,
-  };
+      return user.email;
+    },
+    phone: async (parent) => {
+      let user = usersCache.get(parent.handle);
+
+      user ||= await User.getItem({ id: parent.contactUserID });
+
+      if (!user?.phone) {
+        throw new GqlInternalServerError("Contact phone could not be found.");
+      }
+
+      return user.phone;
+    },
+    profile: async (parent) => {
+      let user = usersCache.get(parent.handle);
+
+      user ||= await User.getItem({ id: parent.contactUserID });
+
+      if (!user?.profile) {
+        throw new GqlInternalServerError("Contact profile could not be found.");
+      }
+
+      return user.profile;
+    },
+  },
 };

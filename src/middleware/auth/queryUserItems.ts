@@ -1,74 +1,74 @@
-import { usersCache } from "@lib/cache";
-import { mwAsyncCatchWrapper } from "@middleware/helpers";
-import {
-  skTypeGuards,
-  UserSubscription,
-  UserStripeConnectAccount,
-  WorkOrder,
-  Invoice,
-  Contact,
-} from "@models";
-import { ddbSingleTable } from "@models/ddbSingleTable";
-import { logger, AuthError } from "@utils";
-import type { ContactModelItem } from "@models/Contact";
-import type { InvoiceModelItem } from "@models/Invoice";
-import type { UserModelItem } from "@models/User";
-import type { UserStripeConnectAccountModelItem } from "@models/UserStripeConnectAccount";
-import type { UserSubscriptionModelItem } from "@models/UserSubscription";
-import type { WorkOrderModelItem } from "@models/WorkOrder";
+import { safeJsonStringify } from "@nerdware/ts-type-safety-utils";
+import { usersCache } from "@/lib/cache/usersCache";
+import { mwAsyncCatchWrapper } from "@/middleware/helpers";
+import { Contact } from "@/models/Contact";
+import { Invoice } from "@/models/Invoice";
+import { UserStripeConnectAccount } from "@/models/UserStripeConnectAccount";
+import { UserSubscription } from "@/models/UserSubscription";
+import { WorkOrder } from "@/models/WorkOrder";
+import { skTypeGuards } from "@/models/_common/skTypeGuards";
+import { ddbTable } from "@/models/ddbTable";
+import { AuthError } from "@/utils/httpErrors";
+import { logger } from "@/utils/logger";
+import type { ContactItem } from "@/models/Contact";
+import type { InvoiceItem } from "@/models/Invoice";
+import type { UserItem } from "@/models/User";
+import type { UserStripeConnectAccountItem } from "@/models/UserStripeConnectAccount";
+import type { UserSubscriptionItem } from "@/models/UserSubscription";
+import type { WorkOrderItem } from "@/models/WorkOrder";
 
 /**
- * This middleware function obtains a User's StripeConnectAccount and Subscription(s).
- * Since this necessitates a DB query, the query executed here also obtains the User
- * Items listed below to pre-fetch data that will be used upon successful login.
+ * This middleware function fetches/pre-fetches the following types of User items:
  *
- * - Subscription(s)
- * - StripeConnectAccount
- * - Work Orders
- * - Invoices
- * - Contacts
+ * - Subscription(s)      - used for authentication and authorization
+ * - StripeConnectAccount - used for authentication and authorization
+ * - Work Orders          - pre-fetched for the user's dashboard
+ * - Invoices             - pre-fetched for the user's dashboard
+ * - Contacts             - pre-fetched for the user's dashboard
  *
- * Edge Case: If the User item is not found, this MW throws a 401 AuthError. This is
- * unlikely to occur in prod, since the client would have to have sent a valid JWT
- * auth token without existing in the db, but this *does* occur during development
- * whenever a new empty DDB-local table is instantiated and the client has retained
- * an auth token from previous interactions with the API.
+ * ### Items Formatted for the GQL Client Cache
+ * On the client-side, these pre-fetched items are written into the Apollo client cache
+ * by a request handler, and are therefore expected to be in the shape specified by the
+ * GQL schema typedefs. This MW formats the items accordingly.
+ *
+ * ### Edge Case: _User not found_
+ * If the User item is not found, this MW throws a 401 AuthError. This is unlikely to
+ * occur in prod, since the client would have to have sent a valid JWT auth token without
+ * existing in the db, but this *can* occur during development whenever a new empty
+ * DDB-local table is instantiated and the client has retained an auth token from previous
+ * interactions with the API.
  */
 export const queryUserItems = mwAsyncCatchWrapper(async (req, res, next) => {
-  if (!req?._authenticatedUser) return next("User not found");
+  if (!res.locals?.authenticatedUser) return next("User not found");
 
-  // We want to retrieve multiple item-types, so we don't use a Model-instance here.
-  const items = await ddbSingleTable.ddbClient.query({
-    where: {
-      pk: req._authenticatedUser.id,
-      sk: {
-        between: [
-          `#DATA#${req._authenticatedUser.id}`,
-          "~", // In utf8 byte order, tilde comes after numbers, upper+lowercase letters, #, and $.
-        ],
-      },
+  // We want to retrieve items of multiple types, so we don't use a Model-instance here.
+  const response = await ddbTable.ddbClient.query({
+    TableName: ddbTable.tableName,
+    KeyConditionExpression: `pk = :userID AND sk BETWEEN :skStart AND :skEnd`,
+    ExpressionAttributeValues: {
+      ":userID": res.locals.authenticatedUser.id,
+      ":skStart": `#DATA#${res.locals.authenticatedUser.id}`,
+      ":skEnd": "~",
+      // In utf8 byte order, tilde comes after numbers, upper+lowercase letters, #, and $.
     },
-    // KeyConditionExpression: "pk = :userID AND sk BETWEEN :userSK AND :tilde",
-    // ExpressionAttributeValues: {
-    //   ":userID": req._authenticatedUser.id,
-    //   ":userSK": `#DATA#${req._authenticatedUser.id}`,
-    //   ":tilde": "~",
-    // },
+    Limit: 100, // <-- ensures users with many items don't experience a delayed response
   });
 
-  // If no items were found, the user doesn't exist, throw AuthError (see above jsdoc for details on this edge case)
+  const items = response?.Items;
+
+  // If no items were found, throw AuthError (see above jsdoc for details on this dev-env edge case)
   if (!Array.isArray(items) || items.length === 0) throw new AuthError("User does not exist");
 
   // Organize and format the items
   const { user, subscription, stripeConnectAccount, workOrders, invoices, contacts } = items.reduce(
     (
       accum: {
-        user: UserModelItem | null;
-        subscription: UserSubscriptionModelItem | null;
-        stripeConnectAccount: UserStripeConnectAccountModelItem | null;
-        workOrders: Array<WorkOrderModelItem>;
-        invoices: Array<InvoiceModelItem>;
-        contacts: Array<ContactModelItem>;
+        user: UserItem | null;
+        subscription: UserSubscriptionItem | null;
+        stripeConnectAccount: UserStripeConnectAccountItem | null;
+        workOrders: Array<WorkOrderItem>;
+        invoices: Array<InvoiceItem>;
+        contacts: Array<ContactItem>;
       },
       current
     ) => {
@@ -79,7 +79,7 @@ export const queryUserItems = mwAsyncCatchWrapper(async (req, res, next) => {
       else if (skTypeGuards.isUserSubscription(current)) accum.subscription = current;
       else if (skTypeGuards.isUserStripeConnectAccount(current)) accum.stripeConnectAccount = current; // prettier-ignore
       else if (skTypeGuards.isWorkOrder(current)) accum.workOrders.push(current);
-      else logger.warn(`[queryUserItems] The following ITEM was returned by the "queryUserItems" DDB query, but items of this type are not handled by the reducer. ${JSON.stringify(current, null, 2)}`); // prettier-ignore
+      else logger.warn(`[queryUserItems] The following ITEM was returned by the "queryUserItems" DDB query, but items of this type are not handled by the reducer. ${safeJsonStringify(current, null, 2)}`); // prettier-ignore
 
       return accum;
     },
@@ -93,39 +93,43 @@ export const queryUserItems = mwAsyncCatchWrapper(async (req, res, next) => {
     }
   );
 
-  // If user was not found, throw AuthError (see above jsdoc for details on this edge case)
+  // If user was not found, throw AuthError (see above jsdoc for details on this dev-env edge case)
   if (!user) throw new AuthError("User does not exist");
 
+  // Format the user's subscription object
   if (subscription) {
-    const formattedSubItem = UserSubscription.processItemData.fromDB(
-      subscription
-    ) as typeof subscription;
+    const formattedSubItem =
+      UserSubscription.processItemAttributes.fromDB<UserSubscriptionItem>(subscription);
 
-    req._authenticatedUser.subscription = formattedSubItem;
-    req._userSubscription = formattedSubItem;
+    res.locals.authenticatedUser.subscription = formattedSubItem;
+    res.locals.userSubscription = formattedSubItem;
   }
 
+  // Format the user's stripeConnectAccount object
   if (stripeConnectAccount) {
-    req._authenticatedUser.stripeConnectAccount = UserStripeConnectAccount.processItemData.fromDB(
-      stripeConnectAccount
-    ) as typeof stripeConnectAccount;
+    res.locals.authenticatedUser.stripeConnectAccount =
+      UserStripeConnectAccount.processItemAttributes.fromDB<UserStripeConnectAccountItem>(
+        stripeConnectAccount
+      );
   }
 
-  /* For WorkOrders and Invoices, since these pre-fetched items are being returned by a
-  REST endpoint rather than GQL query, fields which are nullable in their respective GQL
-  schema typedefs are NOT "auto" populated with a default value of null whenever the DB
-  object does not contain the property. This causes an issue when the receiving Apollo
-  client tries to write the pre-fetched items into its cache, since the returned objects
-  are missing properties and therefore don't match the schema typedefs. Therefore, fields
-  which are nullable/optional and aren't present in the DB object are explicitly set to
-  null below to emulate GQL query-resolver behavior to ensure the client receives these
-  items in the shape specified in the GQL schema.  */
+  /* Note: workOrders' and invoices' createdByUserID and assignedToUserID fields are converted
+  into createdBy and assignedTo objects with an "id" field, but no other createdBy/assignedTo
+  fields can be provided here without fetching additional data on the associated users/contacts
+  from either the db or usersCache. This middleware forgoes fetching the data since the client-
+  side Apollo cache already handles fetching additional data as needed (_if_ it's needed), and
+  fetching it here can delay auth request response times, especially if the authenticating user
+  has a large number of workOrders/invoices. */
 
-  req._userQueryItems = {
+  res.locals.userItems = {
     ...(workOrders.length > 0 && {
-      workOrders: (WorkOrder.processItemData.fromDB(workOrders) as typeof workOrders).map(
-        (workOrder) => ({
-          // Fields which are nullable/optional in GQL schema default to null:
+      workOrders: workOrders.map((rawWorkOrder) => {
+        // Process workOrder from its raw internal shape:
+        const { createdByUserID, assignedToUserID, ...workOrderFields } =
+          WorkOrder.processItemAttributes.fromDB<WorkOrderItem>(rawWorkOrder);
+
+        return {
+          // Fields which are nullable/optional in GQL schema must be provided, default to null:
           category: null,
           checklist: null,
           dueDate: null,
@@ -133,34 +137,52 @@ export const queryUserItems = mwAsyncCatchWrapper(async (req, res, next) => {
           entryContactPhone: null,
           scheduledDateTime: null,
           contractorNotes: null,
-          // DB object values override above defaults:
-          ...workOrder,
-        })
-      ),
+          // workOrder values override above defaults:
+          ...workOrderFields,
+          // createdBy and assignedTo objects are formatted for the GQL client cache:
+          createdBy: { id: createdByUserID },
+          assignedTo: assignedToUserID ? { id: assignedToUserID } : null,
+        };
+      }),
     }),
     ...(invoices.length > 0 && {
-      invoices: (Invoice.processItemData.fromDB(invoices) as typeof invoices).map((invoice) => ({
-        // Fields which are nullable/optional in GQL schema default to null:
-        stripePaymentIntentID: null,
-        workOrder: null,
-        // DB object values override above defaults:
-        ...invoice,
-      })),
+      invoices: invoices.map((rawInvoice) => {
+        // Process invoice from its raw internal shape:
+        const { createdByUserID, assignedToUserID, workOrderID, ...invoiceFields } =
+          Invoice.processItemAttributes.fromDB<InvoiceItem>(rawInvoice);
+
+        return {
+          // Fields which are nullable/optional in GQL schema must be provided, default to null:
+          stripePaymentIntentID: null,
+          // invoice values override above defaults:
+          ...invoiceFields,
+          // createdBy and assignedTo objects are formatted for the GQL client cache:
+          createdBy: { id: createdByUserID },
+          assignedTo: { id: assignedToUserID },
+          workOrder: workOrderID ? { id: workOrderID } : null,
+        };
+      }),
     }),
     ...(contacts.length > 0 && {
-      contacts: (Contact.processItemData.fromDB(contacts) as typeof contacts).map((contact) => {
+      contacts: contacts.map((rawContact) => {
+        // Process contact from its raw internal shape:
+        const contact = Contact.processItemAttributes.fromDB<ContactItem>(rawContact);
+
         // Fetch some additional data from the usersCache
         const {
           email = "", // These defaults shouldn't be necessary, but are included for type-safety
           phone = "",
-          profile = { displayName: contact.handle },
-        } = usersCache.get(contact.userID) || {};
+          profile = { displayName: contact.handle }, // displayName defaults to handle if n/a
+        } = usersCache.get(contact.handle) ?? {};
 
         return {
+          id: contact.id,
+          handle: contact.handle,
           email,
           phone,
           profile,
-          ...contact,
+          createdAt: contact.createdAt,
+          updatedAt: contact.updatedAt,
         };
       }),
     }),

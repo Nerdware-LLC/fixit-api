@@ -1,0 +1,27 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
+
+# REST Schema: PromoCodeInfo
+
+type: object
+description: |
+  An object which contains information about whether a user-provided `promoCode`
+  is valid, and if so, what percentage discount should be applied at checkout.
+required:
+  - value
+  - isValidPromoCode
+properties:
+  value:
+    type: string
+    description: The original value provided by the user.
+  isValidPromoCode:
+    type: boolean
+    description: Whether the user-provided `promoCode` is valid.
+  discountPercentage:
+    type: integer
+    description: |
+      The percentage discount to apply to the total price of the selected
+      subscription. The returned number reflects a percentage, so a value of
+      `10` would be a 10% discount. This field is only included in the response
+      if the user-provided `promoCode` is valid.
+    minimum: 0
+    maximum: 100

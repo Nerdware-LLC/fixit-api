@@ -1,11 +1,11 @@
 import { gql } from "graphql-tag";
 
-// IDEA Rename field WorkOrder.contractorNotes to WorkOrder.recipientNotes
+// IDEA Consider renaming field WorkOrder.contractorNotes to WorkOrder.recipientNotes
 
 export const typeDefs = gql`
   "A WorkOrder is a request one User submits to another for work to be performed at a location"
   type WorkOrder {
-    "(Immutable) WorkOrder ID, in the format of 'WO#{createdBy.id}#{unixTimestamp(createdAt)}'"
+    "(Immutable) WorkOrder ID, in the format of 'WO#{createdBy.id}#{unixTimestampUUID(createdAt)}'"
     id: ID!
     "(Immutable) The FixitUser who created/sent the WorkOrder"
     createdBy: FixitUser!
@@ -89,9 +89,6 @@ export const typeDefs = gql`
 
   ####################################################################
   ### MUTATIONS
-
-  # TODO create updateWO_Checklist mutation typedef
-  # TODO create updateWO_ContractorNotes mutation typedef
 
   extend type Mutation {
     createWorkOrder(workOrder: CreateWorkOrderInput!): WorkOrder!

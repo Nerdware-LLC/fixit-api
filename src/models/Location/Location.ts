@@ -1,5 +1,6 @@
+import { hasKey, isString } from "@nerdware/ts-type-safety-utils";
 import { LOCATION_COMPOSITE_REGEX } from "./regex";
-import type { Location as GqlSchemaLocationType } from "@types";
+import type { Location as GqlSchemaLocationType } from "@/types/graphql";
 
 /**
  * Location Model
@@ -15,22 +16,24 @@ import type { Location as GqlSchemaLocationType } from "@types";
  * work orders on Foo Street".
  */
 export class Location implements GqlSchemaLocationType {
-  country?: string | null;
+  country: string;
   region: string;
   city: string;
   streetLine1: string;
   streetLine2?: string | null;
+
+  public static DEFAULT_COUNTRY = "USA";
 
   public static get KEYS(): Array<keyof Location> {
     return ["country", "region", "city", "streetLine1", "streetLine2"];
   }
 
   /**
-   * - Converts a Location object into a DDB compound attribute string.
-   * - Use this function in `transformValue.toDB` methods of DdbSingleTable model schema.
+   * Convert a Location object into a DDB compound attribute string.
+   * This is used in `transformValue.toDB` methods of DdbSingleTable model schema.
    */
   public static convertToCompoundString = ({
-    country: countryRawInput = "USA",
+    country: countryRawInput = Location.DEFAULT_COUNTRY,
     region: regionRawInput,
     city: cityRawInput,
     streetLine1: streetLine1RawInput,
@@ -78,20 +81,26 @@ export class Location implements GqlSchemaLocationType {
   };
 
   /**
-   * - Converts a Location DDB-compound-string into a Location object.
-   * - Use this function in `transformValue.fromDB` methods of DdbSingleTable model schema.
+   * Convert a Location DDB-compound-string into a Location object.
+   * This is used in `transformValue.fromDB` methods of DdbSingleTable model schema.
    */
   public static parseCompoundString = (locationCompoundStr: string) => {
+    if (!isString(locationCompoundStr)) return locationCompoundStr;
     // Split the composite value string using the "#" delimeter
-    const locationComponents: Array<string | null> = locationCompoundStr.split("#");
-    // If length is 4, append `null` for streetLine2
-    if (locationComponents.length === 4) locationComponents.push(null);
+    const locationComponents = locationCompoundStr.split("#");
+    // If length is less than 4, throw an error
+    if (locationComponents.length < 4) {
+      throw new Error(
+        `Invalid Location: "${locationCompoundStr}" is not a valid Location compound string.`
+      );
+    }
 
-    return locationComponents.reduce((accum, dbValue, index) => {
+    // Reduce the array into a Location object
+    const locationObject = locationComponents.reduce((accum, dbValue, index) => {
       let formattedOutput = dbValue;
 
       // Format non-null values
-      if (typeof formattedOutput === "string") {
+      if (isString(formattedOutput)) {
         // Replace "NUMSIGN" string literal with "#" (for streetLine2)
         formattedOutput = formattedOutput.replace(/NUMSIGN/g, "#");
         // Replace underscores with spaces
@@ -99,21 +108,52 @@ export class Location implements GqlSchemaLocationType {
       }
 
       // Get location key from array, and set the Location K-V
-      accum[Location.KEYS[index]] = formattedOutput as string;
+      accum[Location.KEYS[index]!] = formattedOutput;
 
       return accum;
     }, {} as Location);
+
+    // If optional field `streetLine2` is missing, set default `null`
+    if (!hasKey(locationObject, "streetLine2")) locationObject.streetLine2 = null;
+
+    return locationObject;
   };
 
   /**
    * Validates a Location DDB-compound-string for use in DdbSingleTable model schema.
    */
-  public static validateCompoundString = (locationCompoundStr: string) => {
-    return LOCATION_COMPOSITE_REGEX.test(locationCompoundStr);
+  public static validateCompoundString = (locationCompoundStr?: unknown) => {
+    // The test method doesn't throw when given invalid arg types, so it's safe to cast here.
+    return LOCATION_COMPOSITE_REGEX.test(locationCompoundStr as string);
   };
 
-  constructor({ country, region, city, streetLine1, streetLine2 }: Location) {
-    this.country = country || null;
+  /**
+   * Returns a `Location`-shaped object from the given params.
+   */
+  static readonly fromParams = (params?: unknown) => new Location(params as Location);
+
+  constructor({
+    country = Location.DEFAULT_COUNTRY,
+    region,
+    city,
+    streetLine1,
+    streetLine2,
+  }: Omit<Location, "country"> & { country?: string }) {
+    // Ensure values have been provided for all required Location fields
+    const missingRequiredFields: Array<string> = [];
+
+    if (!region) missingRequiredFields.push("region");
+    if (!city) missingRequiredFields.push("city");
+    if (!streetLine1) missingRequiredFields.push("street line 1");
+
+    if (missingRequiredFields.length > 0) {
+      throw new Error(
+        `Invalid Location: "${missingRequiredFields.join(", ")}" ` +
+          `${missingRequiredFields.length > 1 ? "are" : "is"} required`
+      );
+    }
+
+    this.country = country || Location.DEFAULT_COUNTRY;
     this.region = region;
     this.city = city;
     this.streetLine1 = streetLine1;

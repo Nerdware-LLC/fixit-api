@@ -1,11 +1,18 @@
-import { stripe } from "@lib/stripe";
-import { mwAsyncCatchWrapper } from "@middleware/helpers";
-import { UserSubscription } from "@models/UserSubscription";
+import { stripe } from "@/lib/stripe";
+import { mwAsyncCatchWrapper } from "@/middleware/helpers";
+import { UserSubscription } from "@/models/UserSubscription";
 
+/**
+ * This middleware checks if the User is authenticated, and if so, queries Stripe for
+ * up-to-date subscription info. It then checks if the subscription's `status` and
+ * `currentPeriodEnd` details from Stripe match those present in the auth token payload.
+ * If they do not match, the UserSubscription item is updated in the db, and the User's
+ * auth token payload values are updated as well.
+ */
 export const checkSubscriptionStatus = mwAsyncCatchWrapper(async (req, res, next) => {
-  if (!req?._authenticatedUser) return next("User not found");
+  if (!res.locals?.authenticatedUser) return next("User not found");
 
-  const { subscription, id: userID } = req._authenticatedUser;
+  const { subscription, id: userID } = res.locals.authenticatedUser;
 
   if (subscription) {
     const {
@@ -25,24 +32,26 @@ export const checkSubscriptionStatus = mwAsyncCatchWrapper(async (req, res, next
       upToDateSubInfo.status !== status_inDB ||
       upToDateSubInfo.currentPeriodEnd.getTime() !== new Date(currentPeriodEnd_inDB).getTime()
     ) {
-      /* Do NOT use Stripe's `createdAt` value for the Sub-SK, because it may not
-      match the value in the DB. Instead, use the value from req._userSubscription
-      (should always be present here).  */
-      if (!req?._userSubscription?.createdAt) return next("Invalid subscription details");
+      /* Do NOT use Stripe's `createdAt` value for the UserSubscription SK, because it may
+      not match the value in the DB. Instead, use the value from res.locals.userSubscription
+      (should always be present here). */
+      if (!res.locals?.userSubscription?.createdAt) return next("Invalid subscription details");
 
       const updatedSub = await UserSubscription.updateItem(
         {
           userID,
-          sk: UserSubscription.getFormattedSK(userID, req._userSubscription.createdAt),
+          sk: UserSubscription.getFormattedSK(userID, res.locals.userSubscription.createdAt),
         },
         {
-          status: upToDateSubInfo.status,
-          currentPeriodEnd: upToDateSubInfo.currentPeriodEnd,
+          update: {
+            status: upToDateSubInfo.status,
+            currentPeriodEnd: upToDateSubInfo.currentPeriodEnd,
+          },
         }
       );
 
-      req._authenticatedUser.subscription = {
-        ...req._authenticatedUser.subscription,
+      res.locals.authenticatedUser.subscription = {
+        ...res.locals.authenticatedUser.subscription,
         ...updatedSub,
       };
     }

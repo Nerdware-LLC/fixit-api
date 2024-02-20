@@ -13,60 +13,62 @@ on:
 jobs:
   test:
     name: Run Tests
-    uses: Nerdware-LLC/reusable-action-workflows/.github/workflows/node_test.yaml@main
-    with:
-      node-version: "16.17.0"
-      test-script: "test"
-      # The node_test workflow masks these "env-vars" values and makes them
-      # available as environment variables for the test script. This serves as
-      # a workaround for the fact that GitHub Actions does not propagate the
-      # env context to called workflows.
-      env-vars: >-
-        NODE_ENV=test
-        PROTOCOL=http
-        DOMAIN=localhost
-        PORT=8080
-        AWS_REGION=local
-        DYNAMODB_TABLE_NAME=fixit-db-test
-    secrets:
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      env-vars: >-
-        SENTRY_DSN=${{ secrets.SENTRY_DSN }}
-        JWT_PRIVATE_KEY=${{ secrets.JWT_TEST_KEY }}
-        JWT_ALGORITHM=${{ secrets.JWT_ALGORITHM }}
-        STRIPE_PUBLISHABLE_KEY=${{ secrets.STRIPE_TEST_PUBLISHABLE_KEY }}
-        STRIPE_SECRET_KEY=${{ secrets.STRIPE_TEST_SECRET_KEY }}
-        STRIPE_WEBHOOKS_SECRET=${{ secrets.STRIPE_TEST_WEBHOOKS_SECRET }}
-        FIXIT_SUB_PRODUCT_ID=${{ secrets.STRIPE_TEST_FIXIT_SUB_PRODUCT_ID }}
-        FIXIT_SUB_PRICES_JSON=${{ secrets.STRIPE_TEST_FIXIT_SUB_PRICES_JSON }}
-        FIXIT_SUB_PROMO_CODES_JSON=${{ secrets.STRIPE_TEST_FIXIT_SUB_PROMO_CODES_JSON }}
-
-  update_pr:
-    name: Update PR with Coverage Reports
-    needs: test # only run on PRs
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
-      contents: read # required to checkout the code
-      pull-requests: write # required to put a comment into the PR
+      contents: read #       to checkout the code
+      pull-requests: write # to add coverage reports to the PR
     steps:
-      - name: Download Artifact "coverage-reports"
-        uses: actions/download-artifact@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          name: coverage-reports
-      - name: Update PR Using "coverage-reports" Artifact
-        uses: ArtiomTr/jest-coverage-report-action@v2
+          node-version-file: ".nvmrc"
+
+      - run: npm ci --include=dev
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run Tests
+        if: success()
+        id: run-tests
+        run: npm run test:ci
+
+      - name: Update GitHub Commit Status
+        if: ${{ !cancelled() }}
+        run: |
+          if [ ${{ steps.run-tests.outcome }} == 'success' ]; then
+            commit_status_state='success'
+            description='Tests passed'
+          else
+            commit_status_state='failure'
+            description='Tests failed'
+          fi
+
+          curl --request POST \
+            --url https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }} \
+            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+            --header 'content-type: application/json' \
+            --data "{
+              \"context\": \"tests\",
+              \"state\": \"$commit_status_state\",
+              \"description\": \"$description\",
+              \"target_url\": \"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
+            }"
+
+      - name: Update CodeCov
+        if: success()
+        uses: codecov/codecov-action@v4
         with:
-          skip-step: all # Use existing reports, no need to re-run tests
-          coverage-file: coverage/coverage-final.json
-          base-coverage-file: coverage/coverage-final.json
-          annotations: none # <-- Can change this value to add code annotations
-          # https://github.com/marketplace/actions/jest-coverage-report#change-annotations
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Update PR with Coverage Reports
+        if: github.event_name == 'pull_request'
+        uses: davelosert/vitest-coverage-report-action@v2
 
   release:
-    name: Release (push-only)
-    needs: test # only run on push events when tests pass
-    if: github.event_name == 'push' && needs.test.outputs.did-tests-succeed == true
+    name: Release if Tests Passed (push/dispatch only)
+    needs: test
+    if: github.event_name != 'pull_request' && needs.test.result == 'success'
     uses: ./.github/workflows/release.yaml
     secrets:
       SEMANTIC_RELEASE_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}

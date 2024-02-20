@@ -1,63 +1,58 @@
+import { Model } from "@nerdware/ddb-single-table";
+import { isValidEmail, isValidHandle } from "@nerdware/ts-string-helpers";
+import { hasKey } from "@nerdware/ts-type-safety-utils";
 import { Expo } from "expo-server-sdk";
-import { Model, type ItemTypeFromSchema, type ItemInputType } from "@lib/dynamoDB";
-import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@models/_common";
-import { ddbSingleTable } from "@models/ddbSingleTable";
-import { EMAIL_REGEX, getUnixTimestampUUID, hasKey } from "@utils";
+import { isValidStripeID } from "@/lib/stripe";
+import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@/models/_common";
+import { ddbTable } from "@/models/ddbTable";
 import { createOne } from "./createOne";
-import {
-  USER_ID_REGEX,
-  USER_SK_REGEX,
-  USER_HANDLE_REGEX,
-  USER_STRIPE_CUSTOMER_ID_REGEX,
-} from "./regex";
-import type { UserLoginU } from "@models/UserLogin";
+import { userModelHelpers } from "./helpers";
+import type { UserLoginU } from "@/models/UserLogin";
+import type { ItemTypeFromSchema, ItemCreationParameters } from "@nerdware/ddb-single-table";
 import type { OverrideProperties } from "type-fest";
 
 /**
- * User DdbSingleTable Model
+ * User Model
  */
-class UserModel extends Model<typeof UserModel.schema, UserModelItem, UserModelInput> {
-  static readonly SK_PREFIX = `#DATA`;
-  static readonly getFormattedSK = (userID: string) => `#DATA#${userID}`;
-
-  static readonly schema = {
+class UserModel extends Model<typeof UserModel.schema, UserItem, UserItemCreationParams> {
+  static readonly schema = ddbTable.getModelSchema({
     pk: {
       type: "string",
       alias: "id",
-      default: () => `USER#${getUnixTimestampUUID()}`,
-      validate: (value: string) => USER_ID_REGEX.test(value),
+      default: ({ createdAt }: { createdAt: Date }) => userModelHelpers.id.format(createdAt),
+      validate: userModelHelpers.id.isValid,
       required: true,
     },
     sk: {
       type: "string",
-      default: (userItem: { pk: string }) => UserModel.getFormattedSK(userItem.pk),
-      validate: (value: string) => USER_SK_REGEX.test(value),
+      default: (userItem: { pk: string }) =>
+        userItem?.pk ? userModelHelpers.sk.format(userItem.pk) : undefined,
+      validate: userModelHelpers.sk.isValid,
       required: true,
     },
     data: {
       type: "string",
       alias: "email",
-      validate: (value: string) => EMAIL_REGEX.test(value),
+      validate: (value: string) => isValidEmail(value),
       required: true,
     },
     handle: {
       type: "string",
-      validate: (value: string) => USER_HANDLE_REGEX.test(value),
-      required: true,
+      validate: (value: string) => isValidHandle(value),
+      required: true, // NOTE: User.handle is case-sensitive
     },
     phone: {
       ...COMMON_ATTRIBUTE_TYPES.PHONE,
       required: true,
     },
     expoPushToken: {
-      type: "string", // The push-service sets EPT to "" (empty string)
-      default: "",
+      type: "string", // The push-service may set EPT to empty string
       validate: (tokenValue: string) => tokenValue === "" || Expo.isExpoPushToken(tokenValue),
       required: false,
     },
     stripeCustomerID: {
       type: "string",
-      validate: (value: string) => USER_STRIPE_CUSTOMER_ID_REGEX.test(value),
+      validate: (value: string) => isValidStripeID.customer(value),
       required: true,
     },
     login: {
@@ -78,8 +73,8 @@ class UserModel extends Model<typeof UserModel.schema, UserModelItem, UserModelI
         (login?.type === "LOCAL"
           ? hasKey(login, "passwordHash")
           : login?.type === "GOOGLE_OAUTH"
-          ? hasKey(login, "googleID") && hasKey(login, "googleAccessToken")
-          : false),
+            ? hasKey(login, "googleID") && hasKey(login, "googleAccessToken")
+            : false),
     },
     profile: {
       type: "map",
@@ -89,54 +84,44 @@ class UserModel extends Model<typeof UserModel.schema, UserModelItem, UserModelI
         givenName: { type: "string" },
         familyName: { type: "string" },
         businessName: { type: "string" },
-        photoURL: { type: "string" },
+        photoUrl: { type: "string" },
       },
     },
     ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
-  } as const;
+  } as const);
 
   constructor() {
-    super("User", UserModel.schema, ddbSingleTable);
+    super("User", UserModel.schema, ddbTable);
   }
 
   // USER MODEL — Instance methods:
-
-  readonly getFormattedSK = UserModel.getFormattedSK;
+  readonly getFormattedSK = userModelHelpers.sk.format;
   readonly createOne = createOne;
-
-  // TODO This method can be rm'd
-  readonly getUserByID = async (userID: string) => {
-    return await this.getItem({ id: userID, sk: UserModel.getFormattedSK(userID) });
-  };
-
-  // TODO This method can be rm'd
-  readonly batchGetUsersByID = async (userIDs: Array<string>) => {
-    return await this.batchGetItems(
-      userIDs.map((userID) => ({ id: userID, sk: UserModel.getFormattedSK(userID) }))
-    );
-  };
-
-  // TODO This method can be rm'd
-  readonly queryUserByEmail = async (email: string) => {
-    const [user] = await this.query({
-      where: { email },
-      limit: 1,
-      // IndexName: DDB_INDEXES.Overloaded_Data_GSI.name,
-      // KeyConditionExpression: "#e = :email",
-      // ExpressionAttributeNames: { "#e": DDB_INDEXES.Overloaded_Data_GSI.primaryKey },
-      // ExpressionAttributeValues: { ":email": email },
-    });
-    return user;
-  };
 }
 
 export const User = new UserModel();
 
-export type UserModelItem = OverrideProperties<
+/** The shape of a `User` object returned from UserModel methods. */
+export type UserItem = OverrideProperties<
   ItemTypeFromSchema<typeof UserModel.schema>,
   { login: UserLoginU }
 >;
-export type UserModelInput = OverrideProperties<
-  ItemInputType<typeof UserModel.schema>,
+
+/** `User` item params for `createItem()`. */
+export type UserItemCreationParams = OverrideProperties<
+  ItemCreationParameters<typeof UserModel.schema>,
   { login: UserLoginU }
+>;
+
+/**
+ * The shape of a `User` object in the DB.
+ * > This type is used to mock `@aws-sdk/lib-dynamodb` responses.
+ */
+export type UnaliasedUserItem = ItemTypeFromSchema<
+  typeof UserModel.schema,
+  {
+    aliasKeys: false;
+    optionalIfDefault: false;
+    nullableIfOptional: true;
+  }
 >;

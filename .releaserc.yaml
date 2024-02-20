@@ -7,15 +7,19 @@ plugins:
   - - "@semantic-release/commit-analyzer"
     - preset: angular
       releaseRules:
-        # Default release rules
         - { breaking: true, release: major }
         - { type: feat, release: minor }
+        - { type: refactor, scope: "core*", release: minor }
         - { revert: true, release: patch }
+        - { type: build, release: patch }
+        - { type: ci, release: patch }
+        - { type: deps, release: patch }
         - { type: fix, release: patch }
         - { type: perf, release: patch }
-        # Non-default release rules
         - { type: refactor, release: patch }
+        - { type: chore, release: false }
         - { type: docs, release: false }
+        - { type: style, release: false }
         - { scope: no-release, release: false }
 
   - - "@semantic-release/release-notes-generator"
@@ -38,5 +42,9 @@ plugins:
         ---
 
   - - "@semantic-release/git"
-    - assets: ["CHANGELOG.md", "package.json", "package-lock.json", "npm-shrinkwrap.json"]
-      message: "chore(release): version ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+    - message: "chore(release): version ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+      assets:
+        - "CHANGELOG.md"
+        - "package.json"
+        - "package-lock.json"
+        - "npm-shrinkwrap.json"

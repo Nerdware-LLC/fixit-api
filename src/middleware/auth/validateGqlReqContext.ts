@@ -1,10 +1,23 @@
-import { UserSubscription } from "@models/UserSubscription";
-import { ENV } from "@server/env";
-import { AuthToken } from "@utils/AuthToken";
-import { GqlAuthError, GqlPaymentRequiredError } from "@utils/customErrors";
+import { UserSubscription } from "@/models/UserSubscription";
+import { ENV } from "@/server/env";
+import { AuthToken, type FixitApiAuthTokenPayload } from "@/utils/AuthToken";
+import { GqlAuthError, GqlPaymentRequiredError } from "@/utils/httpErrors";
+import type { ApolloServerResolverContext } from "@/apolloServer";
 import type { Request } from "express";
-import type { ApolloServerResolverContext } from "../../apolloServer";
 
+/**
+ * This middleware validates and authenticates requests on the /api route, and ensures that
+ * no request reaches any GQL resolver unless the following are all true:
+ *
+ *   1. The request contains a valid unexpired AuthToken which was signed by the relevant key.
+ *   2. The AuthToken payload contains required User information.
+ *   3. The User's subscription is both active and unexpired.
+ *
+ * If all authentication criteria are met, the User's information is attached to the GQL
+ * resolvers' context object.
+ *
+ * @returns The context object made available to all GQL resolvers.
+ */
 const validateGqlRequest = async ({
   req,
 }: {
@@ -15,24 +28,20 @@ const validateGqlRequest = async ({
     /* If err, re-throw as Apollo 401 auth error. By default, errors thrown from
     apollo context-init fn return to client with http status code 500, so an "http"
     extension is added here to ensure the status code is properly set to 401.    */
-    throw new GqlAuthError("Authentication required", {
-      extensions: { http: { status: GqlAuthError.STATUS_CODE } },
-    });
+    throw new GqlAuthError("Authentication required");
   });
 
   // Ensure the User's subscription is active and not expired
   try {
     UserSubscription.validateExisting(tokenPayload.subscription);
   } catch (err) {
-    // If err, re-throw as Apollo 402 error
-    throw new GqlPaymentRequiredError("Payment required", {
-      extensions: { http: { status: GqlPaymentRequiredError.STATUS_CODE } },
-    });
+    // If err, re-throw as GQL 402 error
+    throw new GqlPaymentRequiredError("Payment required");
   }
 
   return {
     ...req,
-    user: AuthToken.stripInternalJwtPayloadFields(tokenPayload),
+    user: tokenPayload as FixitApiAuthTokenPayload<true, true>,
   };
 };
 
@@ -55,11 +64,11 @@ const isIntrospectionQuery = ({
   const isIntrospectionQueryFromApolloStudio =
     req.get("origin") === "https://studio.apollographql.com" &&
     !!req?.body?.query &&
-    /query IntrospectionQuery/.test(req.body.query);
+    req.body.query.includes("query IntrospectionQuery");
 
   // Manual schema-update introspection queries submitted via Rover CLI:
   const isIntrospectionQueryFromRoverCLI =
-    (/^rover/.test(req.get("user-agent") ?? "") || req.hostname === "localhost") &&
+    ((req.get("user-agent") ?? "").startsWith("rover") || req.hostname === "localhost") &&
     !!req?.body?.operationName &&
     req.body.operationName === "GraphIntrospectQuery";
 
@@ -71,7 +80,7 @@ const isIntrospectionQuery = ({
  * - Permits ApolloStudio and ApolloSandbox introspection queries in the dev env.
  */
 export const validateGqlReqContext =
-  /^dev/i.test(ENV.NODE_ENV) === false
+  ENV.NODE_ENV.startsWith("dev")
     ? validateGqlRequest
     : async ({ req }: { req: Request }) => {
         return isIntrospectionQuery({ req })

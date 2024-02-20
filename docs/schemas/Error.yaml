@@ -1,0 +1,8 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
+
+# REST Schema: Base HTTP Error
+
+type: object
+description: An error response object.
+properties:
+  error: { type: string }

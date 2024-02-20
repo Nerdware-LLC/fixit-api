@@ -1,78 +1,84 @@
+// @ts-check
 import eslintJS from "@eslint/js";
-import importPlugin from "eslint-plugin-import";
-import jestPlugin from "eslint-plugin-jest";
+import eslintConfigPrettier from "eslint-config-prettier";
+import * as importPlugin from "eslint-plugin-import";
 import nodePlugin from "eslint-plugin-node";
-import globalsPkg from "globals";
-import tsEslintPlugin from "@typescript-eslint/eslint-plugin";
-import tsEslintParser from "@typescript-eslint/parser";
-
-const {
-  node: nodeGlobals,
-  jest: { jest, ...jestGlobals }, // jest has to be explicitly imported
-} = globalsPkg;
+import vitestPlugin from "eslint-plugin-vitest";
+import globals from "globals";
+import tsEslint from "typescript-eslint";
 
 /** @type { import("eslint").Linter.FlatConfig } */
 export default [
   ////////////////////////////////////////////////////////////////
   // ALL FILES
   {
-    files: ["src/**/*.[tj]s", "./*.[tj]s"],
-    ignores: ["src/types/graphql.ts"], // don't lint generated code
+    files: ["src/**/*.[tj]s", "./*.[tj]s", "__mocks__/**/*.[tj]s"],
+    ignores: ["src/**/__codegen__/**/*"], // don't lint generated code
     linterOptions: {
       reportUnusedDisableDirectives: true,
     },
     languageOptions: {
-      globals: nodeGlobals,
+      globals: globals.node,
       ecmaVersion: "latest",
       sourceType: "module",
-      parser: tsEslintParser,
+      parser: tsEslint.parser,
       parserOptions: {
-        project: ["./tsconfig.json"],
+        project: "./tsconfig.json",
         ecmaVersion: "latest",
         sourceType: "module",
+        ecmaFeatures: {
+          globalReturn: false,
+        },
       },
     },
     plugins: {
-      "@typescript-eslint": tsEslintPlugin,
+      "@typescript-eslint": tsEslint.plugin,
       import: importPlugin,
       node: nodePlugin,
     },
     rules: {
+      // MERGE PRESETS:
       ...eslintJS.configs.recommended.rules,
       ...importPlugin.configs.recommended.rules,
       ...importPlugin.configs["typescript"].rules,
       ...nodePlugin.configs.recommended.rules,
-      ...tsEslintPlugin.configs["eslint-recommended"].rules,
-      ...tsEslintPlugin.configs.recommended.rules,
-      ...tsEslintPlugin.configs["recommended-requiring-type-checking"].rules,
+      ...tsEslint.configs.eslintRecommended.rules, // turns off base eslint rules covered by ts-eslint
+      ...[
+        ...tsEslint.configs.strictTypeChecked,
+        ...tsEslint.configs.stylisticTypeChecked, // prettier-ignore
+      ].reduce((acc, { rules = {} }) => ({ ...acc, ...rules }), {}),
+      // RULE CUSTOMIZATIONS:
+      "default-case": "error",
+      "default-case-last": "error",
       eqeqeq: ["error", "always"],
       "no-console": "warn",
-      "no-unused-vars": "off", // @typescript-eslint/no-unused-vars is used instead
       "prefer-const": "warn",
+      "prefer-object-has-own": "error",
+      "prefer-promise-reject-errors": "error",
       semi: ["error", "always"],
-      "import/no-unresolved": "error",
-      "node/no-extraneous-import": ["error", { allowModules: ["@jest/globals"] }],
+      "import/named": "off", //                      TS performs this check
+      "import/namespace": "off", //                  TS performs this check
+      "import/default": "off", //                    TS performs this check
+      "import/no-named-as-default-member": "off", // TS performs this check
       "node/no-missing-import": "off",
       "node/no-process-env": "error",
-      "node/no-unpublished-import": [
-        "error",
-        { allowModules: ["@jest/types", "ts-jest", "type-fest"] },
-      ],
+      "node/no-unpublished-import": "off",
       "node/no-unsupported-features/es-syntax": "off",
-      "@typescript-eslint/ban-types": [
-        "error",
-        {
-          types: { "{}": false /* un-bans `{}`, which is banned by default */ },
-          extendDefaults: true,
-        },
-      ],
+      "@typescript-eslint/array-type": "off", // Allow "T[]" and "Array<T>"
+      "@typescript-eslint/consistent-indexed-object-style": "off", // Allow "Record<K, V>" and "{ [key: K]: V }"
+      "@typescript-eslint/consistent-type-definitions": "off", // Allow "type" and "interface", there are subtle usage differences
+      "@typescript-eslint/no-confusing-void-expression": "off", // <-- rule results in false positives on MW using `return next()`
       "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-extraneous-class": ["error", { allowStaticOnly: true }],
       "@typescript-eslint/no-inferrable-types": "off",
+      "@typescript-eslint/no-invalid-void-type": "off", // Allow "void" in unions
       "@typescript-eslint/no-misused-promises": [
         "error",
         { checksVoidReturn: { arguments: false } },
       ],
       "@typescript-eslint/no-non-null-assertion": "off",
+      "@typescript-eslint/no-unnecessary-boolean-literal-compare": "off", // Allow "if (x === true)"
+      "@typescript-eslint/no-unnecessary-condition": "off", // Allow option chains to convey "dont know if preceding exists"
       "@typescript-eslint/no-unsafe-argument": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",
       "@typescript-eslint/no-unused-vars": [
@@ -85,6 +91,16 @@ export default [
           ignoreRestSiblings: true,
         },
       ],
+      "@typescript-eslint/prefer-for-of": "off",
+      "@typescript-eslint/prefer-nullish-coalescing": [
+        "error",
+        {
+          ignoreConditionalTests: true,
+          ignorePrimitives: { string: true },
+        },
+      ],
+      "@typescript-eslint/prefer-reduce-type-parameter": "off",
+      ...eslintConfigPrettier.rules, // <-- must be last, removes rules that conflict with prettier
     },
     settings: {
       "import/parsers": {
@@ -93,7 +109,7 @@ export default [
       "import/resolver": {
         node: true,
         typescript: {
-          project: ["./tsconfig.json"],
+          project: "./tsconfig.json",
         },
       },
     },
@@ -101,36 +117,52 @@ export default [
   ////////////////////////////////////////////////////////////////
   // TEST FILES
   {
-    files: ["src/**/*.{test,spec}.[tj]s"],
+    files: ["src/**/*.test.[tj]s", "src/**/tests/**/*", "src/**/__mocks__/**/*", "__mocks__/**/*"],
     languageOptions: {
-      globals: jestGlobals,
+      globals: {
+        vitest: "readonly",
+        vi: "readonly",
+        describe: "readonly",
+        it: "readonly",
+        expect: "readonly",
+        assert: "readonly",
+        suite: "readonly",
+        test: "readonly",
+        beforeAll: "readonly",
+        afterAll: "readonly",
+        beforeEach: "readonly",
+        afterEach: "readonly",
+      },
     },
     plugins: {
-      jest: jestPlugin,
+      vitest: vitestPlugin,
     },
     rules: {
-      ...jestPlugin.configs.recommended.rules,
-      "jest/expect-expect": "off", // doesn't detect 'expect's in called fns
-      "jest/no-disabled-tests": "warn",
-      "jest/no-focused-tests": "error",
-      "jest/no-identical-title": "error",
-      "jest/prefer-to-have-length": "warn",
-      "jest/valid-expect": "error",
-      "@typescript-eslint/no-unsafe-assignment": "off", // many Jest fns return `any`
+      ...vitestPlugin.configs.recommended.rules,
+      "vitest/no-disabled-tests": "warn",
+      "vitest/no-focused-tests": "warn",
+      "vitest/valid-expect": "warn",
+      "@typescript-eslint/no-confusing-void-expression": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
     },
   },
   ////////////////////////////////////////////////////////////////
   // NON-TEST FILES
   {
     files: ["src/**/*"],
-    ignores: ["**/__tests__/**/*", "src/**/*.{test,spec}.[tj]s"],
+    ignores: [
+      "src/**/*.test.[tj]s",
+      "src/**/tests/**/*",
+      "src/**/__mocks__/**/*",
+      "__mocks__/**/*",
+    ],
     rules: {
       "no-restricted-imports": [
         "warn",
         {
           patterns: [
             {
-              group: ["@tests*", "@tests/*", "@/__tests__*", "@/__tests__/*"],
+              group: ["@/tests/*"],
               message:
                 "Test-related exports like mocks should only be imported in test-related files. " +
                 "If this file is part of a test suite, please rename it to match the pattern *.test.*",

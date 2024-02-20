@@ -1,89 +1,72 @@
-import { Model, type ItemTypeFromSchema, type ItemInputType } from "@lib/dynamoDB";
-import { USER_ID_REGEX, USER_HANDLE_REGEX } from "@models/User";
-import { COMMON_ATTRIBUTES } from "@models/_common";
-import { ddbSingleTable } from "@models/ddbSingleTable";
-import { CONTACT_SK_PREFIX_STR as SK_PREFIX, CONTACT_SK_REGEX } from "./regex";
+import { Model } from "@nerdware/ddb-single-table";
+import { isValidHandle } from "@nerdware/ts-string-helpers";
+import { userModelHelpers } from "@/models/User/helpers";
+import { COMMON_ATTRIBUTES } from "@/models/_common";
+import { ddbTable } from "@/models/ddbTable";
+import { contactModelHelpers } from "./helpers";
+import { CONTACT_SK_PREFIX_STR } from "./regex";
+import type { ItemTypeFromSchema, ItemCreationParameters } from "@nerdware/ddb-single-table";
 
 /**
- * Contact DdbSingleTable Model
+ * Contact Model
  */
 class ContactModel extends Model<typeof ContactModel.schema> {
-  static readonly SK_PREFIX = SK_PREFIX;
-
-  static readonly getFormattedID = (contactUserID: string) => {
-    return `${SK_PREFIX}#${contactUserID}`;
-  };
-
-  static readonly schema = {
+  static readonly schema = ddbTable.getModelSchema({
     pk: {
       type: "string",
-      required: true,
       alias: "userID",
-      validate: (value: string) => USER_ID_REGEX.test(value),
+      validate: userModelHelpers.id.isValid,
+      required: true,
     },
     sk: {
       type: "string",
       alias: "id", // Contact "sk" contains the "contactUserID"
-      default: (contactItem: { data: string }) => ContactModel.getFormattedID(contactItem.data),
-      validate: (value: string) => CONTACT_SK_REGEX.test(value),
+      default: (contact: { data?: string }) =>
+        contact?.data ? contactModelHelpers.id.format(contact.data) : undefined,
+      validate: contactModelHelpers.id.isValid,
       required: true,
     },
     data: {
       type: "string",
       alias: "contactUserID",
-      validate: (value: string) => USER_ID_REGEX.test(value),
+      validate: userModelHelpers.id.isValid,
       required: true,
     },
     handle: {
       type: "string",
+      validate: (value: string) => isValidHandle(value),
       required: true,
-      validate: (value: string) => USER_HANDLE_REGEX.test(value),
     },
     ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
-  } as const;
+  } as const);
 
   constructor() {
-    super("Contact", ContactModel.schema, ddbSingleTable);
+    super("Contact", ContactModel.schema, ddbTable);
   }
 
   // CONTACT MODEL — Instance properties and methods:
-  readonly SK_PREFIX = ContactModel.SK_PREFIX;
-  readonly getFormattedID = ContactModel.getFormattedID;
-
-  // TODO This method can be rm'd
-  readonly queryContactByID = async (ownUserID: string, contactUserID: string) => {
-    const [contact] = await this.query({
-      where: {
-        userID: ownUserID,
-        id: ContactModel.getFormattedID(contactUserID),
-      },
-      limit: 1,
-      // KeyConditionExpression: "pk = :pk AND sk = :sk",
-      // ExpressionAttributeValues: {
-      //   ":pk": ownUserID,
-      //   ":sk": `${SK_PREFIX}#${contactUserID}`,
-      // },
-    });
-    return contact;
-  };
-
-  // TODO This method can be rm'd
-  readonly queryUsersContacts = async (userID: string) => {
-    return await this.query({
-      where: {
-        userID,
-        id: { beginsWith: this.SK_PREFIX },
-      },
-      // KeyConditionExpression: "pk = :userID AND begins_with(sk, :contactSKprefix)",
-      // ExpressionAttributeValues: {
-      //   ":userID": userID,
-      //   ":contactSKprefix": `${SK_PREFIX}#`,
-      // },
-    });
-  };
+  readonly SK_PREFIX = CONTACT_SK_PREFIX_STR;
+  readonly getFormattedID = contactModelHelpers.id.format;
+  readonly isValidID = contactModelHelpers.id.isValid;
 }
 
 export const Contact = new ContactModel();
 
-export type ContactModelItem = ItemTypeFromSchema<typeof ContactModel.schema>;
-export type ContactModelInput = ItemInputType<typeof ContactModel.schema>;
+/** The shape of a `Contact` object returned from ContactModel methods. */
+export type ContactItem = ItemTypeFromSchema<typeof ContactModel.schema>;
+
+/** `Contact` item params for `createItem()`. */
+export type ContactItemCreationParams = ItemCreationParameters<typeof ContactModel.schema>;
+
+/**
+ * The shape of a `Contact` object in the DB.
+ * > This type is used to mock `@aws-sdk/lib-dynamodb` responses.
+ */
+export type UnaliasedContactItem = ItemTypeFromSchema<
+  typeof ContactModel.schema,
+  {
+    aliasKeys: false;
+    optionalIfDefault: false;
+    nullableIfOptional: true;
+  }
+>;

@@ -1,0 +1,31 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
+
+# REST Schema: CheckoutCompletionInfo
+
+type: object
+description: |
+  An object containing data regarding the status of the user's checkout-flow. In
+  the event that additional user input is required to complete the transaction,
+  this object will also contain the Stripe-provided client secret needed for the
+  front-end to invoke `stripe.handleNextAction`.
+properties:
+  isCheckoutComplete:
+    type: boolean
+    description: |
+      A boolean indicating whether the checkout-flow is complete. A value of
+      `true` indicates one of the following success conditions:
+      - The user/customer owed a non-zero amount which was successfully paid.
+      - The user/customer initiated a `TRIAL`, and the setup for payments after
+        the end of the trial-period has been successfully completed.
+      - The user/customer provided a 100% discount `PROMO_CODE`, and the setup
+        for payments after the end of the discount-period has been successfully
+        completed.
+  clientSecret:
+    type: string
+    description: |
+      If additional user input is required to complete the transaction, such as
+      authenticating with 3D Secure or redirecting to a different site, this
+      property will contain the Stripe-provided client secret needed for the
+      front-end to invoke `stripe.handleNextAction`.
+required:
+  - isCheckoutComplete

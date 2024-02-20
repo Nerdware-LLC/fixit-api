@@ -1,26 +1,29 @@
+import { sanitizeURL, isValidURL } from "@nerdware/ts-string-helpers";
 import express from "express";
-import { getUserFromAuthHeaderToken, createAccountLink, createDashboardLink } from "@middleware";
-import { getRequestBodyValidatorMW } from "@middleware/helpers";
-import { hasKey } from "@utils/typeSafety";
+import { getUserFromAuthHeaderToken, createAccountLink, createDashboardLink } from "@/middleware";
+import { sanitizeAndValidateRequestBody } from "@/middleware/helpers";
 
 /**
- * This router handles all requests to the "/api/connect" path.
- *
- * - `req.baseUrl` = "/api/connect"
- *
- * Descendant paths:
+ * This router handles all `/api/connect` request paths:
  * - `/api/connect/account-link`
  * - `/api/connect/dashboard-link`
  */
 export const connectRouter = express.Router();
 
-// TODO Do we need to check the user's connect account capabilities (charges_enabled, payouts_enabled) ... ?
-
 connectRouter.use(getUserFromAuthHeaderToken);
 
 connectRouter.post(
   "/account-link",
-  getRequestBodyValidatorMW((reqBody) => hasKey(reqBody, "returnURL")),
+  sanitizeAndValidateRequestBody({
+    requestBodySchema: {
+      returnURL: {
+        required: true,
+        type: "string",
+        sanitize: sanitizeURL,
+        validate: isValidURL,
+      },
+    },
+  }),
   createAccountLink
 );
 

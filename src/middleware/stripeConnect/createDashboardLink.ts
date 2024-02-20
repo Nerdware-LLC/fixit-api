@@ -1,10 +1,8 @@
-import { stripe } from "@lib/stripe";
-import { mwAsyncCatchWrapper } from "@middleware/helpers";
+import { stripe } from "@/lib/stripe";
+import { mwAsyncCatchWrapper } from "@/middleware/helpers";
 
 /**
  * This middleware creates a Stripe dashboard link for authenticated users.
- *
- * > `req.originalUrl = "/api/connect/dashboard-link"`
  *
  * Example account-login-link response object:
  *
@@ -17,12 +15,14 @@ import { mwAsyncCatchWrapper } from "@middleware/helpers";
  * ```
  */
 export const createDashboardLink = mwAsyncCatchWrapper(async (req, res, next) => {
-  if (!req?._authenticatedUser) return next("User not found");
-  if (!req._authenticatedUser?.stripeConnectAccount)
+  const { authenticatedUser } = res.locals;
+
+  if (!authenticatedUser) return next("User not found");
+  if (!authenticatedUser?.stripeConnectAccount)
     return next("User's Stripe Connect account not found.");
 
   const stripeLink = await stripe.accounts.createLoginLink(
-    req._authenticatedUser.stripeConnectAccount.id
+    authenticatedUser.stripeConnectAccount.id
   );
 
   res.json({ stripeLink: stripeLink.url });

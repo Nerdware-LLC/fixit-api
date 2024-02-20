@@ -1,47 +1,31 @@
-import type { InvoiceModelItem } from "@models/Invoice";
-import type { UserModelItem } from "@models/User";
-import type { UserSubscriptionModelItem } from "@models/UserSubscription";
-import type { WorkOrderModelItem } from "@models/WorkOrder";
-import type { WorkOrder, Invoice, Contact } from "@types";
-import type { FixitApiAuthTokenPayload } from "@utils/AuthToken";
-import type { OverrideProperties, SetOptional } from "type-fest";
+import type { UserItem } from "@/models/User";
+import type { UserSubscriptionItem } from "@/models/UserSubscription/index";
+import type { FixitApiAuthTokenPayload } from "@/utils/AuthToken";
+import type { AllRestApiResponses } from "./open-api";
 
 /**
- * A User's pre-fetched WorkOrders, Invoices, and Contacts (used on logins).
- * When fetched, these objects are made available on Express Request objects
- * as `req._userQueryItems`.
+ * This type contains every Express `res.locals` field used by internal REST middleware.
  */
-export type PreFetchedUserQueryItems = {
-  workOrders?: Array<
-    OverrideProperties<WorkOrder, Pick<WorkOrderModelItem, "createdBy" | "assignedTo">>
-  >;
-  invoices?: Array<OverrideProperties<Invoice, Pick<InvoiceModelItem, "createdBy" | "assignedTo">>>;
-  contacts?: Array<Contact>;
-};
+export type RestApiLocals = {
+  // LOCALS WHICH STORE DATA FOR DOWNSTREAM MIDDLEWARE:
 
-/**
- * This type contains all custom properties this application adds to Express Request
- * objects. Each of these properties is globally available on the Request object (see
- * ambient merge-declaration in `src/types/Express.d.ts`).
- */
-export type CustomRequestProperties = {
-  /**
-   * A User object as extracted from the database.
-   */
-  _user?: UserModelItem;
+  /** An AuthToken payload object from an authenticated request's auth token. */
+  authenticatedUser?: FixitApiAuthTokenPayload | undefined;
+  /** A User object from the database. */
+  user?: UserItem | undefined;
+  /** A UserSubscription object from the database (e.g., for sub-updating mw). */
+  userSubscription?: UserSubscriptionItem | undefined;
 
-  /**
-   * A UserSubscription object as extracted from the database (e.g., for sub-updating mw)
-   */
-  _userSubscription?: UserSubscriptionModelItem;
+  // LOCALS ASSOCIATED WITH A RESPONSE OBJECT:
 
-  /**
-   * An AuthToken payload object as extracted from the request's auth token.
-   */
-  _authenticatedUser?: SetOptional<FixitApiAuthTokenPayload, "stripeConnectAccount">;
-
-  /**
-   * A User's pre-fetched WorkOrders, Invoices, and Contacts (used on logins).
-   */
-  _userQueryItems?: PreFetchedUserQueryItems;
+  /** A stringified and encoded Fixit API {@link AuthToken}. */
+  authToken?: AllRestApiResponses["token"] | undefined;
+  /** A Stripe Customer dashboard link, or Stripe Connect Account flow link. */
+  stripeLink?: AllRestApiResponses["stripeLink"] | undefined;
+  /** A promo code's validity and discount percentage (if valid/applicable). */
+  promoCodeInfo?: AllRestApiResponses["promoCodeInfo"] | undefined;
+  /** A User's pre-fetched WorkOrders, Invoices, and Contacts (used on logins). */
+  userItems?: AllRestApiResponses["userItems"] | undefined;
+  /** An object containing checkout-completion info. */
+  checkoutCompletionInfo?: AllRestApiResponses["checkoutCompletionInfo"] | undefined;
 };

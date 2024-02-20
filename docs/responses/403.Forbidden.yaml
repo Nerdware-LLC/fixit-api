@@ -1,0 +1,10 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/response
+
+# 403 response
+
+description: |
+  (403) Forbidden — the requesting user is not authorized to perform this action
+content:
+  application/json:
+    schema:
+      $ref: "../open-api.yaml#/components/schemas/Error"

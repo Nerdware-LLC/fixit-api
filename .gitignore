@@ -1,4 +1,4 @@
-######################################################################
+###############################################################################
 # NodeJS gitignore template:
 # https://github.com/github/gitignore/blob/main/Node.gitignore
 
@@ -60,7 +60,7 @@ pids
 # DynamoDB-local files
 .dynamodb/
 
-#---------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Nerdware gitignore entries
 
 # Notes
@@ -90,7 +90,7 @@ FIXME*
 schema.json
 
 # VSCode-related
-.vscode/
+.vscode/*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
@@ -98,4 +98,4 @@ schema.json
 .history/
 .vscode-test
 
-######################################################################
+###############################################################################

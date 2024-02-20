@@ -1,7 +1,13 @@
-import type { FixitUser, Profile as NullableProfile, NonNullableProfile } from "@types";
+import type { Profile as GqlSchemaProfileType } from "@/types";
+import type { Simplify } from "type-fest";
 
 /**
- * Ideas for potential profile fields:
+ * A `Profile` object represents a user's profile information.
+ *
+ * > This class implements {@link NonNullableProfile}, which reflects the GraphQL
+ *   {@link GqlSchemaProfileType|Profile} type with all fields made `NonNullable`.
+ *
+ * // IDEA Ideas for potential profile fields:
  * - businessAddress
  * - businessPhone
  * - businessWebsite
@@ -27,7 +33,15 @@ export class Profile implements NonNullableProfile {
   businessName?: string;
   photoUrl?: string;
 
-  static readonly getDisplayNameFromArgs = ({
+  /**
+   * Returns a `Profile.displayName` value based on the following order of precedence:
+   *   1. `displayName` — Takes top precedence if explicitly provided
+   *   2. `businessName`
+   *   3. `givenName + familyName` — If both are provided
+   *   4. `givenName` — If just givenName is provided
+   *   5. `handle` — The fallback value if no other values are provided
+   */
+  static readonly getDisplayName = ({
     handle,
     displayName,
     givenName,
@@ -37,13 +51,18 @@ export class Profile implements NonNullableProfile {
     return displayName
       ? displayName
       : businessName
-      ? businessName
-      : givenName
-      ? `${givenName}${familyName ? ` ${familyName}` : ""}`
-      : handle;
+        ? businessName
+        : givenName
+          ? `${givenName}${familyName ? ` ${familyName}` : ""}`
+          : handle
+            ? handle
+            : "";
   };
 
-  static readonly createProfile = (params: ProfileParams) => new Profile(params);
+  /**
+   * Returns a `Profile`-shaped object from the given params.
+   */
+  static readonly fromParams = (params: ProfileParams) => new Profile(params);
 
   constructor({
     handle,
@@ -58,7 +77,7 @@ export class Profile implements NonNullableProfile {
     if (businessName) this.businessName = businessName;
     if (photoUrl) this.photoUrl = photoUrl;
 
-    this.displayName = Profile.getDisplayNameFromArgs({
+    this.displayName = Profile.getDisplayName({
       handle,
       displayName,
       givenName,
@@ -68,5 +87,17 @@ export class Profile implements NonNullableProfile {
   }
 }
 
-/** The parameters that go into creating a new `Profile` object. */
-export type ProfileParams = Partial<NullableProfile> & Pick<FixitUser, "handle">;
+/**
+ * The {@link Profile} class implements this type, which reflects the GraphQL
+ * {@link GqlSchemaProfileType|Profile} type with all fields made `NonNullable`.
+ */
+type NonNullableProfile = {
+  [Key in keyof GqlSchemaProfileType]: NonNullable<GqlSchemaProfileType[Key]>;
+};
+
+/**
+ * The parameters that go into creating a new {@link Profile|`Profile`} object.
+ */
+export type ProfileParams = Simplify<{
+  [Key in "handle" | keyof GqlSchemaProfileType]?: string | null | undefined;
+}>;

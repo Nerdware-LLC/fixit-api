@@ -1,51 +1,50 @@
-import moment from "moment";
-import {
-  Model,
-  type ItemTypeFromSchema,
-  type ItemInputType,
-  type ModelSchemaOptions,
-} from "@lib/dynamoDB";
-import { USER_ID_REGEX } from "@models/User";
-import { WORK_ORDER_ID_REGEX } from "@models/WorkOrder";
-import { COMMON_ATTRIBUTES, type FixitUserFields } from "@models/_common";
-import { ddbSingleTable } from "@models/ddbSingleTable";
-import { INVOICE_SK_PREFIX_STR as INV_SK_PREFIX, INVOICE_SK_REGEX as INV_SK_REGEX } from "./regex";
-import { updateOne } from "./updateOne";
+import { Model } from "@nerdware/ddb-single-table";
+import { isString } from "@nerdware/ts-type-safety-utils";
+import { isValidStripeID } from "@/lib/stripe";
+import { userModelHelpers } from "@/models/User/helpers";
+import { workOrderModelHelpers as woModelHelpers } from "@/models/WorkOrder/helpers";
+import { COMMON_ATTRIBUTES } from "@/models/_common";
+import { ddbTable } from "@/models/ddbTable";
+import { INVOICE_ENUM_CONSTANTS } from "./enumConstants";
+import { invoiceModelHelpers } from "./helpers";
+import { INVOICE_SK_PREFIX_STR } from "./regex";
+import type {
+  ItemTypeFromSchema,
+  ItemCreationParameters,
+  ItemParameters,
+  ModelSchemaOptions,
+} from "@nerdware/ddb-single-table";
 
 /**
- * Invoice DdbSingleTable Model
+ * Invoice Model
  */
-class InvoiceModel extends Model<typeof InvoiceModel.schema, InvoiceModelItem, InvoiceModelInput> {
-  static readonly STATUSES = ["OPEN", "CLOSED", "DISPUTED"] as const;
-  static readonly SK_PREFIX = INV_SK_PREFIX;
-
-  static readonly getFormattedID = (createdByUserID: string, createdAt: Date) => {
-    return `${INV_SK_PREFIX}#${createdByUserID}#${moment(createdAt).unix()}`;
-  };
-
-  static readonly schema = {
+class InvoiceModel extends Model<typeof InvoiceModel.schema> {
+  static readonly schema = ddbTable.getModelSchema({
     pk: {
       type: "string",
       alias: "createdByUserID",
-      validate: (value: string) => USER_ID_REGEX.test(value),
+      validate: userModelHelpers.id.isValid,
       required: true,
     },
     sk: {
       type: "string",
       alias: "id",
-      default: ({ pk, createdAt }: { pk: string; createdAt: Date }) => InvoiceModel.getFormattedID(pk, createdAt), // prettier-ignore
-      validate: (value: string) => INV_SK_REGEX.test(value),
+      default: (invoice: { pk: string; createdAt: Date }) =>
+        invoice?.pk && invoice?.createdAt
+          ? invoiceModelHelpers.id.format(invoice.pk, invoice.createdAt)
+          : undefined,
+      validate: invoiceModelHelpers.id.isValid,
       required: true,
     },
     data: {
       type: "string",
       alias: "assignedToUserID",
-      validate: (value: string) => USER_ID_REGEX.test(value),
+      validate: userModelHelpers.id.isValid,
       required: true,
     },
     workOrderID: {
       type: "string",
-      validate: (value: string) => WORK_ORDER_ID_REGEX.test(value),
+      validate: woModelHelpers.id.isValid,
     },
     amount: {
       type: "number",
@@ -57,95 +56,57 @@ class InvoiceModel extends Model<typeof InvoiceModel.schema, InvoiceModelItem, I
     },
     status: {
       type: "enum",
-      oneOf: InvoiceModel.STATUSES,
+      oneOf: INVOICE_ENUM_CONSTANTS.STATUSES,
       default: "OPEN",
       required: true,
     },
     stripePaymentIntentID: {
       type: "string",
+      validate: (value?: unknown) =>
+        value === null ||
+        value === undefined ||
+        (isString(value) && isValidStripeID.paymentIntent(value)),
     },
     ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
-  } as const;
+  } as const);
 
   static readonly schemaOptions: ModelSchemaOptions = {
-    transformItem: {
-      /* fromDB, string fields `pk` (createdByUserID) and `data` (assignedToUserID)
-      are converted into GQL-API fields `createdBy` and `assignedTo`.            */
-      // IDEA Put this shared logic+type in @models/_common (share w WO)
-      fromDB: ({
-        pk: createdByUserID,
-        data: assignedToUserID,
-        ...item
-      }: {
-        pk: string;
-        data: string;
-      }) => ({
-        createdBy: { id: createdByUserID },
-        assignedTo: { id: assignedToUserID },
-        ...item,
-      }),
-    },
+    /** This validateItem fn ensures `createdByUserID` !== `assignedToUserID` */
+    validateItem: ({ pk, data }) => pk !== data,
   };
 
   constructor() {
-    super("Invoice", InvoiceModel.schema, { ...InvoiceModel.schemaOptions, ...ddbSingleTable });
+    super("Invoice", InvoiceModel.schema, {
+      ...InvoiceModel.schemaOptions,
+      ...ddbTable,
+    });
   }
 
-  // INVOICE MODEL — Instance properties:
-
-  readonly STATUSES = InvoiceModel.STATUSES;
-  readonly SK_PREFIX = InvoiceModel.SK_PREFIX;
-
-  // INVOICE MODEL — Instance methods:
-
-  readonly getFormattedID = InvoiceModel.getFormattedID;
-  readonly updateOne = updateOne;
-
-  readonly queryInvoiceByID = async (invoiceID: string) => {
-    const [invoice] = await this.query({
-      where: { id: invoiceID },
-      limit: 1,
-      // IndexName: DDB_INDEXES.Overloaded_SK_GSI.name,
-      // KeyConditionExpression: "id = :id",
-      // ExpressionAttributeValues: { ":id": invoiceID },
-    });
-    return invoice;
-  };
-
-  readonly queryUsersInvoices = async (userID: string) => {
-    return await this.query({
-      where: {
-        createdByUserID: userID,
-        id: { beginsWith: this.SK_PREFIX },
-      },
-      // KeyConditionExpression: "pk = :userID AND begins_with(sk, :invSKprefix)",
-      // ExpressionAttributeValues: {
-      //   ":userID": userID,
-      //   ":invSKprefix": `${INV_SK_PREFIX}#`,
-      // },
-    });
-  };
-
-  readonly queryInvoicesAssignedToUser = async (userID: string) => {
-    return await this.query({
-      where: {
-        assignedToUserID: userID,
-        id: { beginsWith: this.SK_PREFIX },
-      },
-      // IndexName: DDB_INDEXES.Overloaded_Data_GSI.name,
-      // KeyConditionExpression: "#uid = :userID AND begins_with(sk, :invSKprefix)",
-      // ExpressionAttributeNames: {
-      //   "#uid": DDB_INDEXES.Overloaded_Data_GSI.primaryKey,
-      // },
-      // ExpressionAttributeValues: {
-      //   ":userID": userID,
-      //   ":invSKprefix": `${INV_SK_PREFIX}#`,
-      // },
-    });
-  };
+  // INVOICE MODEL — Instance properties and methods:
+  readonly STATUSES = INVOICE_ENUM_CONSTANTS.STATUSES;
+  readonly SK_PREFIX = INVOICE_SK_PREFIX_STR;
 }
 
 export const Invoice = new InvoiceModel();
 
-export type InvoiceModelItem = FixitUserFields<ItemTypeFromSchema<typeof InvoiceModel.schema>>;
-export type InvoiceModelInput = ItemInputType<typeof InvoiceModel.schema>;
+/** The shape of an `Invoice` object returned from InvoiceModel methods. */
+export type InvoiceItem = ItemTypeFromSchema<typeof InvoiceModel.schema>;
+
+/** `Invoice` item params for `createItem()`. */
+export type InvoiceItemCreationParams = ItemCreationParameters<typeof InvoiceModel.schema>;
+
+/** `Invoice` item params for `updateItem()`. */
+export type InvoiceItemUpdateParams = ItemParameters<InvoiceItemCreationParams>;
+
+/**
+ * The shape of an `Invoice` object in the DB.
+ * > This type is used to mock `@aws-sdk/lib-dynamodb` responses.
+ */
+export type UnaliasedInvoiceItem = ItemTypeFromSchema<
+  typeof InvoiceModel.schema,
+  {
+    aliasKeys: false;
+    optionalIfDefault: false;
+    nullableIfOptional: true;
+  }
+>;

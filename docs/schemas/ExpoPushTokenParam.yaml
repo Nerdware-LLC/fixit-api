@@ -1,0 +1,13 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
+
+# REST Schema: ExpoPushTokenParam
+
+type: object
+description: >
+  A user's Expo push token, which is used to send push notifications to the
+  user's mobile device. This is an optional parameter which is only sent from
+  mobile clients.
+properties:
+  expoPushToken:
+    type: string
+    description: A user's Expo push token (only available on mobile clients).

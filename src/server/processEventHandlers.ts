@@ -1,13 +1,12 @@
-import * as Sentry from "@sentry/node";
-import { logger } from "@utils/logger";
+import { getTypeSafeError } from "@nerdware/ts-type-safety-utils";
+import { logger } from "@/utils/logger";
 
 Object.entries({
   uncaughtException: 1,
   unhandledRejection: 2,
 }).forEach(([errEvent, errExitCode]) => {
   process.on(errEvent, (error) => {
-    Sentry.captureException(error);
-    logger.error(error, `Process Error Event: ${errEvent}`);
+    logger.error(getTypeSafeError(error));
     process.exitCode = errExitCode;
   });
 });
@@ -18,13 +17,18 @@ Object.entries({
 });
 
 process.on("exit", (exitCode) => {
+  // If zero, exit normally
   if (exitCode === 0) {
-    logger.server("Exiting Process [EXIT 0]");
-  } else if (exitCode === 1) {
-    logger.error("Exiting Process: UNCAUGHT_EXCEPTION [EXIT 1]");
-  } else if (exitCode === 2) {
-    logger.error("Exiting Process: UNHANDLED_REJECTION [EXIT 2]");
+    logger.server("Exiting Process (EXIT_CODE: 0)");
   } else {
-    logger.error(`EXITING PROCESS: UNHANDLED ERROR EXIT CODE [EXIT ${exitCode}]`);
+    // Else, log the error type
+    const errorDescription =
+      exitCode === 1
+        ? "UNCAUGHT_EXCEPTION"
+        : exitCode === 2
+          ? "UNHANDLED_REJECTION"
+          : "UNHANDLED_ERROR_EXIT_CODE";
+
+    logger.error(`EXITING PROCESS: ${errorDescription} (EXIT_CODE: ${exitCode})`);
   }
 });

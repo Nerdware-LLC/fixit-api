@@ -1,16 +1,13 @@
-import { stripe } from "@lib/stripe";
+import { stripe } from "@/lib/stripe";
 import {
   UserStripeConnectAccount,
-  type UserStripeConnectAccountModelItem,
-} from "@models/UserStripeConnectAccount";
-import type { UserModelItem } from "@models/User";
+  type UserStripeConnectAccountItem,
+} from "@/models/UserStripeConnectAccount";
+import type { UserItem } from "@/models/User";
 
 /**
- * This method creates a `UserStripeConnectAccount` item in both the DB and
- * Stripe's API (via `stripe.accounts.create`).
- *
- * Note: this function does not use arrow syntax because `this` is the
- * UserStripeConnectAccount Model.
+ * This method creates a `UserStripeConnectAccount` item in both the Fixit database
+ * and Stripe's API (via `stripe.accounts.create`).
  */
 export const createOne = async function (
   this: typeof UserStripeConnectAccount,
@@ -20,12 +17,12 @@ export const createOne = async function (
     phone,
     profile,
   }: {
-    userID: UserModelItem["id"];
-    email: UserModelItem["email"];
-    phone: UserModelItem["phone"];
-    profile?: UserModelItem["profile"];
+    userID: UserItem["id"];
+    email: UserItem["email"];
+    phone: UserItem["phone"];
+    profile?: UserItem["profile"];
   }
-): Promise<Required<UserStripeConnectAccountModelItem>> {
+): Promise<Required<UserStripeConnectAccountItem>> {
   // Create Stripe Connect Account via Stripe API
   const {
     id: stripeConnectAccountID,

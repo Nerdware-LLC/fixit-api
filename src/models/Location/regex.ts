@@ -1,4 +1,21 @@
-import { LOCATION_REGEX_STRS as LOC } from "@utils/regex";
+/**
+ * Regex patterns for validating `Location` components.
+ *
+ * Location components are stored separately, despite some having patterns which are
+ * currently the exact same and therefore duplicative. This is due to the fact that they
+ * may differ when converted into unicode-based patterns to support i18n. Note that these
+ * patterns all assume spaces have been replaced with underscores.
+ */
+export const LOCATION_REGEX_STRS = {
+  COUNTRY: "[a-z-_]{2,}", //             Two or more letters/hyphens/underscores
+  REGION: "[a-z-_]{2,}", //              Two or more letters/hyphens/underscores
+  CITY: "[a-z-_]{2,}", //                Two or more letters/hyphens/underscores
+  STREET_LINE_1: "[a-z0-9-_.]{2,}", //   Two or more letters/hyphens/underscores/numbers/periods
+  STREET_LINE_2: "[a-z0-9-_.:#]{2,}", // Two or more letters/hyphens/underscores/numbers/periods/:/#
+};
+
+// Shortened name for interpolation in LOCATION_COMPOSITE_REGEX
+const LOC = LOCATION_REGEX_STRS;
 
 /**
  * Location Composite Value Pattern:

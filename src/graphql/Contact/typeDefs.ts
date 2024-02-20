@@ -8,7 +8,7 @@ export const typeDefs = gql`
   the User who owns the data.
   """
   type Contact implements FixitUser {
-    "User ID internally identifies individual User accounts"
+    "Contact ID internally identifies a user's contact"
     id: ID!
     "Public-facing handle identifies users to other users (e.g., '@joe')"
     handle: String!

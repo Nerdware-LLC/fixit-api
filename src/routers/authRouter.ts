@@ -1,3 +1,18 @@
+import {
+  sanitizeHandle,
+  isValidHandle,
+  sanitizePhone,
+  isValidPhone,
+  sanitizeEmail,
+  isValidEmail,
+  sanitizePassword,
+  isValidPassword,
+  sanitizeID,
+  isValidID,
+  sanitizeToken,
+  isValidToken,
+} from "@nerdware/ts-string-helpers";
+import { hasKey, hasKeys } from "@nerdware/ts-type-safety-utils";
 import express from "express";
 import {
   findUserByEmail,
@@ -11,38 +26,90 @@ import {
   checkSubscriptionStatus,
   checkOnboardingStatus,
   generateAuthToken,
-} from "@middleware";
-import { getRequestBodyValidatorMW } from "@middleware/helpers";
-import { hasKey } from "@utils/typeSafety";
+} from "@/middleware";
+import { sanitizeAndValidateRequestBody } from "@/middleware/helpers";
+import type { RequestBodyFieldsSchema, RequestBodyValidatorFn } from "@/middleware/helpers";
 
 /**
- * This router handles all requests to the "/api/auth" path.
- *
- * - `req.baseUrl` = "/api/auth"
- *
- * Descendant paths:
+ * This router handles all `/api/auth` request paths:
  * - `/api/auth/register`
  * - `/api/auth/login`
  * - `/api/auth/token`
  */
 export const authRouter = express.Router();
 
-// TODO Add route "/auth/forgot-password"
+/**
+ * A {@link RequestBodyFieldsSchema} that configures sanitzation and
+ * validation for request body parameters used in auth routes.
+ */
+export const LOGIN_REQ_BODY_FIELDS_SCHEMA: RequestBodyFieldsSchema = {
+  email: {
+    required: true,
+    type: "string",
+    sanitize: sanitizeEmail,
+    validate: isValidEmail,
+  },
+  password: {
+    required: false,
+    type: "string",
+    sanitize: sanitizePassword,
+    validate: isValidPassword,
+  },
+  googleID: {
+    required: false,
+    type: "string",
+    sanitize: sanitizeID,
+    validate: isValidID,
+  },
+  googleAccessToken: {
+    required: false,
+    type: "string",
+    sanitize: sanitizeToken,
+    validate: isValidToken,
+  },
+} as const;
+
+/**
+ * A {@link RequestBodyValidatorFn} that asserts that the request body
+ * contains either a password or a Google OAuth ID and access token.
+ */
+export const requirePasswordOrGoogleOAuth: RequestBodyValidatorFn = (reqBody) => {
+  if (!hasKey(reqBody, "password") && !hasKeys(reqBody, ["googleID", "googleAccessToken"])) {
+    throw new Error("Invalid registration credentials");
+  }
+};
 
 authRouter.use(
   "/register",
-  getRequestBodyValidatorMW(
-    (reqBody) =>
-      ["handle", "email", "phone"].every((key) => hasKey(reqBody, key)) &&
-      hasValidLoginKeys(reqBody)
-  ),
+  sanitizeAndValidateRequestBody({
+    requestBodySchema: {
+      ...LOGIN_REQ_BODY_FIELDS_SCHEMA,
+      handle: {
+        required: true,
+        type: "string",
+        sanitize: sanitizeHandle,
+        validate: isValidHandle,
+      },
+      phone: {
+        required: true,
+        type: "string",
+        sanitize: sanitizePhone,
+        validate: isValidPhone,
+      },
+    },
+    validateRequestBody: requirePasswordOrGoogleOAuth,
+  }),
   findUserByEmail,
   userLoginShouldNotExist,
   registerNewUser
 );
+
 authRouter.use(
   "/login",
-  getRequestBodyValidatorMW((reqBody) => hasKey(reqBody, "email") && hasValidLoginKeys(reqBody)),
+  sanitizeAndValidateRequestBody({
+    requestBodySchema: LOGIN_REQ_BODY_FIELDS_SCHEMA,
+    validateRequestBody: requirePasswordOrGoogleOAuth,
+  }),
   findUserByEmail,
   userLoginShouldExist,
   validatePassword,
@@ -51,6 +118,7 @@ authRouter.use(
   checkSubscriptionStatus,
   checkOnboardingStatus
 );
+
 authRouter.use(
   "/token",
   getUserFromAuthHeaderToken,
@@ -61,18 +129,3 @@ authRouter.use(
 );
 
 authRouter.use(generateAuthToken);
-
-/**
- * This function checks `req.body` for login-related keys; the exact keys required
- * depend on the login "type".
- */
-const hasValidLoginKeys = (reqBody: Record<string, unknown>): boolean => {
-  return (
-    hasKey(reqBody, "type") &&
-    (reqBody.type === "LOCAL"
-      ? hasKey(reqBody, "password")
-      : reqBody.type === "GOOGLE_OAUTH"
-      ? hasKey(reqBody, "googleID") && hasKey(reqBody, "googleAccessToken")
-      : false)
-  );
-};

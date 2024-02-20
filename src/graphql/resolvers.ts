@@ -1,5 +1,6 @@
-import merge from "lodash.merge";
-import { logger } from "@utils/logger";
+import { isFunction } from "@nerdware/ts-type-safety-utils";
+import deepMerge from "lodash.merge";
+import { logger } from "@/utils/logger";
 import * as contact from "./Contact/resolvers";
 import * as fixitUser from "./FixitUser/resolvers";
 import * as invoice from "./Invoice/resolvers";
@@ -16,7 +17,7 @@ import * as emailCustomScalar from "./_customScalars/Email/resolvers";
  */
 export const resolvers = Object.fromEntries(
   Object.entries(
-    merge(
+    deepMerge(
       // CUSTOM SCALARS
       dateTimeCustomScalar.resolvers,
       emailCustomScalar.resolvers,
@@ -37,7 +38,7 @@ export const resolvers = Object.fromEntries(
       Object.fromEntries(
         Object.entries(resolversOfType as Record<string, any>).map(([resolverName, resolver]) => {
           // For scalar resolvers and whatnot, "resolver" won't be a function, just continue to next.
-          if (typeof resolver !== "function") return [resolverName, resolver];
+          if (!isFunction(resolver)) return [resolverName, resolver];
 
           // Resolver ID example: "QUERY:WorkOrder"
           const resolverLogID = `${resolverType.toUpperCase()}:${resolverName}`;

@@ -1,0 +1,7 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
+
+# REST Schema: LoginParams
+
+allOf:
+  - $ref: "../open-api.yaml#/components/schemas/LoginCredentials"
+  - $ref: "../open-api.yaml#/components/schemas/ExpoPushTokenParam"

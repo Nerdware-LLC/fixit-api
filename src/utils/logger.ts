@@ -1,15 +1,23 @@
+import { safeJsonStringify, getErrorMessage } from "@nerdware/ts-type-safety-utils";
 import * as Sentry from "@sentry/node";
 import chalk, { type ChalkInstance } from "chalk";
-import moment from "moment";
-import { ENV } from "@server/env";
-import { safeJsonStringify } from "@utils/typeSafety";
+import dayjs from "dayjs";
+import { ENV } from "@/server/env";
 
 /* eslint-disable no-console */
 
 /**
+ * - In PROD, timestamp is formatted to always be the same length to accomodate bulk log parsing.
+ *   - _example:_ `"2020:Jan:01 01:01:01.123"`
+ * - In NON-PROD, timestamp format is designed to be easier to read at a glance in the console.
+ *   - _example:_ `"2020:Jan:1 1:01:01.123"`
+ */
+const LOG_TIMESTAMP_FORMAT = ENV.IS_PROD ? "YYYY:MMM:DD HH:mm:ss.SSS" : "YYYY:MMM:D H:mm:ss.SSS";
+
+/**
  * Returns a log message string.
  * - Format: `"[<timestamp>][<label>] <messagePrefix?> <message>"`
- * - Timestamp format: `"YYYY:MMM:D k:mm:ss.SS"`
+ * @see {@link LOG_TIMESTAMP_FORMAT}
  */
 const getLogMessage = ({
   label,
@@ -18,15 +26,11 @@ const getLogMessage = ({
   labelColor,
   messageColor,
 }: GetLogMessageArgsProvidedByLoggerUtil & GetLogMessageArgsProvidedByHandler): string => {
-  let labelAndTimestamp = `[${moment().format("YYYY:MMM:D k:mm:ss.SS")}][${label}]`;
+  let labelAndTimestamp = `[${dayjs().format(LOG_TIMESTAMP_FORMAT)}][${label}]`;
 
   let message = messagePrefix ? `${messagePrefix} ` : "";
-  message +=
-    input instanceof Error
-      ? input.message
-      : typeof input === "string"
-      ? input
-      : safeJsonStringify(input);
+
+  message += getErrorMessage(input) || safeJsonStringify(input);
 
   if (labelColor) labelAndTimestamp = labelColor(labelAndTimestamp);
   if (messageColor) message = messageColor(message);
@@ -55,7 +59,7 @@ const getLoggerUtil = ({
   isEnabledInProduction = false,
   nonProdConsoleMethod = console.log,
   messageColor = chalk.white,
-  labelColor = messageColor?.bold ?? messageColor,
+  labelColor = messageColor.bold,
 }: GetLogMessageArgsProvidedByLoggerUtil & {
   /** Bool flag to enable logging non-errors in prod. */
   isEnabledInProduction?: boolean;
@@ -77,18 +81,17 @@ const getLoggerUtil = ({
           Sentry.captureException(input);
           Sentry.captureMessage(getLogMessage({ label, input, messagePrefix }));
         },
-        handleLogMessage:
-          isEnabledInProduction === true
-            ? (input, messagePrefix) => {
-                Sentry.captureMessage(getLogMessage({ label, input, messagePrefix }));
-              }
-            : () => {
-                /* noop, function is disabled */
-              },
+        handleLogMessage: isEnabledInProduction
+          ? (input, messagePrefix) => {
+              Sentry.captureMessage(getLogMessage({ label, input, messagePrefix }));
+            }
+          : () => {
+              /* noop, function is disabled */
+            },
       }
     : {
         handleLogError: (input, messagePrefix) => {
-          console.error(getLogMessage({ label, input, messagePrefix }), input);
+          console.error(getLogMessage({ label, input, messagePrefix, labelColor, messageColor }));
         },
         handleLogMessage: (input, messagePrefix) => {
           nonProdConsoleMethod(
@@ -110,7 +113,7 @@ export const logger = {
     messageColor: chalk.magenta,
   }),
   warn: getLoggerUtil({
-    label: "SERVER",
+    label: "WARN",
     messageColor: chalk.yellow,
   }),
   security: getLoggerUtil({
@@ -118,6 +121,11 @@ export const logger = {
     messageColor: chalk.red.bold,
     labelColor: chalk.bgRed.black.bold,
     isEnabledInProduction: true,
+  }),
+  info: getLoggerUtil({
+    label: "INFO",
+    messageColor: chalk.cyan,
+    nonProdConsoleMethod: console.info,
   }),
   debug: getLoggerUtil({
     label: "DEBUG",

@@ -7,13 +7,41 @@ on:
 jobs:
   deploy:
     name: Deploy
-    uses: Nerdware-LLC/reusable-action-workflows/.github/workflows/ecr_image_push.yaml@main
-    with:
-      dockerfile-path: ./docker/Dockerfile
-    secrets:
-      OIDC_GITHUB_ROLE_ARN: ${{ secrets.OIDC_GITHUB_ROLE_ARN }}
-      AWS_ECR_PRIVATE_REPO: ${{ secrets.AWS_ECR_PRIVATE_REPO }}
-      AWS_ECR_REGION: ${{ secrets.AWS_ECR_REGION }}
+    runs-on: ubuntu-latest
+
+    # These permissions are needed to interact with GitHub's OIDC Token endpoint.
     permissions:
       id-token: write
       contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v2
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.OIDC_GITHUB_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_ECR_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, Tag, and Push Image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.AWS_ECR_PRIVATE_REPO }}
+        run: |
+          IMAGE_TAGS=("${{ github.event.release.tag_name }}")
+
+          if [ ${{ github.event.release.prerelease }} == true ]; then
+            IMAGE_TAGS+=( staging next )
+          else
+            IMAGE_TAGS+=( prod latest )
+          fi
+
+          IMAGE_REPO="$ECR_REGISTRY/$ECR_REPOSITORY"
+          IMAGE_TAGS=("${IMAGE_TAGS[@]/#/$IMAGE_REPO:}")
+
+          docker build ${IMAGE_TAGS[@]/#/--tag } .
+
+          for tag in "${IMAGE_TAGS[@]}"; do docker push "$tag"; done

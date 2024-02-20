@@ -2,13 +2,13 @@ import { gql } from "graphql-tag";
 
 export const typeDefs = gql`
   type Invoice {
-    "(Immutable) Invoice ID, in the format of 'INV#{createdBy.id}#{unixTimestamp(createdAt)}'"
+    "(Immutable) Invoice ID, in the format of 'INV#{createdBy.id}#{unixTimestampUUID(createdAt)}'"
     id: ID!
     "(Immutable) The FixitUser who created/sent the Invoice"
     createdBy: FixitUser!
     "(Immutable) The FixitUser to whom the Invoice was assigned, AKA the Invoice's recipient"
     assignedTo: FixitUser!
-    "The Invoice amount, represented as an integer which reflects USD centage (an 'amount' of 1 = $0.01 USD)"
+    "The Invoice amount, represented as an integer which reflects USD centage (i.e., an 'amount' of 1 = $0.01 USD)"
     amount: Int!
     "The Invoice status; this field is controlled by the API and can not be directly edited by Users"
     status: InvoiceStatus!
@@ -45,8 +45,6 @@ export const typeDefs = gql`
 
   ####################################################################
   ### MUTATIONS
-
-  # TODO Add mutations for adding/changing attached WO
 
   extend type Mutation {
     createInvoice(invoice: InvoiceInput!): Invoice!

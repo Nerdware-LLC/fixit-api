@@ -1,60 +1,48 @@
 {
-  "include": ["src/**/*"],
+  "include": ["src", "__mocks__"],
+
   "ts-node": {
-    "files": true,
     "esm": true,
+    "swc": true,
     "experimentalSpecifierResolution": "node",
     "require": ["tsconfig-paths/register"]
   },
 
   "compilerOptions": {
     // Language and Environment:
-    "target": "ES2022",
-    "lib": ["ES2022"],
+    "target": "ESNext",
+    "lib": ["ESNext"],
 
     // Modules:
-    "module": "ES2022",
+    "module": "ESNext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
+    "types": ["node", "vitest/globals"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@events": ["src/events"],
-      "@events/*": ["src/events/*"],
-      "@graphql": ["src/graphql"],
-      "@graphql/*": ["src/graphql/*"],
-      "@lib": ["src/lib"],
-      "@lib/*": ["src/lib/*"],
-      "@middleware": ["src/middleware"],
-      "@middleware/*": ["src/middleware/*"],
-      "@models": ["src/models"],
-      "@models/*": ["src/models/*"],
-      "@server": ["src/server"],
-      "@server/*": ["src/server/*"],
-      "@tests/*": ["src/__tests__/*"],
-      "@types": ["src/types"],
-      "@types/*": ["src/types/*"],
-      "@utils": ["src/utils"],
-      "@utils/*": ["src/utils/*"]
+      "@/*": ["src/*"]
     },
 
-    // "Completeness" Configs:
-    "skipLibCheck": false,
+    // Type Checking:
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "strict": true,
 
-    // Emit Configs:
-    "outDir": "./build",
+    // Emit:
+    "noEmitOnError": true,
     "removeComments": true,
-    // "sourceMap": true,
-
-    // Output Formatting:
-    "noErrorTruncation": true,
 
     // Interop Constraints:
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
 
-    // Type Checking:
-    "noImplicitAny": true,
-    "strict": true
+    // Output Formatting:
+    "noErrorTruncation": true,
+
+    // Completeness:
+    "skipLibCheck": false
   }
 }

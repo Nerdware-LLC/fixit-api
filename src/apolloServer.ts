@@ -1,36 +1,27 @@
 import { ApolloServer, type BaseContext } from "@apollo/server";
-import { schema } from "@graphql/schema";
-import { ENV } from "@server/env";
+import { fixitSchema } from "@/graphql/schema";
+import { ENV } from "@/server/env";
+import type { FixitApiAuthTokenPayload } from "@/utils/AuthToken";
 import type { Request } from "express";
-import type { FixitApiAuthTokenPayload } from "./utils";
 
-const apolloServer = new ApolloServer<ApolloServerResolverContext>({
-  typeDefs: schema.typeDefs,
-  resolvers: schema.resolvers,
+export const apolloServer = new ApolloServer<ApolloServerResolverContext>({
+  schema: fixitSchema,
   csrfPrevention: true,
-  introspection: !ENV.IS_PROD,
+  introspection: ENV.NODE_ENV === "development",
   plugins: [
     ...(ENV.NODE_ENV === "development"
-      ? // prettier-ignore
-        [
-          // Plugin to enable Schema Reporting, which keeps the schema up to date (note: does not work with Federated schemas)
-          (await import("@apollo/server/plugin/schemaReporting")).ApolloServerPluginSchemaReporting(),
-          (await import("@apollo/server/plugin/landingPage/default")).ApolloServerPluginLandingPageLocalDefault({ embed: true }),
-          (await import("@apollo/server/plugin/inlineTrace")).ApolloServerPluginInlineTrace()
-        ]
+      ? [(await import("@apollo/server/plugin/inlineTrace")).ApolloServerPluginInlineTrace()]
       : [(await import("@apollo/server/plugin/disabled")).ApolloServerPluginLandingPageDisabled()]),
   ],
-  ...(ENV.NODE_ENV === "test" && (await import("@/graphql/__tests__/utils/mocks"))), // { mocks, mockEntireSchema }
 });
 
 // Run required init logic for integrating with Express
 await apolloServer.start();
 
-export { apolloServer };
-
 /**
- * The context available to all GQL resolvers.
+ * The execution context object available to all GQL resolvers.
  */
 export interface ApolloServerResolverContext extends BaseContext, Partial<Request> {
-  user: FixitApiAuthTokenPayload;
+  /** The currently authenticated User's AuthToken payload. */
+  user: FixitApiAuthTokenPayload<true, true>;
 }

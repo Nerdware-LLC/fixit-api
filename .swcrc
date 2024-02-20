@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json.schemastore.org/swcrc",
+
+  "exclude": ["src\\/loader.js$", ".*\\/(tests|__mocks__)\\/.*", ".*\\.(test|spec).[tj]s$"],
+
+  "jsc": {
+    "target": "esnext",
+    "parser": {
+      "syntax": "typescript",
+      "dynamicImport": true
+    },
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "minify": {
+      "mangle": true,
+      "compress": {
+        "ecma": "2022",
+        "module": true,
+        "top_retain": [
+          "UUID_V1_REGEX_STR",
+          "CONTACT_SK_PREFIX_STR",
+          "INVOICE_SK_PREFIX_STR",
+          "STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR",
+          "USER_SUB_SK_PREFIX_STR",
+          "USER_SK_PREFIX_STR",
+          "WORK_ORDER_SK_PREFIX_STR",
+          "USER_ID_PREFIX_STR"
+        ]
+      }
+    }
+  }
+}

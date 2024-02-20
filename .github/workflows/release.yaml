@@ -1,13 +1,12 @@
 name: Release Workflow
 
+# This workflow is called by the Test workflow when all tests pass.
+
 on:
   workflow_dispatch:
-  workflow_call: # may be called by the Test workflow
+  workflow_call:
     secrets:
       SEMANTIC_RELEASE_TOKEN: { required: true }
-  push:
-    branches: [main, next]
-    paths: ["src/**/*", "package*.json"]
 
 jobs:
   release:

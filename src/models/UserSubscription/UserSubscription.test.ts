@@ -1,138 +1,155 @@
-import moment from "moment";
-import { USER_ID_REGEX } from "@models/User/regex";
-import { ENV } from "@server/env";
-import { MILLISECONDS_PER_DAY } from "@tests/datetime";
-import { UserSubscription, type UserSubscriptionModelItem } from "./UserSubscription";
-import { USER_SUBSCRIPTION_SK_REGEX, USER_SUB_STRIPE_ID_REGEX } from "./regex";
-import type { Simplify } from "type-fest";
+import {
+  MOCK_USER_SUBS,
+  UNALIASED_MOCK_USER_SUBS,
+} from "@/tests/staticMockItems/userSubscriptions";
+import { MOCK_USERS } from "@/tests/staticMockItems/users";
+import { UserSubscription } from "./UserSubscription";
+import { userSubscriptionModelHelpers as subModelHelpers } from "./helpers";
 
-const USER_1 = "USER#11111111-1111-1111-1111-sub111111111";
-const USER_2 = "USER#22222222-2222-2222-2222-sub222222222";
-const USER_3 = "USER#33333333-3333-3333-3333-sub333333333";
+describe("UserSubscription Model", () => {
+  describe("UserSubscription.upsertOne()", () => {
+    test("returns a valid UserSubscription when called with valid arguments", async () => {
+      // Arrange mock UserSubscriptions
+      for (const key in MOCK_USER_SUBS) {
+        // Get upsertOne inputs from mock UserSub
+        const mockSub = MOCK_USER_SUBS[key as keyof typeof MOCK_USER_SUBS];
 
-const MOCK_INPUTS = {
-  SUB_A: {
-    userID: USER_1,
-    id: "sub_11111111111111",
-    productID: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.productID,
-    priceID: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.priceIDs.MONTHLY,
-    status: "active",
-    currentPeriodEnd: new Date(Date.now() + MILLISECONDS_PER_DAY * 30), // + 30 days
-    createdAt: new Date(Date.now() - MILLISECONDS_PER_DAY * 30), //         - 30 days
-  },
-  SUB_B: {
-    userID: USER_2,
-    id: "sub_22222222222222",
-    productID: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.productID,
-    priceID: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.priceIDs.TRIAL,
-    status: "trialing",
-    currentPeriodEnd: new Date(Date.now() + MILLISECONDS_PER_DAY * 10), // + 10 days
-    createdAt: new Date(),
-  },
-  SUB_C: {
-    userID: USER_3,
-    id: "sub_33333333333333",
-    productID: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.productID,
-    priceID: ENV.STRIPE.BILLING.FIXIT_SUBSCRIPTION.priceIDs.TRIAL,
-    status: "incomplete_expired",
-    currentPeriodEnd: new Date(Date.now() - MILLISECONDS_PER_DAY), // - 10 days (expired)
-    createdAt: new Date(Date.now() - MILLISECONDS_PER_DAY * 30), //    - 30 days
-  },
-} as const;
+        // Ascertain the mock User associated with this mock UserSub
+        const associatedMockUser =
+          key === "SUB_A"
+            ? MOCK_USERS.USER_A
+            : key === "SUB_B"
+              ? MOCK_USERS.USER_B
+              : MOCK_USERS.USER_C;
 
-type MockInputKey = keyof typeof MOCK_INPUTS;
-// This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
-const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<MockInputKey>;
+        // Act on the UserSubscription Model's upsertOne method (check sub name AND priceID):
 
-const testSubFields = (mockInputsKey: MockInputKey, mockSub: UserSubscriptionModelItem) => {
-  expect(mockSub.userID).toMatch(USER_ID_REGEX);
-  expect(mockSub.sk).toMatch(USER_SUBSCRIPTION_SK_REGEX);
-  expect(mockSub.id).toMatch(USER_SUB_STRIPE_ID_REGEX);
+        const result_withSubName = await UserSubscription.upsertOne({
+          user: associatedMockUser,
+          selectedSubscription: mockSub.priceID.split("price_Test")[1] as any,
+          // all mock sub priceIDs are prefixed with "price_Test" (e.g., "price_TestANNUAL")
+        });
+        const result_withPriceID = await UserSubscription.upsertOne({
+          user: associatedMockUser,
+          priceID: mockSub.priceID,
+        });
 
-  expect(mockSub.status).toEqual(MOCK_INPUTS[mockInputsKey].status);
-  expect(mockSub.productID).toEqual(UserSubscription.PRODUCT_IDS.FIXIT_SUBSCRIPTION);
-  expect(mockSub.priceID).toEqual(MOCK_INPUTS[mockInputsKey].priceID);
-
-  expect(moment(mockSub.currentPeriodEnd).isValid()).toEqual(true);
-  expect(moment(mockSub.createdAt).isValid()).toEqual(true);
-  expect(moment(mockSub.updatedAt).isValid()).toEqual(true);
-};
-
-describe("UserSubscription model R/W database operations", () => {
-  const createdSubs = {} as {
-    [K in MockInputKey]: Simplify<
-      UserSubscriptionModelItem & Required<Pick<UserSubscriptionModelItem, "userID" | "sk">>
-    >;
-  };
-
-  beforeAll(async () => {
-    // Write mock UserSubscriptions to Table
-    for (const key of MOCK_INPUT_KEYS) {
-      createdSubs[key] = (await UserSubscription.upsertItem(
-        MOCK_INPUTS[key]
-      )) as Required<UserSubscriptionModelItem>;
-    }
-  });
-
-  test("UserSubscription.upsertItem returns expected keys and values", () => {
-    Object.entries(createdSubs).forEach(([mockInputsKey, createdSub]) => {
-      testSubFields(mockInputsKey as MockInputKey, createdSub);
+        // Assert the results
+        [result_withSubName, result_withPriceID].forEach((result) => {
+          /* toMatchObject is used because the upsertOne method's return-value includes fields
+          returned from the Stripe API that are not in the Model (e.g., "latest_invoice"). */
+          expect(result).toMatchObject({
+            ...mockSub,
+            sk: expect.toSatisfyFn((value: string) => subModelHelpers.sk.isValid(value)),
+            createdAt: expect.any(Date),
+            updatedAt: expect.any(Date),
+          });
+        });
+      }
     });
   });
 
-  test("UserSubscription.queryUserSubscriptions returns expected keys and values", async () => {
-    // Get mock UserSubscriptions by userID
-    for (const key of MOCK_INPUT_KEYS) {
-      // Each user should only have the 1 subscription
-      const subscriptions = await UserSubscription.queryUserSubscriptions(createdSubs[key].userID);
+  describe("UserSubscription.query()", () => {
+    test(`returns desired UserSubscription when queried by "userID"`, async () => {
+      // Arrange mock UserSubscriptions
+      for (const key in MOCK_USER_SUBS) {
+        // Get the mock UserSub
+        const mockSub = MOCK_USER_SUBS[key as keyof typeof MOCK_USER_SUBS];
 
-      subscriptions.forEach((sub) => {
-        testSubFields(key, sub);
+        // Arrange spy on UserSubscription.ddbClient.query() method
+        const querySpy = vi.spyOn(UserSubscription.ddbClient, "query").mockResolvedValueOnce({
+          $metadata: {},
+          Items: [UNALIASED_MOCK_USER_SUBS[key as keyof typeof MOCK_USER_SUBS]],
+        });
+
+        // Act on the UserSubscription Model's query method
+        const result = await UserSubscription.query({
+          where: {
+            userID: mockSub.userID,
+            sk: { beginsWith: UserSubscription.SK_PREFIX },
+          },
+          limit: 1,
+        });
+
+        // Assert the result
+        expect(result).toHaveLength(1);
+        expect(result).toStrictEqual([
+          {
+            ...mockSub,
+            createdAt: expect.any(Date),
+            updatedAt: expect.any(Date),
+          },
+        ]);
+
+        // Assert querySpy was called with expected arguments
+        expect(querySpy).toHaveBeenCalledWith({
+          TableName: UserSubscription.tableName,
+          KeyConditionExpression: "#pk = :pk AND begins_with( #sk, :sk )",
+          ExpressionAttributeNames: { "#pk": "pk", "#sk": "sk" },
+          ExpressionAttributeValues: { ":pk": mockSub.userID, ":sk": UserSubscription.SK_PREFIX },
+          Limit: 1,
+        });
+      }
+    });
+  });
+
+  describe("UserSubscription.deleteItem()", () => {
+    test(`returns a deleted UserSubscription when called with valid arguments`, async () => {
+      // Arrange spy on UserSubscription.ddbClient.deleteItem() method
+      const deleteItemSpy = vi
+        .spyOn(UserSubscription.ddbClient, "deleteItem")
+        .mockResolvedValueOnce({
+          $metadata: {},
+          Attributes: UNALIASED_MOCK_USER_SUBS.SUB_A,
+        });
+
+      // Act on the UserSubscription Model's deleteItem method
+      const result = await UserSubscription.deleteItem({
+        userID: MOCK_USER_SUBS.SUB_A.userID,
+        sk: MOCK_USER_SUBS.SUB_A.sk,
       });
-    }
+
+      // Assert the result
+      expect(result).toStrictEqual(MOCK_USER_SUBS.SUB_A);
+
+      // Assert deleteItemSpy was called with expected arguments
+      expect(deleteItemSpy).toHaveBeenCalledWith({
+        TableName: UserSubscription.tableName,
+        Key: {
+          pk: MOCK_USER_SUBS.SUB_A.userID,
+          sk: MOCK_USER_SUBS.SUB_A.sk,
+        },
+        ReturnValues: "ALL_OLD",
+      });
+    });
   });
 
-  test("UserSubscription.validateExisting only throws on invalid/expired subscription", () => {
-    expect(() => {
-      // Valid subs
-      UserSubscription.validateExisting(createdSubs.SUB_A);
-      UserSubscription.validateExisting(createdSubs.SUB_B);
-    }).not.toThrow();
+  describe("UserSubscription.validateExisting()", () => {
+    const YEAR_2000 = new Date(2000, 0);
+    const YEAR_9999 = new Date(9999, 0);
 
-    expect(() => {
-      // Invalid sub
-      UserSubscription.validateExisting(createdSubs.SUB_C);
-    }).toThrow();
+    test(`does not throw when called with a valid "active" subscription`, () => {
+      expect(() => {
+        UserSubscription.validateExisting({ status: "active", currentPeriodEnd: YEAR_9999 });
+      }).not.toThrowError();
+    });
+
+    test(`does not throw when called with a valid "trialing" subscription`, () => {
+      expect(() => {
+        UserSubscription.validateExisting({ status: "trialing", currentPeriodEnd: YEAR_9999 });
+      }).not.toThrowError();
+    });
+
+    test(`throws an error when called with a subscription with an invalid status`, () => {
+      expect(() => {
+        UserSubscription.validateExisting({ status: "past_due", currentPeriodEnd: YEAR_9999 });
+      }).toThrowError("past due");
+    });
+
+    test(`throws an error when called with an expired subscription`, () => {
+      expect(() => {
+        UserSubscription.validateExisting({ status: "active", currentPeriodEnd: YEAR_2000 });
+      }).toThrowError("expired");
+    });
   });
-
-  // TODO Test UserSubscription updateItem
-
-  // DELETE:
-
-  test("UserSubscription.deleteItem returns expected keys and values", async () => {
-    for (const key of MOCK_INPUT_KEYS) {
-      const { userID, sk } = createdSubs[key];
-      // If deleteItem did not error out, the delete succeeded, check userID.
-      const { userID: userIDofDeletedSub } = await UserSubscription.deleteItem({ userID, sk });
-      expect(userIDofDeletedSub).toEqual(userID);
-    }
-  });
-});
-
-// ENSURE MOCK RESOURCE CLEANUP:
-
-afterAll(async () => {
-  /* After all tests are complete, ensure all mock Items created here have been deleted.
-  Note: DDB methods are called from the ddbClient to circumvent toDB IO hook actions. */
-
-  const remainingMockSubs = await UserSubscription.ddbClient.scan({
-    FilterExpression: "begins_with(sk, :skPrefix)",
-    ExpressionAttributeValues: { ":skPrefix": "SUBSCRIPTION#" },
-  });
-
-  if (Array.isArray(remainingMockSubs) && remainingMockSubs.length > 0) {
-    await UserSubscription.ddbClient.batchDeleteItems(
-      remainingMockSubs.map(({ pk, sk }) => ({ pk, sk }))
-    );
-  }
 });

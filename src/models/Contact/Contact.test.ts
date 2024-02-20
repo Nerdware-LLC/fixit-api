@@ -1,114 +1,193 @@
-import moment from "moment";
+import { MOCK_CONTACTS, UNALIASED_MOCK_CONTACTS } from "@/tests/staticMockItems/contacts";
 import { Contact } from "./Contact";
-import { CONTACT_SK_REGEX } from "./regex";
-import type { ContactModelItem, ContactModelInput } from "./Contact";
 
-const USER_1 = "USER#11111111-1111-1111-1111-contact11111";
-const USER_2 = "USER#22222222-2222-2222-2222-contact22222";
-const USER_3 = "USER#33333333-3333-3333-3333-contact33333";
+// Arrange mock Contacts
+const { CONTACT_A, CONTACT_B, CONTACT_C } = MOCK_CONTACTS;
 
-const MOCK_INPUTS: Record<"CONTACT_A" | "CONTACT_B", Partial<ContactModelInput>> = {
-  CONTACT_A: {
-    userID: USER_1,
-    contactUserID: USER_2,
-  },
-  CONTACT_B: {
-    userID: USER_2,
-    contactUserID: USER_3,
-  },
-} as const;
+describe("Contact Model", () => {
+  describe("Contact.createItem()", () => {
+    test("returns a valid Contact when called with valid arguments", async () => {
+      // Arrange mock Contacts
+      for (const key in MOCK_CONTACTS) {
+        // Get createItem inputs from mock Contact
+        const mockContact = MOCK_CONTACTS[key as keyof typeof MOCK_CONTACTS];
+        const { userID, handle, contactUserID } = mockContact;
 
-type MockInputKey = keyof typeof MOCK_INPUTS;
-// This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
-const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<MockInputKey>;
+        // Act on the Contact Model's createItem method
+        const result = await Contact.createItem({ userID, handle, contactUserID });
 
-const testContactFields = (mockInputsKey: MockInputKey, mockContact: ContactModelItem) => {
-  const mockContactInputs = MOCK_INPUTS[mockInputsKey];
-
-  expect(mockContact.userID).toEqual(mockContactInputs.userID);
-  expect(mockContact.id).toMatch(CONTACT_SK_REGEX);
-  expect(mockContact.contactUserID).toEqual(mockContactInputs.contactUserID);
-
-  expect(moment(mockContact.createdAt).isValid()).toEqual(true);
-  expect(moment(mockContact.updatedAt).isValid()).toEqual(true);
-};
-
-describe("Contact model R/W database operations", () => {
-  const createdContacts = {} as { [K in MockInputKey]: ContactModelItem };
-
-  // Write mock Contacts to Table
-  beforeAll(async () => {
-    for (const key of MOCK_INPUT_KEYS) {
-      createdContacts[key] = await Contact.createItem(MOCK_INPUTS[key] as any);
-    }
-  });
-
-  // CREATE:
-
-  test("Contact.createItem returns expected keys and values", () => {
-    Object.entries(createdContacts).forEach(([mockInputsKey, createdContact]) => {
-      testContactFields(mockInputsKey as keyof typeof MOCK_INPUTS, createdContact);
+        // Assert the result
+        expect(result).toStrictEqual({
+          ...mockContact,
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
+        });
+      }
+    });
+    test(`throws an Error when called without a valid "userID"`, async () => {
+      await expect(() =>
+        Contact.createItem({
+          // missing userID
+          handle: CONTACT_A.handle,
+          contactUserID: CONTACT_A.contactUserID,
+        } as any)
+      ).rejects.toThrow();
+      await expect(() =>
+        Contact.createItem({
+          userID: CONTACT_A.id, // <-- invalid userID (should not be a Contact ID)
+          handle: CONTACT_A.handle,
+          contactUserID: CONTACT_A.contactUserID,
+        } as any)
+      ).rejects.toThrow();
+    });
+    test(`throws an Error when called without a valid "handle"`, async () => {
+      await expect(() =>
+        Contact.createItem({
+          userID: CONTACT_A.userID,
+          // missing handle
+          contactUserID: CONTACT_A.contactUserID,
+        } as any)
+      ).rejects.toThrow();
+      await expect(() =>
+        Contact.createItem({
+          userID: CONTACT_A.userID,
+          handle: "BAD_HANDLE", // <-- invalid handle
+          contactUserID: CONTACT_A.contactUserID,
+        } as any)
+      ).rejects.toThrow();
+    });
+    test(`throws an Error when called without a valid "contactUserID"`, async () => {
+      await expect(() =>
+        Contact.createItem({
+          userID: CONTACT_A.userID,
+          handle: CONTACT_A.handle,
+          // missing contactUserID
+        } as any)
+      ).rejects.toThrow();
+      await expect(() =>
+        Contact.createItem({
+          userID: CONTACT_A.userID,
+          handle: CONTACT_A.handle,
+          contactUserID: CONTACT_A.id, // <-- invalid contactUserID (should not be a Contact ID)
+        } as any)
+      ).rejects.toThrow();
     });
   });
 
-  // QUERIES:
+  describe("Contact.query()", () => {
+    test(`returns desired Contact when queried by "id"`, async () => {
+      // Arrange spy on Contact.ddbClient.query() method
+      const querySpy = vi.spyOn(Contact.ddbClient, "query").mockResolvedValueOnce({
+        $metadata: {},
+        Items: [UNALIASED_MOCK_CONTACTS.CONTACT_A],
+      });
 
-  test("Contact.query Contact by ID returns expected keys and values", async () => {
-    for (const key of MOCK_INPUT_KEYS) {
-      const { userID, contactUserID } = createdContacts[key];
-      const [result] = await Contact.query({
-        where: {
-          userID,
-          id: Contact.getFormattedID(contactUserID),
-        },
+      // Act on the Contact Model's query method
+      const result = await Contact.query({
+        where: { id: CONTACT_A.id },
         limit: 1,
       });
-      testContactFields(key, result);
-    }
-  });
 
-  test("Contact.query User's Contacts returns expected keys and values", async () => {
-    for (const key of MOCK_INPUT_KEYS) {
-      // Should be an array of 1 Contact
-      const contacts = await Contact.query({
+      // Assert the result
+      expect(result).toHaveLength(1);
+      expect(result).toStrictEqual([CONTACT_A]);
+
+      // Assert querySpy was called with expected arguments
+      expect(querySpy).toHaveBeenCalledWith({
+        TableName: Contact.tableName,
+        IndexName: "Overloaded_SK_GSI",
+        KeyConditionExpression: "#sk = :sk",
+        ExpressionAttributeNames: { "#sk": "sk" },
+        ExpressionAttributeValues: { ":sk": CONTACT_A.id },
+        Limit: 1,
+      });
+    });
+
+    test("returns all of a User's Contacts when queried by the User's ID", async () => {
+      // Arrange spy on Contact.ddbClient.query() method
+      const querySpy = vi.spyOn(Contact.ddbClient, "query").mockResolvedValueOnce({
+        $metadata: {},
+        Items: [UNALIASED_MOCK_CONTACTS.CONTACT_A, UNALIASED_MOCK_CONTACTS.CONTACT_B],
+      });
+
+      // Act on the Contact Model's query method
+      const result = await Contact.query({
         where: {
-          userID: createdContacts[key].userID,
+          userID: CONTACT_A.userID,
           id: { beginsWith: Contact.SK_PREFIX },
         },
       });
 
-      contacts.forEach((contact) => {
-        testContactFields(key, contact);
+      // Assert the result
+      expect(result).toHaveLength(2);
+      expect(result).toStrictEqual([CONTACT_A, CONTACT_B]);
+
+      // Assert querySpy was called with expected arguments
+      expect(querySpy).toHaveBeenCalledWith({
+        TableName: Contact.tableName,
+        KeyConditionExpression: "#pk = :pk AND begins_with( #sk, :sk )",
+        ExpressionAttributeNames: { "#pk": "pk", "#sk": "sk" },
+        ExpressionAttributeValues: { ":pk": CONTACT_A.userID, ":sk": Contact.SK_PREFIX },
       });
-    }
+    });
   });
 
-  // DELETE:
+  describe("Contact.updateItem()", () => {
+    test("returns an updated Contact with expected keys and values", async () => {
+      // Arrange value to update
+      const NEW_HANDLE = "@updated_contactC_handle";
 
-  test("Contact.deleteItem returns expected keys and values", async () => {
-    for (const key of MOCK_INPUT_KEYS) {
-      const { userID, id } = createdContacts[key];
-      // If deleteOne did not error out, the delete succeeded - test returned ID.
-      const { userID: userIDofDeletedContactItem } = await Contact.deleteItem({ userID, id });
-      expect(userIDofDeletedContactItem).toEqual(userID);
-    }
+      // Arrange spy on Contact.ddbClient.updateItem() method
+      const updateItemSpy = vi.spyOn(Contact.ddbClient, "updateItem").mockResolvedValueOnce({
+        $metadata: {},
+        Attributes: { ...UNALIASED_MOCK_CONTACTS.CONTACT_C, handle: NEW_HANDLE },
+      });
+
+      // Act on the Contact Model's updateItem method
+      const result = await Contact.updateItem(
+        { id: CONTACT_C.id, userID: CONTACT_C.userID },
+        {
+          update: {
+            handle: NEW_HANDLE,
+          },
+        }
+      );
+
+      // Assert the result
+      expect(result).toStrictEqual({ ...CONTACT_C, handle: NEW_HANDLE });
+
+      // Assert updateItemSpy was called with expected arguments
+      expect(updateItemSpy).toHaveBeenCalledWith({
+        TableName: Contact.tableName,
+        Key: { pk: CONTACT_C.userID, sk: CONTACT_C.id },
+        UpdateExpression: "SET #handle = :handle, #updatedAt = :updatedAt",
+        ExpressionAttributeNames: { "#handle": "handle", "#updatedAt": "updatedAt" },
+        ExpressionAttributeValues: { ":handle": NEW_HANDLE, ":updatedAt": expect.any(Number) },
+        ReturnValues: "ALL_NEW",
+      });
+    });
   });
-});
 
-// ENSURE MOCK RESOURCE CLEANUP:
+  describe("Contact.deleteItem()", () => {
+    test("returns a deleted Contact", async () => {
+      // Arrange spy on Contact.ddbClient.deleteItem() method
+      const deleteItemSpy = vi.spyOn(Contact.ddbClient, "deleteItem").mockResolvedValueOnce({
+        $metadata: {},
+        Attributes: UNALIASED_MOCK_CONTACTS.CONTACT_C,
+      });
 
-afterAll(async () => {
-  /* After all tests are complete, ensure all mock Items created here have been deleted.
-  Note: DDB methods are called from the ddbClient to circumvent toDB IO hook actions. */
+      // Act on the Contact Model's deleteItem method
+      const result = await Contact.deleteItem({ id: CONTACT_C.id, userID: CONTACT_C.userID });
 
-  const remainingMockContacts = await Contact.ddbClient.scan({
-    FilterExpression: "begins_with(sk, :skPrefix)",
-    ExpressionAttributeValues: { ":skPrefix": "CONTACT#" },
+      // Assert the result
+      expect(result).toStrictEqual(CONTACT_C);
+
+      // Assert deleteItemSpy was called with expected arguments
+      expect(deleteItemSpy).toHaveBeenCalledWith({
+        TableName: Contact.tableName,
+        Key: { pk: CONTACT_C.userID, sk: CONTACT_C.id },
+        ReturnValues: "ALL_OLD",
+      });
+    });
   });
-
-  if (Array.isArray(remainingMockContacts) && remainingMockContacts.length > 0) {
-    await Contact.ddbClient.batchDeleteItems(
-      remainingMockContacts.map(({ pk, sk }) => ({ pk, sk }))
-    );
-  }
 });

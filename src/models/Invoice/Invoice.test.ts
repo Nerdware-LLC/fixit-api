@@ -1,163 +1,236 @@
-import moment from "moment";
-import { MILLISECONDS_PER_DAY } from "@tests/datetime";
+import { MOCK_INVOICES, UNALIASED_MOCK_INVOICES } from "@/tests/staticMockItems/invoices";
 import { Invoice } from "./Invoice";
-import { INVOICE_SK_REGEX } from "./regex";
-import type { InvoiceModelItem, InvoiceModelInput } from "./Invoice";
 
-const USER_1 = "USER#11111111-1111-1111-1111-inv111111111";
-const USER_2 = "USER#22222222-2222-2222-2222-inv222222222";
+// Arrange mock Invoices
+const { INV_A, INV_B, INV_C } = MOCK_INVOICES;
 
-const MOCK_INPUTS: Record<"INV_A" | "INV_B", Partial<InvoiceModelInput>> = {
-  // INV_A contains the bare minimum inputs for Invoice.createOne
-  INV_A: {
-    createdByUserID: USER_1,
-    assignedToUserID: USER_2,
-    amount: 10000, // $100.00
-  },
-  // INV_B contains all INV properties that can be provided to Invoice.createOne
-  INV_B: {
-    createdByUserID: USER_2,
-    assignedToUserID: USER_1,
-    amount: 22222, // $222.22
-    workOrderID: `WO#${USER_1}#${(Date.now() - MILLISECONDS_PER_DAY * 10) / 1000}`, // WO created 10 days ago
-  },
-};
+describe("Invoice Model", () => {
+  describe("Invoice.createItem()", () => {
+    test("returns a valid Invoice when called with valid arguments", async () => {
+      // Arrange mock Invoices
+      for (const key in MOCK_INVOICES) {
+        // Get createItem inputs from mock Invoice
+        const mockInvoice = MOCK_INVOICES[key as keyof typeof MOCK_INVOICES];
 
-type MockInputKey = keyof typeof MOCK_INPUTS;
-// This array of string literals from MOCK_INPUTS keys provides better TS inference in the tests below.
-const MOCK_INPUT_KEYS = Object.keys(MOCK_INPUTS) as Array<MockInputKey>;
+        // Act on the Invoice Model's createItem method
+        const result = await Invoice.createItem(mockInvoice);
 
-const testInvoiceFields = (mockInputsKey: MockInputKey, mockInv: InvoiceModelItem) => {
-  const mockInvInputs = MOCK_INPUTS[mockInputsKey];
-
-  expect(mockInv.createdBy.id).toEqual(mockInvInputs.createdByUserID);
-  expect(mockInv.assignedTo.id).toEqual(mockInvInputs.assignedToUserID);
-  expect(mockInv.id).toMatch(INVOICE_SK_REGEX);
-  expect(mockInv.amount).toEqual(mockInvInputs.amount);
-
-  expect(moment(mockInv.createdAt).isValid()).toEqual(true);
-  expect(moment(mockInv.updatedAt).isValid()).toEqual(true);
-};
-
-describe("Invoice model R/W database operations", () => {
-  const createdInvoices = {} as { [K in MockInputKey]: InvoiceModelItem };
-
-  beforeAll(async () => {
-    // Write mock Invoices to Table
-    for (const key of MOCK_INPUT_KEYS) {
-      createdInvoices[key] = await Invoice.createItem(MOCK_INPUTS[key] as any);
-    }
-  });
-
-  // CREATE:
-
-  test("Invoice.createOne returns expected keys and values", () => {
-    Object.entries(createdInvoices).forEach(([mockInputsKey, createdInv]) => {
-      testInvoiceFields(mockInputsKey as MockInputKey, createdInv);
+        // Assert the result
+        expect(result).toStrictEqual({
+          ...mockInvoice,
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
+        });
+      }
+    });
+    test(`throws an Error when called without a valid "createdByUserID"`, async () => {
+      await expect(() =>
+        Invoice.createItem({
+          // missing createdByUserID
+          assignedToUserID: INV_A.assignedToUserID,
+          amount: INV_A.amount,
+        } as any)
+      ).rejects.toThrow();
+      await expect(() =>
+        Invoice.createItem({
+          createdByUserID: "BAD_USER_ID", // <-- invalid createdByUserID
+          assignedToUserID: INV_A.assignedToUserID,
+          amount: INV_A.amount,
+        } as any)
+      ).rejects.toThrow();
+    });
+    test(`throws an Error when called without a valid "assignedToUserID"`, async () => {
+      await expect(() =>
+        Invoice.createItem({
+          createdByUserID: INV_A.createdByUserID,
+          // missing assignedToUserID
+          amount: INV_A.amount,
+        } as any)
+      ).rejects.toThrow();
+      await expect(() =>
+        Invoice.createItem({
+          createdByUserID: INV_A.createdByUserID,
+          assignedToUserID: "BAD_USER_ID", // <-- invalid assignedToUserID
+          amount: INV_A.amount,
+        } as any)
+      ).rejects.toThrow();
+    });
+    test(`throws an Error when called without a valid "amount"`, async () => {
+      await expect(() =>
+        Invoice.createItem({
+          createdByUserID: INV_A.createdByUserID,
+          assignedToUserID: INV_A.assignedToUserID,
+          // missing amount
+        } as any)
+      ).rejects.toThrow();
+      await expect(() =>
+        Invoice.createItem({
+          createdByUserID: INV_A.createdByUserID,
+          assignedToUserID: INV_A.assignedToUserID,
+          amount: "BAD_AMOUNT", // <-- invalid amount
+        } as any)
+      ).rejects.toThrow();
     });
   });
 
-  // QUERIES:
+  describe("Invoice.query()", () => {
+    test(`returns desired Invoice when queried by "id"`, async () => {
+      // Arrange spy on Invoice.ddbClient.query() method
+      const querySpy = vi.spyOn(Invoice.ddbClient, "query").mockResolvedValueOnce({
+        $metadata: {},
+        Items: [UNALIASED_MOCK_INVOICES.INV_A],
+      });
 
-  test("Invoice.queryInvoiceByID returns expected keys and values", async () => {
-    for (const key of MOCK_INPUT_KEYS) {
-      const result = await Invoice.queryInvoiceByID(createdInvoices[key].id);
-      testInvoiceFields(key, result);
-    }
-  });
+      // Act on the Invoice Model's query method
+      const result = await Invoice.query({
+        where: { id: INV_A.id },
+        limit: 1,
+      });
 
-  test("Invoice.query User's Invoices returns expected keys and values", async () => {
-    for (const key of MOCK_INPUT_KEYS) {
-      // Should be an array of 1 Invoice
-      const invoices = await Invoice.query({
+      // Assert the result
+      expect(result).toHaveLength(1);
+      expect(result).toStrictEqual([INV_A]);
+
+      // Assert querySpy was called with expected arguments
+      expect(querySpy).toHaveBeenCalledWith({
+        TableName: Invoice.tableName,
+        IndexName: "Overloaded_SK_GSI",
+        KeyConditionExpression: "#sk = :sk",
+        ExpressionAttributeNames: { "#sk": "sk" },
+        ExpressionAttributeValues: { ":sk": INV_A.id },
+        Limit: 1,
+      });
+    });
+    test("returns all of a User's OWN Invoices when queried by the User's ID", async () => {
+      // Arrange spy on Invoice.ddbClient.query() method
+      const querySpy = vi.spyOn(Invoice.ddbClient, "query").mockResolvedValueOnce({
+        $metadata: {},
+        Items: [UNALIASED_MOCK_INVOICES.INV_A, UNALIASED_MOCK_INVOICES.INV_C],
+      });
+
+      // Act on the Invoice Model's query method
+      const result = await Invoice.query({
         where: {
-          createdByUserID: createdInvoices[key].createdBy.id,
+          createdByUserID: INV_A.createdByUserID,
+          id: { beginsWith: Invoice.SK_PREFIX },
         },
       });
 
-      invoices.forEach((inv) => {
-        testInvoiceFields(key, inv);
-      });
-    }
-  });
+      // Assert the result
+      expect(result).toHaveLength(2);
+      expect(result).toStrictEqual([INV_A, INV_C]);
 
-  test("Invoice.query Invoices AssignedToUser returns expected keys and values", async () => {
-    for (const key of MOCK_INPUT_KEYS) {
-      // Should be an array of 1 Invoice
-      const invoices = await Invoice.query({
+      // Assert querySpy was called with expected arguments
+      expect(querySpy).toHaveBeenCalledWith({
+        TableName: Invoice.tableName,
+        KeyConditionExpression: "#pk = :pk AND begins_with( #sk, :sk )",
+        ExpressionAttributeNames: { "#pk": "pk", "#sk": "sk" },
+        ExpressionAttributeValues: { ":pk": INV_A.createdByUserID, ":sk": Invoice.SK_PREFIX },
+      });
+    });
+    test("returns all of a User's RECEIVED Invoices when queried by the User's ID", async () => {
+      // Arrange spy on Invoice.ddbClient.query() method
+      const querySpy = vi.spyOn(Invoice.ddbClient, "query").mockResolvedValueOnce({
+        $metadata: {},
+        Items: [UNALIASED_MOCK_INVOICES.INV_A, UNALIASED_MOCK_INVOICES.INV_C],
+      });
+
+      // Act on the Invoice Model's query method
+      const result = await Invoice.query({
         where: {
-          assignedToUserID: createdInvoices[key].assignedTo.id,
+          assignedToUserID: INV_A.assignedToUserID, // assigned to USER_B
+          id: { beginsWith: Invoice.SK_PREFIX },
         },
       });
 
-      invoices.forEach((inv) => {
-        testInvoiceFields(key, inv);
+      // Assert the result
+      expect(result).toHaveLength(2);
+      expect(result).toStrictEqual([INV_A, INV_C]);
+
+      // Assert querySpy was called with expected arguments
+      expect(querySpy).toHaveBeenCalledWith({
+        TableName: Invoice.tableName,
+        IndexName: "Overloaded_Data_GSI",
+        KeyConditionExpression: "#data = :data AND begins_with( #sk, :sk )",
+        ExpressionAttributeNames: { "#data": "data", "#sk": "sk" },
+        ExpressionAttributeValues: { ":data": INV_A.assignedToUserID, ":sk": Invoice.SK_PREFIX },
       });
-    }
+    });
   });
 
-  // UPDATE:
+  describe("Invoice.updateItem()", () => {
+    test("returns an updated Invoice with expected keys and values", async () => {
+      // Arrange new amount
+      const NEW_AMOUNT = 9999;
 
-  test("Invoice.updateOne returns expected keys and values", async () => {
-    const updatedInvoices = { ...createdInvoices };
-
-    const NEW_INV_VALUES: Record<MockInputKey, Partial<InvoiceModelItem>> = {
-      INV_A: {
-        amount: 9000, // $90.00 (10% discount from original INV_A amount)
-      },
-      INV_B: {
-        stripePaymentIntentID: "foo_PaymentIntentID", // IDEA Add Stripe Payment Intent to test PayInvoice flow
-      },
-    };
-
-    // Update Inv values
-    for (const key of MOCK_INPUT_KEYS) {
-      updatedInvoices[key] = await Invoice.updateOne(createdInvoices[key], NEW_INV_VALUES[key]);
-    }
-
-    // Test updated values
-    for (const key of MOCK_INPUT_KEYS) {
-      expect(updatedInvoices[key]).toMatchObject({
-        ...createdInvoices[key],
-        ...NEW_INV_VALUES[key],
-      });
-    }
-  });
-
-  // DELETE:
-
-  test("Invoice.deleteItem returns expected keys and values", async () => {
-    for (const key of MOCK_INPUT_KEYS) {
-      const invToDelete = createdInvoices[key];
-
-      const { id: deletedInvoiceID } = await Invoice.deleteItem({
-        createdByUserID: invToDelete.createdBy.id,
-        id: invToDelete.id,
+      // Arrange spy on Invoice.ddbClient.updateItem() method
+      const updateItemSpy = vi.spyOn(Invoice.ddbClient, "updateItem").mockResolvedValueOnce({
+        $metadata: {},
+        Attributes: { ...UNALIASED_MOCK_INVOICES.INV_C, amount: NEW_AMOUNT },
       });
 
-      // If deleteOne did not error out, the delete succeeded, check ID.
-      expect(deletedInvoiceID).toEqual(invToDelete.id);
-    }
+      // Act on the Invoice updateItem method
+      const result = await Invoice.updateItem(
+        {
+          createdByUserID: INV_C.createdByUserID,
+          id: INV_C.id,
+        },
+        {
+          update: {
+            amount: NEW_AMOUNT,
+          },
+        }
+      );
+
+      // Assert the result
+      expect(result.amount).toStrictEqual(NEW_AMOUNT);
+      expect(result).toStrictEqual({
+        ...INV_C,
+        amount: NEW_AMOUNT,
+        updatedAt: expect.any(Date),
+      });
+
+      // Assert updateItemSpy was called with expected arguments
+      expect(updateItemSpy).toHaveBeenCalledWith({
+        TableName: Invoice.tableName,
+        Key: {
+          pk: INV_C.createdByUserID,
+          sk: INV_C.id,
+        },
+        UpdateExpression: "SET #amount = :amount, #updatedAt = :updatedAt",
+        ExpressionAttributeNames: { "#amount": "amount", "#updatedAt": "updatedAt" },
+        ExpressionAttributeValues: { ":amount": NEW_AMOUNT, ":updatedAt": expect.any(Number) },
+        ReturnValues: "ALL_NEW",
+      });
+    });
   });
-});
 
-// ENSURE MOCK RESOURCE CLEANUP:
+  describe("Invoice.deleteItem()", () => {
+    test("returns a deleted Invoice when called with valid arguments", async () => {
+      // Arrange spy on Invoice.ddbClient.deleteItem() method
+      const deleteItemSpy = vi.spyOn(Invoice.ddbClient, "deleteItem").mockResolvedValueOnce({
+        $metadata: {},
+        Attributes: UNALIASED_MOCK_INVOICES.INV_B,
+      });
 
-afterAll(async () => {
-  /* After all tests are complete, ensure all mock Items created here have been deleted.
-  Note: DDB methods are called from the ddbClient to circumvent toDB IO hook actions. */
+      // Act on the Invoice Model's deleteItem method
+      const result = await Invoice.deleteItem({
+        id: INV_B.id,
+        createdByUserID: INV_B.createdByUserID,
+      });
 
-  const remainingMockINVs = await Invoice.scan({
-    FilterExpression: "begins_with(sk, :skPrefix)",
-    ExpressionAttributeValues: { ":skPrefix": Invoice.SK_PREFIX },
+      // Assert the result
+      expect(result).toStrictEqual(INV_B);
+
+      // Assert deleteItemSpy was called with expected arguments
+      expect(deleteItemSpy).toHaveBeenCalledWith({
+        TableName: Invoice.tableName,
+        Key: {
+          pk: INV_B.createdByUserID,
+          sk: INV_B.id,
+        },
+        ReturnValues: "ALL_OLD",
+      });
+    });
   });
-
-  if (Array.isArray(remainingMockINVs) && remainingMockINVs.length > 0) {
-    await Invoice.batchDeleteItems(
-      remainingMockINVs.map(({ id, createdBy }) => ({
-        id,
-        createdByUserID: createdBy.id,
-      }))
-    );
-  }
 });

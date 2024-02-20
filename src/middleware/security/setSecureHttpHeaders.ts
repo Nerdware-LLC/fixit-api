@@ -1,5 +1,5 @@
 import helmet from "helmet";
-import { ENV } from "@server/env";
+import { ENV } from "@/server/env";
 import type { RequestHandler } from "express";
 
 /**
@@ -19,13 +19,11 @@ import type { RequestHandler } from "express";
  */
 const HELMET_DEFAULT_CSP_DIRECTIVES = helmet.contentSecurityPolicy.getDefaultDirectives() as Record<
   string,
-  string[]
+  Array<string>
 >;
 
 /**
  * STRIPE'S REQUIRED CSP DIRECTIVES:
- *
- * // TODO ADD the Stripe-required CSP directives to lambda-edge-secure-headers
  *
  * The directives listed below are required in order for fixit-web to use the stripeJS lib.
  * https://stripe.com/docs/security/guide#content-security-policy
@@ -99,15 +97,15 @@ const helmetMW = helmet({
       FIXIT_API_SRC_CSP_DIRECTIVES,
       CSP_VIOLATION_REPORTING_DIRECTIVES,
       STRIPE_REQUIRED_CSP_DIRECTIVES,
-    ].reduce<Record<string, string[]>>((accum, cspDirectivesObject) => {
+    ].reduce((accum: Record<string, Array<string>>, cspDirectivesObject) => {
       // Deep merge each set of CSP directives
       Object.entries(cspDirectivesObject).forEach(([cspKey, cspValues]) => {
         // Wrap single cspValue strings in an array
         if (!Array.isArray(cspValues)) cspValues = [cspValues] as Array<string>;
-        // Add the cspKey if it hasn't already been added; merge in cspValues.
-        if (cspKey in accum) accum[cspKey].concat(cspValues);
-        else accum[cspKey] = cspValues;
+        // Merge in cspValues
+        accum[cspKey] = [...(accum?.[cspKey] ?? []), ...cspValues];
       });
+
       return accum;
     }, {}),
   },
