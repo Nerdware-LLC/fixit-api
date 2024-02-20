@@ -1,11 +1,3 @@
-schema {
-  query: Query
-  mutation: Mutation
-}
-"Custom DateTime scalar; pass a string or js date instance obj"
-scalar DateTime
-"Custom Email scalar; validates using regex"
-scalar Email
 type Query {
   _root: Boolean
   contact(contactID: ID!): Contact!
@@ -15,22 +7,24 @@ type Query {
   myProfile: Profile!
   profile(profileID: ID!): Profile!
   user: User!
+
   """
   This query returns the public fields of a User whose handle exactly matches the
   provided `handle` argument. To search for one or more Users whose handle begins
   with or fuzzy-matches a provided string, use `searchForUsersByHandle`.
   """
   getUserByHandle(handle: String!): Contact
+
   """
   This query returns a paginated list of Users whose handle begins with the provided
   `handle` argument, which can be incomplete but must at least contain two characters:
   the beginning "@", and one character that's either alphanumeric or an underscore.
-  
+
   Note that this query is intended to be used in conjunction with a pagination utility
   like [Apollo's `fetchMore` function](https://www.apollographql.com/docs/react/pagination/core-api#the-fetchmore-function).
-  
+
   ### ROADMAP:
-  
+
   - Matching Algorithm Change: In the future, the Contact selection method used in this
     query will either be replaced by a fuzzy-matching system based on the Levenshtein-Demerau
     model, or a cloud-based search service like ElasticSearch. This change will eliminate
@@ -40,14 +34,16 @@ type Query {
     will be the value of the `offset` argument to be used in a follow-up query.
   """
   searchForUsersByHandle(
-    "The handle search string (minimum 2 characters)"
-    handle: String!,
-    "The maximum number of Users to return (default 10, min 10, max 50)"
-    limit: Int = 10,
+    """The handle search string (minimum 2 characters)"""
+    handle: String!
+
+    """The maximum number of Users to return (default 10, min 10, max 50)"""
+    limit: Int = 10
+
     """
     The number of searchable Users to skip before returning results (default 0, min 0).
     **This argument should only be used if all of the following conditions are true:**
-    
+
       1. A previous call to this query returned the maximum number of results (i.e., `limit`).
       2. The User who made the previous call wants to retrieve more results.
       3. The `handle` argument in the previous call is a valid substring of the `handle`
@@ -61,6 +57,7 @@ type Query {
   workOrder(workOrderID: ID!): WorkOrder!
   myWorkOrders: MyWorkOrdersQueryReturnType!
 }
+
 type Mutation {
   _root: Boolean
   createContact(contactUserID: ID!): Contact!
@@ -76,10 +73,20 @@ type Mutation {
   setWorkOrderStatusComplete(workOrderID: ID!): WorkOrder!
   createInvite(phoneOrEmail: String!): GenericSuccessResponse!
 }
+
+"""
+Custom DateTime scalar with handling for Date objects and datetime strings
+"""
+scalar DateTime
+
+"""Custom Email scalar with regex validation"""
+scalar Email
+
 type DeleteMutationResponse {
   id: ID!
   wasDeleted: Boolean!
 }
+
 """
 Generic response-type for mutations which simply returns a "wasSuccessful" boolean.
 This is only ever used as a "last-resort" response-type for mutations which meet all
@@ -94,11 +101,49 @@ perform some sort of "side-effect" (e.g. sending an email, sending a text messag
 type GenericSuccessResponse {
   wasSuccessful: Boolean!
 }
+
+"""
+FixitUser is an interface which defines publicly-accessible User fields. This
+interface has two concrete implementations: Contact, which is simply a concrete
+implementation of the same publicly-available fields, and User, which adds private
+fields which are not accessible to other users.
+"""
+interface FixitUser {
+  """User ID internally identifies individual User accounts"""
+  id: ID!
+
+  """Public-facing handle identifies users to other users (e.g., '@joe')"""
+  handle: String!
+
+  """Email address of either a User or Contact"""
+  email: Email!
+
+  """Phone number of either a User or Contact"""
+  phone: String!
+
+  """Profile object of either a User or Contact"""
+  profile: Profile!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
 type ChecklistItem {
   id: ID!
   description: String!
   isCompleted: Boolean!
 }
+
+input CreateChecklistItemInput {
+  description: String!
+  isCompleted: Boolean
+}
+
+input UpdateChecklistItemInput {
+  id: ID
+  description: String!
+  isCompleted: Boolean
+}
+
 """
 Contact is a type which is simply a concrete implementation of the publicly
 accessible User fields defined in the FixitUser interface. The Contact type is
@@ -106,52 +151,111 @@ meant to ensure that private User fields are not available to anyone other than
 the User who owns the data.
 """
 type Contact implements FixitUser {
-  "User ID internally identifies individual User accounts"
+  """Contact ID internally identifies a user's contact"""
   id: ID!
-  "Public-facing handle identifies users to other users (e.g., '@joe')"
+
+  """Public-facing handle identifies users to other users (e.g., '@joe')"""
   handle: String!
-  "Contact email address"
+
+  """Contact email address"""
   email: Email!
-  "Contact phone number"
+
+  """Contact phone number"""
   phone: String!
-  "Contact Profile object"
+
+  """Contact Profile object"""
   profile: Profile!
-  "(Immutable) Contact creation timestamp"
+
+  """(Immutable) Contact creation timestamp"""
   createdAt: DateTime!
-  "Timestamp of the most recent Contact object update"
+
+  """Timestamp of the most recent Contact object update"""
   updatedAt: DateTime!
 }
+
 type Invoice {
-  "(Immutable) Invoice ID, in the format of 'INV#{createdBy.id}#{unixTimestamp(createdAt)}'"
+  """
+  (Immutable) Invoice ID, in the format of 'INV#{createdBy.id}#{unixTimestampUUID(createdAt)}'
+  """
   id: ID!
-  "(Immutable) The FixitUser who created/sent the Invoice"
+
+  """(Immutable) The FixitUser who created/sent the Invoice"""
   createdBy: FixitUser!
-  "(Immutable) The FixitUser to whom the Invoice was assigned, AKA the Invoice's recipient"
+
+  """
+  (Immutable) The FixitUser to whom the Invoice was assigned, AKA the Invoice's recipient
+  """
   assignedTo: FixitUser!
-  "The Invoice amount, represented as an integer which reflects USD centage (an 'amount' of 1 = $0.01 USD)"
+
+  """
+  The Invoice amount, represented as an integer which reflects USD centage (i.e., an 'amount' of 1 = $0.01 USD)
+  """
   amount: Int!
-  "The Invoice status; this field is controlled by the API and can not be directly edited by Users"
+
+  """
+  The Invoice status; this field is controlled by the API and can not be directly edited by Users
+  """
   status: InvoiceStatus!
-  "The ID of the most recent successful paymentIntent applied to the Invoice, if any"
+
+  """
+  The ID of the most recent successful paymentIntent applied to the Invoice, if any
+  """
   stripePaymentIntentID: String
-  "A WorkOrder attached to the Invoice which was created by the 'assignedTo' User"
+
+  """
+  A WorkOrder attached to the Invoice which was created by the 'assignedTo' User
+  """
   workOrder: WorkOrder
-  "(Immutable) Invoice creation timestamp"
+
+  """(Immutable) Invoice creation timestamp"""
   createdAt: DateTime!
-  "Timestamp of the most recent Invoice update"
+
+  """Timestamp of the most recent Invoice update"""
   updatedAt: DateTime!
 }
+
+enum InvoiceStatus {
+  OPEN
+  CLOSED
+  DISPUTED
+}
+
 type MyInvoicesQueryReturnType {
   createdByUser: [Invoice!]!
   assignedToUser: [Invoice!]!
 }
+
+input InvoiceInput {
+  """The ID of the User to whom the Invoice will be assigned"""
+  assignedTo: ID!
+  amount: Int!
+  workOrderID: ID
+}
+
 type Location {
+  streetLine1: String!
+  streetLine2: String
+  city: String!
+  region: String!
+  country: String!
+}
+
+input CreateLocationInput {
   streetLine1: String!
   streetLine2: String
   city: String!
   region: String!
   country: String
 }
+
+input UpdateLocationInput {
+  streetLine1: String!
+  streetLine2: String
+  city: String!
+  region: String!
+  country: String
+}
+
 type Profile {
   displayName: String!
   givenName: String
@@ -159,6 +263,15 @@ type Profile {
   businessName: String
   photoUrl: String
 }
+
+input ProfileInput {
+  displayName: String
+  givenName: String
+  familyName: String
+  businessName: String
+  photoUrl: String
+}
+
 type UserStripeConnectAccount {
   id: ID!
   detailsSubmitted: Boolean!
@@ -167,35 +280,51 @@ type UserStripeConnectAccount {
   createdAt: DateTime!
   updatedAt: DateTime!
 }
+
 """
 User is an implementation of the FixitUser interface which includes both the
 publicly-accessible FixitUser/Contact fields as well as private fields which
 are only accessible by the User who owns the data.
 """
 type User implements FixitUser {
-  "(Immutable) User ID internally identifies individual User accounts"
+  """(Immutable) User ID internally identifies individual User accounts"""
   id: ID!
-  "(Immutable) Public-facing handle identifies users to other users (e.g., '@joe')"
+
+  """
+  (Immutable) Public-facing handle identifies users to other users (e.g., '@joe')
+  """
   handle: String!
-  "(Immutable) User's own email address"
+
+  """(Immutable) User's own email address"""
   email: Email!
-  "(Immutable) User's own phone number"
+
+  """(Immutable) User's own phone number"""
   phone: String!
-  "(Mobile-Only) User's Expo push token, used to send push notifications to the User's mobile device"
+
+  """
+  (Mobile-Only) User's Expo push token, used to send push notifications to the User's mobile device
+  """
   expoPushToken: String
-  "User's own Profile object"
+
+  """User's own Profile object"""
   profile: Profile!
-  "User's Stripe Customer ID (defined and generated by Stripe)"
+
+  """User's Stripe Customer ID (defined and generated by Stripe)"""
   stripeCustomerID: String!
-  "User Subscription info"
+
+  """User Subscription info"""
   subscription: UserSubscription
-  "User Stripe Connect Account info"
+
+  """User Stripe Connect Account info"""
   stripeConnectAccount: UserStripeConnectAccount
-  "(Immutable) Account creation timestamp"
+
+  """(Immutable) Account creation timestamp"""
   createdAt: DateTime!
-  "Timestamp of the most recent account update"
+
+  """Timestamp of the most recent account update"""
   updatedAt: DateTime!
 }
+
 type UserSubscription {
   id: ID!
   currentPeriodEnd: DateTime!
@@ -205,94 +334,7 @@ type UserSubscription {
   createdAt: DateTime!
   updatedAt: DateTime!
 }
-"A WorkOrder is a request one User submits to another for work to be performed at a location"
-type WorkOrder {
-  "(Immutable) WorkOrder ID, in the format of 'WO#{createdBy.id}#{unixTimestamp(createdAt)}'"
-  id: ID!
-  "(Immutable) The FixitUser who created/sent the WorkOrder"
-  createdBy: FixitUser!
-  "The FixitUser to whom the WorkOrder was assigned, AKA the WorkOrder's recipient"
-  assignedTo: FixitUser
-  "The WorkOrder status"
-  status: WorkOrderStatus!
-  "The WorkOrder priority"
-  priority: WorkOrderPriority!
-  "The location of the job site for the WorkOrder"
-  location: Location!
-  "The category of work to be performed as part of the WorkOrder"
-  category: WorkOrderCategory
-  "A general description of the work to be performed as part of the WorkOrder"
-  description: String
-  "The WorkOrder checklist, an array of ChecklistItem objects"
-  checklist: [ChecklistItem]
-  "Timestamp of the WorkOrder's due date"
-  dueDate: DateTime
-  "The name of the WorkOrder's entry contact, if any"
-  entryContact: String
-  "The phone number of the WorkOrder's entry contact, if any"
-  entryContactPhone: String
-  "Timestamp of the WorkOrder's scheduled completion"
-  scheduledDateTime: DateTime
-  "Notes from the WorkOrder's recipient (this field will be renamed in the future)"
-  contractorNotes: String
-  "(Immutable) WorkOrder creation timestamp"
-  createdAt: DateTime!
-  "Timestamp of the most recent WorkOrder update"
-  updatedAt: DateTime!
-}
-type MyWorkOrdersQueryReturnType {
-  createdByUser: [WorkOrder!]!
-  assignedToUser: [WorkOrder!]!
-}
-type AuthTokenPayload {
-  id: ID!
-  handle: String!
-  email: String!
-  phone: String!
-  profile: Profile!
-  stripeCustomerID: String!
-  subscription: AuthTokenPayloadSubscriptionInfo
-  stripeConnectAccount: AuthTokenPayloadStripeConnectAccountInfo!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-type AuthTokenPayloadSubscriptionInfo {
-  id: ID!
-  status: SubscriptionStatus!
-  currentPeriodEnd: DateTime!
-}
-type AuthTokenPayloadStripeConnectAccountInfo {
-  id: ID!
-  detailsSubmitted: Boolean!
-  chargesEnabled: Boolean!
-  payoutsEnabled: Boolean!
-}
-"""
-FixitUser is an interface which defines publicly-accessible User fields. This
-interface has two concrete implementations: Contact, which is simply a concrete
-implementation of the same publicly-available fields, and User, which adds private
-fields which are not accessible to other users.
-"""
-interface FixitUser {
-  "User ID internally identifies individual User accounts"
-  id: ID!
-  "Public-facing handle identifies users to other users (e.g., '@joe')"
-  handle: String!
-  "Email address of either a User or Contact"
-  email: Email!
-  "Phone number of either a User or Contact"
-  phone: String!
-  "Profile object of either a User or Contact"
-  profile: Profile!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-union CancelWorkOrderResponse = WorkOrder | DeleteMutationResponse
-enum InvoiceStatus {
-  OPEN
-  CLOSED
-  DISPUTED
-}
+
 enum SubscriptionStatus {
   active
   incomplete
@@ -302,11 +344,74 @@ enum SubscriptionStatus {
   canceled
   unpaid
 }
+
 enum SubscriptionPriceLabel {
   ANNUAL
   MONTHLY
   TRIAL
 }
+
+"""
+A WorkOrder is a request one User submits to another for work to be performed at a location
+"""
+type WorkOrder {
+  """
+  (Immutable) WorkOrder ID, in the format of 'WO#{createdBy.id}#{unixTimestampUUID(createdAt)}'
+  """
+  id: ID!
+
+  """(Immutable) The FixitUser who created/sent the WorkOrder"""
+  createdBy: FixitUser!
+
+  """
+  The FixitUser to whom the WorkOrder was assigned, AKA the WorkOrder's recipient
+  """
+  assignedTo: FixitUser
+
+  """The WorkOrder status"""
+  status: WorkOrderStatus!
+
+  """The WorkOrder priority"""
+  priority: WorkOrderPriority!
+
+  """The location of the job site for the WorkOrder"""
+  location: Location!
+
+  """The category of work to be performed as part of the WorkOrder"""
+  category: WorkOrderCategory
+
+  """
+  A general description of the work to be performed as part of the WorkOrder
+  """
+  description: String
+
+  """The WorkOrder checklist, an array of ChecklistItem objects"""
+  checklist: [ChecklistItem]
+
+  """Timestamp of the WorkOrder's due date"""
+  dueDate: DateTime
+
+  """The name of the WorkOrder's entry contact, if any"""
+  entryContact: String
+
+  """The phone number of the WorkOrder's entry contact, if any"""
+  entryContactPhone: String
+
+  """Timestamp of the WorkOrder's scheduled completion"""
+  scheduledDateTime: DateTime
+
+  """
+  Notes from the WorkOrder's recipient (this field will be renamed in the future)
+  """
+  contractorNotes: String
+
+  """(Immutable) WorkOrder creation timestamp"""
+  createdAt: DateTime!
+
+  """Timestamp of the most recent WorkOrder update"""
+  updatedAt: DateTime!
+}
+
 enum WorkOrderStatus {
   UNASSIGNED
   ASSIGNED
@@ -315,11 +420,13 @@ enum WorkOrderStatus {
   CANCELLED
   COMPLETE
 }
+
 enum WorkOrderPriority {
   LOW
   NORMAL
   HIGH
 }
+
 enum WorkOrderCategory {
   DRYWALL
   ELECTRICAL
@@ -337,42 +444,12 @@ enum WorkOrderCategory {
   TURNOVER
   WINDOWS
 }
-input CreateChecklistItemInput {
-  description: String!
-  isCompleted: Boolean
+
+type MyWorkOrdersQueryReturnType {
+  createdByUser: [WorkOrder!]!
+  assignedToUser: [WorkOrder!]!
 }
-input UpdateChecklistItemInput {
-  id: ID!
-  description: String!
-  isCompleted: Boolean
-}
-input InvoiceInput {
-  "The ID of the User to whom the Invoice will be assigned"
-  assignedTo: ID!
-  amount: Int!
-  workOrderID: ID
-}
-input CreateLocationInput {
-  streetLine1: String!
-  streetLine2: String
-  city: String!
-  region: String!
-  country: String
-}
-input UpdateLocationInput {
-  streetLine1: String!
-  streetLine2: String
-  city: String!
-  region: String!
-  country: String
-}
-input ProfileInput {
-  displayName: String
-  givenName: String
-  familyName: String
-  businessName: String
-  photoUrl: String
-}
+
 input CreateWorkOrderInput {
   assignedTo: ID
   priority: WorkOrderPriority
@@ -385,6 +462,7 @@ input CreateWorkOrderInput {
   entryContactPhone: String
   scheduledDateTime: DateTime
 }
+
 input UpdateWorkOrderInput {
   assignedToUserID: ID
   priority: WorkOrderPriority
@@ -397,10 +475,31 @@ input UpdateWorkOrderInput {
   entryContactPhone: String
   scheduledDateTime: DateTime
 }
-"Exposes a URL that specifies the behavior of this scalar."
-directive @specifiedBy(
-    "The URL that specifies the behavior of this scalar."
-    url: String!
-  ) on SCALAR
 
+union CancelWorkOrderResponse = WorkOrder | DeleteMutationResponse
 
+type AuthTokenPayload {
+  id: ID!
+  handle: String!
+  email: String!
+  phone: String!
+  profile: Profile!
+  stripeCustomerID: String!
+  subscription: AuthTokenPayloadSubscriptionInfo
+  stripeConnectAccount: AuthTokenPayloadStripeConnectAccountInfo!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type AuthTokenPayloadSubscriptionInfo {
+  id: ID!
+  status: SubscriptionStatus!
+  currentPeriodEnd: DateTime!
+}
+
+type AuthTokenPayloadStripeConnectAccountInfo {
+  id: ID!
+  detailsSubmitted: Boolean!
+  chargesEnabled: Boolean!
+  payoutsEnabled: Boolean!
+}
