@@ -61,34 +61,38 @@ Author: [Trevor Anderson](https://github.com/trevor-anderson), Solopreneur & Fou
 
 The Fixit API provides a robust, scalable, and secure backend for the Fixit SaaS product, which provides users with powerful tools for managing maintenance and repair workflows, including in-app payments powered by [Stripe](https://stripe.com/).
 
-> [!NOTE] Quick Links:
+> [!NOTE]
 >
-> <div align="center" style="display:flex;align-items:center;justify-content:center;gap:1rem 2rem;flex-wrap:wrap;">
->   <a href="https://app.swaggerhub.com/apis/Nerdware/Fixit" title="Check out the REST API OpenAPI Schema on SwaggerHub">
->     <div align="center" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;">
->       <img src="https://upload.wikimedia.org/wikipedia/commons/a/ab/Swagger-logo.png" width="70" />
->       <code style="white-space:pre-line;">REST API OpenAPI&#10;Schema Explorer</code>
->     </div>
->   </a>
->   <a href="https://studio.apollographql.com/public/fixit/variant/current" title="Check out the GraphQL API Schema-Explorer on Apollo Studio">
->     <div align="center" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;">
->       <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/GraphQL_Logo.svg/220px-GraphQL_Logo.svg.png" width="70" />
->       <code style="white-space:pre-line;">GraphQL API&#10;Schema Explorer</code>
->     </div>
->   </a>
->   <a href="https://659981450c81cefabec86fa2-hayufvwzje.chromatic.com" title="Check out the Fixit front-end Storybook on Chromatic">
->     <div align="center" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;">
->       <img src="https://avatars.githubusercontent.com/u/22632046?s=200&v=4" width="70" />
->       <code style="white-space:pre-line;">Fixit Frontend&#10;Component Storybook</code>
->     </div>
->   </a>
->   <a href="https://github.com/Nerdware-LLC/fixit-web#readme" title="Check out the Fixit web app GitHub repo">
->     <div align="center" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;">
->       <img src="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png" width="70" style="border-radius:50%;clip-path:circle(30px);" />
->       <code style="white-space:pre-line;">Fixit Web App&#10;GitHub Repo</code>
->     </div>
->   </a>
-> </div>
+> ### Quick Links
+>
+> <table align="center">
+>   <tr>
+>   <td align="center">
+> 
+>   [<img src="https://upload.wikimedia.org/wikipedia/commons/a/ab/Swagger-logo.png" width="70" alt="Check out the REST API OpenAPI Schema on SwaggerHub" />](https://app.swaggerhub.com/apis/Nerdware/Fixit "Check out the REST API OpenAPI Schema on SwaggerHub")
+> 
+>   <code>REST API OpenAPI</code><br><code>Schema Explorer</code>
+>   </td>
+>   <td align="center">
+>
+>   [<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/GraphQL_Logo.svg/220px-GraphQL_Logo.svg.png" width="70" alt="Check out the GraphQL API Schema-Explorer on Apollo Studio" />](https://studio.apollographql.com/public/fixit/variant/current "Check out the GraphQL API Schema-Explorer on Apollo Studio")
+>
+>   <code>GraphQL API</code><br><code>Schema Explorer</code>
+>   </td>
+>   <td align="center">
+>
+>   [<img src="https://avatars.githubusercontent.com/u/22632046?s=200&v=4" width="70" alt="Check out the Fixit front-end Storybook on Chromatic" />](https://659981450c81cefabec86fa2-hayufvwzje.chromatic.com "Check out the Fixit front-end Storybook on Chromatic")
+>
+>   <code>Fixit Frontend</code><br><code>Component Storybook</code>
+>   </td>
+>   <td align="center">
+>
+>   [<img src="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png" width="70" alt="Check out the Fixit web app GitHub repo" />](https://github.com/Nerdware-LLC/fixit-web#readme "Check out the Fixit web app GitHub repo")
+>
+>   <code>Fixit Web App</code><br><code>GitHub Repo</code>
+>   </td>
+>   </tr>
+> </table>
 
 ## 📖 API Schema
 
@@ -96,50 +100,52 @@ The Fixit API provides a robust, scalable, and secure backend for the Fixit SaaS
 
 This API exposes both **REST** and **GraphQL** endpoints:
 
-<table style="white-space:nowrap">
+<table>
   <thead>
     <tr>
       <th></th>
-      <th style="text-align:center">Schema</th>
-      <th style="text-align:center">Framework</th>
+      <th align="center">Schema</th>
+      <th align="center">Framework</th>
       <th>Domain/Purpose</th>
     </tr>
   </thead>
   <tbody>
-    <tr style="color:#89EB34">
-      <th>REST API</th>
-      <td style="text-align:center">
-        <a
-          href="https://app.swaggerhub.com/apis/Nerdware/Fixit"
-          title="Check out the REST API OpenAPI Schema on SwaggerHub"
-        >
-          View OpenAPI Schema
-        </a>
-      </td>
-      <td style="text-align:center">
-        <a href="https://expressjs.com/">ExpressJS</a>
-      </td>
-      <td style="white-space:normal">
-        Handles user authentication, checkout, account management, and webhooks.
-      </td>
-    </tr>
-    <tr style="color:#ec4dbf">
-      <th>GraphQL API</th>
-      <td style="text-align:center">
-        <a
-          href="https://studio.apollographql.com/public/fixit/variant/current"
-          title="Check out the GraphQL API Schema-Explorer on Apollo Studio"
-        >
-          View GQL Schema
-        </a>
-      </td>
-      <td style="text-align:center">
-        <a href="https://www.apollographql.com/docs/apollo-server/">Apollo Server</a>
-      </td>
-      <td style="white-space:normal">
-        Handles queries and mutations for core items like <code>WorkOrders</code>, <code>Invoices</code>, and <code>Contacts</code>.
-      </td>
-    </tr>
+  <tr>
+  <th>
+    REST API
+  </th>
+  <td align="center">
+
+  [View OpenAPI Schema](https://app.swaggerhub.com/apis/Nerdware/Fixit "Check out the REST API OpenAPI Schema on SwaggerHub")
+
+  </td>
+  <td align="center">
+
+  [ExpressJS](https://expressjs.com/)
+
+  </td>
+  <td>
+    Handles user authentication, checkout, account management, and webhooks.
+  </td>
+  </tr>
+  <tr>
+  <th>
+    GraphQL API
+  </th>
+  <td align="center">
+
+  [View GQL Schema](https://studio.apollographql.com/public/fixit/variant/current "Check out the GraphQL API Schema-Explorer on Apollo Studio")
+
+  </td>
+  <td align="center">
+    
+  [Apollo Server](https://www.apollographql.com/docs/apollo-server/)
+        
+  </td>
+  <td>
+    Handles queries and mutations for core items like <code>WorkOrders</code>, <code>Invoices</code>, and <code>Contacts</code>.
+  </td>
+  </tr>
   </tbody>
 </table>
 
@@ -150,30 +156,37 @@ The below diagram outlines every available REST API endpoint. Endpoint graph nod
 - ![#f1ff2e](https://via.placeholder.com/15/f1ff2e/f1ff2e.png "🔒") Endpoints outlined in <span style="color:#f1ff2e">yellow</span> require authentication via auth token (for more info, see [Fixit-API User Authentication](#-user-authentication))
 - ![#ec4dbf](https://via.placeholder.com/15/ec4dbf/ec4dbf.png "🔒💲") Endpoints outlined in <span style="color:#ec4dbf">pink</span> require both authentication _and_ an active subscription (for more info, see [Fixit SaaS Products](#-premium-saas-products))
 
+<!-- 
+  NOTE RE: BELOW MERMAID CHART
+  To ensure GitHub doesn't collapse the newlines in the below mermaid diagram, each pair of newline 
+  chars ("\n­\n") contains an invisible, zero-width "soft hyphen" character in between the "\n" chars. 
+  It's hacky, but for now it's the only solution that actually works. See https://symbl.cc/en/00AD/
+-->
+
 ```mermaid
 flowchart LR
-  root("/api") --> api("/api \n\n • GraphQL API entrypoint")
-  root --> admin("/api/admin \n\n • CSP reports and \n healthchecks")
-  root --> auth("/api/auth \n\n • User registration and logins \n (administers auth tokens)")
-  root --> connect("/api/connect \n\n • Stripe Connect \n endpoints")
-  root --> subs("/api/subscriptions \n\n • Endpoints for managing \n Fixit subscriptions")
-  root --> webhooks("/api/webhooks \n\n • Webhook endpoints")
+  root("/api") --> api("/api \n­\n • GraphQL API entrypoint")
+  root --> admin("/api/admin \n­\n • CSP reports and \n healthchecks")
+  root --> auth("/api/auth \n­\n • User registration and logins \n (administers auth tokens)")
+  root --> connect("/api/connect \n­\n • Stripe Connect \n endpoints")
+  root --> subs("/api/subscriptions \n­\n • Endpoints for managing \n Fixit subscriptions")
+  root --> webhooks("/api/webhooks \n­\n • Webhook endpoints")
   subgraph gql ["ApolloServer GraphQL Endpoint"]
   api
   end
   subgraph express ["REST Endpoints"]
-  admin --> csp("/api/admin/csp-violation \n\n • CSP #quot;report-to#quot;" target)
-  admin --> healthcheck("/api/admin/healthcheck \n\n • Healthchecks target")
-  auth --> register("/api/auth/register \n\n • User registration")
-  auth --> login("/api/auth/login \n\n • User login requests. Accepts \n email+pw or Google OAuth")
-  auth --> token("/api/auth/token \n\n • Refreshes auth tokens")
-  connect --> accountLink("/api/connect/account-link \n\n • Returns a link to the Stripe-hosted\nConnect onboarding portal")
-  connect --> dashboardLink("/api/connect/dashboard-link \n\n • Returns a link to the Stripe-hosted\naccount management portal")
-  subs --> promo("/api/subscriptions/check-promo-code \n\n • Validates user promo code inputs")
-  subs --> pay("/api/subscriptions/submit-payment \n\n • Handles payments for \n Fixit subscriptions")
-  subs --> portal("/api/subscriptions/customer-portal \n\n • Provides subscription \n management portal for users")
-  webhooks --> whStripe("/api/webhooks/stripe \n\n • Stripe webhooks handler")
-  webhooks --> whCustomer("/api/webhooks/* \n\n • Other webhooks")
+  admin --> csp("/api/admin/csp-violation \n­\n • CSP #quot;report-to#quot;" target)
+  admin --> healthcheck("/api/admin/healthcheck \n­\n • Healthchecks target")
+  auth --> register("/api/auth/register \n­\n • User registration")
+  auth --> login("/api/auth/login \n­\n • User login requests. Accepts \n email+pw or Google OAuth")
+  auth --> token("/api/auth/token \n­\n • Refreshes auth tokens")
+  connect --> accountLink("/api/connect/account-link \n­\n • Returns a link to the Stripe-hosted\nConnect onboarding portal")
+  connect --> dashboardLink("/api/connect/dashboard-link \n­\n • Returns a link to the Stripe-hosted\naccount management portal")
+  subs --> promo("/api/subscriptions/check-promo-code \n­\n • Validates user promo code inputs")
+  subs --> pay("/api/subscriptions/submit-payment \n­\n • Handles payments for \n Fixit subscriptions")
+  subs --> portal("/api/subscriptions/customer-portal \n­\n • Provides subscription \n management portal for users")
+  webhooks --> whStripe("/api/webhooks/stripe \n­\n • Stripe webhooks handler")
+  webhooks --> whCustomer("/api/webhooks/* \n­\n • Other webhooks")
   end
 
   classDef default fill:#1f2020,stroke:#7aa4c9,stroke-width:1px
@@ -298,7 +311,7 @@ All files, scripts, and source code contained herein are proprietary use only by
 
 See [LICENSE](/LICENSE) for more information.
 
-<div align="center" style="margin-top:35px;">
+<div align="center">
 
 ## 💬 Contact
 
