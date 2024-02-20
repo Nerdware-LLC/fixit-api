@@ -4,6 +4,50 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+# [1.23.0-next.4](https://github.com/Nerdware-LLC/fixit-api/compare/v1.23.0-next.3...v1.23.0-next.4) (2024-02-20)
+
+
+### Bug Fixes
+
+* change utils import to logger file not index ([e82fe74](https://github.com/Nerdware-LLC/fixit-api/commit/e82fe74baa0505d866cd3420bbf98fa90b73fa46))
+* commit imports of necessary utils ([afdd1a1](https://github.com/Nerdware-LLC/fixit-api/commit/afdd1a1ec59a2f8d7637e348e802fa1eb211131c))
+* correct logger.warn label to 'WARN' ([8e45e0d](https://github.com/Nerdware-LLC/fixit-api/commit/8e45e0d222a36ec3e9afa405df0eaf96afc81445))
+* correct typing to reflect User props ([cd39ae6](https://github.com/Nerdware-LLC/fixit-api/commit/cd39ae60e29abd2e548c5100a6fc9c5cc90bbf13))
+* ensure 'streetLine2' is added in parse method ([d90b79a](https://github.com/Nerdware-LLC/fixit-api/commit/d90b79a0a9895ef6357b348e5e8a071445f9d17d))
+* ensure NonNullable type excludes all undefined ([bf5ae6c](https://github.com/Nerdware-LLC/fixit-api/commit/bf5ae6c875cdb229882a16982b146165afb4f1ea))
+* impl 'update' api in mw ([457be80](https://github.com/Nerdware-LLC/fixit-api/commit/457be80569aa9d046ea28c8b9b25b75319365e5a))
+* impl model type names ([b2e5f4e](https://github.com/Nerdware-LLC/fixit-api/commit/b2e5f4eda568c6d4c7df32be170b92e4df608bfd))
+* update gql resolvers to use new Model types/methods ([2962ee0](https://github.com/Nerdware-LLC/fixit-api/commit/2962ee0b26f5053d027aaaee752662c4b443e290))
+* update isRecordObject logic ([3cce447](https://github.com/Nerdware-LLC/fixit-api/commit/3cce447ebba0a466cb68097e8f2df3c7f26b6242))
+* update mw to reflect model changes ([6c97cf8](https://github.com/Nerdware-LLC/fixit-api/commit/6c97cf8d6376ac791db39881afe3d67f53e2df92))
+* update table import to 'ddbTable' ([6294296](https://github.com/Nerdware-LLC/fixit-api/commit/629429602212cddca849bfeb798f13556d95c16a))
+
+
+### Features
+
+* add 'toBeValidDate' asymmetric matcher ([3a3de9d](https://github.com/Nerdware-LLC/fixit-api/commit/3a3de9d0854b484a4578aea322afac0cfc9798cc))
+* add condition to Sentry init ([b80a118](https://github.com/Nerdware-LLC/fixit-api/commit/b80a1188f6214ab0de996668ec48651aaf178a43))
+* add createIfNotExists configs ([8cbf3f8](https://github.com/Nerdware-LLC/fixit-api/commit/8cbf3f861460396452f49857c7bb933a13a49f58))
+* add export of Stripe-related 'types' ([f351021](https://github.com/Nerdware-LLC/fixit-api/commit/f351021c06b291b1ede547b2d183f29dc781e5eb))
+* add FixitUserCodegenInterface for codegen-config ([844186e](https://github.com/Nerdware-LLC/fixit-api/commit/844186ef9c9330945be7d62d9a966208ed724c0d))
+* add methods to make Cache more flexible ([6638922](https://github.com/Nerdware-LLC/fixit-api/commit/6638922e301db7b2c839a6c63cc258d32a3c5be7))
+* add new caches and utils ([e0b54eb](https://github.com/Nerdware-LLC/fixit-api/commit/e0b54eb385c92b741de13b29c5e8496b3c0c29a5))
+* add new location for codegen'd files ([880bed2](https://github.com/Nerdware-LLC/fixit-api/commit/880bed2f8f316d79b4e3acb4ad66380a022470b4))
+* add NonNullableLocation ([9d8ca08](https://github.com/Nerdware-LLC/fixit-api/commit/9d8ca084e99c135f6efb059988f5b3b6aca48a75))
+* add open-api processed types ([d8b3e2d](https://github.com/Nerdware-LLC/fixit-api/commit/d8b3e2d31d143b2975b6a8f09406dd3a1c06e3a3))
+* add res.locals typings ([cb50fdf](https://github.com/Nerdware-LLC/fixit-api/commit/cb50fdf61b29c544b3d37c4a19ff1649c4a3aca3))
+* add sendRESTJsonResponse mw ([1e32530](https://github.com/Nerdware-LLC/fixit-api/commit/1e325307922882dcf0d384d0e030cc9484cef532))
+* add Stripe-related types ([fb6a1b0](https://github.com/Nerdware-LLC/fixit-api/commit/fb6a1b0d40796b5dfecc59ed977e7d201c4589c8))
+* change 'UpdateChecklistItemInput' 'id' to be nullable ([38606b2](https://github.com/Nerdware-LLC/fixit-api/commit/38606b2c17a955e53066d1f850386a82ba730f8b))
+* replace Stripe env-vars w caches for StripeAPI objects ([7af7c6e](https://github.com/Nerdware-LLC/fixit-api/commit/7af7c6e4ce61122c33a2962186930c042e4c5fa4))
+* rm old env-vars, add JSON.parse overloads for correct behavior ([51e8365](https://github.com/Nerdware-LLC/fixit-api/commit/51e83653e51b5365f8ccf07b86af834208e63cdd))
+* rm optionality of 'stripeConnectAccount' obj ([d90ba88](https://github.com/Nerdware-LLC/fixit-api/commit/d90ba88c5935d081241acbec855bfcb11f94a2a1))
+* update 'Location.country' to be non-nullable ([d034e0a](https://github.com/Nerdware-LLC/fixit-api/commit/d034e0a076c2749ebee9b55fe168750cb942bc93))
+* update base img to node v20.11.0 ([ef89f12](https://github.com/Nerdware-LLC/fixit-api/commit/ef89f1272fae96fee083595e8ee2b812435239c8))
+* update mw to use new res.locals, impl open-api req types ([d2277b4](https://github.com/Nerdware-LLC/fixit-api/commit/d2277b45429b8b115917b986e70f78dd9f90bf1c))
+* update routers w new mw and open-api types ([5d064ef](https://github.com/Nerdware-LLC/fixit-api/commit/5d064efab67ab2e7a9501725721f07fd32444bfb))
+* update+add mock Stripe obj fns ([7d3ca6d](https://github.com/Nerdware-LLC/fixit-api/commit/7d3ca6d21668d688946f0652a512d105ba177809))
+
 # [1.23.0-next.3](https://github.com/Nerdware-LLC/fixit-api/compare/v1.23.0-next.2...v1.23.0-next.3) (2023-08-24)
 
 
