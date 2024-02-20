@@ -1,55 +1,31 @@
 import type { UserItem } from "@/models/User";
-import type { UserSubscriptionItem } from "@/models/UserSubscription";
-import type { WorkOrder, Invoice, Contact } from "@/types";
+import type { UserSubscriptionItem } from "@/models/UserSubscription/index";
 import type { FixitApiAuthTokenPayload } from "@/utils/AuthToken";
-import type { OverrideProperties, SetOptional } from "type-fest";
+import type { AllRestApiResponses } from "./open-api";
 
 /**
- * A User's pre-fetched WorkOrders, Invoices, and Contacts (used on logins). When fetched
- * by the `queryUserItems` middleware (see `src/middleware/auth/queryUserItems.ts`), these
- * objects are made available on Express Request objects as `req._userQueryItems`.
- *
- * Note: the middleware converts workOrders' and invoices' internal createdByUserID and
- * assignedToUserID fields into createdBy and assignedTo objects to match the GQL schema,
- * but only the "id" field can be provided on the createdBy/assignedTo objects without
- * fetching additional data on the associated users/contacts from either the db or usersCache.
- * The middleware forgoes fetching the data since the client-side Apollo cache already handles
- * fetching additional data as needed (_if_ it's needed), and fetching it there can delay auth
- * request response times, especially if the authenticating user has a large number of items.
+ * This type contains every Express `res.locals` field used by internal REST middleware.
  */
-export type PreFetchedUserQueryItems = {
-  workOrders?: Array<
-    OverrideProperties<WorkOrder, { createdBy: { id: string }; assignedTo: { id: string } | null }>
-  >;
-  invoices?: Array<
-    OverrideProperties<Invoice, { createdBy: { id: string }; assignedTo: { id: string } }>
-  >;
-  contacts?: Array<Contact>;
-};
+export type RestApiLocals = {
+  // LOCALS WHICH STORE DATA FOR DOWNSTREAM MIDDLEWARE:
 
-/**
- * This type contains all custom REST request-flow properties added to Express Request
- * objects by internal middleware. Each of these properties is globally available on the
- * Request object (see ambient merge-declaration in `src/types/Express.d.ts`).
- */
-export type FixitRESTRequestFlowProperties = {
-  /**
-   * A User object from the database.
-   */
-  _user?: UserItem;
+  /** An AuthToken payload object from an authenticated request's auth token. */
+  authenticatedUser?: FixitApiAuthTokenPayload | undefined;
+  /** A User object from the database. */
+  user?: UserItem | undefined;
+  /** A UserSubscription object from the database (e.g., for sub-updating mw). */
+  userSubscription?: UserSubscriptionItem | undefined;
 
-  /**
-   * A UserSubscription object from the database (e.g., for sub-updating mw).
-   */
-  _userSubscription?: UserSubscriptionItem;
+  // LOCALS ASSOCIATED WITH A RESPONSE OBJECT:
 
-  /**
-   * An AuthToken payload object from an authenticated request's auth token.
-   */
-  _authenticatedUser?: SetOptional<FixitApiAuthTokenPayload, "stripeConnectAccount">;
-
-  /**
-   * A User's pre-fetched WorkOrders, Invoices, and Contacts (used on logins).
-   */
-  _userQueryItems?: PreFetchedUserQueryItems;
+  /** A stringified and encoded Fixit API {@link AuthToken}. */
+  authToken?: AllRestApiResponses["token"] | undefined;
+  /** A Stripe Customer dashboard link, or Stripe Connect Account flow link. */
+  stripeLink?: AllRestApiResponses["stripeLink"] | undefined;
+  /** A promo code's validity and discount percentage (if valid/applicable). */
+  promoCodeInfo?: AllRestApiResponses["promoCodeInfo"] | undefined;
+  /** A User's pre-fetched WorkOrders, Invoices, and Contacts (used on logins). */
+  userItems?: AllRestApiResponses["userItems"] | undefined;
+  /** An object containing checkout-completion info. */
+  checkoutCompletionInfo?: AllRestApiResponses["checkoutCompletionInfo"] | undefined;
 };
