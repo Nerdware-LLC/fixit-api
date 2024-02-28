@@ -31,6 +31,16 @@ plugins:
   - - "@semantic-release/github"
     - addReleases: bottom
       assignees: trevor-anderson
+      successComment: false
+      failTitle: false
+      # The options set to `false` above ensure the github plugin does not
+      # attempt to use the GitHub API in the "success" step, which currently
+      # throws every single time due to purported rate limiting issues with the
+      # GitHub API, even though local usage does not result in such errors. The
+      # problem is suspected to be caused by how the plugin uses Octokit's `retry`.
+      # See issues:
+      # - https://github.com/semantic-release/semantic-release/issues/2204
+      # - https://github.com/semantic-release/semantic-release/issues/843
 
   - - "@semantic-release/changelog"
     - changelogFile: "CHANGELOG.md"
