@@ -7,7 +7,6 @@ import type { RequestHandler } from "express";
  *
  * - default-src 'self';
  * - base-uri 'self';
- * - block-all-mixed-content;
  * - font-src 'self' https: data:;
  * - frame-ancestors 'self';
  * - img-src 'self' data:;
@@ -15,7 +14,7 @@ import type { RequestHandler } from "express";
  * - script-src 'self';
  * - script-src-attr 'none';
  * - style-src 'self' https: 'unsafe-inline';
- * - upgrade-insecure-requests
+ * - upgrade-insecure-requests;
  */
 const HELMET_DEFAULT_CSP_DIRECTIVES = helmet.contentSecurityPolicy.getDefaultDirectives() as Record<
   string,
@@ -28,9 +27,9 @@ const HELMET_DEFAULT_CSP_DIRECTIVES = helmet.contentSecurityPolicy.getDefaultDir
  * The directives listed below are required in order for fixit-web to use the stripeJS lib.
  * https://stripe.com/docs/security/guide#content-security-policy
  *
- * - connect-src 'https://api.stripe.com';
- * - frame-src 'https://js.stripe.com' 'https://hooks.stripe.com';
- * - script-src 'https://js.stripe.com';
+ * - connect-src https://api.stripe.com;
+ * - frame-src https://js.stripe.com https://hooks.stripe.com;
+ * - script-src https://js.stripe.com;
  */
 const STRIPE_REQUIRED_CSP_DIRECTIVES = {
   "connect-src": "https://api.stripe.com",
@@ -39,9 +38,22 @@ const STRIPE_REQUIRED_CSP_DIRECTIVES = {
 };
 
 /**
+ * GOOGLE'S REQUIRED CSP DIRECTIVES
+ *
+ * @see https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid#cross_origin_opener_policy
+ */
+const GOOGLE_API_REQUIRED_CSP_DIRECTIVES = {
+  "connect-src": "https://accounts.google.com/gsi/",
+  "frame-src": "https://accounts.google.com/gsi/",
+  "script-src": "https://accounts.google.com/gsi/client",
+  "style-src": "https://accounts.google.com/gsi/style",
+  "default-src": "https://accounts.google.com/gsi/",
+};
+
+/**
  * CSP VIOLATION REPORTING DIRECTIVES:
  *
- * - report-to 'fixit-security';
+ * - report-to fixit-security;
  * - report-uri `${ENV.CONFIG.API_FULL_URL}/admin/csp-violation`;
  *
  * > "report-uri" has been deprecated, but as of Nov 2022 most browsers don't
@@ -55,8 +67,8 @@ const CSP_VIOLATION_REPORTING_DIRECTIVES = {
 /**
  * FIXIT API SRC CSP DIRECTIVES:
  *
- * - default-src `'${ENV.CONFIG.API_BASE_URL}'`;
- * - script-src `'${ENV.CONFIG.API_BASE_URL}'`;
+ * - default-src `${ENV.CONFIG.API_BASE_URL}`;
+ * - script-src `${ENV.CONFIG.API_BASE_URL}`;
  */
 const FIXIT_API_SRC_CSP_DIRECTIVES = {
   "default-src": `'${ENV.CONFIG.API_BASE_URL}'`,
@@ -74,21 +86,20 @@ const FIXIT_API_SRC_CSP_DIRECTIVES = {
  *
  * CSP DIRECTIVES:
  *
- * - default-src `'self' '${ENV.CONFIG.API_BASE_URL}';`
- * - script-src `'self' '${ENV.CONFIG.API_BASE_URL}' 'https://js.stripe.com';`
+ * - default-src `'self' ${ENV.CONFIG.API_BASE_URL};`
+ * - script-src `'self' ${ENV.CONFIG.API_BASE_URL} https://js.stripe.com;`
  * - script-src-attr `'none';`
- * - frame-src `'https://js.stripe.com' 'https://hooks.stripe.com';`
+ * - frame-src `https://js.stripe.com https://hooks.stripe.com;`
  * - frame-ancestors `'self';`
- * - connect-src `'https://api.stripe.com';`
+ * - connect-src `https://api.stripe.com;`
  * - base-uri `'self';`
  * - font-src `'self' https: data:;`
  * - img-src `'self' data:;`
  * - object-src `'none';`
  * - style-src `'self' https: 'unsafe-inline';`
- * - report-to `'fixit-security';`
- * - report-uri `'${ENV.CONFIG.API_FULL_URL}/admin/csp-violation';`
- * - `block-all-mixed-content;`
- * - `upgrade-insecure-requests;`
+ * - report-to `fixit-security;`
+ * - report-uri `${ENV.CONFIG.API_FULL_URL}/admin/csp-violation;`
+ * - `upgrade-insecure-requests`
  */
 const helmetMW = helmet({
   contentSecurityPolicy: {
@@ -97,6 +108,7 @@ const helmetMW = helmet({
       FIXIT_API_SRC_CSP_DIRECTIVES,
       CSP_VIOLATION_REPORTING_DIRECTIVES,
       STRIPE_REQUIRED_CSP_DIRECTIVES,
+      GOOGLE_API_REQUIRED_CSP_DIRECTIVES,
     ].reduce((accum: Record<string, Array<string>>, cspDirectivesObject) => {
       // Deep merge each set of CSP directives
       Object.entries(cspDirectivesObject).forEach(([cspKey, cspValues]) => {
