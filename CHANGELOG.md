@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+# [1.24.0-next.1](https://github.com/Nerdware-LLC/fixit-api/compare/v1.23.1...v1.24.0-next.1) (2024-02-28)
+
+
+### Bug Fixes
+
+* rm file extensions from imports ([74594e8](https://github.com/Nerdware-LLC/fixit-api/commit/74594e84efec7bf2f7e4c44d0abf30ab5d849550))
+* **test:** add 'as any' to fake lambda fn names in test ([1828de3](https://github.com/Nerdware-LLC/fixit-api/commit/1828de3ab8a70d3c8b8c25cdba6bfe939ebc76e9))
+
+
+### Features
+
+* add lambda fn name enum ([3bc9fd8](https://github.com/Nerdware-LLC/fixit-api/commit/3bc9fd80e77d9da03b2fe47c396d2a27ceea3dfb))
+* **csp:** update csp directives ([1e2400a](https://github.com/Nerdware-LLC/fixit-api/commit/1e2400ae27bde9b00c3ffe559a3dbeb921097ac9))
+
 ## [1.23.1](https://github.com/Nerdware-LLC/fixit-api/compare/v1.23.0...v1.23.1) (2024-02-20)
 
 
