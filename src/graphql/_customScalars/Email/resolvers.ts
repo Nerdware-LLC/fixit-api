@@ -1,8 +1,8 @@
 import { isValidEmail } from "@nerdware/ts-string-helpers";
 import { GraphQLScalarType } from "graphql";
 import { Kind } from "graphql/language";
-import { logger } from "@/utils/logger.js";
-import { helpers } from "../helpers.js";
+import { logger } from "@/utils/logger";
+import { helpers } from "../helpers";
 
 export const resolvers = {
   Email: new GraphQLScalarType({
