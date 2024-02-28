@@ -66,8 +66,8 @@ COPY --from=builder /home/node/app/node_modules ./node_modules/
 # Set non-root user (this step must be after tini-setup)
 USER node
 
-# Set node opts to (1) allow extension-less imports and (2) suppress warnings
-ENV NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings'
+# Set node opts to (1) enable ESM, (2) allow extension-less imports, and (3) suppress warnings
+ENV NODE_OPTIONS='--input-type=module --experimental-specifier-resolution=node --no-warnings'
 
 # Run the API directly with node executable
 CMD ["node", "dist/index.js"]
