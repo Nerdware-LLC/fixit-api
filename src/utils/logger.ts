@@ -2,7 +2,7 @@ import { safeJsonStringify, getErrorMessage, isError } from "@nerdware/ts-type-s
 import * as Sentry from "@sentry/node";
 import chalk, { type ChalkInstance } from "chalk";
 import dayjs from "dayjs";
-import { ENV } from "@/server/env";
+import { ENV } from "@/server/env/index.js";
 
 /* eslint-disable no-console */
 

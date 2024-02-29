@@ -1,4 +1,4 @@
-import type { DeleteMutationResponse as DeleteMutationResponseType } from "@/types";
+import type { DeleteMutationResponse as DeleteMutationResponseType } from "@/types/graphql.js";
 
 export class DeleteMutationResponse implements DeleteMutationResponseType {
   id: string;

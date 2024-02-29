@@ -1,9 +1,9 @@
-import { DeleteMutationResponse } from "@/graphql/_common";
-import { usersCache } from "@/lib/cache/usersCache";
-import { Contact } from "@/models/Contact";
-import { User } from "@/models/User";
-import { GqlUserInputError, GqlInternalServerError } from "@/utils/httpErrors";
-import type { Resolvers } from "@/types";
+import { DeleteMutationResponse } from "@/graphql/_common/index.js";
+import { usersCache } from "@/lib/cache/usersCache.js";
+import { Contact } from "@/models/Contact/Contact.js";
+import { User } from "@/models/User/User.js";
+import { GqlUserInputError, GqlInternalServerError } from "@/utils/httpErrors.js";
+import type { Resolvers } from "@/types/graphql.js";
 
 export const resolvers: Partial<Resolvers> = {
   Query: {

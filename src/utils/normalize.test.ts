@@ -1,4 +1,4 @@
-import { normalize } from "./normalize";
+import { normalize } from "./normalize.js";
 
 describe("clientInputHandlers: normalize", () => {
   describe("normalize.currencyStrToInt()", () => {

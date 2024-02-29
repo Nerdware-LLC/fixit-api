@@ -1,8 +1,8 @@
-import { InvoicePushNotification } from "@/events/pushNotifications";
-import { lambdaClient } from "@/lib/lambdaClient";
-import { User, type UserItem } from "@/models/User";
-import { notifyAssigneeUpdatedInvoice } from "./notifyAssigneeUpdatedInvoice";
-import type { InvoiceItem } from "@/models/Invoice";
+import { InvoicePushNotification } from "@/events/pushNotifications/index.js";
+import { lambdaClient } from "@/lib/lambdaClient/index.js";
+import { User, type UserItem } from "@/models/User/User.js";
+import { notifyAssigneeUpdatedInvoice } from "./notifyAssigneeUpdatedInvoice.js";
+import type { InvoiceItem } from "@/models/Invoice/Invoice.js";
 
 describe("notifyAssigneeUpdatedInvoice", () => {
   test("sends a push notification to the assignee when the assignee has an expoPushToken", async () => {

@@ -1,5 +1,5 @@
-import { createModelHelpers } from "@/models/_common";
-import { CONTACT_SK_PREFIX_STR as SK_PREFIX, CONTACT_SK_REGEX } from "./regex";
+import { createModelHelpers } from "@/models/_common/modelHelpers.js";
+import { CONTACT_SK_PREFIX_STR as SK_PREFIX, CONTACT_SK_REGEX } from "./regex.js";
 
 export const contactModelHelpers = createModelHelpers({
   id: {

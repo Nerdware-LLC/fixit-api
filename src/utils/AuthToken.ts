@@ -1,8 +1,8 @@
 import { isString } from "@nerdware/ts-type-safety-utils";
-import { signAndEncodeJWT, validateAndDecodeJWT } from "./jwt";
-import type { UserItem } from "@/models/User";
-import type { UserStripeConnectAccountItem } from "@/models/UserStripeConnectAccount";
-import type { UserSubscriptionItem } from "@/models/UserSubscription";
+import { signAndEncodeJWT, validateAndDecodeJWT } from "./jwt.js";
+import type { UserItem } from "@/models/User/User.js";
+import type { UserStripeConnectAccountItem } from "@/models/UserStripeConnectAccount/UserStripeConnectAccount.js";
+import type { UserSubscriptionItem } from "@/models/UserSubscription/UserSubscription.js";
 import type { Request } from "express";
 import type jwt from "jsonwebtoken";
 import type { Simplify } from "type-fest";

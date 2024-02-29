@@ -1,7 +1,7 @@
-import "@/server/init";
-import { ENV } from "@/server/env";
-import { logger } from "@/utils/logger";
-import { expressApp } from "./expressApp";
+import "@/server/init.js";
+import { ENV } from "@/server/env/index.js";
+import { logger } from "@/utils/logger.js";
+import { expressApp } from "./expressApp.js";
 
 const server = expressApp.listen(ENV.CONFIG.PORT, () => {
   logger.server("👂 Server is listening.");

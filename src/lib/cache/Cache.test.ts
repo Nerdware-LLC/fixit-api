@@ -1,4 +1,4 @@
-import { Cache } from "./Cache";
+import { Cache } from "./Cache.js";
 
 describe("Cache", () => {
   describe("cache.set()", () => {

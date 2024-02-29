@@ -1,8 +1,8 @@
 import dayjs from "dayjs";
 import merge from "lodash.merge";
-import { mockStripeSubscription } from "./_mockStripeSubscription";
-import type { UserItem } from "@/models/User";
-import type { UserSubscriptionItem } from "@/models/UserSubscription";
+import { mockStripeSubscription } from "./_mockStripeSubscription.js";
+import type { UserItem } from "@/models/User/User.js";
+import type { UserSubscriptionItem } from "@/models/UserSubscription/UserSubscription.js";
 import type Stripe from "stripe";
 
 /**

@@ -1,5 +1,5 @@
 import { getTypeSafeError } from "@nerdware/ts-type-safety-utils";
-import { logger } from "@/utils/logger";
+import { logger } from "@/utils/logger.js";
 
 Object.entries({
   uncaughtException: 1,

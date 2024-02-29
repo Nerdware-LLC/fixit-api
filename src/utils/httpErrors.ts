@@ -2,7 +2,7 @@ import { ApolloServerErrorCode } from "@apollo/server/errors";
 import { getErrorMessage } from "@nerdware/ts-type-safety-utils";
 import { GraphQLError, type GraphQLErrorOptions } from "graphql";
 import deepMerge from "lodash.merge";
-import { logger } from "@/utils/logger";
+import { logger } from "@/utils/logger.js";
 import type { Class } from "type-fest";
 
 /**

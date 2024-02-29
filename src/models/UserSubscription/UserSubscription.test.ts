@@ -1,10 +1,10 @@
 import {
   MOCK_USER_SUBS,
   UNALIASED_MOCK_USER_SUBS,
-} from "@/tests/staticMockItems/userSubscriptions";
-import { MOCK_USERS } from "@/tests/staticMockItems/users";
-import { UserSubscription } from "./UserSubscription";
-import { userSubscriptionModelHelpers as subModelHelpers } from "./helpers";
+} from "@/tests/staticMockItems/userSubscriptions.js";
+import { MOCK_USERS } from "@/tests/staticMockItems/users.js";
+import { UserSubscription } from "./UserSubscription.js";
+import { userSubscriptionModelHelpers as subModelHelpers } from "./helpers.js";
 
 describe("UserSubscription Model", () => {
   describe("UserSubscription.upsertOne()", () => {
@@ -131,25 +131,25 @@ describe("UserSubscription Model", () => {
     test(`does not throw when called with a valid "active" subscription`, () => {
       expect(() => {
         UserSubscription.validateExisting({ status: "active", currentPeriodEnd: YEAR_9999 });
-      }).not.toThrowError();
+      }).not.toThrow();
     });
 
     test(`does not throw when called with a valid "trialing" subscription`, () => {
       expect(() => {
         UserSubscription.validateExisting({ status: "trialing", currentPeriodEnd: YEAR_9999 });
-      }).not.toThrowError();
+      }).not.toThrow();
     });
 
     test(`throws an error when called with a subscription with an invalid status`, () => {
       expect(() => {
         UserSubscription.validateExisting({ status: "past_due", currentPeriodEnd: YEAR_9999 });
-      }).toThrowError("past due");
+      }).toThrow("past due");
     });
 
     test(`throws an error when called with an expired subscription`, () => {
       expect(() => {
         UserSubscription.validateExisting({ status: "active", currentPeriodEnd: YEAR_2000 });
-      }).toThrowError("expired");
+      }).toThrow("expired");
     });
   });
 });

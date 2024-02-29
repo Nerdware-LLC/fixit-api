@@ -1,1 +1,1 @@
-export * from "./sendWelcomeEmail";
+export * from "./sendWelcomeEmail.js";

@@ -1,7 +1,7 @@
-import { WorkOrderPushNotification } from "@/events/pushNotifications";
-import { lambdaClient } from "@/lib/lambdaClient";
-import { User } from "@/models/User";
-import type { WorkOrderItem } from "@/models/WorkOrder";
+import { WorkOrderPushNotification } from "@/events/pushNotifications/index.js";
+import { lambdaClient } from "@/lib/lambdaClient/index.js";
+import { User } from "@/models/User/User.js";
+import type { WorkOrderItem } from "@/models/WorkOrder/WorkOrder.js";
 
 /**
  * Notify assignee of new WorkOrder when `WorkOrderAssigned` event is emitted.

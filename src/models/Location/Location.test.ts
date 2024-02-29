@@ -1,35 +1,42 @@
-import { Location } from "./Location";
+import { Location } from "./Location.js";
 
 /** A valid Location object. */
 const TEST_LOCATION = {
-  country: "USA",
+  country: Location.DEFAULT_COUNTRY,
   region: "California",
   city: "San Francisco",
   streetLine1: "123 Main St.",
   streetLine2: "Apt 4",
 };
 
+/** {@link TEST_LOCATION} in compound-string form. */
 const TEST_LOCATION_COMPOUND_STRING = "USA#California#San_Francisco#123_Main_St.#Apt_4";
 
 describe("Location Model", () => {
+  /* Explicitly set TEST_LOCATION prototype so `toStrictEqual` works
+  as expected without having to use functions included in the SUT.*/
+  beforeAll(() => {
+    Object.setPrototypeOf(TEST_LOCATION, Location.prototype);
+  });
+
   describe("new Location()", () => {
     test("returns a Location object with expected keys and values", () => {
-      // Grab some values from the input object
-      const { region, city, streetLine1 } = TEST_LOCATION;
+      // The TEST_LOCATION object is used for required values
       const location = new Location({
-        region,
-        city,
-        streetLine1,
+        region: TEST_LOCATION.region,
+        city: TEST_LOCATION.city,
+        streetLine1: TEST_LOCATION.streetLine1,
         streetLine2: "", // <-- empty strings should yield null
         // country          <-- optional field should be populated with default
       });
 
-      // toStrictEqual not used because 'strict' also asserts the prototype, not just the shape.
-      expect(location).toEqual({
-        ...TEST_LOCATION,
-        country: Location.DEFAULT_COUNTRY,
-        streetLine2: null,
-      });
+      expect(location).toStrictEqual(
+        new Location({
+          ...TEST_LOCATION,
+          country: Location.DEFAULT_COUNTRY,
+          streetLine2: null,
+        })
+      );
     });
 
     test("throws an error when creating a Location object with missing required fields", () => {
@@ -38,7 +45,7 @@ describe("Location Model", () => {
           region: "California",
           city: "San Francisco",
         } as any);
-      }).toThrow();
+      }).toThrow(`Invalid Location: "street line 1" is required`);
     });
   });
 
@@ -67,7 +74,7 @@ describe("Location Model", () => {
       const compoundString = "invalid_string";
       expect(() => {
         Location.parseCompoundString(compoundString);
-      }).toThrow();
+      }).toThrow(`Invalid Location: "invalid_string" is not a valid Location compound string.`);
     });
   });
 });

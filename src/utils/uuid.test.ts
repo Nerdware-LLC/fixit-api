@@ -1,5 +1,5 @@
-import { UUID_V1_REGEX } from "./regex";
-import { getUnixTimestampUUID } from "./uuid";
+import { UUID_V1_REGEX } from "./regex.js";
+import { getUnixTimestampUUID } from "./uuid.js";
 
 describe("getUnixTimestampUUID()", () => {
   test("returns a valid v1-UUID string", () => {

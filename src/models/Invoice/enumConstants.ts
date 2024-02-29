@@ -1,4 +1,4 @@
-import type { InvoiceStatus } from "@/types";
+import type { InvoiceStatus } from "@/types/graphql.js";
 
 export const INVOICE_ENUM_CONSTANTS: {
   readonly STATUSES: ReadonlyArray<InvoiceStatus>;

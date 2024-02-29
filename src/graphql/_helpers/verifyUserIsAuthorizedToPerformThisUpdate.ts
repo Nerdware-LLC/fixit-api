@@ -1,5 +1,5 @@
 import { hasKey } from "@nerdware/ts-type-safety-utils";
-import { GqlUserInputError, GqlForbiddenError } from "@/utils/httpErrors";
+import { GqlUserInputError, GqlForbiddenError } from "@/utils/httpErrors.js";
 
 /**
  * This function performs the following common authorization validation checks for

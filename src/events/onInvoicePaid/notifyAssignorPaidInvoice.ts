@@ -1,7 +1,7 @@
-import { InvoicePushNotification } from "@/events/pushNotifications";
-import { lambdaClient } from "@/lib/lambdaClient";
-import { User } from "@/models/User";
-import type { InvoiceItem } from "@/models/Invoice";
+import { InvoicePushNotification } from "@/events/pushNotifications/index.js";
+import { lambdaClient } from "@/lib/lambdaClient/index.js";
+import { User } from "@/models/User/User.js";
+import type { InvoiceItem } from "@/models/Invoice/Invoice.js";
 
 /**
  * Notify assignor of paid Invoice when `InvoicePaid` event is emitted.

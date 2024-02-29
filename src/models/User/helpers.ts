@@ -1,12 +1,12 @@
 import { isDate } from "@nerdware/ts-type-safety-utils";
-import { createModelHelpers } from "@/models/_common/modelHelpers";
-import { getUnixTimestampUUID } from "@/utils/uuid";
+import { createModelHelpers } from "@/models/_common/modelHelpers.js";
+import { getUnixTimestampUUID } from "@/utils/uuid.js";
 import {
   USER_ID_PREFIX_STR as ID_PREFIX,
   USER_ID_REGEX,
   USER_SK_PREFIX_STR as SK_PREFIX,
   USER_SK_REGEX,
-} from "./regex";
+} from "./regex.js";
 
 export const userModelHelpers = createModelHelpers({
   id: {

@@ -1,1 +1,1 @@
-export { notifyAssigneeUpdatedWO } from "./notifyAssigneeUpdatedWO";
+export { notifyAssigneeUpdatedWO } from "./notifyAssigneeUpdatedWO.js";

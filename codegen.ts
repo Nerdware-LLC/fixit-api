@@ -26,7 +26,7 @@ const codegenConfig: CodegenConfig = {
         useIndexSignature: true,
         useTypeImports: true,
         // resolver context type:
-        contextType: "@/apolloServer#ApolloServerResolverContext",
+        contextType: "@/apolloServer.js#ApolloServerResolverContext",
         scalars: {
           ID: "string",
           DateTime: "Date",
@@ -34,14 +34,14 @@ const codegenConfig: CodegenConfig = {
         },
         // `mappers` type overrides:
         mappers: {
-          User: "@/models/User/User#UserItem",
-          Contact: "@/models/Contact/Contact#ContactItem",
-          FixitUser: "@/graphql/FixitUser/types#FixitUserCodegenInterface",
-          Invoice: "@/models/Invoice/Invoice#InvoiceItem",
-          WorkOrder: "@/models/WorkOrder/WorkOrder#WorkOrderItem",
-          UserSubscription: "@/models/UserSubscription/UserSubscription#UserSubscriptionItem",
+          User: "@/models/User/User.js#UserItem",
+          Contact: "@/models/Contact/Contact.js#ContactItem",
+          FixitUser: "@/graphql/FixitUser/types.js#FixitUserCodegenInterface",
+          Invoice: "@/models/Invoice/Invoice.js#InvoiceItem",
+          WorkOrder: "@/models/WorkOrder/WorkOrder.js#WorkOrderItem",
+          UserSubscription: "@/models/UserSubscription/UserSubscription.js#UserSubscriptionItem",
           UserStripeConnectAccount:
-            "@/models/UserStripeConnectAccount/UserStripeConnectAccount#UserStripeConnectAccountItem",
+            "@/models/UserStripeConnectAccount/UserStripeConnectAccount.js#UserStripeConnectAccountItem",
         },
       },
     },

@@ -1,4 +1,4 @@
-import { UserLogin } from "./UserLogin";
+import { UserLogin } from "./UserLogin.js";
 
 describe("UserLogin", () => {
   describe("UserLogin.createLogin()", () => {
@@ -19,23 +19,29 @@ describe("UserLogin", () => {
     });
 
     test("throws an error when called without any params", async () => {
-      await expect(UserLogin.createLogin({} as any)).rejects.toThrow();
+      await expect(UserLogin.createLogin({} as any)).rejects.toThrow("Invalid login credentials");
     });
 
     test(`throws an error when called with a "password" arg less than 6 characters long`, async () => {
-      await expect(UserLogin.createLogin({ password: "12345" })).rejects.toThrow();
+      await expect(UserLogin.createLogin({ password: "12345" })).rejects.toThrow(
+        "The provided password does not meet the required criteria"
+      );
     });
 
     test(`throws an error when called with an invalid "googleID" arg`, async () => {
       const googleID = "bad";
       const googleAccessToken = "gat_123";
-      await expect(UserLogin.createLogin({ googleID, googleAccessToken })).rejects.toThrow();
+      await expect(UserLogin.createLogin({ googleID, googleAccessToken })).rejects.toThrow(
+        "Invalid Google ID"
+      );
     });
 
     test(`throws an error when called with an invalid "googleAccessToken" arg`, async () => {
       const googleID = "gid_123";
       const googleAccessToken = "bad";
-      await expect(UserLogin.createLogin({ googleID, googleAccessToken })).rejects.toThrow();
+      await expect(UserLogin.createLogin({ googleID, googleAccessToken })).rejects.toThrow(
+        "Invalid Google access token"
+      );
     });
   });
 });

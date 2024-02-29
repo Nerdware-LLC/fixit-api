@@ -1,6 +1,6 @@
-import { UserInputError, AuthError } from "@/utils/httpErrors";
-import type { RestApiRequestHandler } from "@/middleware/helpers";
-import type { RestApiRequestBodyByPath } from "@/types/open-api";
+import { UserInputError, AuthError } from "@/utils/httpErrors.js";
+import type { RestApiRequestHandler } from "@/middleware/helpers.js";
+import type { RestApiRequestBodyByPath } from "@/types/open-api.js";
 
 /**
  * This middleware asserts that a UserLogin _**should not**_ exist on the `res.locals` object.

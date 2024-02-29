@@ -1,9 +1,9 @@
-import { MOCK_CONTACTS } from "./contacts";
-import { MOCK_INVOICES } from "./invoices";
-import { MOCK_USER_SCAs } from "./userStripeConnectAccounts";
-import { MOCK_USER_SUBS } from "./userSubscriptions";
-import { MOCK_USERS } from "./users";
-import { MOCK_WORK_ORDERS } from "./workOrders";
+import { MOCK_CONTACTS } from "./contacts.js";
+import { MOCK_INVOICES } from "./invoices.js";
+import { MOCK_USER_SCAs } from "./userStripeConnectAccounts.js";
+import { MOCK_USER_SUBS } from "./userSubscriptions.js";
+import { MOCK_USERS } from "./users.js";
+import { MOCK_WORK_ORDERS } from "./workOrders.js";
 
 /**
  * Factory fn to create mock-item finder functions for use in tests and mocks. The

@@ -1,7 +1,7 @@
 import { isDate } from "@nerdware/ts-type-safety-utils";
-import { createModelHelpers } from "@/models/_common";
-import { getUnixTimestampUUID } from "@/utils/uuid";
-import { INVOICE_SK_PREFIX_STR as SK_PREFIX, INVOICE_SK_REGEX } from "./regex";
+import { createModelHelpers } from "@/models/_common/modelHelpers.js";
+import { getUnixTimestampUUID } from "@/utils/uuid.js";
+import { INVOICE_SK_PREFIX_STR as SK_PREFIX, INVOICE_SK_REGEX } from "./regex.js";
 
 export const invoiceModelHelpers = createModelHelpers({
   id: {

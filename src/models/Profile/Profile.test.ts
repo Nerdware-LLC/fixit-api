@@ -1,4 +1,4 @@
-import { Profile, type ProfileParams } from "./Profile";
+import { Profile, type ProfileParams } from "./Profile.js";
 
 /** Valid ProfileParams */
 const PROFILE_ARGS: ProfileParams = {

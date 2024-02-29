@@ -1,7 +1,7 @@
-import type { UserItem } from "@/models/User";
-import type { UserSubscriptionItem } from "@/models/UserSubscription/index";
-import type { FixitApiAuthTokenPayload } from "@/utils/AuthToken";
-import type { AllRestApiResponses } from "./open-api";
+import type { UserItem } from "@/models/User/User.js";
+import type { UserSubscriptionItem } from "@/models/UserSubscription/index.js";
+import type { FixitApiAuthTokenPayload } from "@/utils/AuthToken.js";
+import type { AllRestApiResponses } from "./open-api.js";
 
 /**
  * This type contains every Express `res.locals` field used by internal REST middleware.

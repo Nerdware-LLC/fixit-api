@@ -1,14 +1,14 @@
 import { EventEmitter } from "events";
-import { notifyAssigneeNewInvoice } from "@/events/onInvoiceCreated";
-import { notifyAssigneeDeletedInvoice } from "@/events/onInvoiceDeleted";
-import { notifyAssignorPaidInvoice } from "@/events/onInvoicePaid";
-import { notifyAssigneeUpdatedInvoice } from "@/events/onInvoiceUpdated";
-import { sendWelcomeEmail } from "@/events/onNewUser";
-import { notifyAssigneeCancelledWO } from "@/events/onWorkOrderCancelled";
-import { notifyAssignorCompletedWO } from "@/events/onWorkOrderCompleted";
-import { notifyAssigneeNewWO } from "@/events/onWorkOrderCreated";
-import { notifyAssigneeUpdatedWO } from "@/events/onWorkOrderUpdated";
-import { logger } from "@/utils/logger";
+import { notifyAssigneeNewInvoice } from "@/events/onInvoiceCreated/index.js";
+import { notifyAssigneeDeletedInvoice } from "@/events/onInvoiceDeleted/index.js";
+import { notifyAssignorPaidInvoice } from "@/events/onInvoicePaid/index.js";
+import { notifyAssigneeUpdatedInvoice } from "@/events/onInvoiceUpdated/index.js";
+import { sendWelcomeEmail } from "@/events/onNewUser/index.js";
+import { notifyAssigneeCancelledWO } from "@/events/onWorkOrderCancelled/index.js";
+import { notifyAssignorCompletedWO } from "@/events/onWorkOrderCompleted/index.js";
+import { notifyAssigneeNewWO } from "@/events/onWorkOrderCreated/index.js";
+import { notifyAssigneeUpdatedWO } from "@/events/onWorkOrderUpdated/index.js";
+import { logger } from "@/utils/logger.js";
 
 /**
  * A thin wrapper around EventEmitter which adds named emitter methods for each

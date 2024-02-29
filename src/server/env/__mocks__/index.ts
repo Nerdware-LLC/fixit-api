@@ -1,4 +1,4 @@
-import { EnvObject } from "../EnvObject";
+import { EnvObject } from "../EnvObject.js";
 
 /*
   The default values below are for unit-testing contexts wherein the underlying

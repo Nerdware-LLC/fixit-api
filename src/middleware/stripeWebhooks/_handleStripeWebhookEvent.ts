@@ -1,10 +1,10 @@
 import { getTypeSafeError, safeJsonStringify } from "@nerdware/ts-type-safety-utils";
-import { stripe } from "@/lib/stripe";
-import { ENV } from "@/server/env";
-import { logger } from "@/utils/logger";
-import { connectAccountUpdated } from "./connectAccountUpdated";
-import { customerSubscriptionDeleted } from "./customerSubscriptionDeleted";
-import { customerSubscriptionUpdated } from "./customerSubscriptionUpdated";
+import { stripe } from "@/lib/stripe/stripeClient.js";
+import { ENV } from "@/server/env/index.js";
+import { logger } from "@/utils/logger.js";
+import { connectAccountUpdated } from "./connectAccountUpdated.js";
+import { customerSubscriptionDeleted } from "./customerSubscriptionDeleted.js";
+import { customerSubscriptionUpdated } from "./customerSubscriptionUpdated.js";
 import type { Request, Response, NextFunction } from "express";
 import type Stripe from "stripe";
 

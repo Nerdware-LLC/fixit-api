@@ -1,14 +1,14 @@
 import { isString, getTypeSafeError } from "@nerdware/ts-type-safety-utils";
-import {
-  stripe,
-  type StripeSubscriptionWithClientSecret,
-  type StripeCustomerWithClientSecret,
-} from "@/lib/stripe";
-import { mwAsyncCatchWrapper } from "@/middleware/helpers";
-import { UserSubscription } from "@/models/UserSubscription";
-import { PaymentRequiredError } from "@/utils/httpErrors";
-import { logger } from "@/utils/logger";
-import type { RestApiRequestBodyByPath } from "@/types/open-api";
+import { stripe } from "@/lib/stripe/stripeClient.js";
+import { mwAsyncCatchWrapper } from "@/middleware/helpers.js";
+import { UserSubscription } from "@/models/UserSubscription/UserSubscription.js";
+import { PaymentRequiredError } from "@/utils/httpErrors.js";
+import { logger } from "@/utils/logger.js";
+import type {
+  StripeSubscriptionWithClientSecret,
+  StripeCustomerWithClientSecret,
+} from "@/lib/stripe/types.js";
+import type { RestApiRequestBodyByPath } from "@/types/open-api.js";
 import type Stripe from "stripe";
 
 /**

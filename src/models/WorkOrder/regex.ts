@@ -1,5 +1,5 @@
-import { USER_ID_REGEX_STR } from "@/models/User/regex";
-import { UUID_V1_REGEX_STR } from "@/utils/regex";
+import { USER_ID_REGEX_STR } from "@/models/User/regex.js";
+import { UUID_V1_REGEX_STR } from "@/utils/regex.js";
 
 export const WORK_ORDER_SK_PREFIX_STR = "WO";
 export const WORK_ORDER_ID_REGEX_STR = `${WORK_ORDER_SK_PREFIX_STR}#${USER_ID_REGEX_STR}#${UUID_V1_REGEX_STR}`;

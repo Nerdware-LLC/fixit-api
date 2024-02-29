@@ -1,11 +1,11 @@
 import { Model } from "@nerdware/ddb-single-table";
-import { isValidStripeID } from "@/lib/stripe";
-import { userModelHelpers } from "@/models/User/helpers";
-import { COMMON_ATTRIBUTES } from "@/models/_common";
-import { ddbTable } from "@/models/ddbTable";
-import { createOne } from "./createOne";
-import { userStripeConnectAccountModelHelpers as scaModelHelpers } from "./helpers";
-import { STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR } from "./regex";
+import { isValidStripeID } from "@/lib/stripe/isValidStripeID.js";
+import { userModelHelpers } from "@/models/User/helpers.js";
+import { COMMON_ATTRIBUTES } from "@/models/_common/modelAttributes.js";
+import { ddbTable } from "@/models/ddbTable.js";
+import { createOne } from "./createOne.js";
+import { userStripeConnectAccountModelHelpers as scaModelHelpers } from "./helpers.js";
+import { STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR } from "./regex.js";
 import type { ItemTypeFromSchema } from "@nerdware/ddb-single-table";
 
 /**

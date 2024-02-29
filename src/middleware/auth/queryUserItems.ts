@@ -1,21 +1,21 @@
 import { safeJsonStringify } from "@nerdware/ts-type-safety-utils";
-import { usersCache } from "@/lib/cache/usersCache";
-import { mwAsyncCatchWrapper } from "@/middleware/helpers";
-import { Contact } from "@/models/Contact";
-import { Invoice } from "@/models/Invoice";
-import { UserStripeConnectAccount } from "@/models/UserStripeConnectAccount";
-import { UserSubscription } from "@/models/UserSubscription";
-import { WorkOrder } from "@/models/WorkOrder";
-import { skTypeGuards } from "@/models/_common/skTypeGuards";
-import { ddbTable } from "@/models/ddbTable";
-import { AuthError } from "@/utils/httpErrors";
-import { logger } from "@/utils/logger";
-import type { ContactItem } from "@/models/Contact";
-import type { InvoiceItem } from "@/models/Invoice";
-import type { UserItem } from "@/models/User";
-import type { UserStripeConnectAccountItem } from "@/models/UserStripeConnectAccount";
-import type { UserSubscriptionItem } from "@/models/UserSubscription";
-import type { WorkOrderItem } from "@/models/WorkOrder";
+import { usersCache } from "@/lib/cache/usersCache.js";
+import { mwAsyncCatchWrapper } from "@/middleware/helpers.js";
+import { Contact } from "@/models/Contact/Contact.js";
+import { Invoice } from "@/models/Invoice/Invoice.js";
+import { UserStripeConnectAccount } from "@/models/UserStripeConnectAccount/UserStripeConnectAccount.js";
+import { UserSubscription } from "@/models/UserSubscription/UserSubscription.js";
+import { WorkOrder } from "@/models/WorkOrder/WorkOrder.js";
+import { skTypeGuards } from "@/models/_common/skTypeGuards.js";
+import { ddbTable } from "@/models/ddbTable.js";
+import { AuthError } from "@/utils/httpErrors.js";
+import { logger } from "@/utils/logger.js";
+import type { ContactItem } from "@/models/Contact/Contact.js";
+import type { InvoiceItem } from "@/models/Invoice/Invoice.js";
+import type { UserItem } from "@/models/User/User.js";
+import type { UserStripeConnectAccountItem } from "@/models/UserStripeConnectAccount/UserStripeConnectAccount.js";
+import type { UserSubscriptionItem } from "@/models/UserSubscription/UserSubscription.js";
+import type { WorkOrderItem } from "@/models/WorkOrder/WorkOrder.js";
 
 /**
  * This middleware function fetches/pre-fetches the following types of User items:

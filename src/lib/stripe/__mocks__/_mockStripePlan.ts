@@ -1,4 +1,4 @@
-import { MOCK_DATE_UNIX_TIMESTAMPS } from "@/tests/staticMockItems/dates";
+import { MOCK_DATE_UNIX_TIMESTAMPS } from "@/tests/staticMockItems/dates.js";
 import type Stripe from "stripe";
 
 /**

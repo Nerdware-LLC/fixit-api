@@ -16,7 +16,7 @@
 # STAGE: base
 
 # Source image: NodeJS v20 LTS (https://hub.docker.com/_/node)
-FROM node:20.11.0 as base
+FROM node:20.11 as base
 
 # Expose desired port
 EXPOSE 80
@@ -57,6 +57,9 @@ RUN curl -L https://github.com/krallin/tini/releases/download/${TINI_VERSION}/ti
   && rm -rf /var/lib/apt/lists/*
 ENTRYPOINT ["/tini", "--"]
 
+# Copy over the package.json
+COPY --from=builder /home/node/app/package.json ./
+
 # Copy over only the dist files needed in production
 COPY --from=builder /home/node/app/dist ./dist/
 
@@ -65,10 +68,6 @@ COPY --from=builder /home/node/app/node_modules ./node_modules/
 
 # Set non-root user (this step must be after tini-setup)
 USER node
-
-# Set node opts to (1) enable ESM, (2) disable fs r/w, and (3) suppress warnings
-# Docs: https://nodejs.org/docs/latest-v20.x/api/cli.html
-ENV NODE_OPTIONS='--experimental-default-type=module --experimental-permission --no-warnings'
 
 # Run the API directly with node executable
 CMD ["node", "dist/index.js"]

@@ -1,7 +1,7 @@
 import { expressMiddleware } from "@apollo/server/express4";
 import * as Sentry from "@sentry/node";
 import express from "express";
-import { apolloServer } from "@/apolloServer";
+import { apolloServer } from "@/apolloServer.js";
 import {
   corsMW,
   errorHandler,
@@ -10,14 +10,14 @@ import {
   sendRESTJsonResponse,
   setSecureHttpHeaders,
   validateGqlReqContext,
-} from "@/middleware";
+} from "@/middleware/index.js";
 import {
   adminRouter,
   authRouter,
   connectRouter,
   subscriptionsRouter,
   webhooksRouter,
-} from "@/routers";
+} from "@/routers/index.js";
 
 export const expressApp = express();
 

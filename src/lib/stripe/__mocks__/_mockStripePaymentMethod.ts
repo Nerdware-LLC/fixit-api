@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import merge from "lodash.merge";
-import type { UserItem } from "@/models/User";
+import type { UserItem } from "@/models/User/User.js";
 import type Stripe from "stripe";
 import type { SetRequired } from "type-fest";
 

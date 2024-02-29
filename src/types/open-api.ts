@@ -1,5 +1,5 @@
 import type { Simplify, UnionToIntersection } from "type-fest";
-import type { paths, components } from "./__codegen__/open-api";
+import type { paths, components } from "./__codegen__/open-api.js";
 
 /** This codegen'd type reflects the `"paths"` of the REST API's OpenAPI schema. */
 export type OpenApiPaths = paths;

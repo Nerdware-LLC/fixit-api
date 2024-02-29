@@ -1,11 +1,11 @@
 import { isDate, isString } from "@nerdware/ts-type-safety-utils";
-import { createModelHelpers } from "@/models/_common";
-import { getUnixTimestampUUID } from "@/utils/uuid";
+import { createModelHelpers } from "@/models/_common/modelHelpers.js";
+import { getUnixTimestampUUID } from "@/utils/uuid.js";
 import {
   WORK_ORDER_SK_PREFIX_STR as WO_SK_PREFIX,
   WORK_ORDER_ID_REGEX,
   WO_CHECKLIST_ITEM_ID_REGEX,
-} from "./regex";
+} from "./regex.js";
 
 export const workOrderModelHelpers = createModelHelpers({
   id: {

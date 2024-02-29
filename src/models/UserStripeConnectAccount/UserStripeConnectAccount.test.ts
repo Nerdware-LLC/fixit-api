@@ -1,9 +1,9 @@
 import {
   MOCK_USER_SCAs,
   UNALIASED_MOCK_USER_SCAs,
-} from "@/tests/staticMockItems/userStripeConnectAccounts";
-import { MOCK_USERS } from "@/tests/staticMockItems/users";
-import { UserStripeConnectAccount } from "./UserStripeConnectAccount";
+} from "@/tests/staticMockItems/userStripeConnectAccounts.js";
+import { MOCK_USERS } from "@/tests/staticMockItems/users.js";
+import { UserStripeConnectAccount } from "./UserStripeConnectAccount.js";
 
 describe("UserStripeConnectAccount Model", () => {
   describe("UserStripeConnectAccount.createOne()", () => {

@@ -1,6 +1,6 @@
-import { hasKey, isString } from "@nerdware/ts-type-safety-utils";
-import { LOCATION_COMPOSITE_REGEX } from "./regex";
-import type { Location as GqlSchemaLocationType } from "@/types/graphql";
+import { isString } from "@nerdware/ts-type-safety-utils";
+import { LOCATION_COMPOSITE_REGEX } from "./regex.js";
+import type { Location as GqlSchemaLocationType } from "@/types/graphql.js";
 
 /**
  * Location Model
@@ -22,7 +22,7 @@ export class Location implements GqlSchemaLocationType {
   streetLine1: string;
   streetLine2?: string | null;
 
-  public static DEFAULT_COUNTRY = "USA";
+  public static DEFAULT_COUNTRY = "USA" as const satisfies string;
 
   public static get KEYS(): Array<keyof Location> {
     return ["country", "region", "city", "streetLine1", "streetLine2"];
@@ -48,7 +48,7 @@ export class Location implements GqlSchemaLocationType {
       streetLine2RawInput,
     ].reduce((accum: string, currentRawInput, index) => {
       // "streetLine2RawInput" is optional - skip processing if null
-      if (currentRawInput === null) return accum;
+      if (!isString(currentRawInput)) return accum;
 
       /* For all "location" values, underscores are not valid in the raw input, but we can't
       catch underscores in the Model attribute validation regex since spaces are replaced with
@@ -113,10 +113,8 @@ export class Location implements GqlSchemaLocationType {
       return accum;
     }, {} as Location);
 
-    // If optional field `streetLine2` is missing, set default `null`
-    if (!hasKey(locationObject, "streetLine2")) locationObject.streetLine2 = null;
-
-    return locationObject;
+    // Provide the `locationObject` to the Location constructor
+    return Location.fromParams(locationObject);
   };
 
   /**

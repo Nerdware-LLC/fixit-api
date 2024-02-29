@@ -1,12 +1,13 @@
-import { promoCodesCache } from "@/lib/cache/promoCodesCache";
-import { stripe, type StripeSubscriptionWithClientSecret } from "@/lib/stripe";
-import { UserInputError } from "@/utils/httpErrors";
+import { promoCodesCache } from "@/lib/cache/promoCodesCache.js";
+import { stripe } from "@/lib/stripe/stripeClient.js";
+import { UserInputError } from "@/utils/httpErrors.js";
 import {
   UserSubscription,
   type UserSubscriptionItem,
   type SubscriptionPriceLabels,
-} from "./UserSubscription";
-import type { UserItem } from "@/models/User";
+} from "./UserSubscription.js";
+import type { StripeSubscriptionWithClientSecret } from "@/lib/stripe/types.js";
+import type { UserItem } from "@/models/User/User.js";
 import type Stripe from "stripe";
 
 /**

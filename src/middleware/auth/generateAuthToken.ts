@@ -1,5 +1,5 @@
-import { mwCatchWrapper } from "@/middleware/helpers";
-import { AuthToken } from "@/utils/AuthToken";
+import { mwCatchWrapper } from "@/middleware/helpers.js";
+import { AuthToken } from "@/utils/AuthToken.js";
 
 /**
  * This middleware generates an AuthToken for the authenticated User to be

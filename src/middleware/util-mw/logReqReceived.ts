@@ -1,6 +1,6 @@
 import { isString } from "@nerdware/ts-type-safety-utils";
-import { logger } from "@/utils/logger";
-import type { RestApiRequestHandler } from "@/middleware/helpers";
+import { logger } from "@/utils/logger.js";
+import type { RestApiRequestHandler } from "@/middleware/helpers.js";
 import type { Request } from "express";
 
 /**

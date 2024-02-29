@@ -1,6 +1,6 @@
-import { stripe } from "@/lib/stripe";
-import { mwAsyncCatchWrapper } from "@/middleware/helpers";
-import { UserSubscription } from "@/models/UserSubscription";
+import { stripe } from "@/lib/stripe/stripeClient.js";
+import { mwAsyncCatchWrapper } from "@/middleware/helpers.js";
+import { UserSubscription } from "@/models/UserSubscription/UserSubscription.js";
 
 /**
  * This middleware checks if the User is authenticated, and if so, queries Stripe for

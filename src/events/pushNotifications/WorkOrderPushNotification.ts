@@ -1,5 +1,5 @@
-import { PushNotification, type PushNotificationRecipient } from "./PushNotification";
-import type { WorkOrderItem } from "@/models/WorkOrder";
+import { PushNotification, type PushNotificationRecipient } from "./PushNotification.js";
+import type { WorkOrderItem } from "@/models/WorkOrder/WorkOrder.js";
 
 /**
  * This class represents a push notification for a WorkOrder event.

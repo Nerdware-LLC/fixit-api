@@ -14,6 +14,7 @@ import {
 } from "@nerdware/ts-string-helpers";
 import { hasKey, hasKeys } from "@nerdware/ts-type-safety-utils";
 import express from "express";
+import { sanitizeAndValidateRequestBody } from "@/middleware/helpers.js";
 import {
   findUserByEmail,
   userLoginShouldExist,
@@ -26,9 +27,8 @@ import {
   checkSubscriptionStatus,
   checkOnboardingStatus,
   generateAuthToken,
-} from "@/middleware";
-import { sanitizeAndValidateRequestBody } from "@/middleware/helpers";
-import type { RequestBodyFieldsSchema, RequestBodyValidatorFn } from "@/middleware/helpers";
+} from "@/middleware/index.js";
+import type { RequestBodyFieldsSchema, RequestBodyValidatorFn } from "@/middleware/helpers.js";
 
 /**
  * This router handles all `/api/auth` request paths:

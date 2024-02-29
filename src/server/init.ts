@@ -1,6 +1,6 @@
-import "./initSentry";
-import "./processEventHandlers";
-import "./logStartupInfo";
+import "./initSentry.js";
+import "./processEventHandlers.js";
+import "./logStartupInfo.js";
 
 /* The imports in this file achieve the following:
 

@@ -1,7 +1,7 @@
-import { userModelHelpers } from "@/models/User/helpers";
-import { normalize } from "@/utils/normalize";
-import { MOCK_DATES, MOCK_DATE_v1_UUIDs as UUIDs } from "./dates";
-import type { UserItem, UnaliasedUserItem } from "@/models/User";
+import { userModelHelpers } from "@/models/User/helpers.js";
+import { normalize } from "@/utils/normalize.js";
+import { MOCK_DATES, MOCK_DATE_v1_UUIDs as UUIDs } from "./dates.js";
+import type { UserItem, UnaliasedUserItem } from "@/models/User/index.js";
 
 export const MOCK_USERS = {
   /** Mock User with LOCAL login type. */

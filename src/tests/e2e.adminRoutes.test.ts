@@ -1,9 +1,9 @@
 import request from "supertest";
-import { expressApp } from "@/expressApp";
-import { ENV } from "@/server/env";
+import { expressApp } from "@/expressApp.js";
+import { ENV } from "@/server/env/index.js";
 import type { Server } from "http";
 
-vi.mock("@/apolloServer");
+vi.mock("@/apolloServer.js");
 
 describe("[e2e][Server Requests] Routes /api/admin/*", () => {
   let server: Server;

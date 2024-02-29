@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
-import { ENV } from "@/server/env";
-import { signAndEncodeJWT, validateAndDecodeJWT } from "./jwt";
+import { ENV } from "@/server/env/index.js";
+import { signAndEncodeJWT, validateAndDecodeJWT } from "./jwt.js";
 
 /** A valid JWT payload. */
 const MOCK_JWT_PAYLOAD = { id: "123" };
@@ -27,7 +27,9 @@ describe("JWT", () => {
     });
 
     test("throws an error when called with an invalid token arg", async () => {
-      await expect(validateAndDecodeJWT("invalid_token")).rejects.toThrow();
+      await expect(validateAndDecodeJWT("invalid_token")).rejects.toThrow(
+        "Signature verification failed"
+      );
     });
 
     test(`throws "JsonWebTokenError" when called with a token with an invalid signature`, async () => {

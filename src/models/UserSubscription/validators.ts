@@ -1,9 +1,9 @@
 import { hasKey, isString } from "@nerdware/ts-type-safety-utils";
 import dayjs from "dayjs";
-import { pricesCache } from "@/lib/cache/pricesCache";
-import { promoCodesCache } from "@/lib/cache/promoCodesCache";
-import type { SubscriptionStatus } from "@/types";
-import type { UserSubscriptionItem } from "./UserSubscription";
+import { pricesCache } from "@/lib/cache/pricesCache.js";
+import { promoCodesCache } from "@/lib/cache/promoCodesCache.js";
+import type { SubscriptionStatus } from "@/types/graphql.js";
+import type { UserSubscriptionItem } from "./UserSubscription.js";
 
 /**
  * This function is used to validate an existing UserSubscription. A valid

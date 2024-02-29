@@ -1,4 +1,4 @@
-import { lambdaClient } from "./lambdaClient";
+import { lambdaClient } from "./lambdaClient.js";
 
 const MOCK_PAYLOAD = { test: "payload" };
 

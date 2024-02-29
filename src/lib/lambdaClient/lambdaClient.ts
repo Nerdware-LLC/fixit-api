@@ -1,6 +1,6 @@
 import { LambdaClient, InvokeCommand, type InvokeCommandInput } from "@aws-sdk/client-lambda";
 import { safeJsonStringify } from "@nerdware/ts-type-safety-utils";
-import { ENV } from "@/server/env";
+import { ENV } from "@/server/env/index.js";
 import type { OverrideProperties, Except } from "type-fest";
 
 const _lambdaClient = new LambdaClient({ region: ENV.AWS.REGION });

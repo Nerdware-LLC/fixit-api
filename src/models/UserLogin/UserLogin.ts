@@ -1,6 +1,6 @@
 import { isValidPassword } from "@nerdware/ts-string-helpers";
 import { isString } from "@nerdware/ts-type-safety-utils";
-import { passwordHasher } from "@/utils/passwordHasher";
+import { passwordHasher } from "@/utils/passwordHasher.js";
 
 /**
  * Represents a User login object that can be created with either a password or

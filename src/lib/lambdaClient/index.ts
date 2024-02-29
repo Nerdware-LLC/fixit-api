@@ -1,1 +1,1 @@
-export * from "./lambdaClient";
+export * from "./lambdaClient.js";

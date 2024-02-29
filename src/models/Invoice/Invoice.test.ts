@@ -1,5 +1,5 @@
-import { MOCK_INVOICES, UNALIASED_MOCK_INVOICES } from "@/tests/staticMockItems/invoices";
-import { Invoice } from "./Invoice";
+import { MOCK_INVOICES, UNALIASED_MOCK_INVOICES } from "@/tests/staticMockItems/invoices.js";
+import { Invoice } from "./Invoice.js";
 
 // Arrange mock Invoices
 const { INV_A, INV_B, INV_C } = MOCK_INVOICES;
@@ -30,14 +30,14 @@ describe("Invoice Model", () => {
           assignedToUserID: INV_A.assignedToUserID,
           amount: INV_A.amount,
         } as any)
-      ).rejects.toThrow();
+      ).rejects.toThrow(`A value is required for Invoice property "createdByUserID"`);
       await expect(() =>
         Invoice.createItem({
           createdByUserID: "BAD_USER_ID", // <-- invalid createdByUserID
           assignedToUserID: INV_A.assignedToUserID,
           amount: INV_A.amount,
         } as any)
-      ).rejects.toThrow();
+      ).rejects.toThrow(/invalid value/i);
     });
     test(`throws an Error when called without a valid "assignedToUserID"`, async () => {
       await expect(() =>
@@ -46,14 +46,14 @@ describe("Invoice Model", () => {
           // missing assignedToUserID
           amount: INV_A.amount,
         } as any)
-      ).rejects.toThrow();
+      ).rejects.toThrow(`A value is required for Invoice property "assignedToUserID"`);
       await expect(() =>
         Invoice.createItem({
           createdByUserID: INV_A.createdByUserID,
           assignedToUserID: "BAD_USER_ID", // <-- invalid assignedToUserID
           amount: INV_A.amount,
         } as any)
-      ).rejects.toThrow();
+      ).rejects.toThrow(/invalid value/i);
     });
     test(`throws an Error when called without a valid "amount"`, async () => {
       await expect(() =>
@@ -62,14 +62,14 @@ describe("Invoice Model", () => {
           assignedToUserID: INV_A.assignedToUserID,
           // missing amount
         } as any)
-      ).rejects.toThrow();
+      ).rejects.toThrow(`A value is required for Invoice property "amount"`);
       await expect(() =>
         Invoice.createItem({
           createdByUserID: INV_A.createdByUserID,
           assignedToUserID: INV_A.assignedToUserID,
           amount: "BAD_AMOUNT", // <-- invalid amount
         } as any)
-      ).rejects.toThrow();
+      ).rejects.toThrow(/Invalid type of value provided for Invoice property "amount"/);
     });
   });
 

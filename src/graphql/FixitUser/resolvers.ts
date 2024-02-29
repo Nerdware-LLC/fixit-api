@@ -1,4 +1,4 @@
-import type { Resolvers } from "@/types";
+import type { Resolvers } from "@/types/graphql.js";
 
 export const resolvers: Partial<Resolvers> = {
   FixitUser: {

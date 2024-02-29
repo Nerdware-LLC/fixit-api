@@ -1,4 +1,4 @@
-import type { Profile as GqlSchemaProfileType } from "@/types";
+import type { Profile as GqlSchemaProfileType } from "@/types/graphql.js";
 import type { Simplify } from "type-fest";
 
 /**

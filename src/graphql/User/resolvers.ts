@@ -1,8 +1,8 @@
-import { usersCache, type UsersCacheEntry } from "@/lib/cache/usersCache";
-import { User } from "@/models/User";
-import { GqlUserInputError, GqlInternalServerError } from "@/utils/httpErrors";
-import type { ContactItem } from "@/models/Contact";
-import type { Resolvers } from "@/types";
+import { usersCache, type UsersCacheEntry } from "@/lib/cache/usersCache.js";
+import { User } from "@/models/User/User.js";
+import { GqlUserInputError, GqlInternalServerError } from "@/utils/httpErrors.js";
+import type { ContactItem } from "@/models/Contact/Contact.js";
+import type { Resolvers } from "@/types/graphql.js";
 
 export const resolvers: Partial<Resolvers> = {
   Query: {

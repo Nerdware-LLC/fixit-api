@@ -2,12 +2,12 @@ import { Model } from "@nerdware/ddb-single-table";
 import { isValidEmail, isValidHandle } from "@nerdware/ts-string-helpers";
 import { hasKey } from "@nerdware/ts-type-safety-utils";
 import { Expo } from "expo-server-sdk";
-import { isValidStripeID } from "@/lib/stripe";
-import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@/models/_common";
-import { ddbTable } from "@/models/ddbTable";
-import { createOne } from "./createOne";
-import { userModelHelpers } from "./helpers";
-import type { UserLoginU } from "@/models/UserLogin";
+import { isValidStripeID } from "@/lib/stripe/isValidStripeID.js";
+import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@/models/_common/modelAttributes.js";
+import { ddbTable } from "@/models/ddbTable.js";
+import { createOne } from "./createOne.js";
+import { userModelHelpers } from "./helpers.js";
+import type { UserLoginU } from "@/models/UserLogin/UserLogin.js";
 import type { ItemTypeFromSchema, ItemCreationParameters } from "@nerdware/ddb-single-table";
 import type { OverrideProperties } from "type-fest";
 

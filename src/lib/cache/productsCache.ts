@@ -1,7 +1,7 @@
 import { safeJsonStringify } from "@nerdware/ts-type-safety-utils";
-import { stripe } from "@/lib/stripe";
-import { InternalServerError } from "@/utils/httpErrors";
-import { Cache } from "./Cache";
+import { stripe } from "@/lib/stripe/stripeClient.js";
+import { InternalServerError } from "@/utils/httpErrors.js";
+import { Cache } from "./Cache.js";
 import type Stripe from "stripe";
 
 /**

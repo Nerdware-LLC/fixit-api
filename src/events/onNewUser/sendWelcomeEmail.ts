@@ -1,5 +1,5 @@
-import { lambdaClient } from "@/lib/lambdaClient";
-import type { UserItem } from "@/models/User";
+import { lambdaClient } from "@/lib/lambdaClient/index.js";
+import type { UserItem } from "@/models/User/User.js";
 
 /**
  * Send welcome email to new User when `NewUser` event is emitted.

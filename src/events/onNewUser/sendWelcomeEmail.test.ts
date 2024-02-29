@@ -1,6 +1,6 @@
-import { lambdaClient } from "@/lib/lambdaClient";
-import { sendWelcomeEmail } from "./sendWelcomeEmail";
-import type { UserItem } from "@/models/User";
+import { lambdaClient } from "@/lib/lambdaClient/index.js";
+import { sendWelcomeEmail } from "./sendWelcomeEmail.js";
+import type { UserItem } from "@/models/User/User.js";
 
 describe("sendWelcomeEmail", () => {
   test("invokes lambdaClient with correct arguments when newUser is valid", async () => {

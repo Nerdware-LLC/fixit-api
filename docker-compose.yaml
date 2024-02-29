@@ -21,7 +21,6 @@ services:
       AWS_ACCESS_KEY_ID: local
       AWS_SECRET_ACCESS_KEY: local
       DYNAMODB_ENDPOINT: "http://dynamodb-local:8000"
-      NODE_OPTIONS: "--experimental-specifier-resolution=node --no-warnings"
     tty: true
 
   dynamodb-local:

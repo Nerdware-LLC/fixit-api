@@ -1,5 +1,5 @@
-import { MOCK_CONTACTS, UNALIASED_MOCK_CONTACTS } from "@/tests/staticMockItems/contacts";
-import { Contact } from "./Contact";
+import { MOCK_CONTACTS, UNALIASED_MOCK_CONTACTS } from "@/tests/staticMockItems/contacts.js";
+import { Contact } from "./Contact.js";
 
 // Arrange mock Contacts
 const { CONTACT_A, CONTACT_B, CONTACT_C } = MOCK_CONTACTS;
@@ -31,14 +31,14 @@ describe("Contact Model", () => {
           handle: CONTACT_A.handle,
           contactUserID: CONTACT_A.contactUserID,
         } as any)
-      ).rejects.toThrow();
+      ).rejects.toThrow(/A value is required for Contact property "userID"/);
       await expect(() =>
         Contact.createItem({
           userID: CONTACT_A.id, // <-- invalid userID (should not be a Contact ID)
           handle: CONTACT_A.handle,
           contactUserID: CONTACT_A.contactUserID,
         } as any)
-      ).rejects.toThrow();
+      ).rejects.toThrow(/invalid value/i);
     });
     test(`throws an Error when called without a valid "handle"`, async () => {
       await expect(() =>
@@ -47,14 +47,14 @@ describe("Contact Model", () => {
           // missing handle
           contactUserID: CONTACT_A.contactUserID,
         } as any)
-      ).rejects.toThrow();
+      ).rejects.toThrow(/A value is required for Contact property "handle"/);
       await expect(() =>
         Contact.createItem({
           userID: CONTACT_A.userID,
           handle: "BAD_HANDLE", // <-- invalid handle
           contactUserID: CONTACT_A.contactUserID,
         } as any)
-      ).rejects.toThrow();
+      ).rejects.toThrow(/invalid value/i);
     });
     test(`throws an Error when called without a valid "contactUserID"`, async () => {
       await expect(() =>
@@ -63,14 +63,14 @@ describe("Contact Model", () => {
           handle: CONTACT_A.handle,
           // missing contactUserID
         } as any)
-      ).rejects.toThrow();
+      ).rejects.toThrow(/A value is required for Contact property "id"/);
       await expect(() =>
         Contact.createItem({
           userID: CONTACT_A.userID,
           handle: CONTACT_A.handle,
           contactUserID: CONTACT_A.id, // <-- invalid contactUserID (should not be a Contact ID)
         } as any)
-      ).rejects.toThrow();
+      ).rejects.toThrow(/invalid value/i);
     });
   });
 

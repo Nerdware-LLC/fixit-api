@@ -1,6 +1,6 @@
 import { Table } from "@nerdware/ddb-single-table";
-import { ENV } from "@/server/env";
-import { logger } from "@/utils/logger";
+import { ENV } from "@/server/env/index.js";
+import { logger } from "@/utils/logger.js";
 
 export const ddbTable = new Table({
   tableName: ENV.AWS.DYNAMODB_TABLE_NAME,

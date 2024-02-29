@@ -8,9 +8,9 @@ import {
   isBoolean,
   getErrorMessage,
 } from "@nerdware/ts-type-safety-utils";
-import { UserInputError } from "@/utils/httpErrors";
-import type { RestApiLocals } from "@/types/express";
-import type { AllRestApiResponses } from "@/types/open-api";
+import { UserInputError } from "@/utils/httpErrors.js";
+import type { RestApiLocals } from "@/types/express.js";
+import type { AllRestApiResponses } from "@/types/open-api.js";
 import type { RequestHandler } from "express";
 import type { JsonPrimitive, SetRequired, SetReturnType } from "type-fest";
 
@@ -67,7 +67,7 @@ export type RestApiRequestHandler<
  * @throws UserInputError if any validation fails.
  *
  * @example
- * import { sanitizeAndValidateRequestBody } from "@/middleware/helpers";
+ * import { sanitizeAndValidateRequestBody } from "@/middleware/helpers.js";
  *
  * const requestBodySchema = {
  *   name: { type: "string", required: true, sanitize: (value) => value.trim() },

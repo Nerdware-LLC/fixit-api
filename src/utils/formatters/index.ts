@@ -1,6 +1,6 @@
-import { intToCurrencyStr, intToCurrencyRoundedStr } from "./currency";
-import { getTimeStr, getDateStr, getDateAndTimeStr } from "./dateTime";
-import { capitalize, prettifyPhoneNum } from "./strings";
+import { intToCurrencyStr, intToCurrencyRoundedStr } from "./currency.js";
+import { getTimeStr, getDateStr, getDateAndTimeStr } from "./dateTime.js";
+import { capitalize, prettifyPhoneNum } from "./strings.js";
 
 /**
  * A utility object with helper methods for formatting data as "pretty" strings for display.

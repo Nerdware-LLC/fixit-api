@@ -1,12 +1,12 @@
 import request from "supertest";
-import { expressApp } from "@/expressApp";
-import { stripe } from "@/lib/stripe";
-import { ENV } from "@/server/env";
-import { MOCK_USERS, MOCK_USER_SUBS, MOCK_USER_SCAs } from "@/tests/staticMockItems";
-import { AuthToken } from "@/utils/AuthToken";
+import { expressApp } from "@/expressApp.js";
+import { stripe } from "@/lib/stripe/stripeClient.js";
+import { ENV } from "@/server/env/index.js";
+import { MOCK_USERS, MOCK_USER_SUBS, MOCK_USER_SCAs } from "@/tests/staticMockItems/index.js";
+import { AuthToken } from "@/utils/AuthToken.js";
 import type { Server } from "http";
 
-vi.mock("@/apolloServer");
+vi.mock("@/apolloServer.js");
 
 describe("[e2e][Server Requests] Routes /api/connect/*", () => {
   let server: Server;
