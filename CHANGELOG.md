@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+# [2.0.0-next.1](https://github.com/Nerdware-LLC/fixit-api/compare/v1.24.0-next.1...v2.0.0-next.1) (2024-02-29)
+
+
+### Features
+
+* convert entire project to 'module:NodeNext' ([73186ee](https://github.com/Nerdware-LLC/fixit-api/commit/73186ee8f4c805da092845a6cf91e3262af05c79))
+
+
+### BREAKING CHANGES
+
+* that impacts nearly every file in the project. The new
+module system facilitates using NodeJS v20 in deployed environments
+(staging and prod). Previously, file extensions had been omitted from
+import statements, but now they are required. This was made necessary by
+node v20 dropping support for the experimental module resolution flag(s)
+used in previous node versions (`--experimental-specifier-resolution=node`).
+The deployment process will now be much more reliable.
+* whole new module import system
+
 # [1.24.0-next.1](https://github.com/Nerdware-LLC/fixit-api/compare/v1.23.1...v1.24.0-next.1) (2024-02-28)
 
 
