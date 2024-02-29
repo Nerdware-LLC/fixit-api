@@ -31,7 +31,7 @@ WORKDIR /home/node/app
 FROM base as builder
 
 # Copy over files needed to create the dist build
-COPY package*.json tsconfig*.json? npm-shrinkwrap.json? ./
+COPY package*.json tsconfig*.json? npm-shrinkwrap.json? .swcrc ./
 
 # Install all dependencies (dev deps are needed to create the dist build)
 RUN npm ci --include=dev
