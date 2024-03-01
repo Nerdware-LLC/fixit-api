@@ -14,7 +14,7 @@ export default defineConfig({
     globals: true,
     silent: true,
     environment: "node",
-    include: ["**/?(*.){test,spec}.?(c|m)[tj]s?(x)"],
+    include: ["**/?(*.)test.?(c|m)[tj]s"],
     setupFiles: ["src/tests/setupTests.ts"],
     // This server.deps.inline config allows mocking the package's underlying @aws-sdk imports
     server: {
@@ -24,7 +24,7 @@ export default defineConfig({
     },
     reporters: ["default", ...(process.env.GITHUB_ACTIONS ? [new GithubActionsReporter()] : [])],
     coverage: {
-      include: ["src/**/*.{js,ts}"],
+      include: ["src/**/*.ts"],
       exclude: [...coverageConfigDefaults.exclude, "**/tests/**/*", "**/__mocks__/**/*"],
       reporter: [
         ...coverageConfigDefaults.reporter,
