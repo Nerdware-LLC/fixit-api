@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/node";
-import { ENV } from "@/server/env/index.js";
+import { ENV } from "@/server/env";
 
 if (/^(dev|staging|prod)/i.test(ENV.NODE_ENV) && !!ENV?.SENTRY_DSN) {
   Sentry.init({

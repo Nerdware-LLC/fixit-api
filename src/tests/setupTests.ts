@@ -13,7 +13,7 @@ import dayjs from "dayjs";
  */
 
 //                                            MANUAL MOCK LOCATIONS:
-vi.mock("@/server/env/index.js"); //          src/server/env/__mocks__/index.ts
+vi.mock("@/server/env"); //                   src/server/env/__mocks__/index.ts
 vi.mock("@/lib/stripe/stripeClient.js"); //   src/lib/stripe/__mocks__/stripeClient.ts
 vi.mock("@/models/ddbTable.js"); //           src/models/__mocks__/ddbTable.ts
 vi.mock("@aws-sdk/client-dynamodb"); //       __mocks__/@aws-sdk/client-dynamodb.ts

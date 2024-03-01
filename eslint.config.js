@@ -12,7 +12,7 @@ export default [
   ////////////////////////////////////////////////////////////////
   // ALL FILES
   {
-    files: ["src/**/*.[tj]s", "./*.[tj]s", "__mocks__/**/*.[tj]s"],
+    files: ["src/**/*.ts", "./*.[tj]s", "__mocks__/**/*.ts"],
     ignores: ["src/**/__codegen__/**/*"], // don't lint generated code
     linterOptions: {
       reportUnusedDisableDirectives: true,
@@ -59,6 +59,7 @@ export default [
       "import/named": "off", //                      TS performs this check
       "import/namespace": "off", //                  TS performs this check
       "import/default": "off", //                    TS performs this check
+      "import/no-named-as-default": "off", // TS performs this check
       "import/no-named-as-default-member": "off", // TS performs this check
       "node/no-missing-import": "off",
       "node/no-process-env": "error",
@@ -104,7 +105,7 @@ export default [
     },
     settings: {
       "import/parsers": {
-        "@typescript-eslint/parser": [".ts", ".js"],
+        "@typescript-eslint/parser": [".ts"],
       },
       "import/resolver": {
         node: true,
@@ -117,7 +118,7 @@ export default [
   ////////////////////////////////////////////////////////////////
   // TEST FILES
   {
-    files: ["src/**/*.test.[tj]s", "src/**/tests/**/*", "src/**/__mocks__/**/*", "__mocks__/**/*"],
+    files: ["src/**/*.test.ts", "src/**/tests/**/*", "src/**/__mocks__/**/*", "__mocks__/**/*"],
     languageOptions: {
       globals: {
         ...vitestPlugin.environments.env.globals,
@@ -145,12 +146,7 @@ export default [
   // NON-TEST FILES
   {
     files: ["src/**/*"],
-    ignores: [
-      "src/**/*.test.[tj]s",
-      "src/**/tests/**/*",
-      "src/**/__mocks__/**/*",
-      "__mocks__/**/*",
-    ],
+    ignores: ["src/**/*.test.ts", "src/**/tests/**/*", "src/**/__mocks__/**/*", "__mocks__/**/*"],
     rules: {
       "no-restricted-imports": [
         "warn",

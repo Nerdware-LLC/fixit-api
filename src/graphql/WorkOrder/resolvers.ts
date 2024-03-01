@@ -1,10 +1,10 @@
 import { isString } from "@nerdware/ts-type-safety-utils";
 import { eventEmitter } from "@/events/eventEmitter.js";
-import { DeleteMutationResponse } from "@/graphql/_common/index.js";
+import { DeleteMutationResponse } from "@/graphql/_common";
 import {
   verifyUserIsAuthorizedToPerformThisUpdate,
   formatAsGqlFixitUser,
-} from "@/graphql/_helpers/index.js";
+} from "@/graphql/_helpers";
 import { Location } from "@/models/Location/Location.js";
 import { USER_ID_REGEX } from "@/models/User/regex.js";
 import { WorkOrder, type WorkOrderItem } from "@/models/WorkOrder/WorkOrder.js";

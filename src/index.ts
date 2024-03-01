@@ -1,5 +1,5 @@
 import "@/server/init.js";
-import { ENV } from "@/server/env/index.js";
+import { ENV } from "@/server/env";
 import { logger } from "@/utils/logger.js";
 import { expressApp } from "./expressApp.js";
 

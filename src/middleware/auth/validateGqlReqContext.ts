@@ -1,5 +1,5 @@
 import { UserSubscription } from "@/models/UserSubscription/UserSubscription.js";
-import { ENV } from "@/server/env/index.js";
+import { ENV } from "@/server/env";
 import { AuthToken, type FixitApiAuthTokenPayload } from "@/utils/AuthToken.js";
 import { GqlAuthError, GqlPaymentRequiredError } from "@/utils/httpErrors.js";
 import type { ApolloServerResolverContext } from "@/apolloServer.js";

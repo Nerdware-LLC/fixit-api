@@ -8,14 +8,14 @@ import {
 import express from "express";
 import { pricesCache } from "@/lib/cache/pricesCache.js";
 import { isValidStripeID } from "@/lib/stripe/isValidStripeID.js";
-import { sanitizeAndValidateRequestBody } from "@/middleware/helpers.js";
 import {
   checkPromoCode,
   createCustomerPortalLink,
   findOrCreateStripeSubscription,
   generateAuthToken,
   getUserFromAuthHeaderToken,
-} from "@/middleware/index.js";
+} from "@/middleware";
+import { sanitizeAndValidateRequestBody } from "@/middleware/helpers.js";
 import { UserSubscription } from "@/models/UserSubscription/UserSubscription.js";
 
 /**

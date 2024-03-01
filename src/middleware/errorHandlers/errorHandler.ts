@@ -1,5 +1,5 @@
 import { getTypeSafeError, safeJsonStringify } from "@nerdware/ts-type-safety-utils";
-import { ENV } from "@/server/env/index.js";
+import { ENV } from "@/server/env";
 import { InternalServerError } from "@/utils/httpErrors.js";
 import { logger } from "@/utils/logger.js";
 import type { HttpErrorInterface } from "@/utils/httpErrors.js";

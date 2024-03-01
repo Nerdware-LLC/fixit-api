@@ -1,6 +1,6 @@
 import { getTypeSafeError, safeJsonStringify } from "@nerdware/ts-type-safety-utils";
 import { stripe } from "@/lib/stripe/stripeClient.js";
-import { ENV } from "@/server/env/index.js";
+import { ENV } from "@/server/env";
 import { logger } from "@/utils/logger.js";
 import { connectAccountUpdated } from "./connectAccountUpdated.js";
 import { customerSubscriptionDeleted } from "./customerSubscriptionDeleted.js";

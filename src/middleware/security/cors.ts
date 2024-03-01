@@ -1,11 +1,12 @@
-import cors from "cors";
-import { ENV } from "@/server/env/index.js";
+import cors, { type CorsOptions } from "cors";
+import { ENV } from "@/server/env";
 
-const corsOptions = {
+const corsOptions: CorsOptions = {
   origin: [
-    new RegExp(`^${ENV.CONFIG.API_BASE_URL}`),
     "https://studio.apollographql.com",
-    ...(/^(dev|test)/.test(ENV.NODE_ENV) ? [/localhost/] : []),
+    ...(/^(dev|test)/.test(ENV.NODE_ENV)
+      ? [/localhost/]
+      : [/^https:\/\/(www\.)?((demo|staging)\.)?gofixit.app/]),
   ],
   allowedHeaders: [
     "Content-Type",
@@ -16,15 +17,10 @@ const corsOptions = {
     // Apollo GraphQL http headers:
     "apollographql-client-name",
     "apollographql-client-version",
-    // dev env headers:
-    ...(ENV.NODE_ENV === "development"
-      ? [
-          // Enable ApolloServerPluginInlineTrace
-          "apollo-federation-include-trace",
-          // Permit access to Apollo Studio queries
-          "Apollo-Studio-Auth-Token",
-        ]
-      : []),
+    // Enable ApolloServerPluginInlineTrace
+    "apollo-federation-include-trace",
+    // Permit access to Apollo Studio queries
+    "Apollo-Studio-Auth-Token",
   ],
 };
 

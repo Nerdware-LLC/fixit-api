@@ -1,9 +1,9 @@
-import { Location } from "@/models/Location/index.js";
+import { Location } from "@/models/Location";
 import { workOrderModelHelpers as woModelHelpers } from "@/models/WorkOrder/helpers.js";
 import { normalize } from "@/utils/normalize.js";
 import { MOCK_DATES, MOCK_DATE_v1_UUIDs as UUIDs } from "./dates.js";
 import { MOCK_USERS } from "./users.js";
-import type { WorkOrderItem, UnaliasedWorkOrderItem } from "@/models/WorkOrder/index.js";
+import type { WorkOrderItem, UnaliasedWorkOrderItem } from "@/models/WorkOrder";
 
 const { USER_A, USER_B, USER_C } = MOCK_USERS;
 

@@ -1,11 +1,7 @@
 import { sanitizeURL, isValidURL } from "@nerdware/ts-string-helpers";
 import express from "express";
+import { getUserFromAuthHeaderToken, createAccountLink, createDashboardLink } from "@/middleware";
 import { sanitizeAndValidateRequestBody } from "@/middleware/helpers.js";
-import {
-  getUserFromAuthHeaderToken,
-  createAccountLink,
-  createDashboardLink,
-} from "@/middleware/index.js";
 
 /**
  * This router handles all `/api/connect` request paths:

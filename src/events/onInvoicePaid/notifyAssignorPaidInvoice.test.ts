@@ -1,5 +1,5 @@
-import { InvoicePushNotification } from "@/events/pushNotifications/index.js";
-import { lambdaClient } from "@/lib/lambdaClient/index.js";
+import { InvoicePushNotification } from "@/events/pushNotifications";
+import { lambdaClient } from "@/lib/lambdaClient";
 import { User, type UserItem } from "@/models/User/User.js";
 import { notifyAssignorPaidInvoice } from "./notifyAssignorPaidInvoice.js";
 import type { InvoiceItem } from "@/models/Invoice/Invoice.js";

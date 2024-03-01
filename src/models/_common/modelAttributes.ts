@@ -1,7 +1,7 @@
 import { isValidPhone } from "@nerdware/ts-string-helpers";
 import { isString } from "@nerdware/ts-type-safety-utils";
 import dayjs from "dayjs";
-import { fmt } from "@/utils/formatters/index.js";
+import { fmt } from "@/utils/formatters";
 import { normalize } from "@/utils/normalize.js";
 import type { ModelSchemaAttributeConfig } from "@nerdware/ddb-single-table";
 

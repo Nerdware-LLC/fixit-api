@@ -104,7 +104,7 @@ export const sanitizeAndValidateRequestBody = <Schema extends RequestBodyFieldsS
 
   return (req, res, next) => {
     // Ensure the request body is valid
-    if (!hasKey(req, "body") || !isPlainObject(req.body)) {
+    if (!hasKey(req as Record<string, any>, "body") || !isPlainObject(req.body)) {
       throw new UserInputError("Invalid request body");
     }
 

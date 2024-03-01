@@ -1,6 +1,6 @@
 import { isValidPhone, isValidEmail } from "@nerdware/ts-string-helpers";
 import { isString } from "@nerdware/ts-type-safety-utils";
-import { GenericSuccessResponse } from "@/graphql/_common/index.js";
+import { GenericSuccessResponse } from "@/graphql/_common";
 import { GqlUserInputError } from "@/utils/httpErrors.js";
 import type { Resolvers } from "@/types/graphql.js";
 

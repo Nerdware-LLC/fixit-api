@@ -1,4 +1,4 @@
-import { DeleteMutationResponse } from "@/graphql/_common/index.js";
+import { DeleteMutationResponse } from "@/graphql/_common";
 import { usersCache } from "@/lib/cache/usersCache.js";
 import { Contact } from "@/models/Contact/Contact.js";
 import { User } from "@/models/User/User.js";

@@ -1,6 +1,6 @@
 import request from "supertest";
 import { expressApp } from "@/expressApp.js";
-import { ENV } from "@/server/env/index.js";
+import { ENV } from "@/server/env";
 import type { Server } from "http";
 
 vi.mock("@/apolloServer.js");

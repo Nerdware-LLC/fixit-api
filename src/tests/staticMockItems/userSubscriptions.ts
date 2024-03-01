@@ -4,7 +4,7 @@ import { MOCK_USERS } from "./users.js";
 import type {
   UserSubscriptionItem,
   UnaliasedUserSubscriptionItem,
-} from "@/models/UserSubscription/index.js";
+} from "@/models/UserSubscription";
 
 const { USER_A, USER_B, USER_C } = MOCK_USERS;
 

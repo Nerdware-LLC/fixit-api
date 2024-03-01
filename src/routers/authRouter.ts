@@ -14,7 +14,6 @@ import {
 } from "@nerdware/ts-string-helpers";
 import { hasKey, hasKeys } from "@nerdware/ts-type-safety-utils";
 import express from "express";
-import { sanitizeAndValidateRequestBody } from "@/middleware/helpers.js";
 import {
   findUserByEmail,
   userLoginShouldExist,
@@ -27,7 +26,8 @@ import {
   checkSubscriptionStatus,
   checkOnboardingStatus,
   generateAuthToken,
-} from "@/middleware/index.js";
+} from "@/middleware";
+import { sanitizeAndValidateRequestBody } from "@/middleware/helpers.js";
 import type { RequestBodyFieldsSchema, RequestBodyValidatorFn } from "@/middleware/helpers.js";
 
 /**

@@ -1,6 +1,6 @@
 import { Model } from "@nerdware/ddb-single-table";
 import { isValidEmail, isValidHandle } from "@nerdware/ts-string-helpers";
-import { hasKey } from "@nerdware/ts-type-safety-utils";
+import { hasKey, isPlainObject } from "@nerdware/ts-type-safety-utils";
 import { Expo } from "expo-server-sdk";
 import { isValidStripeID } from "@/lib/stripe/isValidStripeID.js";
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@/models/_common/modelAttributes.js";
@@ -68,11 +68,11 @@ class UserModel extends Model<typeof UserModel.schema, UserItem, UserItemCreatio
         googleAccessToken: { type: "string" },
       },
       validate: (login: unknown) =>
-        !!login &&
+        isPlainObject(login) &&
         hasKey(login, "type") &&
-        (login?.type === "LOCAL"
+        (login.type === "LOCAL"
           ? hasKey(login, "passwordHash")
-          : login?.type === "GOOGLE_OAUTH"
+          : login.type === "GOOGLE_OAUTH"
             ? hasKey(login, "googleID") && hasKey(login, "googleAccessToken")
             : false),
     },

@@ -10,14 +10,14 @@ import {
   sendRESTJsonResponse,
   setSecureHttpHeaders,
   validateGqlReqContext,
-} from "@/middleware/index.js";
+} from "@/middleware";
 import {
   adminRouter,
   authRouter,
   connectRouter,
   subscriptionsRouter,
   webhooksRouter,
-} from "@/routers/index.js";
+} from "@/routers";
 
 export const expressApp = express();
 

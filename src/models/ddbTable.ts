@@ -1,5 +1,5 @@
 import { Table } from "@nerdware/ddb-single-table";
-import { ENV } from "@/server/env/index.js";
+import { ENV } from "@/server/env";
 import { logger } from "@/utils/logger.js";
 
 export const ddbTable = new Table({

@@ -1,5 +1,5 @@
 import type { UserItem } from "@/models/User/User.js";
-import type { UserSubscriptionItem } from "@/models/UserSubscription/index.js";
+import type { UserSubscriptionItem } from "@/models/UserSubscription";
 import type { FixitApiAuthTokenPayload } from "@/utils/AuthToken.js";
 import type { AllRestApiResponses } from "./open-api.js";
 

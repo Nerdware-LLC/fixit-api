@@ -6,7 +6,7 @@ import { stripe } from "@/lib/stripe/stripeClient.js";
 import { User } from "@/models/User/User.js";
 import { USER_ID_REGEX } from "@/models/User/regex.js";
 import { ddbTable } from "@/models/ddbTable.js";
-import { ENV } from "@/server/env/index.js";
+import { ENV } from "@/server/env";
 import {
   MOCK_USERS,
   MOCK_CONTACTS,
@@ -20,7 +20,7 @@ import {
   UNALIASED_MOCK_WORK_ORDERS,
   UNALIASED_MOCK_INVOICES,
   MOCK_USER_SCAs,
-} from "@/tests/staticMockItems/index.js";
+} from "@/tests/staticMockItems";
 import { AuthToken } from "@/utils/AuthToken.js";
 import { passwordHasher } from "@/utils/passwordHasher.js";
 import type { Server } from "http";

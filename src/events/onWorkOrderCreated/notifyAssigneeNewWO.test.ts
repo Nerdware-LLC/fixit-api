@@ -1,5 +1,5 @@
-import { WorkOrderPushNotification } from "@/events/pushNotifications/index.js";
-import { lambdaClient } from "@/lib/lambdaClient/index.js";
+import { WorkOrderPushNotification } from "@/events/pushNotifications";
+import { lambdaClient } from "@/lib/lambdaClient";
 import { User, type UserItem } from "@/models/User/User.js";
 import { notifyAssigneeNewWO } from "./notifyAssigneeNewWO.js";
 import type { WorkOrderItem } from "@/models/WorkOrder/WorkOrder.js";

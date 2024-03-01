@@ -1,5 +1,5 @@
 import { hash, compare } from "bcrypt";
-import { ENV } from "@/server/env/index.js";
+import { ENV } from "@/server/env";
 
 /**
  * #### passwordHasher

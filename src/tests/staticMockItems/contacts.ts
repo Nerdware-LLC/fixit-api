@@ -1,7 +1,7 @@
 import { contactModelHelpers } from "@/models/Contact/helpers.js";
 import { MOCK_DATES } from "./dates.js";
 import { MOCK_USERS } from "./users.js";
-import type { ContactItem, UnaliasedContactItem } from "@/models/Contact/index.js";
+import type { ContactItem, UnaliasedContactItem } from "@/models/Contact";
 
 const { USER_A, USER_B, USER_C } = MOCK_USERS;
 

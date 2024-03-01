@@ -8,8 +8,11 @@ const { absoluteBaseUrl, paths } = tsConfigPaths.loadConfig();
 const matchPath = tsConfigPaths.createMatchPath(absoluteBaseUrl, paths);
 
 export function resolve(specifier, ctx, defaultResolve) {
+  // Remove any file extensions
+  specifier = specifier.replace(/\.(js|ts)$/, "");
+
   const match = matchPath(specifier);
-  /* eslint-disable @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call */
+
   return match
     ? resolveTS(pathToFileURL(match).href, ctx, defaultResolve)
     : resolveTS(specifier, ctx, defaultResolve);

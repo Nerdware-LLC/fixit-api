@@ -1,4 +1,4 @@
-import { lambdaClient } from "@/lib/lambdaClient/index.js";
+import { lambdaClient } from "@/lib/lambdaClient";
 import type { UserItem } from "@/models/User/User.js";
 
 /**

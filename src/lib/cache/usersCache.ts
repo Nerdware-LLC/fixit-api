@@ -1,5 +1,5 @@
 import { ddbTable } from "@/models/ddbTable.js";
-import { ENV } from "@/server/env/index.js";
+import { ENV } from "@/server/env";
 import { Cache } from "./Cache.js";
 import type { UnaliasedUserItem } from "@/models/User/User.js";
 import type { User, Contact } from "@/types/graphql.js";

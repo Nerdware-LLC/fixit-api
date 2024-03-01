@@ -1,4 +1,4 @@
-import { ENV } from "@/server/env/index.js";
+import { ENV } from "@/server/env";
 import { logger } from "@/utils/logger.js";
 
 const {

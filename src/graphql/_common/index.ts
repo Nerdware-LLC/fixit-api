@@ -1,2 +1,2 @@
-export * from "./DeleteMutationResponse/index.js";
-export * from "./GenericSuccessResponse/index.js";
+export * from "./DeleteMutationResponse";
+export * from "./GenericSuccessResponse";

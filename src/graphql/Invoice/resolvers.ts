@@ -1,9 +1,9 @@
 import { eventEmitter } from "@/events/eventEmitter.js";
-import { DeleteMutationResponse } from "@/graphql/_common/index.js";
+import { DeleteMutationResponse } from "@/graphql/_common";
 import {
   verifyUserIsAuthorizedToPerformThisUpdate,
   formatAsGqlFixitUser,
-} from "@/graphql/_helpers/index.js";
+} from "@/graphql/_helpers";
 import { stripe } from "@/lib/stripe/stripeClient.js";
 import { Invoice, type InvoiceItem } from "@/models/Invoice/Invoice.js";
 import { WorkOrder } from "@/models/WorkOrder/WorkOrder.js";

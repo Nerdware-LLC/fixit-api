@@ -1,11 +1,17 @@
-import Stripe from "stripe";
-import { ENV } from "@/server/env/index.js";
+import Stripe, { type Stripe as StripeTypeNamespace } from "stripe";
+import { ENV } from "@/server/env";
 
 if (!ENV?.STRIPE?.SECRET_KEY) {
   throw new Error("Unable to initialize Stripe client");
 }
 
 export const stripe = new Stripe(ENV.STRIPE.SECRET_KEY, {
-  apiVersion: "2022-08-01", // previous version: "2020-08-27"
+  apiVersion: ENV.STRIPE.API_VERSION as StripeTypeNamespace.StripeConfig["apiVersion"],
   typescript: true,
+  appInfo: {
+    name: "fixit",
+    ...(!!ENV.CONFIG.PROJECT_VERSION && {
+      version: ENV.CONFIG.PROJECT_VERSION,
+    }),
+  },
 });

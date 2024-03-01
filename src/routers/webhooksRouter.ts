@@ -1,5 +1,5 @@
 import express from "express";
-import { handleStripeWebhookEvent } from "@/middleware/stripeWebhooks/index.js";
+import { handleStripeWebhookEvent } from "@/middleware/stripeWebhooks";
 
 /**
  * This router handles all `/api/webhooks` request paths:
