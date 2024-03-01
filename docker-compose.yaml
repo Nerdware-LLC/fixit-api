@@ -8,8 +8,8 @@ services:
     container_name: fixit-api
     depends_on:
       - dynamodb-local
-    image: node:20
-    command: ${API_COMMAND:- npx nodemon ./src/index.ts}
+    image: node:20.11
+    command: ${API_COMMAND:- npx nodemon src/index.ts}
     working_dir: /home/node/app
     volumes:
       - ".:/home/node/app:ro"
