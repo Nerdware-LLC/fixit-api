@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+# [2.0.0-next.2](https://github.com/Nerdware-LLC/fixit-api/compare/v2.0.0-next.1...v2.0.0-next.2) (2024-03-01)
+
+
+### Features
+
+* use swc 'resolveFully' to re-impl dir index imports ([61dcda5](https://github.com/Nerdware-LLC/fixit-api/commit/61dcda5ac1959be9dee05766c7f0e1f76d06684c))
+
 # [2.0.0-next.1](https://github.com/Nerdware-LLC/fixit-api/compare/v1.24.0-next.1...v2.0.0-next.1) (2024-02-29)
 
 
