@@ -18,8 +18,12 @@ import {
   subscriptionsRouter,
   webhooksRouter,
 } from "@/routers";
+import { ENV } from "@/server/env";
 
 export const expressApp = express();
+
+// In deployed envs, enable 'trust proxy' so logReqReceived can log the correct IP (not the LB's)
+if (ENV.IS_DEPLOYED_ENV) expressApp.enable("trust proxy");
 
 // SENTRY REQUEST-HANDLER (must be first middleware)
 expressApp.use(Sentry.Handlers.requestHandler());
