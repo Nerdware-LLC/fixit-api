@@ -56,6 +56,7 @@ export const createEnvObject = ({
   return {
     NODE_ENV,
     IS_PROD: /^prod/i.test(NODE_ENV),
+    IS_DEPLOYED_ENV: /^(prod|staging)/i.test(NODE_ENV),
     CONFIG: {
       ...(npm_package_version && { PROJECT_VERSION: `v${npm_package_version}` }),
       TIMEZONE: new Date().toString().match(/([A-Z]+[+-][0-9]+.*)/)?.[1] ?? "-",
