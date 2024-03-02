@@ -34,7 +34,13 @@ export const expressApp = express()
   .set("trust proxy", ENV.IS_DEPLOYED_ENV);
 
 // SENTRY REQUEST-HANDLER (must be first middleware)
-expressApp.use(Sentry.Handlers.requestHandler());
+expressApp.use(
+  Sentry.Handlers.requestHandler({
+    // Keys to be extracted from req object and attached to the Sentry scope:
+    request: ["ip", "data", "headers", "method", "query_string", "url"],
+    ip: true,
+  })
+);
 
 // LOG ALL REQUESTS
 expressApp.use(logReqReceived);
