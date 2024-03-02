@@ -5,53 +5,48 @@ import type { RequestHandler } from "express";
 /**
  * FIXIT CSP DIRECTIVE SOURCES
  */
-const FIXIT_SOURCES = ["'self'", "gofixit.app", "*.gofixit.app"];
+const FIXIT_SOURCES = {
+  WEB: ["'self'", "https://gofixit.app", "https://*.gofixit.app"],
+  API: ["'self'", "https://gofixit.app/", "https://*.gofixit.app/"],
+} as const;
 
 /**
  * Security Middleware: `setSecureHttpHeaders`
  *
- * This [Helmet](https://helmetjs.github.io/) config results in the CSP directives listed
- * below. These directives are a combination of helmet defaults, Stripe requirements, Google
- * API requirements, and Fixit-related sources.
+ * This [Helmet][helmet-url] config produces a secure `Content-Security-Policy` which serves as a
+ * strong mitigation against [cross-site scripting attacks][google-xss-info]. The resultant CSP has
+ * been evaluated using https://csp-evaluator.withgoogle.com/.
  *
- * @see https://stripe.com/docs/security/guide#content-security-policy
- * @see https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid#cross_origin_opener_policy
+ * These directives reflect a combination of sources:
  *
- * - RESULTANT CSP DIRECTIVES:
- *   - default-src `'self' gofixit.app *.gofixit.app https://accounts.google.com/gsi/;`
- *   - base-uri `'self';`
- *   - connect-src `'self' gofixit.app *.gofixit.app https://accounts.google.com/gsi/ https://api.stripe.com;`
- *   - font-src `'self' https: data:;`
- *   - form-action `'self' gofixit.app *.gofixit.app;`
- *   - frame-ancestors `'self' gofixit.app *.gofixit.app;`
- *   - frame-src `https://accounts.google.com/gsi/ https://js.stripe.com https://hooks.stripe.com;`
- *   - img-src `'self' gofixit.app *.gofixit.app data: blob:;`
- *   - object-src `'none';`
- *   - report-to `fixit-security;`
- *   - report-uri `${ENV.CONFIG.API_FULL_URL}/admin/csp-violation;`
- *   - script-src `'self' gofixit.app *.gofixit.app https://accounts.google.com/gsi/client https://js.stripe.com;`
- *   - script-src-attr `'none';`
- *   - style-src `'self' gofixit.app *.gofixit.app https://accounts.google.com/gsi/style https: 'unsafe-inline';`
- *   - `upgrade-insecure-requests`
+ * - HelmetJS defaults
+ * - [Stripe requirements][stripe-csp]
+ * - [Google API requirements][google-api-csp]
+ * - Fixit-related sources
+ *
+ * [helmet-url]: https://helmetjs.github.io/
+ * [google-xss-info]: https://www.google.com/about/appsecurity/learning/xss/
+ * [stripe-csp]: https://stripe.com/docs/security/guide#content-security-policy
+ * [google-api-csp]: https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid#cross_origin_opener_policy
  */
 const helmetMW = helmet({
   contentSecurityPolicy: {
     useDefaults: true,
     directives: {
-      "default-src": [...FIXIT_SOURCES, "https://accounts.google.com/gsi/"],
+      "default-src": [...FIXIT_SOURCES.WEB, "https://accounts.google.com/gsi/"],
       "base-uri": "'self'",
-      "connect-src": [...FIXIT_SOURCES, "https://accounts.google.com/gsi/", "https://api.stripe.com"], // prettier-ignore
+      "connect-src": [...FIXIT_SOURCES.API, "https://*.ingest.sentry.io/", "https://accounts.google.com/gsi/", "https://api.stripe.com"], // prettier-ignore
       "font-src": ["'self'", "https:", "data:"],
-      "form-action": [...FIXIT_SOURCES],
-      "frame-ancestors": [...FIXIT_SOURCES],
+      "form-action": [...FIXIT_SOURCES.API],
+      "frame-ancestors": [...FIXIT_SOURCES.WEB],
       "frame-src": ["https://accounts.google.com/gsi/", "https://js.stripe.com", "https://hooks.stripe.com"], // prettier-ignore
-      "img-src": [...FIXIT_SOURCES, "data:", "blob:"],
+      "img-src": [...FIXIT_SOURCES.WEB, "data:", "blob:"],
       "object-src": "'none'",
       "report-to": "fixit-security",
       "report-uri": `${ENV.CONFIG.API_FULL_URL}/admin/csp-violation`,
-      "script-src": [...FIXIT_SOURCES, "https://accounts.google.com/gsi/client", "https://js.stripe.com"], // prettier-ignore
+      "script-src": [...FIXIT_SOURCES.WEB, "https://accounts.google.com/gsi/client", "https://js.stripe.com"], // prettier-ignore
       "script-src-attr": "'none'",
-      "style-src": [...FIXIT_SOURCES, "https://accounts.google.com/gsi/style", "https:", "'unsafe-inline'"], // prettier-ignore
+      "style-src": [...FIXIT_SOURCES.WEB, "https://accounts.google.com/gsi/style", "https:", "'unsafe-inline'"], // prettier-ignore
       "upgrade-insecure-requests": [],
     },
   },
