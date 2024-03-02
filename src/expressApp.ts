@@ -20,10 +20,18 @@ import {
 } from "@/routers";
 import { ENV } from "@/server/env";
 
-export const expressApp = express();
-
-// In deployed envs, enable 'trust proxy' so logReqReceived can log the correct IP (not the LB's)
-if (ENV.IS_DEPLOYED_ENV) expressApp.enable("trust proxy");
+/**
+ * The express app for REST requests and the GraphQL entry point.
+ *
+ * > - `view cache` is always disabled since this app doesn't return HTML
+ * > - `X-Powered-By` header is always disabled for security
+ * > - `trust proxy` is enabled in deployed envs so the correct IP can be logged (not the LB's)
+ * @see https://expressjs.com/en/4x/api.html#app.settings.table
+ */
+export const expressApp = express()
+  .disable("view cache")
+  .disable("x-powered-by")
+  .set("trust proxy", ENV.IS_DEPLOYED_ENV);
 
 // SENTRY REQUEST-HANDLER (must be first middleware)
 expressApp.use(Sentry.Handlers.requestHandler());
