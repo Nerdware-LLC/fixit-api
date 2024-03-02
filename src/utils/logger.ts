@@ -7,12 +7,19 @@ import { ENV } from "@/server/env";
 /* eslint-disable no-console */
 
 /**
- * - In PROD, timestamp is formatted to always be the same length to accomodate bulk log parsing.
- *   - _example:_ `"2020:Jan:01 01:01:01.123"`
- * - In NON-PROD, timestamp format is designed to be easier to read at a glance in the console.
- *   - _example:_ `"2020:Jan:1 1:01:01.123"`
+ * In deployed environments — production and staging — timestamps are formatted
+ * to always be the same length to accomodate bulk log parsing.
+ *
+ *   > _example:_ `"2020:Jan:01 01:01:01.123"`
+ *
+ * In non-deployed environments, the timestamp format is designed to be easier
+ * to read at a glance in the console.
+ *
+ *   > _example:_ `"2020:Jan:1 1:01:01.123"`
  */
-const LOG_TIMESTAMP_FORMAT = ENV.IS_PROD ? "YYYY:MMM:DD HH:mm:ss.SSS" : "YYYY:MMM:D H:mm:ss.SSS";
+const LOG_TIMESTAMP_FORMAT = ENV.IS_DEPLOYED_ENV
+  ? "YYYY:MMM:DD HH:mm:ss.SSS"
+  : "YYYY:MMM:D H:mm:ss.SSS";
 
 /**
  * Returns a log message string.
@@ -41,13 +48,13 @@ const getLogMessage = ({
 /**
  * This function returns a logging function suited for the operating environment:
  *
- * - IN PRODUCTION:
+ * - IN DEPLOYED ENVS (PRODUCTION/STAGING):
  *   - Error logs are always sent to Sentry
  *   - Non-error logs:
  *     - Sent to Sentry if `isEnabledInProduction` is `true`
  *     - Ignored if `isEnabledInProduction` is `false`
  *
- * - IN NON-PRODUCTION ENVS:
+ * - IN NON-DEPLOYED ENVS:
  *   - Error logs are always logged using `console.error`
  *   - Non-error logs are colorized and logged using `nonProdConsoleMethod`
  *
@@ -75,7 +82,7 @@ const getLoggerUtil = ({
   const {
     handleLogMessage,
     handleLogError,
-  }: Record<"handleLogMessage" | "handleLogError", LoggerFn> = ENV.IS_PROD
+  }: Record<"handleLogMessage" | "handleLogError", LoggerFn> = ENV.IS_DEPLOYED_ENV
     ? {
         handleLogError: (input, messagePrefix) => {
           Sentry.captureException(input);
