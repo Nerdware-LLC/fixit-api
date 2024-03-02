@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+# [2.0.0-next.3](https://github.com/Nerdware-LLC/fixit-api/compare/v2.0.0-next.2...v2.0.0-next.3) (2024-03-02)
+
+
+### Features
+
+* add ENV property IS_DEPLOYED_ENV ([d6a0207](https://github.com/Nerdware-LLC/fixit-api/commit/d6a02073caf72665021a4a9a3175f50dd8a5cb3f))
+* add separate csp sources for fixit-web and the api ([fbf767e](https://github.com/Nerdware-LLC/fixit-api/commit/fbf767ea6679e4681c9bce77d9285657c3c713e2))
+* disable 'view cache' and 'x-powered-by' ([0fef87a](https://github.com/Nerdware-LLC/fixit-api/commit/0fef87ac9bf8b395c6b1101d4c576f1b12899528))
+* enable 'trust proxy' in deployed envs ([ccad7cd](https://github.com/Nerdware-LLC/fixit-api/commit/ccad7cd899304e58e54adabe786ec22f82f65144))
+* rm 'cookies', add 'ip' to data in Sentry scope ([b2d8969](https://github.com/Nerdware-LLC/fixit-api/commit/b2d89690fc6a08504a36d542b675bb8e907d54bd))
+
 # [2.0.0-next.2](https://github.com/Nerdware-LLC/fixit-api/compare/v2.0.0-next.1...v2.0.0-next.2) (2024-03-01)
 
 
