@@ -105,6 +105,9 @@
   "overrides": {
     "@serverless-guru/prettier-plugin-import-order": {
       "prettier": "^3.2.5"
+    },
+    "swaggerhub-cli": {
+      "ip": ">=2.0.1"
     }
   }
 }
