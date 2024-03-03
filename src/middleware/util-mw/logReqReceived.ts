@@ -4,9 +4,13 @@ import type { RestApiRequestHandler } from "@/middleware/helpers.js";
 import type { Request } from "express";
 
 /**
- * This middleware is used in non-prod envs to log GraphQL and REST requests
- * received by the server. If `req.body` contains `operationName`, a request
- * is logged as a GraphQL request, otherwise it's logged as a REST request.
+ * This middleware logs GraphQL and REST requests.
+ *
+ * - If `req.body` contains `operationName`, a request is logged using the
+ *   `"GQL"` logger namespace. Otherwise it's logged using the `"SERVER"`
+ *   logger namespace.
+ *
+ * - Requests to `/api/admin/healthcheck` are not logged.
  */
 export const logReqReceived: RestApiRequestHandler = (req, res, next) => {
   if (req.originalUrl === "/api") {
@@ -14,7 +18,7 @@ export const logReqReceived: RestApiRequestHandler = (req, res, next) => {
     if (isString(req.body?.operationName)) {
       logger.gql(getReqLogMsg(req, `OPERATION ${req.body.operationName}`));
     }
-  } else {
+  } else if (req.originalUrl !== "/api/admin/healthcheck") {
     logger.server(getReqLogMsg(req, `PATH ${req.originalUrl}`));
   }
 
