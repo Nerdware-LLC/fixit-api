@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+# [2.0.0-next.4](https://github.com/Nerdware-LLC/fixit-api/compare/v2.0.0-next.3...v2.0.0-next.4) (2024-03-03)
+
+
+### Bug Fixes
+
+* pass ignore+rule-code as separate args ([45fd16a](https://github.com/Nerdware-LLC/fixit-api/commit/45fd16a63e30ab312a86891a57c4d9d1acaf4bcf))
+* rm ErrorClass param for expected parsing ([8d28b1b](https://github.com/Nerdware-LLC/fixit-api/commit/8d28b1bec12121b3830712e86493abfaba9958f2))
+
+
+### Features
+
+* rm logging of healthcheck reqs ([da79680](https://github.com/Nerdware-LLC/fixit-api/commit/da796806bd9aa1a94a97aa23f5bfa86c665c8aa8))
+* set prod stage to use node:20-slim, rm base stage ([2da0c39](https://github.com/Nerdware-LLC/fixit-api/commit/2da0c397b458f6ba30483f0f8d6c119d53db1db5))
+
 # [2.0.0-next.3](https://github.com/Nerdware-LLC/fixit-api/compare/v2.0.0-next.2...v2.0.0-next.3) (2024-03-02)
 
 
