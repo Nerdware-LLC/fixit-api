@@ -1,6 +1,5 @@
 import { getTypeSafeError, safeJsonStringify } from "@nerdware/ts-type-safety-utils";
 import { ENV } from "@/server/env";
-import { InternalServerError } from "@/utils/httpErrors.js";
 import { logger } from "@/utils/logger.js";
 import type { HttpErrorInterface } from "@/utils/httpErrors.js";
 import type { ErrorRequestHandler } from "express";
@@ -10,7 +9,7 @@ import type { ErrorRequestHandler } from "express";
  * JSON response to the client.
  */
 export const errorHandler: ErrorRequestHandler = (err: unknown, req, res, next) => {
-  const error = getTypeSafeError(err, { ErrorClass: InternalServerError });
+  const error = getTypeSafeError(err);
 
   const errorStatusCode = (error as HttpErrorInterface)?.statusCode || 500;
 
