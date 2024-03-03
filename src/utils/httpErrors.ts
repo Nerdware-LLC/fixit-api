@@ -63,7 +63,7 @@ const createHttpErrorClass = <IsGqlError extends boolean = false>(
 
   const NewClass =
     isGqlError === true
-      ? class NewGraphqlHttpErrorClass extends GraphQLError implements HttpErrorInterface {
+      ? class GraphqlHttpError extends GraphQLError implements HttpErrorInterface {
           override readonly name: string = `Gql${errName}`; // <-- errName is prefixed with "Gql"
           readonly statusCode: number = statusCode;
           readonly gqlErrorCode: string = gqlErrCode;
@@ -84,16 +84,16 @@ const createHttpErrorClass = <IsGqlError extends boolean = false>(
               )
             );
             // Get stack trace starting where Error was created, omitting the error constructor.
-            Error.captureStackTrace(this, NewGraphqlHttpErrorClass);
+            Error.captureStackTrace(this, GraphqlHttpError);
           }
         }
-      : class NewHttpErrorClass extends Error implements HttpErrorInterface {
+      : class HttpError extends Error implements HttpErrorInterface {
           override readonly name: string = errName;
           readonly statusCode: number = statusCode;
 
           constructor(message?: unknown) {
             super(getErrorMessage(message) || defaultErrMsg);
-            Error.captureStackTrace(this, NewHttpErrorClass);
+            Error.captureStackTrace(this, HttpError);
             if (statusCode >= 500) logger.error(this);
           }
         };
