@@ -1,8 +1,14 @@
-import { safeJsonStringify, getErrorMessage, isError } from "@nerdware/ts-type-safety-utils";
+import {
+  safeJsonStringify,
+  getErrorMessage,
+  isError,
+  isSafeInteger,
+} from "@nerdware/ts-type-safety-utils";
 import * as Sentry from "@sentry/node";
 import chalk, { type ChalkInstance } from "chalk";
 import dayjs from "dayjs";
 import { ENV } from "@/server/env";
+import type { HttpErrorInterface } from "./httpErrors";
 
 /* eslint-disable no-console */
 
@@ -31,7 +37,7 @@ const getLogMessage = ({
   input,
   messagePrefix,
   labelColor,
-  messageColor,
+  msgColor,
 }: GetLogMessageArgsProvidedByLoggerUtil & GetLogMessageArgsProvidedByHandler): string => {
   let labelAndTimestamp = `[${dayjs().format(LOG_TIMESTAMP_FORMAT)}][${label}]`;
 
@@ -40,7 +46,7 @@ const getLogMessage = ({
   message += getErrorMessage(input) || safeJsonStringify(input);
 
   if (labelColor) labelAndTimestamp = labelColor(labelAndTimestamp);
-  if (messageColor) message = messageColor(message);
+  if (msgColor) message = msgColor(message);
 
   return `${labelAndTimestamp} ${message}`;
 };
@@ -49,29 +55,29 @@ const getLogMessage = ({
  * This function returns a logging function suited for the operating environment:
  *
  * - IN DEPLOYED ENVS (PRODUCTION/STAGING):
- *   - Error logs are always sent to Sentry
+ *   - Error logs are always sent to CloudWatch and Sentry
  *   - Non-error logs:
- *     - Sent to Sentry if `isEnabledInProduction` is `true`
- *     - Ignored if `isEnabledInProduction` is `false`
+ *     - Sent to CloudWatch and Sentry if `isEnabledInDeployedEnvs` is `true`
+ *     - Ignored if `isEnabledInDeployedEnvs` is `false`
  *
  * - IN NON-DEPLOYED ENVS:
  *   - Error logs are always logged using `console.error`
- *   - Non-error logs are colorized and logged using `nonProdConsoleMethod`
+ *   - Non-error logs are colorized and logged using `consoleMethod`
  *
  * > Errors are always logged in all environments regardless of
- *   `isEnabledInProduction` which only applies to non-error logs.
+ *   `isEnabledInDeployedEnvs` which only applies to non-error logs.
  */
 const getLoggerUtil = ({
   label,
-  isEnabledInProduction = false,
-  nonProdConsoleMethod = console.log,
-  messageColor = chalk.white,
-  labelColor = messageColor.bold,
+  isEnabledInDeployedEnvs = false,
+  consoleMethod = console.log,
+  msgColor = chalk.white,
+  labelColor = msgColor.bold,
 }: GetLogMessageArgsProvidedByLoggerUtil & {
-  /** Bool flag to enable logging non-errors in prod. */
-  isEnabledInProduction?: boolean;
+  /** Bool flag to enable logging non-errors in deployed envs: staging, prod */
+  isEnabledInDeployedEnvs?: boolean;
   /** The `console` method to use (default: `console.log`). */
-  nonProdConsoleMethod?:
+  consoleMethod?:
     | typeof console.log
     | typeof console.info
     | typeof console.debug
@@ -82,28 +88,33 @@ const getLoggerUtil = ({
   const {
     handleLogMessage,
     handleLogError,
-  }: Record<"handleLogMessage" | "handleLogError", LoggerFn> = ENV.IS_DEPLOYED_ENV
+  }: { handleLogError: ErrorLoggerFn; handleLogMessage: LoggerFn } = ENV.IS_DEPLOYED_ENV
     ? {
-        handleLogError: (input, messagePrefix) => {
-          Sentry.captureException(input);
-          Sentry.captureMessage(getLogMessage({ label, input, messagePrefix }));
+        handleLogError: (error, messagePrefix) => {
+          // If error has a `statusCode` and the `statusCode` is under 500, ignore it.
+          if (isSafeInteger(error?.statusCode) && error.statusCode < 500) return;
+          Sentry.captureException(error);
+          // stderr goes to CloudWatch in deployed envs
+          console.error(getLogMessage({ label, input: error, messagePrefix }));
         },
-        handleLogMessage: isEnabledInProduction
+        handleLogMessage: isEnabledInDeployedEnvs
           ? (input, messagePrefix) => {
               Sentry.captureMessage(getLogMessage({ label, input, messagePrefix }));
+              // stdout goes to CloudWatch in deployed envs
+              consoleMethod(getLogMessage({ label, input, messagePrefix }));
             }
           : () => {
               /* noop, function is disabled */
             },
       }
     : {
-        handleLogError: (input, messagePrefix) => {
-          console.error(getLogMessage({ label, input, messagePrefix, labelColor, messageColor }));
+        handleLogError: (error, messagePrefix) => {
+          console.error(
+            getLogMessage({ label, input: error, messagePrefix, labelColor, msgColor })
+          );
         },
         handleLogMessage: (input, messagePrefix) => {
-          nonProdConsoleMethod(
-            getLogMessage({ label, input, messagePrefix, labelColor, messageColor })
-          );
+          consoleMethod(getLogMessage({ label, input, messagePrefix, labelColor, msgColor }));
         },
       };
 
@@ -117,54 +128,54 @@ const getLoggerUtil = ({
 export const logger = {
   server: getLoggerUtil({
     label: "SERVER",
-    messageColor: chalk.magenta,
+    msgColor: chalk.magenta,
   }),
   warn: getLoggerUtil({
     label: "WARN",
-    messageColor: chalk.yellow,
+    msgColor: chalk.yellow,
   }),
   security: getLoggerUtil({
     label: "SECURITY",
-    messageColor: chalk.red.bold,
+    msgColor: chalk.red.bold,
     labelColor: chalk.bgRed.black.bold,
-    isEnabledInProduction: true,
+    isEnabledInDeployedEnvs: true,
   }),
   info: getLoggerUtil({
     label: "INFO",
-    messageColor: chalk.cyan,
-    nonProdConsoleMethod: console.info,
+    msgColor: chalk.cyan,
+    consoleMethod: console.info,
   }),
   debug: getLoggerUtil({
     label: "DEBUG",
-    messageColor: chalk.cyan,
-    nonProdConsoleMethod: console.debug,
+    msgColor: chalk.cyan,
+    consoleMethod: console.debug,
   }),
   test: getLoggerUtil({
     label: "TEST",
-    messageColor: chalk.bgCyan.black,
+    msgColor: chalk.bgCyan.black,
   }),
   error: getLoggerUtil({
     label: "ERROR",
-    messageColor: chalk.red,
-    isEnabledInProduction: true,
+    msgColor: chalk.red,
+    isEnabledInDeployedEnvs: true,
   }),
   gql: getLoggerUtil({
     label: "GQL",
-    messageColor: chalk.magenta,
+    msgColor: chalk.magenta,
   }),
   stripe: getLoggerUtil({
     label: "STRIPE",
-    messageColor: chalk.green,
+    msgColor: chalk.green,
   }),
   dynamodb: getLoggerUtil({
     label: "DynamoDB",
-    messageColor: chalk.blue,
-    isEnabledInProduction: true,
+    msgColor: chalk.blue,
+    isEnabledInDeployedEnvs: true,
   }),
   webhook: getLoggerUtil({
     label: "WEBHOOK",
-    messageColor: chalk.green,
-    isEnabledInProduction: true,
+    msgColor: chalk.green,
+    isEnabledInDeployedEnvs: true,
   }),
 };
 
@@ -175,7 +186,7 @@ type GetLogMessageArgsProvidedByLoggerUtil = {
   /** A [chalk](https://www.npmjs.com/package/chalk) color for dev env log labels. */
   labelColor?: ChalkInstance;
   /** A [chalk](https://www.npmjs.com/package/chalk) color for dev env logs (default: white). */
-  messageColor?: ChalkInstance;
+  msgColor?: ChalkInstance;
 };
 
 /** Args provided to `getLogMessage` by `LoggerFn` invocations. */
@@ -189,5 +200,11 @@ type GetLogMessageArgsProvidedByHandler = {
 /** This type reflects the structure of the function returned by `getLoggerUtil`. */
 type LoggerFn = (
   input: GetLogMessageArgsProvidedByHandler["input"],
+  messagePrefix?: GetLogMessageArgsProvidedByHandler["messagePrefix"]
+) => void;
+
+/** Internal type for `handleLogError` fns used in `getLoggerUtil`. */
+type ErrorLoggerFn = (
+  error: Error & Partial<HttpErrorInterface>,
   messagePrefix?: GetLogMessageArgsProvidedByHandler["messagePrefix"]
 ) => void;
