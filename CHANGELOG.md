@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+# [2.0.0-next.5](https://github.com/Nerdware-LLC/fixit-api/compare/v2.0.0-next.4...v2.0.0-next.5) (2024-03-05)
+
+
+### Features
+
+* ensure logs go to CloudWatch in deployed envs ([77885a8](https://github.com/Nerdware-LLC/fixit-api/commit/77885a8db025c3be81cbc5439994e1e0144c766e))
+
 # [2.0.0-next.4](https://github.com/Nerdware-LLC/fixit-api/compare/v2.0.0-next.3...v2.0.0-next.4) (2024-03-03)
 
 
