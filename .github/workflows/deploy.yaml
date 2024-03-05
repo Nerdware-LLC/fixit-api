@@ -86,7 +86,15 @@ jobs:
           UPDATED_TASK_DEF_JSON=$( \
             echo $TASK_DEF_JSON | \
             jq --arg NEW_IMAGE "$IMAGE_SHA_TAG" \
-              '.taskDefinition | .containerDefinitions[0].image = $NEW_IMAGE'
+              '.taskDefinition |
+              .containerDefinitions[0].image = $NEW_IMAGE |
+              del(.taskDefinitionArn) |
+              del(.revision) |
+              del(.status) |
+              del(.requiresAttributes) |
+              del(.compatibilities) |
+              del(.registeredAt) |
+              del(.registeredBy)'
           )
 
           aws ecs register-task-definition \
