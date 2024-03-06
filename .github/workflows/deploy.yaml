@@ -1,19 +1,16 @@
 name: Deploy Workflow
 
-on:
-  release:
-    types: [published]
+on: { release: { types: [published] } }
+
+# These permissions are needed to interact with GitHub's OIDC Token endpoint.
+permissions: { id-token: write, contents: read }
 
 jobs:
-  deploy:
-    name: Deploy
+  push-to-ecr:
+    name: Build, Tag, and Push Image to Amazon ECR
     runs-on: ubuntu-latest
-
-    # These permissions are needed to interact with GitHub's OIDC Token endpoint.
-    permissions:
-      id-token: write
-      contents: read
-
+    outputs:
+      ecr-registry: ${{ steps.login-ecr.outputs.registry }}
     steps:
       - uses: actions/checkout@v4
 
@@ -30,12 +27,7 @@ jobs:
         with:
           mask-password: "true"
 
-      - name: Build, Tag, and Push Image to Amazon ECR
-        id: push-to-ecr
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_PRIVATE_REPO }}
-        run: |
+      - run: |
           IMAGE_TAGS=(
             "${{ github.sha }}"
             "${{ github.event.release.tag_name }}"
@@ -47,24 +39,27 @@ jobs:
             IMAGE_TAGS+=( prod latest )
           fi
 
-          IMAGE_REPO="$ECR_REGISTRY/$ECR_REPOSITORY"
+          IMAGE_REPO="${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_PRIVATE_REPO }}"
           IMAGE_TAGS=("${IMAGE_TAGS[@]/#/$IMAGE_REPO:}")
 
           docker build ${IMAGE_TAGS[@]/#/--tag } .
 
           for tag in "${IMAGE_TAGS[@]}"; do docker push "$tag"; done
 
+  update-ecs:
+    name: Update ECS Task Definition & Service
+    runs-on: ubuntu-latest
+    needs: push-to-ecr
+    if: ${{ needs.push-to-ecr.result == 'success' }}
+    steps:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.ECS_OIDC_GITHUB_ROLE_ARN }}
           aws-region: ${{ secrets.ECS_CLUSTER_REGION }}
 
       - name: Update ECS Task Definition & Service
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_PRIVATE_REPO }}
         run: |
-          IMAGE_REPO="$ECR_REGISTRY/$ECR_REPOSITORY"
+          IMAGE_REPO="${{ needs.push-to-ecr.outputs.ecr-registry }}/${{ secrets.ECR_PRIVATE_REPO }}"
           IMAGE_SHA_TAG="$IMAGE_REPO:${{ github.sha }}"
 
           if [ "${{ github.event.release.prerelease }}" == 'true' ]; then
