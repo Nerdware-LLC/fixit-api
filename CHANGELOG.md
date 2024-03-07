@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+# [2.0.0-next.6](https://github.com/Nerdware-LLC/fixit-api/compare/v2.0.0-next.5...v2.0.0-next.6) (2024-03-07)
+
+
+### Bug Fixes
+
+* ensure 'isIntrospectionQuery' only enabled in dev ([49af168](https://github.com/Nerdware-LLC/fixit-api/commit/49af168fd9a740da6c0cadc46826d006c604ff9e))
+
+
+### Features
+
+* enable includeStacktraceInErrorResponses in non-prod envs ([e5a4910](https://github.com/Nerdware-LLC/fixit-api/commit/e5a4910d95449a78e9c48caaa65020e9961e5480))
+* rm timestamps from logs sent to CloudWatch ([9b39d8c](https://github.com/Nerdware-LLC/fixit-api/commit/9b39d8c46ab651f28e96859f32fb5c362c5efe38))
+
 # [2.0.0-next.5](https://github.com/Nerdware-LLC/fixit-api/compare/v2.0.0-next.4...v2.0.0-next.5) (2024-03-05)
 
 
