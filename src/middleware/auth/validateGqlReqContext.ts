@@ -79,7 +79,7 @@ const isIntrospectionQuery = ({
  * This MW is used to create "context" within ApolloServer.
  * - Permits ApolloStudio and ApolloSandbox introspection queries in the dev env.
  */
-export const validateGqlReqContext = ENV.NODE_ENV.startsWith("dev")
+export const validateGqlReqContext = !ENV.NODE_ENV.startsWith("dev")
   ? validateGqlRequest
   : async ({ req }: { req: Request }) => {
       return isIntrospectionQuery({ req })
