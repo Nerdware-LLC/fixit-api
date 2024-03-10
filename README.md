@@ -281,12 +281,12 @@ This project's CI/CD pipeline uses GitHub Actions to [test](/.github/workflows/t
 
 ### Git Workflow
 
-This project uses uses [GitHub Flow](https://guides.github.com/introduction/flow/) to deploy two live environments - staging and production - both of which are associated with a protected Git branch:
+This project uses uses [GitHub Flow](https://guides.github.com/introduction/flow/) to deploy two live environments - staging and production - both of which are associated with a Git branch for releases:
 
-| Environment | Git Branch |                   Permits `git push`                   |
-| :---------- | :--------: | :----------------------------------------------------: |
-| staging     |    next    | <span style="color:#66FF00;font-size:1.5rem;">✓</span> |
-| production  |    main    |                           ❌                           |
+| Environment | Release Branch |                   Permits `git push`                   |
+| :---------- | :------------: | :----------------------------------------------------: |
+| staging     |      next      | <span style="color:#66FF00;font-size:1.5rem;">✓</span> |
+| production  |      main      |                           ❌                           |
 
 Project versioning and the [CHANGELOG.md](./CHANGELOG.md) are managed automatically via GitHub Actions and [Semantic Release](https://github.com/semantic-release/semantic-release#readme).
 
