@@ -46,7 +46,6 @@ Author: [Trevor Anderson](https://github.com/trevor-anderson), Solopreneur & Fou
   - [REST Endpoints Diagram](#rest-endpoints-diagram)
   - [GraphQL Schema](#graphql-schema)
 - [🔐 User Authentication](#-user-authentication)
-- [💎 Premium SaaS Products](#-premium-saas-products)
 - [🗄️ DynamoDB Database](#️-dynamodb-database)
   - [Fixit-API Access Patterns](#fixit-api-access-patterns)
   - [Single Table Design](#single-table-design)
@@ -216,16 +215,6 @@ Check out the [Fixit GraphQL Schema Explorer](https://studio.apollographql.com/p
 This API uses self-vended [JSON Web Tokens](https://jwt.io/introduction) to manage user authentication and authorization.
 
 <!-- TODO Write more re: API auth mechanisms -->
-
-## 💎 Premium SaaS Products
-
-The table below lists currently available Fixit SaaS products. Subscription management is powered by [Stripe](https://stripe.com/billing).
-
-| Product                 | Purchase Option      | Price (USD) |                Promo Code(s) Available?                |
-| :---------------------- | :------------------- | :---------: | :----------------------------------------------------: |
-| Fixit SaaS Subscription | 14-Day Free Trial    |     $0      |                          N/A                           |
-| Fixit SaaS Subscription | Monthly Subscription |  $5/month   | <span style="color:#66FF00;font-size:1.5rem;">✓</span> |
-| Fixit SaaS Subscription | Annual Subscription  |  $50/year   | <span style="color:#66FF00;font-size:1.5rem;">✓</span> |
 
 ## 🗄️ DynamoDB Database
 
