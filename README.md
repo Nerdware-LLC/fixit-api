@@ -275,9 +275,9 @@ This API uses a single DynamoDB table with primary keys `pk` and `sk`, along wit
 
 This project's CI/CD pipeline uses GitHub Actions to [test](/.github/workflows/test.yaml), [release](/.github/workflows/release.yaml), and [deploy](/.github/workflows/deploy.yaml) code changes.
 
-1. [`Node Test`](https://github.com/Nerdware-LLC/reusable-action-workflows/tree/main#node-test) - Runs test suites, adds test and coverage info to PRs, and updates [CodeCov](https://about.codecov.io/).
-2. [`Release`](https://github.com/Nerdware-LLC/reusable-action-workflows/tree/main#release) - Creates a new GitHub release using [Semantic Release](https://github.com/semantic-release/semantic-release#readme).
-3. [`ECR Image Push`](https://github.com/Nerdware-LLC/reusable-action-workflows/tree/main#ecr-image-push) - Builds a Docker image and pushes it to [Amazon ECR](https://aws.amazon.com/ecr/).
+1. [`Test`](/.github/workflows/test.yaml) - Runs test suites, adds test and coverage info to PRs, and updates [CodeCov](https://about.codecov.io/).
+2. [`Release`](/.github/workflows/release.yaml) - Creates a new GitHub release using [Semantic Release](https://github.com/semantic-release/semantic-release#readme).
+3. [`Deploy`](/.github/workflows/deploy.yaml) - Builds a Docker image, pushes it to [Amazon ECR](https://aws.amazon.com/ecr/), and updates the [ECS Task Definition](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html) and associated [ECS Service](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html).
 
 ### Git Workflow
 
