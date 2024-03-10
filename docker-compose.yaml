@@ -8,8 +8,8 @@ services:
     container_name: fixit-api
     depends_on:
       - dynamodb-local
-    image: node:20
-    command: ${API_COMMAND:- npx nodemon ./src/index.ts}
+    image: node:20-slim
+    command: ${API_COMMAND:- npx nodemon src/index.ts}
     working_dir: /home/node/app
     volumes:
       - ".:/home/node/app:ro"
@@ -21,7 +21,6 @@ services:
       AWS_ACCESS_KEY_ID: local
       AWS_SECRET_ACCESS_KEY: local
       DYNAMODB_ENDPOINT: "http://dynamodb-local:8000"
-      NODE_OPTIONS: "--experimental-specifier-resolution=node --no-warnings"
     tty: true
 
   dynamodb-local:

@@ -47,11 +47,13 @@ export const lambdaClient = {
   ) => ReturnType<typeof _invoke>
 >;
 
+export type FixitLambdaFnName = "PushNotificationService" | "SendWelcomeEmail";
+
 export type LambdaClientInvokeOpts = OverrideProperties<
   InvokeCommandInput,
   {
     InvocationType: "Event" | "RequestResponse";
-    FunctionName: string;
+    FunctionName: FixitLambdaFnName;
     Payload: unknown;
   }
 >;

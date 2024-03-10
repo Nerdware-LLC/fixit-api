@@ -1,8 +1,8 @@
-import { isValidStripeID } from "@/lib/stripe";
-import { userStripeConnectAccountModelHelpers as scaModelHelpers } from "@/models/UserStripeConnectAccount/helpers";
-import { MOCK_USERS, UNALIASED_MOCK_USERS } from "@/tests/staticMockItems/users";
-import { User } from "./User";
-import { userModelHelpers } from "./helpers";
+import { isValidStripeID } from "@/lib/stripe/isValidStripeID.js";
+import { userStripeConnectAccountModelHelpers as scaModelHelpers } from "@/models/UserStripeConnectAccount/helpers.js";
+import { MOCK_USERS, UNALIASED_MOCK_USERS } from "@/tests/staticMockItems/users.js";
+import { User } from "./User.js";
+import { userModelHelpers } from "./helpers.js";
 
 const { USER_A, USER_B, USER_C } = MOCK_USERS;
 

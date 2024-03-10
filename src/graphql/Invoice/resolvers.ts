@@ -1,14 +1,14 @@
-import { eventEmitter } from "@/events/eventEmitter";
+import { eventEmitter } from "@/events/eventEmitter.js";
 import { DeleteMutationResponse } from "@/graphql/_common";
 import {
   verifyUserIsAuthorizedToPerformThisUpdate,
   formatAsGqlFixitUser,
 } from "@/graphql/_helpers";
-import { stripe } from "@/lib/stripe";
-import { Invoice, type InvoiceItem } from "@/models/Invoice";
-import { WorkOrder } from "@/models/WorkOrder";
-import { GqlUserInputError, GqlForbiddenError } from "@/utils/httpErrors";
-import type { Resolvers } from "@/types";
+import { stripe } from "@/lib/stripe/stripeClient.js";
+import { Invoice, type InvoiceItem } from "@/models/Invoice/Invoice.js";
+import { WorkOrder } from "@/models/WorkOrder/WorkOrder.js";
+import { GqlUserInputError, GqlForbiddenError } from "@/utils/httpErrors.js";
+import type { Resolvers } from "@/types/graphql.js";
 
 export const resolvers: Partial<Resolvers> = {
   Query: {

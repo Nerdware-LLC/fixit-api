@@ -1,5 +1,5 @@
 import { ENV } from "@/server/env";
-import type { UserItem } from "@/models/User";
+import type { UserItem } from "@/models/User/User.js";
 
 /**
  * Represents a push notification.

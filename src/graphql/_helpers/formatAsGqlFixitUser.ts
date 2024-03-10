@@ -1,8 +1,8 @@
-import { usersCache } from "@/lib/cache/usersCache";
-import { contactModelHelpers } from "@/models/Contact/helpers";
-import { User } from "@/models/User";
-import type { FixitUser } from "@/types/graphql";
-import type { FixitApiAuthTokenPayload } from "@/utils/AuthToken";
+import { usersCache } from "@/lib/cache/usersCache.js";
+import { contactModelHelpers } from "@/models/Contact/helpers.js";
+import { User } from "@/models/User/User.js";
+import type { FixitUser } from "@/types/graphql.js";
+import type { FixitApiAuthTokenPayload } from "@/utils/AuthToken.js";
 import type { SetOptional } from "type-fest";
 
 /**

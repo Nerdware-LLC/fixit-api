@@ -1,7 +1,7 @@
-import { mwAsyncCatchWrapper } from "@/middleware/helpers";
-import { AuthError } from "@/utils/httpErrors";
-import { passwordHasher } from "@/utils/passwordHasher";
-import type { RestApiRequestBodyByPath } from "@/types/open-api";
+import { mwAsyncCatchWrapper } from "@/middleware/helpers.js";
+import { AuthError } from "@/utils/httpErrors.js";
+import { passwordHasher } from "@/utils/passwordHasher.js";
+import type { RestApiRequestBodyByPath } from "@/types/open-api.js";
 
 /**
  * This middleware checks if the authenticated User's login type is "LOCAL",

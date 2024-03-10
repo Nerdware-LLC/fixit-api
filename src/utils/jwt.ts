@@ -20,7 +20,7 @@ export const validateAndDecodeJWT = async <
       token,
       ENV.JWT.PRIVATE_KEY,
       {
-        audience: ENV.CONFIG.API_FULL_URL,
+        audience: ENV.CONFIG.API_BASE_URL,
         issuer: ENV.JWT.ISSUER,
         algorithms: [ENV.JWT.ALGORITHM],
         maxAge: ENV.JWT.EXPIRES_IN,
@@ -51,7 +51,7 @@ export const validateAndDecodeJWT = async <
  */
 export const signAndEncodeJWT = (payload: jwt.JwtPayload & { id?: string }) => {
   return jwt.sign(payload, ENV.JWT.PRIVATE_KEY, {
-    audience: ENV.CONFIG.API_FULL_URL,
+    audience: ENV.CONFIG.API_BASE_URL,
     issuer: ENV.JWT.ISSUER,
     algorithm: ENV.JWT.ALGORITHM,
     expiresIn: ENV.JWT.EXPIRES_IN,

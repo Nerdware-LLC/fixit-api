@@ -1,6 +1,6 @@
 import { hasKey } from "@nerdware/ts-type-safety-utils";
 import express from "express";
-import { logger } from "@/utils/logger";
+import { logger } from "@/utils/logger.js";
 import type { Request } from "express";
 import type { JsonObject } from "type-fest";
 

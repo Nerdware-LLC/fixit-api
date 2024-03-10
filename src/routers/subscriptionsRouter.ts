@@ -6,8 +6,8 @@ import {
   isValidURL,
 } from "@nerdware/ts-string-helpers";
 import express from "express";
-import { pricesCache } from "@/lib/cache/pricesCache";
-import { isValidStripeID } from "@/lib/stripe";
+import { pricesCache } from "@/lib/cache/pricesCache.js";
+import { isValidStripeID } from "@/lib/stripe/isValidStripeID.js";
 import {
   checkPromoCode,
   createCustomerPortalLink,
@@ -15,8 +15,8 @@ import {
   generateAuthToken,
   getUserFromAuthHeaderToken,
 } from "@/middleware";
-import { sanitizeAndValidateRequestBody } from "@/middleware/helpers";
-import { UserSubscription } from "@/models/UserSubscription";
+import { sanitizeAndValidateRequestBody } from "@/middleware/helpers.js";
+import { UserSubscription } from "@/models/UserSubscription/UserSubscription.js";
 
 /**
  * This router handles all `/api/subscriptions` request paths:

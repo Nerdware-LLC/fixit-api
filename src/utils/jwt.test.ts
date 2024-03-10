@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { ENV } from "@/server/env";
-import { signAndEncodeJWT, validateAndDecodeJWT } from "./jwt";
+import { signAndEncodeJWT, validateAndDecodeJWT } from "./jwt.js";
 
 /** A valid JWT payload. */
 const MOCK_JWT_PAYLOAD = { id: "123" };
@@ -17,7 +17,7 @@ describe("JWT", () => {
   describe("validateAndDecodeJWT()", () => {
     test("returns a decoded payload when called with a valid token arg", async () => {
       const token = jwt.sign(MOCK_JWT_PAYLOAD, ENV.JWT.PRIVATE_KEY, {
-        audience: ENV.CONFIG.API_FULL_URL,
+        audience: ENV.CONFIG.API_BASE_URL,
         issuer: ENV.JWT.ISSUER,
         algorithm: ENV.JWT.ALGORITHM,
         expiresIn: "5m",
@@ -27,12 +27,14 @@ describe("JWT", () => {
     });
 
     test("throws an error when called with an invalid token arg", async () => {
-      await expect(validateAndDecodeJWT("invalid_token")).rejects.toThrow();
+      await expect(validateAndDecodeJWT("invalid_token")).rejects.toThrow(
+        "Signature verification failed"
+      );
     });
 
     test(`throws "JsonWebTokenError" when called with a token with an invalid signature`, async () => {
       const token = jwt.sign(MOCK_JWT_PAYLOAD, "invalid_private_key", {
-        audience: ENV.CONFIG.API_FULL_URL,
+        audience: ENV.CONFIG.API_BASE_URL,
         issuer: ENV.JWT.ISSUER,
         algorithm: ENV.JWT.ALGORITHM,
         expiresIn: "5m",
@@ -42,7 +44,7 @@ describe("JWT", () => {
 
     test(`throws "TokenExpiredError" when called with a token with an expired maxAge`, async () => {
       const token = jwt.sign(MOCK_JWT_PAYLOAD, ENV.JWT.PRIVATE_KEY, {
-        audience: ENV.CONFIG.API_FULL_URL,
+        audience: ENV.CONFIG.API_BASE_URL,
         issuer: ENV.JWT.ISSUER,
         algorithm: ENV.JWT.ALGORITHM,
         expiresIn: "0s",

@@ -1,8 +1,8 @@
-import { ddbTable } from "@/models/ddbTable";
+import { ddbTable } from "@/models/ddbTable.js";
 import { ENV } from "@/server/env";
-import { Cache } from "./Cache";
-import type { UnaliasedUserItem } from "@/models/User";
-import type { User, Contact } from "@/types/graphql";
+import { Cache } from "./Cache.js";
+import type { UnaliasedUserItem } from "@/models/User/User.js";
+import type { User, Contact } from "@/types/graphql.js";
 import type { Simplify } from "type-fest";
 
 export type UsersCacheObject = Simplify<Pick<User, keyof Contact>>;

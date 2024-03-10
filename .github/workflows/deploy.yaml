@@ -1,47 +1,102 @@
 name: Deploy Workflow
 
-on:
-  release:
-    types: [published]
+on: { release: { types: [published] } }
+
+# These permissions are needed to interact with GitHub's OIDC Token endpoint.
+permissions: { id-token: write, contents: read }
 
 jobs:
-  deploy:
-    name: Deploy
+  push-to-ecr:
+    name: Build, Tag, and Push Image to Amazon ECR
     runs-on: ubuntu-latest
-
-    # These permissions are needed to interact with GitHub's OIDC Token endpoint.
-    permissions:
-      id-token: write
-      contents: read
-
+    outputs:
+      ecr-registry: ${{ steps.login-ecr.outputs.registry }}
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v2
-      - uses: aws-actions/configure-aws-credentials@v2
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.OIDC_GITHUB_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_ECR_REGION }}
+          role-to-assume: ${{ secrets.ECR_OIDC_GITHUB_ROLE_ARN }}
+          aws-region: ${{ secrets.ECR_REPO_REGION }}
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: "true"
 
-      - name: Build, Tag, and Push Image to Amazon ECR
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.AWS_ECR_PRIVATE_REPO }}
-        run: |
-          IMAGE_TAGS=("${{ github.event.release.tag_name }}")
+      - run: |
+          IMAGE_TAGS=(
+            "${{ github.sha }}"
+            "${{ github.event.release.tag_name }}"
+          )
 
-          if [ ${{ github.event.release.prerelease }} == true ]; then
+          if [ "${{ github.event.release.prerelease }}" == 'true' ]; then
             IMAGE_TAGS+=( staging next )
           else
             IMAGE_TAGS+=( prod latest )
           fi
 
-          IMAGE_REPO="$ECR_REGISTRY/$ECR_REPOSITORY"
+          IMAGE_REPO="${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_PRIVATE_REPO }}"
           IMAGE_TAGS=("${IMAGE_TAGS[@]/#/$IMAGE_REPO:}")
 
           docker build ${IMAGE_TAGS[@]/#/--tag } .
 
           for tag in "${IMAGE_TAGS[@]}"; do docker push "$tag"; done
+
+  update-ecs:
+    name: Update ECS Task Definition & Service
+    runs-on: ubuntu-latest
+    needs: push-to-ecr
+    if: ${{ needs.push-to-ecr.result == 'success' }}
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.ECS_OIDC_GITHUB_ROLE_ARN }}
+          aws-region: ${{ secrets.ECS_CLUSTER_REGION }}
+
+      - name: Update ECS Task Definition & Service
+        run: |
+          IMAGE_REPO="${{ needs.push-to-ecr.outputs.ecr-registry }}/${{ secrets.ECR_PRIVATE_REPO }}"
+          IMAGE_SHA_TAG="$IMAGE_REPO:${{ github.sha }}"
+
+          if [ "${{ github.event.release.prerelease }}" == 'true' ]; then
+            TASK_DEF_NAME="${{ secrets.ECS_API_TASK_DEF_STAGING }}"
+            SERVICE_NAME="${{ secrets.ECS_API_SERVICE_NAME_STAGING }}"
+            CLUSTER_NAME="${{ secrets.ECS_CLUSTER_NAME_STAGING }}"
+          else
+            TASK_DEF_NAME="${{ secrets.ECS_API_TASK_DEF_PROD }}"
+            SERVICE_NAME="${{ secrets.ECS_API_SERVICE_NAME_PROD }}"
+            CLUSTER_NAME="${{ secrets.ECS_CLUSTER_NAME_PROD }}"
+          fi
+
+          TASK_DEF_JSON=$( \
+            aws ecs describe-task-definition \
+              --task-definition "$TASK_DEF_NAME" \
+              --output json
+          )
+
+          UPDATED_TASK_DEF_JSON=$( \
+            echo $TASK_DEF_JSON | \
+            jq --arg NEW_IMAGE "$IMAGE_SHA_TAG" \
+              '.taskDefinition |
+              .containerDefinitions[0].image = $NEW_IMAGE |
+              del(.taskDefinitionArn) |
+              del(.revision) |
+              del(.status) |
+              del(.requiresAttributes) |
+              del(.compatibilities) |
+              del(.registeredAt) |
+              del(.registeredBy)'
+          )
+
+          aws ecs register-task-definition \
+            --cli-input-json "$UPDATED_TASK_DEF_JSON"
+
+          aws ecs update-service \
+            --cluster $CLUSTER_NAME \
+            --service $SERVICE_NAME \
+            --task-definition $TASK_DEF_NAME \
+            --force-new-deployment

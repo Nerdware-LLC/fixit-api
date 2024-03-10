@@ -1,6 +1,6 @@
 import { isString } from "@nerdware/ts-type-safety-utils";
-import { unixToDate } from "@/utils/formatters/dateTime";
-import type { StripeSubscriptionWithClientSecret } from "@/lib/stripe/types";
+import { unixToDate } from "@/utils/formatters/dateTime.js";
+import type { StripeSubscriptionWithClientSecret } from "@/lib/stripe/types.js";
 import type Stripe from "stripe";
 
 /**

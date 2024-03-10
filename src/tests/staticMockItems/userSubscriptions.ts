@@ -1,6 +1,6 @@
-import { userSubscriptionModelHelpers as subModelHelpers } from "@/models/UserSubscription/helpers";
-import { MOCK_DATES } from "./dates";
-import { MOCK_USERS } from "./users";
+import { userSubscriptionModelHelpers as subModelHelpers } from "@/models/UserSubscription/helpers.js";
+import { MOCK_DATES } from "./dates.js";
+import { MOCK_USERS } from "./users.js";
 import type {
   UserSubscriptionItem,
   UnaliasedUserSubscriptionItem,

@@ -1,8 +1,8 @@
 import { WorkOrderPushNotification } from "@/events/pushNotifications";
 import { lambdaClient } from "@/lib/lambdaClient";
-import { User, type UserItem } from "@/models/User";
-import { notifyAssignorCompletedWO } from "./notifyAssignorCompletedWO";
-import type { WorkOrderItem } from "@/models/WorkOrder";
+import { User, type UserItem } from "@/models/User/User.js";
+import { notifyAssignorCompletedWO } from "./notifyAssignorCompletedWO.js";
+import type { WorkOrderItem } from "@/models/WorkOrder/WorkOrder.js";
 
 describe("notifyAssignorCompletedWO", () => {
   test("sends a push notification to the assignor when the assignor has an expoPushToken", async () => {

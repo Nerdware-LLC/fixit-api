@@ -27,8 +27,8 @@ import {
   checkOnboardingStatus,
   generateAuthToken,
 } from "@/middleware";
-import { sanitizeAndValidateRequestBody } from "@/middleware/helpers";
-import type { RequestBodyFieldsSchema, RequestBodyValidatorFn } from "@/middleware/helpers";
+import { sanitizeAndValidateRequestBody } from "@/middleware/helpers.js";
+import type { RequestBodyFieldsSchema, RequestBodyValidatorFn } from "@/middleware/helpers.js";
 
 /**
  * This router handles all `/api/auth` request paths:

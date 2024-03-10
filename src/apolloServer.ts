@@ -1,13 +1,14 @@
 import { ApolloServer, type BaseContext } from "@apollo/server";
-import { fixitSchema } from "@/graphql/schema";
+import { fixitSchema } from "@/graphql/schema.js";
 import { ENV } from "@/server/env";
-import type { FixitApiAuthTokenPayload } from "@/utils/AuthToken";
+import type { FixitApiAuthTokenPayload } from "@/utils/AuthToken.js";
 import type { Request } from "express";
 
 export const apolloServer = new ApolloServer<ApolloServerResolverContext>({
   schema: fixitSchema,
   csrfPrevention: true,
   introspection: ENV.NODE_ENV === "development",
+  includeStacktraceInErrorResponses: !ENV.IS_PROD,
   plugins: [
     ...(ENV.NODE_ENV === "development"
       ? [(await import("@apollo/server/plugin/inlineTrace")).ApolloServerPluginInlineTrace()]

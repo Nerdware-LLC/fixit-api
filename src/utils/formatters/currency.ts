@@ -1,5 +1,5 @@
-import { i18nFormats } from "./i18n";
-import type { SupportedLocale } from "./i18n";
+import { i18nFormats } from "./i18n.js";
+import type { SupportedLocale } from "./i18n.js";
 
 export type NumberToStringFormatter = (num: number, intlNumberFormat: Intl.NumberFormat) => string;
 export type NumberToLocaleStringFormatter = (num: number, locale?: SupportedLocale) => string;

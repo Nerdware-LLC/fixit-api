@@ -1,12 +1,12 @@
 import { isPlainObject, isString } from "@nerdware/ts-type-safety-utils";
 import dayjs from "dayjs";
 import merge from "lodash.merge";
-import { mockStripeInvoice } from "./_mockStripeInvoice";
-import { mockStripePaymentIntent } from "./_mockStripePaymentIntent";
-import { MOCK_STRIPE_PLAN } from "./_mockStripePlan";
-import { mockStripePrice } from "./_mockStripePrice";
-import type { UserItem } from "@/models/User";
-import type { UserSubscriptionItem } from "@/models/UserSubscription";
+import { mockStripeInvoice } from "./_mockStripeInvoice.js";
+import { mockStripePaymentIntent } from "./_mockStripePaymentIntent.js";
+import { MOCK_STRIPE_PLAN } from "./_mockStripePlan.js";
+import { mockStripePrice } from "./_mockStripePrice.js";
+import type { UserItem } from "@/models/User/User.js";
+import type { UserSubscriptionItem } from "@/models/UserSubscription/UserSubscription.js";
 import type Stripe from "stripe";
 import type { PartialDeep } from "type-fest";
 

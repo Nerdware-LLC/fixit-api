@@ -1,6 +1,12 @@
-import { intToCurrencyStr, intToCurrencyRoundedStr } from "./currency";
+import { intToCurrencyStr, intToCurrencyRoundedStr } from "./currency.js";
 
 describe("formatters/currency", () => {
+  /**
+   * Regex for asserting the error msg thrown from currency formatter
+   * functions when they're called with an invalid value.
+   */
+  const INVALID_VALUE_ERR_MSG_REGEX = /invalid value/;
+
   describe("intToCurrencyStr()", () => {
     // Valid inputs:
     test("returns a string with the correct currency format for a positive integer input", () => {
@@ -20,16 +26,18 @@ describe("formatters/currency", () => {
     });
     // Invalid inputs:
     test("throws an error when called with a number which is not a safe integer input", () => {
-      expect(() => intToCurrencyStr(1234.56)).toThrow();
-      expect(() => intToCurrencyStr(NaN)).toThrow();
-      expect(() => intToCurrencyStr(-NaN)).toThrow();
-      expect(() => intToCurrencyStr(Infinity)).toThrow();
-      expect(() => intToCurrencyStr(-Infinity)).toThrow();
+      const INVALID_VALUE_ERR_MSG_REGEX = /invalid value/;
+
+      expect(() => intToCurrencyStr(1234.56)).toThrow(INVALID_VALUE_ERR_MSG_REGEX);
+      expect(() => intToCurrencyStr(NaN)).toThrow(INVALID_VALUE_ERR_MSG_REGEX);
+      expect(() => intToCurrencyStr(-NaN)).toThrow(INVALID_VALUE_ERR_MSG_REGEX);
+      expect(() => intToCurrencyStr(Infinity)).toThrow(INVALID_VALUE_ERR_MSG_REGEX);
+      expect(() => intToCurrencyStr(-Infinity)).toThrow(INVALID_VALUE_ERR_MSG_REGEX);
     });
     test("throws an error when called with a non-number input", () => {
-      expect(() => intToCurrencyStr("abc" as any)).toThrow();
-      expect(() => intToCurrencyStr(null as any)).toThrow();
-      expect(() => intToCurrencyStr(undefined as any)).toThrow();
+      expect(() => intToCurrencyStr("abc" as any)).toThrow(INVALID_VALUE_ERR_MSG_REGEX);
+      expect(() => intToCurrencyStr(null as any)).toThrow(INVALID_VALUE_ERR_MSG_REGEX);
+      expect(() => intToCurrencyStr(undefined as any)).toThrow(INVALID_VALUE_ERR_MSG_REGEX);
     });
   });
 
@@ -52,16 +60,16 @@ describe("formatters/currency", () => {
     });
     // Invalid inputs:
     test("throws an error when called with a number which is not a safe integer input", () => {
-      expect(() => intToCurrencyRoundedStr(1234.56)).toThrow();
-      expect(() => intToCurrencyRoundedStr(NaN)).toThrow();
-      expect(() => intToCurrencyRoundedStr(-NaN)).toThrow();
-      expect(() => intToCurrencyRoundedStr(Infinity)).toThrow();
-      expect(() => intToCurrencyRoundedStr(-Infinity)).toThrow();
+      expect(() => intToCurrencyRoundedStr(1234.56)).toThrow(INVALID_VALUE_ERR_MSG_REGEX);
+      expect(() => intToCurrencyRoundedStr(NaN)).toThrow(INVALID_VALUE_ERR_MSG_REGEX);
+      expect(() => intToCurrencyRoundedStr(-NaN)).toThrow(INVALID_VALUE_ERR_MSG_REGEX);
+      expect(() => intToCurrencyRoundedStr(Infinity)).toThrow(INVALID_VALUE_ERR_MSG_REGEX);
+      expect(() => intToCurrencyRoundedStr(-Infinity)).toThrow(INVALID_VALUE_ERR_MSG_REGEX);
     });
     test("throws an error when called with a non-number input", () => {
-      expect(() => intToCurrencyRoundedStr("abc" as any)).toThrow();
-      expect(() => intToCurrencyRoundedStr(null as any)).toThrow();
-      expect(() => intToCurrencyRoundedStr(undefined as any)).toThrow();
+      expect(() => intToCurrencyRoundedStr("abc" as any)).toThrow(INVALID_VALUE_ERR_MSG_REGEX);
+      expect(() => intToCurrencyRoundedStr(null as any)).toThrow(INVALID_VALUE_ERR_MSG_REGEX);
+      expect(() => intToCurrencyRoundedStr(undefined as any)).toThrow(INVALID_VALUE_ERR_MSG_REGEX);
     });
   });
 });

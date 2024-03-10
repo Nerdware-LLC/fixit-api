@@ -1,13 +1,13 @@
-import { usersCache } from "@/lib/cache/usersCache";
-import { stripe } from "@/lib/stripe";
-import { Profile } from "@/models/Profile";
-import { UserLogin, type CreateLoginParams } from "@/models/UserLogin";
+import { usersCache } from "@/lib/cache/usersCache.js";
+import { stripe } from "@/lib/stripe/stripeClient.js";
+import { Profile } from "@/models/Profile/Profile.js";
+import { UserLogin, type CreateLoginParams } from "@/models/UserLogin/UserLogin.js";
 import {
   UserStripeConnectAccount,
   type UserStripeConnectAccountItem,
-} from "@/models/UserStripeConnectAccount";
-import { logger } from "@/utils/logger";
-import type { UserItem, User } from "@/models/User";
+} from "@/models/UserStripeConnectAccount/UserStripeConnectAccount.js";
+import { logger } from "@/utils/logger.js";
+import type { UserItem, User } from "@/models/User/User.js";
 import type { Simplify, SetOptional } from "type-fest";
 
 /**

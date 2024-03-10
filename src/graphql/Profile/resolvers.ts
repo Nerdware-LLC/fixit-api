@@ -1,6 +1,6 @@
-import { Profile } from "@/models/Profile";
-import { User } from "@/models/User";
-import type { Resolvers } from "@/types";
+import { Profile } from "@/models/Profile/Profile.js";
+import { User } from "@/models/User/User.js";
+import type { Resolvers } from "@/types/graphql.js";
 
 export const resolvers: Partial<Resolvers> = {
   Query: {

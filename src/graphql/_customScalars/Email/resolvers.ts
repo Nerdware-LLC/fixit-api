@@ -1,6 +1,5 @@
 import { isValidEmail } from "@nerdware/ts-string-helpers";
-import { GraphQLScalarType } from "graphql";
-import { Kind } from "graphql/language";
+import { GraphQLScalarType, Kind } from "graphql";
 import { logger } from "@/utils/logger.js";
 import { helpers } from "../helpers.js";
 

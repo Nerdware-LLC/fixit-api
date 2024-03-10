@@ -1,6 +1,6 @@
-import { mwAsyncCatchWrapper } from "@/middleware/helpers";
-import { User } from "@/models/User";
-import type { RestApiRequestBodyByPath } from "@/types/open-api";
+import { mwAsyncCatchWrapper } from "@/middleware/helpers.js";
+import { User } from "@/models/User/User.js";
+import type { RestApiRequestBodyByPath } from "@/types/open-api.js";
 
 /**
  * This middleware simply queries the DB for a User with the given email address.

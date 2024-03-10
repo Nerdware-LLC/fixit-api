@@ -1,4 +1,4 @@
-import { mwCatchWrapper } from "@/middleware/helpers";
+import { mwCatchWrapper } from "@/middleware/helpers.js";
 
 /**
  * This middleware is a fallback response handler which reads the `res.locals` object and returns

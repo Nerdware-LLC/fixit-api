@@ -1,15 +1,15 @@
 import { isString } from "@nerdware/ts-type-safety-utils";
-import { eventEmitter } from "@/events/eventEmitter";
+import { eventEmitter } from "@/events/eventEmitter.js";
 import { DeleteMutationResponse } from "@/graphql/_common";
 import {
   verifyUserIsAuthorizedToPerformThisUpdate,
   formatAsGqlFixitUser,
 } from "@/graphql/_helpers";
-import { Location } from "@/models/Location";
-import { USER_ID_REGEX } from "@/models/User/regex";
-import { WorkOrder, type WorkOrderItem } from "@/models/WorkOrder";
-import { GqlUserInputError } from "@/utils/httpErrors";
-import type { Resolvers } from "@/types";
+import { Location } from "@/models/Location/Location.js";
+import { USER_ID_REGEX } from "@/models/User/regex.js";
+import { WorkOrder, type WorkOrderItem } from "@/models/WorkOrder/WorkOrder.js";
+import { GqlUserInputError } from "@/utils/httpErrors.js";
+import type { Resolvers } from "@/types/graphql.js";
 
 export const resolvers: Partial<Resolvers> = {
   Query: {

@@ -1,6 +1,9 @@
-import { Location } from "@/models/Location";
-import { MOCK_WORK_ORDERS, UNALIASED_MOCK_WORK_ORDERS } from "@/tests/staticMockItems/workOrders";
-import { WorkOrder } from "./WorkOrder";
+import { Location } from "@/models/Location/Location.js";
+import {
+  MOCK_WORK_ORDERS,
+  UNALIASED_MOCK_WORK_ORDERS,
+} from "@/tests/staticMockItems/workOrders.js";
+import { WorkOrder } from "./WorkOrder.js";
 
 // Arrange mock WorkOrders
 const { WO_A, WO_B, WO_C } = MOCK_WORK_ORDERS;
@@ -32,7 +35,7 @@ describe("WorkOrder Model", () => {
           location: WO_A.location,
           status: WO_A.status,
         } as any)
-      ).rejects.toThrow();
+      ).rejects.toThrow(`A value is required for WorkOrder property "createdByUserID"`);
       await expect(() =>
         WorkOrder.createItem({
           createdByUserID: "INVALID_VALUE", // <-- invalid createdByUserID
@@ -40,7 +43,7 @@ describe("WorkOrder Model", () => {
           location: WO_A.location,
           status: WO_A.status,
         } as any)
-      ).rejects.toThrow();
+      ).rejects.toThrow(/invalid value/i);
     });
     test(`throws an Error when called without a valid "assignedToUserID"`, async () => {
       // Note: WorkOrder.assignedToUserID CAN be missing, defaults to "UNASSIGNED" in db.
@@ -51,7 +54,7 @@ describe("WorkOrder Model", () => {
           location: WO_A.location,
           status: WO_A.status,
         } as any)
-      ).rejects.toThrow();
+      ).rejects.toThrow(/invalid value/i);
     });
     test(`throws an Error when called without a valid "location"`, async () => {
       await expect(() =>
@@ -61,7 +64,7 @@ describe("WorkOrder Model", () => {
           // missing location
           status: WO_A.status,
         } as any)
-      ).rejects.toThrow();
+      ).rejects.toThrow(`A value is required for WorkOrder property "location"`);
       await expect(() =>
         WorkOrder.createItem({
           createdByUserID: WO_A.createdByUserID,
@@ -69,7 +72,7 @@ describe("WorkOrder Model", () => {
           location: {}, // <-- invalid location
           status: WO_A.status,
         } as any)
-      ).rejects.toThrow();
+      ).rejects.toThrow(/invalid value/i);
     });
     test(`throws an Error when called without a valid "status"`, async () => {
       await expect(() =>
@@ -79,7 +82,7 @@ describe("WorkOrder Model", () => {
           location: WO_A.location,
           // missing status
         } as any)
-      ).rejects.toThrow();
+      ).rejects.toThrow(`A value is required for WorkOrder property "status"`);
       await expect(() =>
         WorkOrder.createItem({
           createdByUserID: WO_A.createdByUserID,
@@ -87,7 +90,7 @@ describe("WorkOrder Model", () => {
           location: WO_A.location,
           status: "INVALID_VALUE", // <-- invalid status
         } as any)
-      ).rejects.toThrow();
+      ).rejects.toThrow(/Invalid type of value provided for WorkOrder property "status"/);
     });
   });
 
@@ -206,7 +209,7 @@ describe("WorkOrder Model", () => {
       // Assert the result
       expect(result).toStrictEqual({
         ...WO_B,
-        location: { ...NEW_LOCATION, streetLine2: null },
+        location: new Location({ ...NEW_LOCATION, streetLine2: null }),
         updatedAt: expect.any(Date),
       });
 

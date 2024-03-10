@@ -4,6 +4,104 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+# [2.0.0-next.6](https://github.com/Nerdware-LLC/fixit-api/compare/v2.0.0-next.5...v2.0.0-next.6) (2024-03-09)
+
+
+### Bug Fixes
+
+* ensure 'isIntrospectionQuery' only enabled in dev ([49af168](https://github.com/Nerdware-LLC/fixit-api/commit/49af168fd9a740da6c0cadc46826d006c604ff9e))
+
+
+### Features
+
+* enable includeStacktraceInErrorResponses in non-prod envs ([e5a4910](https://github.com/Nerdware-LLC/fixit-api/commit/e5a4910d95449a78e9c48caaa65020e9961e5480))
+* rm timestamps from logs sent to CloudWatch ([9b39d8c](https://github.com/Nerdware-LLC/fixit-api/commit/9b39d8c46ab651f28e96859f32fb5c362c5efe38))
+
+# [2.0.0-next.6](https://github.com/Nerdware-LLC/fixit-api/compare/v2.0.0-next.5...v2.0.0-next.6) (2024-03-07)
+
+
+### Bug Fixes
+
+* ensure 'isIntrospectionQuery' only enabled in dev ([49af168](https://github.com/Nerdware-LLC/fixit-api/commit/49af168fd9a740da6c0cadc46826d006c604ff9e))
+
+
+### Features
+
+* enable includeStacktraceInErrorResponses in non-prod envs ([e5a4910](https://github.com/Nerdware-LLC/fixit-api/commit/e5a4910d95449a78e9c48caaa65020e9961e5480))
+* rm timestamps from logs sent to CloudWatch ([9b39d8c](https://github.com/Nerdware-LLC/fixit-api/commit/9b39d8c46ab651f28e96859f32fb5c362c5efe38))
+
+# [2.0.0-next.5](https://github.com/Nerdware-LLC/fixit-api/compare/v2.0.0-next.4...v2.0.0-next.5) (2024-03-05)
+
+
+### Features
+
+* ensure logs go to CloudWatch in deployed envs ([77885a8](https://github.com/Nerdware-LLC/fixit-api/commit/77885a8db025c3be81cbc5439994e1e0144c766e))
+
+# [2.0.0-next.4](https://github.com/Nerdware-LLC/fixit-api/compare/v2.0.0-next.3...v2.0.0-next.4) (2024-03-03)
+
+
+### Bug Fixes
+
+* pass ignore+rule-code as separate args ([45fd16a](https://github.com/Nerdware-LLC/fixit-api/commit/45fd16a63e30ab312a86891a57c4d9d1acaf4bcf))
+* rm ErrorClass param for expected parsing ([8d28b1b](https://github.com/Nerdware-LLC/fixit-api/commit/8d28b1bec12121b3830712e86493abfaba9958f2))
+
+
+### Features
+
+* rm logging of healthcheck reqs ([da79680](https://github.com/Nerdware-LLC/fixit-api/commit/da796806bd9aa1a94a97aa23f5bfa86c665c8aa8))
+* set prod stage to use node:20-slim, rm base stage ([2da0c39](https://github.com/Nerdware-LLC/fixit-api/commit/2da0c397b458f6ba30483f0f8d6c119d53db1db5))
+
+# [2.0.0-next.3](https://github.com/Nerdware-LLC/fixit-api/compare/v2.0.0-next.2...v2.0.0-next.3) (2024-03-02)
+
+
+### Features
+
+* add ENV property IS_DEPLOYED_ENV ([d6a0207](https://github.com/Nerdware-LLC/fixit-api/commit/d6a02073caf72665021a4a9a3175f50dd8a5cb3f))
+* add separate csp sources for fixit-web and the api ([fbf767e](https://github.com/Nerdware-LLC/fixit-api/commit/fbf767ea6679e4681c9bce77d9285657c3c713e2))
+* disable 'view cache' and 'x-powered-by' ([0fef87a](https://github.com/Nerdware-LLC/fixit-api/commit/0fef87ac9bf8b395c6b1101d4c576f1b12899528))
+* enable 'trust proxy' in deployed envs ([ccad7cd](https://github.com/Nerdware-LLC/fixit-api/commit/ccad7cd899304e58e54adabe786ec22f82f65144))
+* rm 'cookies', add 'ip' to data in Sentry scope ([b2d8969](https://github.com/Nerdware-LLC/fixit-api/commit/b2d89690fc6a08504a36d542b675bb8e907d54bd))
+
+# [2.0.0-next.2](https://github.com/Nerdware-LLC/fixit-api/compare/v2.0.0-next.1...v2.0.0-next.2) (2024-03-01)
+
+
+### Features
+
+* use swc 'resolveFully' to re-impl dir index imports ([61dcda5](https://github.com/Nerdware-LLC/fixit-api/commit/61dcda5ac1959be9dee05766c7f0e1f76d06684c))
+
+# [2.0.0-next.1](https://github.com/Nerdware-LLC/fixit-api/compare/v1.24.0-next.1...v2.0.0-next.1) (2024-02-29)
+
+
+### Features
+
+* convert entire project to 'module:NodeNext' ([73186ee](https://github.com/Nerdware-LLC/fixit-api/commit/73186ee8f4c805da092845a6cf91e3262af05c79))
+
+
+### BREAKING CHANGES
+
+* that impacts nearly every file in the project. The new
+module system facilitates using NodeJS v20 in deployed environments
+(staging and prod). Previously, file extensions had been omitted from
+import statements, but now they are required. This was made necessary by
+node v20 dropping support for the experimental module resolution flag(s)
+used in previous node versions (`--experimental-specifier-resolution=node`).
+The deployment process will now be much more reliable.
+* whole new module import system
+
+# [1.24.0-next.1](https://github.com/Nerdware-LLC/fixit-api/compare/v1.23.1...v1.24.0-next.1) (2024-02-28)
+
+
+### Bug Fixes
+
+* rm file extensions from imports ([74594e8](https://github.com/Nerdware-LLC/fixit-api/commit/74594e84efec7bf2f7e4c44d0abf30ab5d849550))
+* **test:** add 'as any' to fake lambda fn names in test ([1828de3](https://github.com/Nerdware-LLC/fixit-api/commit/1828de3ab8a70d3c8b8c25cdba6bfe939ebc76e9))
+
+
+### Features
+
+* add lambda fn name enum ([3bc9fd8](https://github.com/Nerdware-LLC/fixit-api/commit/3bc9fd80e77d9da03b2fe47c396d2a27ceea3dfb))
+* **csp:** update csp directives ([1e2400a](https://github.com/Nerdware-LLC/fixit-api/commit/1e2400ae27bde9b00c3ffe559a3dbeb921097ac9))
+
 ## [1.23.1](https://github.com/Nerdware-LLC/fixit-api/compare/v1.23.0...v1.23.1) (2024-02-20)
 
 

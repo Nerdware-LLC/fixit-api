@@ -1,1 +1,1 @@
-export { notifyAssignorPaidInvoice } from "./notifyAssignorPaidInvoice";
+export { notifyAssignorPaidInvoice } from "./notifyAssignorPaidInvoice.js";

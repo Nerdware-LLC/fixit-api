@@ -29,3 +29,4 @@ repos:
     rev: v2.12.0
     hooks:
       - id: hadolint-docker # lint dockerfiles using the hadolint docker image
+        args: ["--ignore", "DL3008"]

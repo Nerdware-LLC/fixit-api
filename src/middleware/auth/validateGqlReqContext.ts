@@ -1,8 +1,8 @@
-import { UserSubscription } from "@/models/UserSubscription";
+import { UserSubscription } from "@/models/UserSubscription/UserSubscription.js";
 import { ENV } from "@/server/env";
-import { AuthToken, type FixitApiAuthTokenPayload } from "@/utils/AuthToken";
-import { GqlAuthError, GqlPaymentRequiredError } from "@/utils/httpErrors";
-import type { ApolloServerResolverContext } from "@/apolloServer";
+import { AuthToken, type FixitApiAuthTokenPayload } from "@/utils/AuthToken.js";
+import { GqlAuthError, GqlPaymentRequiredError } from "@/utils/httpErrors.js";
+import type { ApolloServerResolverContext } from "@/apolloServer.js";
 import type { Request } from "express";
 
 /**
@@ -79,11 +79,10 @@ const isIntrospectionQuery = ({
  * This MW is used to create "context" within ApolloServer.
  * - Permits ApolloStudio and ApolloSandbox introspection queries in the dev env.
  */
-export const validateGqlReqContext =
-  ENV.NODE_ENV.startsWith("dev")
-    ? validateGqlRequest
-    : async ({ req }: { req: Request }) => {
-        return isIntrospectionQuery({ req })
-          ? (req as ApolloServerResolverContext)
-          : await validateGqlRequest({ req });
-      };
+export const validateGqlReqContext = !ENV.NODE_ENV.startsWith("dev")
+  ? validateGqlRequest
+  : async ({ req }: { req: Request }) => {
+      return isIntrospectionQuery({ req })
+        ? (req as ApolloServerResolverContext)
+        : await validateGqlRequest({ req });
+    };

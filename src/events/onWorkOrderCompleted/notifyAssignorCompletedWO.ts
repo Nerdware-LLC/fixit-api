@@ -1,7 +1,7 @@
 import { WorkOrderPushNotification } from "@/events/pushNotifications";
 import { lambdaClient } from "@/lib/lambdaClient";
-import { User } from "@/models/User";
-import type { WorkOrderItem } from "@/models/WorkOrder";
+import { User } from "@/models/User/User.js";
+import type { WorkOrderItem } from "@/models/WorkOrder/WorkOrder.js";
 
 /**
  * Notify assignor of completed WorkOrder when `WorkOrderCompleted` event is emitted.

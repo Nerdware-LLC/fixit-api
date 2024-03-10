@@ -1,1 +1,1 @@
-export * from "./GenericSuccessResponse";
+export * from "./GenericSuccessResponse.js";

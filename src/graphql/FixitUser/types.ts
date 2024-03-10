@@ -1,4 +1,4 @@
-import type { User, Contact } from "@/types/graphql";
+import type { User, Contact } from "@/types/graphql.js";
 
 /**
  * # This type is only for use in the `codegen` config file (see `<repo_root>/codegen.ts`)

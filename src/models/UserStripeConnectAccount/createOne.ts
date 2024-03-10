@@ -1,9 +1,9 @@
-import { stripe } from "@/lib/stripe";
+import { stripe } from "@/lib/stripe/stripeClient.js";
 import {
   UserStripeConnectAccount,
   type UserStripeConnectAccountItem,
-} from "@/models/UserStripeConnectAccount";
-import type { UserItem } from "@/models/User";
+} from "@/models/UserStripeConnectAccount/UserStripeConnectAccount.js";
+import type { UserItem } from "@/models/User/User.js";
 
 /**
  * This method creates a `UserStripeConnectAccount` item in both the Fixit database

@@ -1,20 +1,17 @@
-import { findMock } from "@/tests/staticMockItems";
-import { mockStripeBillingPortalSession } from "./_mockStripeBillingPortalSession";
-import { mockStripeConnectAccount } from "./_mockStripeConnectAccount";
-import { mockStripeConnectAccountLink } from "./_mockStripeConnectAccountLink";
-import { mockStripeConnectLoginLink } from "./_mockStripeConnectLoginLink";
-import { mockStripeCustomer, mockStripeDeletedCustomer } from "./_mockStripeCustomer";
-import { mockStripePaymentIntent } from "./_mockStripePaymentIntent";
-import { mockStripePaymentMethod } from "./_mockStripePaymentMethod";
-import { mockStripePrice } from "./_mockStripePrice";
-import { mockStripeProduct } from "./_mockStripeProduct";
-import { mockStripePromotionCode } from "./_mockStripePromotionCode";
-import { mockStripeSubscription } from "./_mockStripeSubscription";
+import { findMock } from "@/tests/staticMockItems/_helpers.js";
+import { mockStripeBillingPortalSession } from "./_mockStripeBillingPortalSession.js";
+import { mockStripeConnectAccount } from "./_mockStripeConnectAccount.js";
+import { mockStripeConnectAccountLink } from "./_mockStripeConnectAccountLink.js";
+import { mockStripeConnectLoginLink } from "./_mockStripeConnectLoginLink.js";
+import { mockStripeCustomer, mockStripeDeletedCustomer } from "./_mockStripeCustomer.js";
+import { mockStripePaymentIntent } from "./_mockStripePaymentIntent.js";
+import { mockStripePaymentMethod } from "./_mockStripePaymentMethod.js";
+import { mockStripePrice } from "./_mockStripePrice.js";
+import { mockStripeProduct } from "./_mockStripeProduct.js";
+import { mockStripePromotionCode } from "./_mockStripePromotionCode.js";
+import { mockStripeSubscription } from "./_mockStripeSubscription.js";
 import type Stripe from "stripe";
 import type { SetRequired, AsyncReturnType } from "type-fest";
-
-// Ensure isValidStripeID util is exported from here:
-export * from "@/lib/stripe/isValidStripeID";
 
 /**
  * Mock Stripe API method signatures are mostly identical to the real Stripe API,

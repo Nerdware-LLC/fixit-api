@@ -1,10 +1,10 @@
 import { Model } from "@nerdware/ddb-single-table";
 import { isValidHandle } from "@nerdware/ts-string-helpers";
-import { userModelHelpers } from "@/models/User/helpers";
-import { COMMON_ATTRIBUTES } from "@/models/_common";
-import { ddbTable } from "@/models/ddbTable";
-import { contactModelHelpers } from "./helpers";
-import { CONTACT_SK_PREFIX_STR } from "./regex";
+import { userModelHelpers } from "@/models/User/helpers.js";
+import { COMMON_ATTRIBUTES } from "@/models/_common/modelAttributes.js";
+import { ddbTable } from "@/models/ddbTable.js";
+import { contactModelHelpers } from "./helpers.js";
+import { CONTACT_SK_PREFIX_STR } from "./regex.js";
 import type { ItemTypeFromSchema, ItemCreationParameters } from "@nerdware/ddb-single-table";
 
 /**

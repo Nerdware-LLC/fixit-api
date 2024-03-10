@@ -1,15 +1,15 @@
 import { isFunction } from "@nerdware/ts-type-safety-utils";
 import deepMerge from "lodash.merge";
-import { logger } from "@/utils/logger";
-import * as contact from "./Contact/resolvers";
-import * as fixitUser from "./FixitUser/resolvers";
-import * as invoice from "./Invoice/resolvers";
-import * as profile from "./Profile/resolvers";
-import * as user from "./User/resolvers";
-import * as userSubscription from "./UserSubscription/resolvers";
-import * as workOrder from "./WorkOrder/resolvers";
-import * as dateTimeCustomScalar from "./_customScalars/DateTime/resolvers";
-import * as emailCustomScalar from "./_customScalars/Email/resolvers";
+import { logger } from "@/utils/logger.js";
+import * as contact from "./Contact/resolvers.js";
+import * as fixitUser from "./FixitUser/resolvers.js";
+import * as invoice from "./Invoice/resolvers.js";
+import * as profile from "./Profile/resolvers.js";
+import * as user from "./User/resolvers.js";
+import * as userSubscription from "./UserSubscription/resolvers.js";
+import * as workOrder from "./WorkOrder/resolvers.js";
+import * as dateTimeCustomScalar from "./_customScalars/DateTime/resolvers.js";
+import * as emailCustomScalar from "./_customScalars/Email/resolvers.js";
 
 /**
  * Fixit API GQL Schema Resolvers

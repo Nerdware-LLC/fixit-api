@@ -1,8 +1,7 @@
 import dayjs from "dayjs";
-import { GraphQLScalarType } from "graphql";
-import { Kind } from "graphql/language";
-import { logger } from "@/utils/logger";
-import { helpers } from "../helpers";
+import { GraphQLScalarType, Kind } from "graphql";
+import { logger } from "@/utils/logger.js";
+import { helpers } from "../helpers.js";
 
 /** @returns boolean indicating whether the value is a valid DateTime scalar. */
 const isValidGqlDateTimeScalar = (value: unknown) => {

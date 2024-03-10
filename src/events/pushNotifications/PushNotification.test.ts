@@ -1,4 +1,4 @@
-import { PushNotification } from "./PushNotification";
+import { PushNotification } from "./PushNotification.js";
 
 describe("PushNotification", () => {
   test("creates a new instance of PushNotification with all required parameters", () => {

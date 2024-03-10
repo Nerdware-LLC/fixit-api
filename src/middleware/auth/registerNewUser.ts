@@ -1,7 +1,7 @@
-import { mwAsyncCatchWrapper } from "@/middleware/helpers";
-import { Profile } from "@/models/Profile";
-import { User } from "@/models/User";
-import type { RestApiRequestBodyByPath } from "@/types/open-api";
+import { mwAsyncCatchWrapper } from "@/middleware/helpers.js";
+import { Profile } from "@/models/Profile/Profile.js";
+import { User } from "@/models/User/User.js";
+import type { RestApiRequestBodyByPath } from "@/types/open-api.js";
 import type { UnionToIntersection } from "type-fest";
 
 /**

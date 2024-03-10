@@ -1,7 +1,7 @@
 import { expressMiddleware } from "@apollo/server/express4";
 import * as Sentry from "@sentry/node";
 import express from "express";
-import { apolloServer } from "@/apolloServer";
+import { apolloServer } from "@/apolloServer.js";
 import {
   corsMW,
   errorHandler,
@@ -18,11 +18,29 @@ import {
   subscriptionsRouter,
   webhooksRouter,
 } from "@/routers";
+import { ENV } from "@/server/env";
 
-export const expressApp = express();
+/**
+ * The express app for REST requests and the GraphQL entry point.
+ *
+ * > - `view cache` is always disabled since this app doesn't return HTML
+ * > - `X-Powered-By` header is always disabled for security
+ * > - `trust proxy` is enabled in deployed envs so the correct IP can be logged (not the LB's)
+ * @see https://expressjs.com/en/4x/api.html#app.settings.table
+ */
+export const expressApp = express()
+  .disable("view cache")
+  .disable("x-powered-by")
+  .set("trust proxy", ENV.IS_DEPLOYED_ENV);
 
 // SENTRY REQUEST-HANDLER (must be first middleware)
-expressApp.use(Sentry.Handlers.requestHandler());
+expressApp.use(
+  Sentry.Handlers.requestHandler({
+    // Keys to be extracted from req object and attached to the Sentry scope:
+    request: ["ip", "data", "headers", "method", "query_string", "url"],
+    ip: true,
+  })
+);
 
 // LOG ALL REQUESTS
 expressApp.use(logReqReceived);

@@ -1,4 +1,4 @@
-import type { GenericSuccessResponse as GenericSuccessResponseType } from "@/types";
+import type { GenericSuccessResponse as GenericSuccessResponseType } from "@/types/graphql.js";
 
 export class GenericSuccessResponse implements GenericSuccessResponseType {
   wasSuccessful: boolean;

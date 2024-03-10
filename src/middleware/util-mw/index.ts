@@ -1,2 +1,2 @@
-export * from "./logReqReceived";
-export * from "./sendRESTJsonResponse";
+export * from "./logReqReceived.js";
+export * from "./sendRESTJsonResponse.js";

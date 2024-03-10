@@ -1,4 +1,4 @@
-import { AuthToken } from "./AuthToken";
+import { AuthToken } from "./AuthToken.js";
 
 /** A valid AuthToken constructor arg. */
 const MOCK_AUTH_TOKEN_USER_DATA = {
@@ -28,7 +28,7 @@ describe("AuthToken", () => {
     });
 
     test("throws an error when called with invalid ctor args", () => {
-      expect(() => new AuthToken({} as any)).toThrow();
+      expect(() => new AuthToken({} as any)).toThrow(`"subject" must be a string`);
     });
   });
 

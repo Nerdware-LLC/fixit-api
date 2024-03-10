@@ -1,6 +1,8 @@
-import { UserSubscription } from "@/models/UserSubscription";
-import type { UserSubscriptionItem } from "@/models/UserSubscription";
-import type { Resolvers } from "@/types";
+import {
+  UserSubscription,
+  type UserSubscriptionItem,
+} from "@/models/UserSubscription/UserSubscription.js";
+import type { Resolvers } from "@/types/graphql.js";
 
 export const resolvers: Partial<Resolvers> = {
   Query: {

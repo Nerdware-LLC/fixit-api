@@ -1,12 +1,12 @@
 import { Model } from "@nerdware/ddb-single-table";
 import { isString } from "@nerdware/ts-type-safety-utils";
-import { Location } from "@/models/Location";
-import { userModelHelpers } from "@/models/User/helpers";
-import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@/models/_common";
-import { ddbTable } from "@/models/ddbTable";
-import { WORK_ORDER_ENUM_CONSTANTS } from "./enumConstants";
-import { workOrderModelHelpers as woModelHelpers } from "./helpers";
-import { WORK_ORDER_SK_PREFIX_STR } from "./regex";
+import { Location } from "@/models/Location/Location.js";
+import { userModelHelpers } from "@/models/User/helpers.js";
+import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@/models/_common/modelAttributes.js";
+import { ddbTable } from "@/models/ddbTable.js";
+import { WORK_ORDER_ENUM_CONSTANTS } from "./enumConstants.js";
+import { workOrderModelHelpers as woModelHelpers } from "./helpers.js";
+import { WORK_ORDER_SK_PREFIX_STR } from "./regex.js";
 import type {
   ItemTypeFromSchema,
   ItemCreationParameters,

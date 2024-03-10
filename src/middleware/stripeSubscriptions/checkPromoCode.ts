@@ -1,6 +1,6 @@
-import { promoCodesCache } from "@/lib/cache/promoCodesCache";
-import { mwCatchWrapper } from "@/middleware/helpers";
-import type { RestApiRequestBodyByPath } from "@/types/open-api";
+import { promoCodesCache } from "@/lib/cache/promoCodesCache.js";
+import { mwCatchWrapper } from "@/middleware/helpers.js";
+import type { RestApiRequestBodyByPath } from "@/types/open-api.js";
 
 /**
  * This middlware serves as an endpoint which receives a `promoCode` string, and responds with

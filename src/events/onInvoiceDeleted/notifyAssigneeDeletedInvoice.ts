@@ -1,7 +1,7 @@
 import { InvoicePushNotification } from "@/events/pushNotifications";
 import { lambdaClient } from "@/lib/lambdaClient";
-import { User } from "@/models/User";
-import type { InvoiceItem } from "@/models/Invoice";
+import { User } from "@/models/User/User.js";
+import type { InvoiceItem } from "@/models/Invoice/Invoice.js";
 
 /**
  * Notify assignee of deleted Invoice when `InvoiceDeleted` event is emitted.

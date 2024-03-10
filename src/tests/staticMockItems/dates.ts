@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { getUnixTimestampUUID } from "@/utils/uuid";
+import { getUnixTimestampUUID } from "@/utils/uuid.js";
 
 /**
  * Mock dates used for testing. Each date is set to the first millisecond of their

@@ -1,8 +1,8 @@
 import { ApolloServer } from "@apollo/server";
 import { ApolloServerPluginLandingPageDisabled } from "@apollo/server/plugin/disabled";
 import { addMocksToSchema } from "@graphql-tools/mock";
-import { fixitSchema } from "@/graphql/schema";
-import type { ApolloServerResolverContext } from "@/apolloServer";
+import { fixitSchema } from "@/graphql/schema.js";
+import type { ApolloServerResolverContext } from "@/apolloServer.js";
 
 /**
  * ### MOCK APOLLO SERVER

@@ -1,7 +1,7 @@
-import { invoiceModelHelpers } from "@/models/Invoice/helpers";
-import { MOCK_DATES, MOCK_DATE_v1_UUIDs as UUIDs } from "./dates";
-import { MOCK_USERS } from "./users";
-import { MOCK_WORK_ORDERS } from "./workOrders";
+import { invoiceModelHelpers } from "@/models/Invoice/helpers.js";
+import { MOCK_DATES, MOCK_DATE_v1_UUIDs as UUIDs } from "./dates.js";
+import { MOCK_USERS } from "./users.js";
+import { MOCK_WORK_ORDERS } from "./workOrders.js";
 import type { InvoiceItem, UnaliasedInvoiceItem } from "@/models/Invoice";
 
 const { USER_A, USER_B, USER_C } = MOCK_USERS;

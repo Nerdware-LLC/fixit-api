@@ -1,4 +1,4 @@
-import { EnvObject } from "../EnvObject";
+import { createEnvObject } from "../helpers.js";
 
 /*
   The default values below are for unit-testing contexts wherein the underlying
@@ -7,8 +7,8 @@ import { EnvObject } from "../EnvObject";
 */
 
 const {
-  NODE_ENV = "test",
   npm_package_version,
+  NODE_ENV = "test",
   VITE_PROTOCOL: PROTOCOL = "http",
   VITE_DOMAIN: DOMAIN = "localhost",
   VITE_PORT: PORT = "0",
@@ -21,14 +21,15 @@ const {
   VITE_JWT_EXPIRES_IN: JWT_EXPIRES_IN = "5m",
   VITE_BCRYPT_SALT_ROUNDS: BCRYPT_SALT_ROUNDS = "10",
   VITE_SENTRY_DSN: SENTRY_DSN = "TestTestTest",
-  VITE_STRIPE_WEBHOOKS_SECRET: STRIPE_WEBHOOKS_SECRET = "whsec_TestTestTest",
+  VITE_STRIPE_API_VERSION: STRIPE_API_VERSION = "2022-08-01",
   VITE_STRIPE_PUBLISHABLE_KEY: STRIPE_PUBLISHABLE_KEY = "pk_fake_TestTestTest",
   VITE_STRIPE_SECRET_KEY: STRIPE_SECRET_KEY = "sk_fake_TestTestTest",
+  VITE_STRIPE_WEBHOOKS_SECRET: STRIPE_WEBHOOKS_SECRET = "whsec_TestTestTest",
 } = process.env; // eslint-disable-line node/no-process-env
 
-export const ENV = new EnvObject({
+export const ENV = createEnvObject({
+  ...(!!npm_package_version && { npm_package_version }),
   NODE_ENV,
-  ...(npm_package_version && { npm_package_version }),
   PROTOCOL,
   DOMAIN,
   PORT,
@@ -41,7 +42,8 @@ export const ENV = new EnvObject({
   JWT_EXPIRES_IN,
   BCRYPT_SALT_ROUNDS,
   SENTRY_DSN,
-  STRIPE_WEBHOOKS_SECRET,
+  STRIPE_API_VERSION,
   STRIPE_PUBLISHABLE_KEY,
   STRIPE_SECRET_KEY,
+  STRIPE_WEBHOOKS_SECRET,
 });

@@ -1,5 +1,5 @@
 import deepMerge from "lodash.merge";
-import { MOCK_DATE_UNIX_TIMESTAMPS } from "@/tests/staticMockItems/dates";
+import { MOCK_DATE_UNIX_TIMESTAMPS } from "@/tests/staticMockItems/dates.js";
 import type Stripe from "stripe";
 import type { PartialDeep } from "type-fest";
 

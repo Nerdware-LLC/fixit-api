@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/swcrc",
 
-  "exclude": ["src\\/loader.js$", ".*\\/(tests|__mocks__)\\/.*", ".*\\.(test|spec).[tj]s$"],
+  "exclude": ["src\\/loader.js$", ".*\\/(tests|__mocks__)\\/.*", ".*\\.test.[tj]s$"],
 
   "jsc": {
     "target": "esnext",
@@ -30,5 +30,15 @@
         ]
       }
     }
+  },
+
+  "module": {
+    "type": "es6",
+    "resolveFully": true,
+    // defaults:
+    "strict": false,
+    "strictMode": true,
+    "lazy": false,
+    "noInterop": false
   }
 }

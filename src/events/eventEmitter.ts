@@ -8,7 +8,7 @@ import { notifyAssigneeCancelledWO } from "@/events/onWorkOrderCancelled";
 import { notifyAssignorCompletedWO } from "@/events/onWorkOrderCompleted";
 import { notifyAssigneeNewWO } from "@/events/onWorkOrderCreated";
 import { notifyAssigneeUpdatedWO } from "@/events/onWorkOrderUpdated";
-import { logger } from "@/utils/logger";
+import { logger } from "@/utils/logger.js";
 
 /**
  * A thin wrapper around EventEmitter which adds named emitter methods for each

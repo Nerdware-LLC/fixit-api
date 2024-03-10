@@ -1,2 +1,2 @@
-export * from "./errorHandler";
-export * from "./handle404";
+export * from "./errorHandler.js";
+export * from "./handle404.js";

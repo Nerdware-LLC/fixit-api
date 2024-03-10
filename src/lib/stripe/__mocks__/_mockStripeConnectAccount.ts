@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import merge from "lodash.merge";
-import type { UserItem } from "@/models/User";
-import type { UserStripeConnectAccountItem } from "@/models/UserStripeConnectAccount";
+import type { UserItem } from "@/models/User/User.js";
+import type { UserStripeConnectAccountItem } from "@/models/UserStripeConnectAccount/UserStripeConnectAccount.js";
 import type Stripe from "stripe";
 import type { PartialDeep } from "type-fest";
 

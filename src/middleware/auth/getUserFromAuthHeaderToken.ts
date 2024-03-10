@@ -1,6 +1,6 @@
-import { mwAsyncCatchWrapper } from "@/middleware/helpers";
-import { AuthToken } from "@/utils/AuthToken";
-import { AuthError } from "@/utils/httpErrors";
+import { mwAsyncCatchWrapper } from "@/middleware/helpers.js";
+import { AuthToken } from "@/utils/AuthToken.js";
+import { AuthError } from "@/utils/httpErrors.js";
 
 /**
  * Authentication middleware that checks for a valid auth token in the request

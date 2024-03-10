@@ -1,8 +1,8 @@
 import { Location } from "@/models/Location";
-import { workOrderModelHelpers as woModelHelpers } from "@/models/WorkOrder/helpers";
-import { normalize } from "@/utils/normalize";
-import { MOCK_DATES, MOCK_DATE_v1_UUIDs as UUIDs } from "./dates";
-import { MOCK_USERS } from "./users";
+import { workOrderModelHelpers as woModelHelpers } from "@/models/WorkOrder/helpers.js";
+import { normalize } from "@/utils/normalize.js";
+import { MOCK_DATES, MOCK_DATE_v1_UUIDs as UUIDs } from "./dates.js";
+import { MOCK_USERS } from "./users.js";
 import type { WorkOrderItem, UnaliasedWorkOrderItem } from "@/models/WorkOrder";
 
 const { USER_A, USER_B, USER_C } = MOCK_USERS;
@@ -15,13 +15,13 @@ export const MOCK_WORK_ORDERS = {
     assignedToUserID: null,
     status: "UNASSIGNED",
     priority: "LOW",
-    location: {
+    location: new Location({
       country: "USA",
       region: "Washington",
       city: "Redmond",
       streetLine1: "1 Microsoft Way",
       streetLine2: null,
-    },
+    }),
     category: null,
     description: null,
     checklist: null,
@@ -40,13 +40,13 @@ export const MOCK_WORK_ORDERS = {
     assignedToUserID: USER_A.id,
     status: "ASSIGNED",
     priority: "HIGH",
-    location: {
+    location: new Location({
       country: "USA",
       region: "California",
       city: "Mountain View",
       streetLine1: "1600 Amphitheatre Parkway",
       streetLine2: "Attn: #Human Googlers", // <-- tests chars :#
-    },
+    }),
     category: "GENERAL",
     description: "Do cool things at the Googleplex",
     checklist: [
@@ -90,13 +90,13 @@ export const MOCK_WORK_ORDERS = {
     assignedToUserID: USER_A.id,
     status: "COMPLETE",
     priority: "NORMAL",
-    location: {
+    location: new Location({
       country: "USA",
       region: "California",
       city: "San Francisco",
       streetLine1: "3180 18th Street",
       streetLine2: null,
-    },
+    }),
     category: null,
     description: null,
     checklist: null,

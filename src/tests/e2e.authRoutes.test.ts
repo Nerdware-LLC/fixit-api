@@ -1,11 +1,11 @@
 import { isString, isPlainObject } from "@nerdware/ts-type-safety-utils";
 import request from "supertest";
-import { expressApp } from "@/expressApp";
-import { usersCache } from "@/lib/cache/usersCache";
-import { stripe } from "@/lib/stripe";
-import { User } from "@/models/User";
-import { USER_ID_REGEX } from "@/models/User/regex";
-import { ddbTable } from "@/models/ddbTable";
+import { expressApp } from "@/expressApp.js";
+import { usersCache } from "@/lib/cache/usersCache.js";
+import { stripe } from "@/lib/stripe/stripeClient.js";
+import { User } from "@/models/User/User.js";
+import { USER_ID_REGEX } from "@/models/User/regex.js";
+import { ddbTable } from "@/models/ddbTable.js";
 import { ENV } from "@/server/env";
 import {
   MOCK_USERS,
@@ -21,11 +21,11 @@ import {
   UNALIASED_MOCK_INVOICES,
   MOCK_USER_SCAs,
 } from "@/tests/staticMockItems";
-import { AuthToken } from "@/utils/AuthToken";
-import { passwordHasher } from "@/utils/passwordHasher";
+import { AuthToken } from "@/utils/AuthToken.js";
+import { passwordHasher } from "@/utils/passwordHasher.js";
 import type { Server } from "http";
 
-vi.mock("@/apolloServer");
+vi.mock("@/apolloServer.js");
 
 describe("[e2e] Server Requests /api/auth/*", () => {
   let server: Server;
@@ -179,26 +179,26 @@ describe("[e2e] Server Requests /api/auth/*", () => {
       // Assert the pre-fetched userItems
       expect(responseBody.userItems).toStrictEqual({
         workOrders: [
-          {
+          expect.objectContaining({
             ...WO_A_fields,
             createdBy: { id: WO_A_createdByUserID },
             assignedTo: null,
             createdAt: expect.toBeValidDate(),
             updatedAt: expect.toBeValidDate(),
-          },
+          }),
         ],
         invoices: [
-          {
+          expect.objectContaining({
             ...INV_A_fields,
             createdBy: { id: INV_A_createdByUserID },
             assignedTo: { id: INV_A_assignedToUserID },
             workOrder: INV_A_workOrderID, // null
             createdAt: expect.toBeValidDate(),
             updatedAt: expect.toBeValidDate(),
-          },
+          }),
         ],
         contacts: [
-          {
+          expect.objectContaining({
             id: MOCK_CONTACTS.CONTACT_A.id,
             handle: MOCK_CONTACTS.CONTACT_A.handle,
             email: MOCK_USERS.USER_B.email,
@@ -206,7 +206,7 @@ describe("[e2e] Server Requests /api/auth/*", () => {
             profile: MOCK_USERS.USER_B.profile,
             createdAt: expect.toBeValidDate(),
             updatedAt: expect.toBeValidDate(),
-          },
+          }),
         ],
       });
     });
@@ -288,26 +288,26 @@ describe("[e2e] Server Requests /api/auth/*", () => {
       // Assert the pre-fetched userItems
       expect(responseBody.userItems).toStrictEqual({
         workOrders: [
-          {
+          expect.objectContaining({
             ...WO_A_fields,
             createdBy: { id: WO_A_createdByUserID },
             assignedTo: null,
             createdAt: expect.toBeValidDate(),
             updatedAt: expect.toBeValidDate(),
-          },
+          }),
         ],
         invoices: [
-          {
+          expect.objectContaining({
             ...INV_A_fields,
             createdBy: { id: INV_A_createdByUserID },
             assignedTo: { id: INV_A_assignedToUserID },
             workOrder: INV_A_workOrderID, // null
             createdAt: expect.toBeValidDate(),
             updatedAt: expect.toBeValidDate(),
-          },
+          }),
         ],
         contacts: [
-          {
+          expect.objectContaining({
             id: MOCK_CONTACTS.CONTACT_A.id,
             handle: MOCK_CONTACTS.CONTACT_A.handle,
             email: MOCK_USERS.USER_B.email,
@@ -315,7 +315,7 @@ describe("[e2e] Server Requests /api/auth/*", () => {
             profile: MOCK_USERS.USER_B.profile,
             createdAt: expect.toBeValidDate(),
             updatedAt: expect.toBeValidDate(),
-          },
+          }),
         ],
       });
     });

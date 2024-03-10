@@ -1,6 +1,6 @@
-import { stripe } from "@/lib/stripe";
-import { mwAsyncCatchWrapper } from "@/middleware/helpers";
-import type { RestApiRequestBodyByPath } from "@/types/open-api";
+import { stripe } from "@/lib/stripe/stripeClient.js";
+import { mwAsyncCatchWrapper } from "@/middleware/helpers.js";
+import type { RestApiRequestBodyByPath } from "@/types/open-api.js";
 
 /**
  * This middleware creates a Stripe Customer Portal link, which allows the User to

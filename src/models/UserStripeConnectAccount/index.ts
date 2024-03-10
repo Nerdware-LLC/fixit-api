@@ -1,1 +1,1 @@
-export * from "./UserStripeConnectAccount";
+export * from "./UserStripeConnectAccount.js";

@@ -1,2 +1,2 @@
-export * from "./cors";
-export * from "./setSecureHttpHeaders";
+export * from "./cors.js";
+export * from "./setSecureHttpHeaders.js";

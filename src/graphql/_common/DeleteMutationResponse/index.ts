@@ -1,1 +1,1 @@
-export * from "./DeleteMutationResponse";
+export * from "./DeleteMutationResponse.js";

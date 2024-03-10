@@ -1,5 +1,5 @@
 import { ENV } from "@/server/env";
-import { logger } from "@/utils/logger";
+import { logger } from "@/utils/logger.js";
 
 const {
   NODE_ENV,

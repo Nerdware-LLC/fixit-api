@@ -1,13 +1,13 @@
 import { Model } from "@nerdware/ddb-single-table";
 import { isString } from "@nerdware/ts-type-safety-utils";
-import { isValidStripeID } from "@/lib/stripe";
-import { userModelHelpers } from "@/models/User/helpers";
-import { workOrderModelHelpers as woModelHelpers } from "@/models/WorkOrder/helpers";
-import { COMMON_ATTRIBUTES } from "@/models/_common";
-import { ddbTable } from "@/models/ddbTable";
-import { INVOICE_ENUM_CONSTANTS } from "./enumConstants";
-import { invoiceModelHelpers } from "./helpers";
-import { INVOICE_SK_PREFIX_STR } from "./regex";
+import { isValidStripeID } from "@/lib/stripe/isValidStripeID.js";
+import { userModelHelpers } from "@/models/User/helpers.js";
+import { workOrderModelHelpers as woModelHelpers } from "@/models/WorkOrder/helpers.js";
+import { COMMON_ATTRIBUTES } from "@/models/_common/modelAttributes.js";
+import { ddbTable } from "@/models/ddbTable.js";
+import { INVOICE_ENUM_CONSTANTS } from "./enumConstants.js";
+import { invoiceModelHelpers } from "./helpers.js";
+import { INVOICE_SK_PREFIX_STR } from "./regex.js";
 import type {
   ItemTypeFromSchema,
   ItemCreationParameters,

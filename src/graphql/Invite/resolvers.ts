@@ -1,8 +1,8 @@
 import { isValidPhone, isValidEmail } from "@nerdware/ts-string-helpers";
 import { isString } from "@nerdware/ts-type-safety-utils";
 import { GenericSuccessResponse } from "@/graphql/_common";
-import { GqlUserInputError } from "@/utils/httpErrors";
-import type { Resolvers } from "@/types";
+import { GqlUserInputError } from "@/utils/httpErrors.js";
+import type { Resolvers } from "@/types/graphql.js";
 
 export const resolvers: Partial<Resolvers> = {
   Mutation: {

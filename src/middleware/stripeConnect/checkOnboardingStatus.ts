@@ -1,6 +1,6 @@
-import { stripe } from "@/lib/stripe";
-import { mwAsyncCatchWrapper } from "@/middleware/helpers";
-import { UserStripeConnectAccount } from "@/models/UserStripeConnectAccount";
+import { stripe } from "@/lib/stripe/stripeClient.js";
+import { mwAsyncCatchWrapper } from "@/middleware/helpers.js";
+import { UserStripeConnectAccount } from "@/models/UserStripeConnectAccount/UserStripeConnectAccount.js";
 
 /**
  * Checks the status of the user's Stripe Connect account capabilities and updates the DB

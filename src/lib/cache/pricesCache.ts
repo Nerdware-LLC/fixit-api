@@ -1,9 +1,9 @@
 import { safeJsonStringify } from "@nerdware/ts-type-safety-utils";
-import { stripe } from "@/lib/stripe";
-import { InternalServerError } from "@/utils/httpErrors";
-import { Cache } from "./Cache";
-import { FIXIT_SUBSCRIPTION_PRODUCT_NAME, productsCache } from "./productsCache";
-import type { OpenApiSchemas } from "@/types/open-api";
+import { stripe } from "@/lib/stripe/stripeClient.js";
+import { InternalServerError } from "@/utils/httpErrors.js";
+import { Cache } from "./Cache.js";
+import { FIXIT_SUBSCRIPTION_PRODUCT_NAME, productsCache } from "./productsCache.js";
+import type { OpenApiSchemas } from "@/types/open-api.js";
 import type Stripe from "stripe";
 import type { Entries } from "type-fest";
 

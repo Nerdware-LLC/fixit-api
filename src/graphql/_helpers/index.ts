@@ -1,2 +1,2 @@
-export * from "./formatAsGqlFixitUser";
-export * from "./verifyUserIsAuthorizedToPerformThisUpdate";
+export * from "./formatAsGqlFixitUser.js";
+export * from "./verifyUserIsAuthorizedToPerformThisUpdate.js";

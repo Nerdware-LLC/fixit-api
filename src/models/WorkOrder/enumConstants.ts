@@ -1,4 +1,4 @@
-import type { WorkOrderStatus, WorkOrderCategory, WorkOrderPriority } from "@/types";
+import type { WorkOrderStatus, WorkOrderCategory, WorkOrderPriority } from "@/types/graphql.js";
 
 export const WORK_ORDER_ENUM_CONSTANTS: {
   readonly PRIORITIES: ReadonlyArray<WorkOrderPriority>;

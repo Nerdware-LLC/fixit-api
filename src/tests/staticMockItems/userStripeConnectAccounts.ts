@@ -1,6 +1,6 @@
-import { userStripeConnectAccountModelHelpers as scaModelHelpers } from "@/models/UserStripeConnectAccount/helpers";
-import { MOCK_DATES } from "./dates";
-import { MOCK_USERS } from "./users";
+import { userStripeConnectAccountModelHelpers as scaModelHelpers } from "@/models/UserStripeConnectAccount/helpers.js";
+import { MOCK_DATES } from "./dates.js";
+import { MOCK_USERS } from "./users.js";
 import type {
   UserStripeConnectAccountItem,
   UnaliasedUserStripeConnectAccountItem,

@@ -1,15 +1,15 @@
-import { CONTACT_SK_PREFIX_STR } from "@/models/Contact/regex";
-import { INVOICE_SK_PREFIX_STR } from "@/models/Invoice/regex";
-import { USER_SK_PREFIX_STR } from "@/models/User/regex";
-import { STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR as SCA_SK_PREFIX_STR } from "@/models/UserStripeConnectAccount/regex";
-import { USER_SUB_SK_PREFIX_STR as SUB_SK_PREFIX_STR } from "@/models/UserSubscription/regex";
-import { WORK_ORDER_SK_PREFIX_STR } from "@/models/WorkOrder/regex";
-import type { ContactItem } from "@/models/Contact";
-import type { InvoiceItem } from "@/models/Invoice";
-import type { UserItem } from "@/models/User";
-import type { UserStripeConnectAccountItem as UserSCAModelItem } from "@/models/UserStripeConnectAccount";
-import type { UserSubscriptionItem as UserSubModelItem } from "@/models/UserSubscription";
-import type { WorkOrderItem } from "@/models/WorkOrder";
+import { CONTACT_SK_PREFIX_STR } from "@/models/Contact/regex.js";
+import { INVOICE_SK_PREFIX_STR } from "@/models/Invoice/regex.js";
+import { USER_SK_PREFIX_STR } from "@/models/User/regex.js";
+import { STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR as SCA_SK_PREFIX_STR } from "@/models/UserStripeConnectAccount/regex.js";
+import { USER_SUB_SK_PREFIX_STR as SUB_SK_PREFIX_STR } from "@/models/UserSubscription/regex.js";
+import { WORK_ORDER_SK_PREFIX_STR } from "@/models/WorkOrder/regex.js";
+import type { ContactItem } from "@/models/Contact/Contact.js";
+import type { InvoiceItem } from "@/models/Invoice/Invoice.js";
+import type { UserItem } from "@/models/User/User.js";
+import type { UserStripeConnectAccountItem as UserSCAModelItem } from "@/models/UserStripeConnectAccount/UserStripeConnectAccount.js";
+import type { UserSubscriptionItem as UserSubModelItem } from "@/models/UserSubscription/UserSubscription.js";
+import type { WorkOrderItem } from "@/models/WorkOrder/WorkOrder.js";
 
 /**
  * Functions which ascertain whether a given string is a valid `sk` value for an
