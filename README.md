@@ -46,7 +46,6 @@ Author: [Trevor Anderson](https://github.com/trevor-anderson), Solopreneur & Fou
   - [REST Endpoints Diagram](#rest-endpoints-diagram)
   - [GraphQL Schema](#graphql-schema)
 - [🔐 User Authentication](#-user-authentication)
-- [💎 Premium SaaS Products](#-premium-saas-products)
 - [🗄️ DynamoDB Database](#️-dynamodb-database)
   - [Fixit-API Access Patterns](#fixit-api-access-patterns)
   - [Single Table Design](#single-table-design)
@@ -71,28 +70,28 @@ The Fixit API provides a robust, scalable, and secure backend for the Fixit SaaS
 >
 > [<img src="https://upload.wikimedia.org/wikipedia/commons/a/ab/Swagger-logo.png" width="70" alt="Check out the Fixit REST API OpenAPI Schema on SwaggerHub" />](https://app.swaggerhub.com/apis/Nerdware/Fixit "Check out the Fixit REST API OpenAPI Schema on SwaggerHub")
 >
-> <code>Fixit REST API OpenAPI</code><br><code>Schema Explorer</code>
+> [<code>Fixit REST API OpenAPI</code><br><code>Schema Explorer</code>](https://app.swaggerhub.com/apis/Nerdware/Fixit "Check out the Fixit REST API OpenAPI Schema on SwaggerHub")
 >
 >   </td>
 >   <td align="center">
 >
 > [<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/GraphQL_Logo.svg/220px-GraphQL_Logo.svg.png" width="70" alt="Check out the Fixit GraphQL API Schema-Explorer on Apollo Studio" />](https://studio.apollographql.com/public/fixit/variant/current "Check out the Fixit GraphQL API Schema-Explorer on Apollo Studio")
 >
-> <code>Fixit GraphQL API</code><br><code>Schema Explorer</code>
+> [<code>Fixit GraphQL API</code><br><code>Schema Explorer</code>](https://studio.apollographql.com/public/fixit/variant/current "Check out the Fixit GraphQL API Schema-Explorer on Apollo Studio")
 >
 >   </td>
 >   <td align="center">
 >
-> [<img src="https://avatars.githubusercontent.com/u/22632046?s=200&v=4" width="70" alt="Check out the Fixit front-end Storybook on Chromatic" />](https://659981450c81cefabec86fa2-hayufvwzje.chromatic.com "Check out the Fixit front-end Storybook on Chromatic")
+> [<img src="https://avatars.githubusercontent.com/u/22632046?s=200&v=4" width="70" alt="Check out the Fixit front-end Storybook on Chromatic" />](https://main--659981450c81cefabec86fa2.chromatic.com "Check out the Fixit front-end Storybook on Chromatic")
 >
-> <code>Fixit Frontend</code><br><code>Component Storybook</code>
+> [<code>Fixit Frontend</code><br><code>Component Storybook</code>](https://main--659981450c81cefabec86fa2.chromatic.com "Check out the Fixit front-end Storybook on Chromatic")
 >
 >   </td>
 >   <td align="center">
 >
 > [<img src="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png" width="70" alt="Check out the Fixit web app GitHub repo" />](https://github.com/Nerdware-LLC/fixit-web#readme "Check out the Fixit web app GitHub repo")
 >
-> <code>Fixit Web App</code><br><code>GitHub Repo</code>
+> [<code>Fixit Web App</code><br><code>GitHub Repo</code>](https://github.com/Nerdware-LLC/fixit-web#readme "Check out the Fixit web app GitHub repo")
 >
 >   </td>
 >   </tr>
@@ -217,16 +216,6 @@ This API uses self-vended [JSON Web Tokens](https://jwt.io/introduction) to mana
 
 <!-- TODO Write more re: API auth mechanisms -->
 
-## 💎 Premium SaaS Products
-
-The table below lists currently available Fixit SaaS products. Subscription management is powered by [Stripe](https://stripe.com/billing).
-
-| Product                 | Purchase Option      | Price (USD) |                Promo Code(s) Available?                |
-| :---------------------- | :------------------- | :---------: | :----------------------------------------------------: |
-| Fixit SaaS Subscription | 14-Day Free Trial    |     $0      |                          N/A                           |
-| Fixit SaaS Subscription | Monthly Subscription |  $5/month   | <span style="color:#66FF00;font-size:1.5rem;">✓</span> |
-| Fixit SaaS Subscription | Annual Subscription  |  $50/year   | <span style="color:#66FF00;font-size:1.5rem;">✓</span> |
-
 ## 🗄️ DynamoDB Database
 
 This API uses a single DynamoDB table with primary keys `pk` and `sk`, along with an overloaded `data` index attribute which supports a range of flexible queries using two GSIs: `Overloaded_SK_GSI` and `Overloaded_Data_GSI`.
@@ -286,18 +275,18 @@ This API uses a single DynamoDB table with primary keys `pk` and `sk`, along wit
 
 This project's CI/CD pipeline uses GitHub Actions to [test](/.github/workflows/test.yaml), [release](/.github/workflows/release.yaml), and [deploy](/.github/workflows/deploy.yaml) code changes.
 
-1. [`Node Test`](https://github.com/Nerdware-LLC/reusable-action-workflows/tree/main#node-test) - Runs test suites, adds test and coverage info to PRs, and updates [CodeCov](https://about.codecov.io/).
-2. [`Release`](https://github.com/Nerdware-LLC/reusable-action-workflows/tree/main#release) - Creates a new GitHub release using [Semantic Release](https://github.com/semantic-release/semantic-release#readme).
-3. [`ECR Image Push`](https://github.com/Nerdware-LLC/reusable-action-workflows/tree/main#ecr-image-push) - Builds a Docker image and pushes it to [Amazon ECR](https://aws.amazon.com/ecr/).
+1. [`Test`](/.github/workflows/test.yaml) - Runs test suites, adds test and coverage info to PRs, and updates [CodeCov](https://about.codecov.io/).
+2. [`Release`](/.github/workflows/release.yaml) - Creates a new GitHub release using [Semantic Release](https://github.com/semantic-release/semantic-release#readme).
+3. [`Deploy`](/.github/workflows/deploy.yaml) - Builds a Docker image, pushes it to [Amazon ECR](https://aws.amazon.com/ecr/), and updates the [ECS Task Definition](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html) and associated [ECS Service](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html).
 
 ### Git Workflow
 
-This project uses uses [GitHub Flow](https://guides.github.com/introduction/flow/) to deploy two live environments - staging and production - both of which are associated with a protected Git branch:
+This project uses uses [GitHub Flow](https://guides.github.com/introduction/flow/) to deploy two live environments - staging and production - both of which are associated with a Git branch for releases:
 
-| Environment | Git Branch |                   Permits `git push`                   |
-| :---------- | :--------: | :----------------------------------------------------: |
-| staging     |    next    | <span style="color:#66FF00;font-size:1.5rem;">✓</span> |
-| production  |    main    |                           ❌                           |
+| Environment | Release Branch |                   Permits `git push`                   |
+| :---------- | :------------: | :----------------------------------------------------: |
+| staging     |      next      | <span style="color:#66FF00;font-size:1.5rem;">✓</span> |
+| production  |      main      |                           ❌                           |
 
 Project versioning and the [CHANGELOG.md](./CHANGELOG.md) are managed automatically via GitHub Actions and [Semantic Release](https://github.com/semantic-release/semantic-release#readme).
 
