@@ -1,8 +1,8 @@
 import { isValidPhone } from "@nerdware/ts-string-helpers";
 import { isString } from "@nerdware/ts-type-safety-utils";
-import dayjs from "dayjs";
 import { fmt } from "@/utils/formatters";
 import { normalize } from "@/utils/normalize.js";
+import { isValidTimestamp } from "@/utils/timestamps.js";
 import type { ModelSchemaAttributeConfig } from "@nerdware/ddb-single-table";
 
 export const COMMON_ATTRIBUTE_TYPES = {
@@ -19,7 +19,7 @@ export const COMMON_ATTRIBUTE_TYPES = {
 
   DATETIME: {
     type: "Date",
-    validate: (value: unknown) => !!value && dayjs(value as Parameters<typeof dayjs>[0]).isValid(),
+    validate: isValidTimestamp,
   },
 } as const satisfies Record<string, Partial<ModelSchemaAttributeConfig>>;
 
