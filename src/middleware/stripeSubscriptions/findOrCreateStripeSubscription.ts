@@ -2,7 +2,7 @@ import { isString, getTypeSafeError } from "@nerdware/ts-type-safety-utils";
 import { stripe } from "@/lib/stripe/stripeClient.js";
 import { mwAsyncCatchWrapper } from "@/middleware/helpers.js";
 import { UserSubscription } from "@/models/UserSubscription/UserSubscription.js";
-import { PaymentRequiredError } from "@/utils/httpErrors.js";
+import { PaymentRequiredError, AuthError } from "@/utils/httpErrors.js";
 import { logger } from "@/utils/logger.js";
 import type {
   StripeSubscriptionWithClientSecret,
@@ -43,7 +43,7 @@ import type Stripe from "stripe";
 export const findOrCreateStripeSubscription = mwAsyncCatchWrapper<
   RestApiRequestBodyByPath["/subscriptions/submit-payment"]
 >(async (req, res, next) => {
-  if (!res.locals?.authenticatedUser) return next("User not found");
+  if (!res.locals?.authenticatedUser) return next(new AuthError("User not found"));
 
   try {
     const { paymentMethodID, selectedSubscription, promoCode } = req.body;

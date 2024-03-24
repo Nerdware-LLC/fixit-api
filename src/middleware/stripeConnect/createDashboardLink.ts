@@ -1,5 +1,6 @@
 import { stripe } from "@/lib/stripe/stripeClient.js";
 import { mwAsyncCatchWrapper } from "@/middleware/helpers.js";
+import { AuthError } from "@/utils/httpErrors.js";
 
 /**
  * This middleware creates a Stripe dashboard link for authenticated users.
@@ -17,7 +18,7 @@ import { mwAsyncCatchWrapper } from "@/middleware/helpers.js";
 export const createDashboardLink = mwAsyncCatchWrapper(async (req, res, next) => {
   const { authenticatedUser } = res.locals;
 
-  if (!authenticatedUser) return next("User not found");
+  if (!authenticatedUser) return next(new AuthError("User not found"));
   if (!authenticatedUser?.stripeConnectAccount)
     return next("User's Stripe Connect account not found.");
 
