@@ -23,6 +23,8 @@ export const createEnvObject = ({
   STRIPE_PUBLISHABLE_KEY,
   STRIPE_SECRET_KEY,
   STRIPE_WEBHOOKS_SECRET,
+  GOOGLE_OAUTH_CLIENT_ID,
+  GOOGLE_OAUTH_CLIENT_SECRET,
 }: typeof process.env) => {
   // Ensure necessary env vars have been provided
   if (
@@ -41,7 +43,9 @@ export const createEnvObject = ({
     !STRIPE_API_VERSION ||
     !STRIPE_PUBLISHABLE_KEY ||
     !STRIPE_SECRET_KEY ||
-    !STRIPE_WEBHOOKS_SECRET
+    !STRIPE_WEBHOOKS_SECRET ||
+    !GOOGLE_OAUTH_CLIENT_ID ||
+    !GOOGLE_OAUTH_CLIENT_SECRET
   ) {
     throw new Error("Missing required environment variables.");
   }
@@ -88,6 +92,10 @@ export const createEnvObject = ({
       PUBLISHABLE_KEY: STRIPE_PUBLISHABLE_KEY,
       SECRET_KEY: STRIPE_SECRET_KEY,
       WEBHOOKS_SECRET: STRIPE_WEBHOOKS_SECRET,
+    },
+    GOOGLE_OAUTH: {
+      CLIENT_ID: GOOGLE_OAUTH_CLIENT_ID,
+      CLIENT_SECRET: GOOGLE_OAUTH_CLIENT_SECRET,
     },
   } as const;
 };
