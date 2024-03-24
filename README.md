@@ -181,7 +181,8 @@ flowchart LR
   admin --> csp("/api/admin/csp-violation \n­\n • CSP #quot;report-to#quot;" target)
   admin --> healthcheck("/api/admin/healthcheck \n­\n • Healthchecks target")
   auth --> register("/api/auth/register \n­\n • User registration")
-  auth --> login("/api/auth/login \n­\n • User login requests. Accepts \n email+pw or Google OAuth")
+  auth --> login("/api/auth/login \n­\n • User logins via Local\n or OAuth mechanisms")
+  auth --> googleToken("/api/auth/google-token \n­\n • User logins via Google\nOAuth2 OneTap FedCM")
   auth --> token("/api/auth/token \n­\n • Refreshes auth tokens")
   connect --> accountLink("/api/connect/account-link \n­\n • Returns a link to the Stripe-hosted\nConnect onboarding portal")
   connect --> dashboardLink("/api/connect/dashboard-link \n­\n • Returns a link to the Stripe-hosted\naccount management portal")
@@ -224,7 +225,7 @@ This API uses a single DynamoDB table with primary keys `pk` and `sk`, along wit
 
 ### Fixit-API Access Patterns
 
-<!-- TODO add commentary here re: DynamoDB Access Patterns -->
+<!-- TODO Add commentary here re: DynamoDB Access Patterns -->
 
 - **USERS**
   - Find a User by their email
@@ -247,11 +248,7 @@ This API uses a single DynamoDB table with primary keys `pk` and `sk`, along wit
   - Find a User's WorkOrders using their user ID
   - Find WorkOrders within a given date range
 
-<!-- TODO talk more about
-  - the DB generally
-  - Adjacency Lists design pattern
-  - Excellent query patterns
--->
+<!-- TODO Write more about the DB generally, adjacency Lists design patterns, excellent query patterns. -->
 
 ### Single Table Design
 
