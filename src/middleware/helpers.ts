@@ -28,21 +28,6 @@ export const mwAsyncCatchWrapper = <
 };
 
 /**
- * Generic catch wrapper for non-async middleware functions.
- */
-export const mwCatchWrapper = <ReqBody extends Record<string, unknown> = Record<string, unknown>>(
-  middlewareFn: RestApiRequestHandler<ReqBody>
-): RestApiRequestHandler<ReqBody> => {
-  return (req, res, next) => {
-    try {
-      middlewareFn(req, res, next);
-    } catch (error) {
-      next(error);
-    }
-  };
-};
-
-/**
  * This type wraps the Express `RequestHandler` type with app global defaults.
  * Provide the `ReqBody` type param to specify a `req.body` object type.
  *
@@ -113,8 +98,10 @@ export const sanitizeAndValidateRequestBody = <Schema extends RequestBodyFieldsS
     try {
       for (const key in requestBodySchema) {
         // Destructure the field config
-        const { required, nullable, isValidType, sanitize, validate } =
-          reqBodySchemaWithTypeValidator[key];
+        const { required, isValidType, sanitize, validate } = reqBodySchemaWithTypeValidator[key];
+
+        // Get `nullable`, default to the opposite of `required`:
+        const { nullable = !required } = reqBodySchemaWithTypeValidator[key];
 
         // Check is the field is defined in req.body
         if (!hasKey(req.body, key) || req.body[key] === undefined) {
