@@ -65,7 +65,6 @@ class UserModel extends Model<typeof UserModel.schema, UserItem, UserItemCreatio
         passwordHash: { type: "string" },
         // GOOGLE_OAUTH login properties:
         googleID: { type: "string" },
-        googleAccessToken: { type: "string" },
       },
       validate: (login: unknown) =>
         isPlainObject(login) &&
@@ -73,7 +72,7 @@ class UserModel extends Model<typeof UserModel.schema, UserItem, UserItemCreatio
         (login.type === "LOCAL"
           ? hasKey(login, "passwordHash")
           : login.type === "GOOGLE_OAUTH"
-            ? hasKey(login, "googleID") && hasKey(login, "googleAccessToken")
+            ? hasKey(login, "googleID")
             : false),
     },
     profile: {

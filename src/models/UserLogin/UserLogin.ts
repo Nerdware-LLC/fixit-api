@@ -1,14 +1,20 @@
 import { isValidPassword } from "@nerdware/ts-string-helpers";
 import { isString } from "@nerdware/ts-type-safety-utils";
 import { passwordHasher } from "@/utils/passwordHasher.js";
+import type { Simplify } from "type-fest";
 
 /**
  * Represents a User login object that can be created with either a password or
  * Google OAuth credentials.
  */
 export class UserLogin {
+  public static readonly TYPES = {
+    LOCAL: "LOCAL",
+    GOOGLE_OAUTH: "GOOGLE_OAUTH",
+  } as const;
+
   /**
-   * Creates a UserLogin object based on the provided parameters.
+   * Creates a UserLogin object of a `type` determined by the provided parameters.
    * @param params - The parameters for creating the UserLogin login object.
    * @returns A promise that resolves to the created UserLogin object.
    * @throws Error if the provided parameters are invalid.
@@ -16,63 +22,95 @@ export class UserLogin {
   public static readonly createLogin = async <Params extends CreateLoginParams>({
     password,
     googleID,
-    googleAccessToken,
-  }: Params): Promise<CreateLoginResult<Params>> => {
-    let userLogin;
+  }: Params) => {
+    // Run the appropriate method based on the provided params
+    const userLogin = isString(password)
+      ? await UserLogin.createLoginLocal(password)
+      : isString(googleID)
+        ? UserLogin.createLoginGoogleOAuth(googleID)
+        : null;
 
-    if (isString(password)) {
-      // Validate the password
-      if (!isValidPassword(password)) {
-        throw new Error("The provided password does not meet the required criteria");
-      }
+    // Ensure that the userLogin object is not null:
+    if (!userLogin) throw new Error("Invalid login credentials");
 
-      userLogin = {
-        type: "LOCAL",
-        passwordHash: await passwordHasher.getHash(password),
-      };
-    } else if (isString(googleID) && isString(googleAccessToken)) {
-      // Perform some basic validation on the Google OAuth params
-      if (googleID.length < 5) throw new Error("Invalid Google ID");
-      if (googleAccessToken.length < 5) throw new Error("Invalid Google access token");
+    return userLogin as Params extends { password: string }
+      ? UserLoginLocal
+      : Params extends { googleID: string }
+        ? UserLoginGoogleOAuth
+        : never;
+  };
 
-      userLogin = {
-        type: "GOOGLE_OAUTH",
-        googleID,
-        googleAccessToken,
-      };
-    } else {
-      throw new Error("Invalid login credentials");
+  /**
+   * Alias for {@link UserLogin.createLogin}
+   */
+  public static readonly fromParams = UserLogin.createLogin;
+
+  /**
+   * Creates a {@link UserLoginLocal} object from the provided password (if it's valid).
+   */
+  public static readonly createLoginLocal = async (password: string): Promise<UserLoginLocal> => {
+    // Validate the password
+    if (!isValidPassword(password)) {
+      throw new Error("The provided password does not meet the required criteria");
     }
+    return {
+      type: UserLogin.TYPES.LOCAL,
+      passwordHash: await passwordHasher.getHash(password),
+    };
+  };
 
-    return userLogin as CreateLoginResult<Params>;
+  /**
+   * Creates a {@link UserLoginGoogleOAuth} object from the provided googleID (if it's valid).
+   */
+  public static readonly createLoginGoogleOAuth = (googleID: string): UserLoginGoogleOAuth => {
+    // Perform some basic validation on the Google OAuth params
+    if (googleID.length < 5) throw new Error("Invalid Google ID");
+    return {
+      type: UserLogin.TYPES.GOOGLE_OAUTH,
+      googleID,
+    };
   };
 }
 
-// TODO Use open-api schema types to replace/modify the Login types below
+/////////////////////////////////////////////////////////////////////
+// LOGIN TYPES:
 
-/** This type is used in `User.createOne()`. */
-export type CreateLoginParams =
-  | { password: string; [key: string]: string | undefined }
-  | { googleID: string; googleAccessToken: string; [key: string]: string | undefined }
-  | {
-      password?: string | undefined;
-      googleID?: string | undefined;
-      googleAccessToken?: string | undefined;
-    };
+/**
+ * Parameters for creating a `UserLogin` object.
+ */
+export type CreateLoginParams = {
+  password?: string | undefined; // <-- UserLogin class currently hashes passwords
+  googleID?: string | undefined; // <-- googleIDToken is processed by upstream mw
+}; //                               TODO Consider mv'ind gidToken here, or pw elsewhere
 
-type CreateLoginResult<T extends CreateLoginParams> = T extends { password: string }
-  ? UserLoginLocal
-  : T extends { googleID: string; googleAccessToken: string }
-    ? UserLoginGoogleOAuth
-    : never;
-
-/** This type is used in `UserItem`. */
+/**
+ * A union of `UserLogin` object types, discriminated by the
+ * {@link FixitApiLoginAuthType|`type` string literal property}.
+ */
 export type UserLoginU = UserLoginLocal | UserLoginGoogleOAuth;
 
-type UserLoginLocal = { type: "LOCAL"; passwordHash: string };
+/**
+ * A `UserLogin` object that was created via the local JWT auth mechanism.
+ */
+export type UserLoginLocal = Simplify<
+  BaseUserLoginType<typeof UserLogin.TYPES.LOCAL> & { passwordHash: string }
+>;
 
-type UserLoginGoogleOAuth = {
-  type: "GOOGLE_OAUTH";
-  googleID: string;
-  googleAccessToken: string;
-};
+/**
+ * A `UserLogin` object that was created via Google OAuth.
+ */
+export type UserLoginGoogleOAuth = Simplify<
+  BaseUserLoginType<typeof UserLogin.TYPES.GOOGLE_OAUTH> & { googleID: string }
+>;
+
+/**
+ * This base type for all UserLogin types defines the `type` discriminant property.
+ */
+interface BaseUserLoginType<AuthType extends FixitApiLoginAuthType = FixitApiLoginAuthType> {
+  type: AuthType;
+}
+
+/**
+ * A union of string literals for the `type` discriminant property of `UserLogin` objects.
+ */
+type FixitApiLoginAuthType = keyof typeof UserLogin.TYPES;

@@ -23,7 +23,7 @@ export class AuthToken {
       id: userData.id,
       handle: userData.handle,
       email: userData.email,
-      phone: userData.phone,
+      phone: userData.phone ?? null,
       profile: userData.profile,
       stripeCustomerID: userData.stripeCustomerID,
       ...(userData.stripeConnectAccount && {
@@ -49,7 +49,6 @@ export class AuthToken {
   }
 
   /**
-   * Returns the encoded auth token string.
    * @returns The encoded auth token string.
    */
   toString() {
