@@ -89,6 +89,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/google-token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Processes JSON JWT payloads from GoogleID services (existing users only) */
+        post: operations["GoogleToken"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/connect/account-link": {
         parameters: {
             query?: never;
@@ -181,13 +198,19 @@ export interface components {
         UserRegistrationParams: components["schemas"]["LoginCredentials"] & components["schemas"]["ExpoPushTokenParam"] & {
             handle: components["schemas"]["handle"];
             email: components["schemas"]["email"];
-            phone: components["schemas"]["phone"];
+            phone?: components["schemas"]["phone"];
             profile?: components["schemas"]["UserProfileParams"];
         };
         LoginParams: components["schemas"]["LoginCredentials"] & components["schemas"]["ExpoPushTokenParam"];
         LoginCredentials: components["schemas"]["LoginCredentials.Local"] | components["schemas"]["LoginCredentials.GoogleOAuth"];
         LocalLoginCredentials: components["schemas"]["LoginCredentials.Local"];
         GoogleOAuthLoginCredentials: components["schemas"]["LoginCredentials.GoogleOAuth"];
+        /** @description An object which contains a base64-encoded JSON JWT from GoogleID services
+         *     under the key "googleIDToken".
+         *      */
+        GoogleIDTokenField: {
+            googleIDToken: components["schemas"]["googleIDToken"];
+        };
         /** @description Parameters for a user's profile. */
         UserProfileParams: {
             /** @description The user's display name. */
@@ -484,8 +507,7 @@ export interface components {
         };
         CreatedAt: components["schemas"]["createdAt"];
         Email: components["schemas"]["email"];
-        GoogleAccessToken: components["schemas"]["googleAccessToken"];
-        GoogleID: components["schemas"]["googleID"];
+        GoogleIDToken: components["schemas"]["googleIDToken"];
         Handle: components["schemas"]["handle"];
         Password: components["schemas"]["password"];
         PaymentMethodID: components["schemas"]["paymentMethodID"];
@@ -515,15 +537,12 @@ export interface components {
             email: components["schemas"]["email"];
             password: components["schemas"]["password"];
         };
-        /** @description The user's OAuth Google ID (auth: google-oauth). */
-        googleID: string;
-        /** @description The user's OAuth Google Access Token (auth: google-oauth). */
-        googleAccessToken: string;
+        /** @description A base64-encoded JSON JWT from GoogleID services (auth: google-oauth). */
+        googleIDToken: string;
         /** @description The user's login credentials for google-oauth authentication */
         "LoginCredentials.GoogleOAuth": {
             email: components["schemas"]["email"];
-            googleID: components["schemas"]["googleID"];
-            googleAccessToken: components["schemas"]["googleAccessToken"];
+            googleIDToken: components["schemas"]["googleIDToken"];
         };
         /**
          * Format: date-time
@@ -542,7 +561,7 @@ export interface components {
          *     stripped from the phone number upon receipt, so "+1 (555) 555-5555" will be
          *     treated the same as "5555555555".
          *      */
-        phone: string;
+        phone: string | null;
         /**
          * Format: uri
          * @description The URL Stripe should redirect the user to upon exiting the Stripe portal.
@@ -744,6 +763,11 @@ export interface components {
                 };
             };
         };
+        GoogleTokenRequest: {
+            content: {
+                "application/json": components["schemas"]["GoogleIDTokenField"];
+            };
+        };
         LoginRequest: {
             content: {
                 "application/json": components["schemas"]["LoginParams"];
@@ -865,6 +889,22 @@ export interface operations {
         requestBody?: components["requestBodies"]["RefreshAuthTokenRequest"];
         responses: {
             200: components["responses"]["200.AuthTokenAndPreFetchedUserItems"];
+            401: components["responses"]["401.AuthenticationRequired"];
+            "5XX": components["responses"]["5xx.InternalServerError"];
+            default: components["responses"]["default.UnexpectedResponse"];
+        };
+    };
+    GoogleToken: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["GoogleTokenRequest"];
+        responses: {
+            200: components["responses"]["200.AuthToken"];
+            400: components["responses"]["400.InvalidUserInput"];
             401: components["responses"]["401.AuthenticationRequired"];
             "5XX": components["responses"]["5xx.InternalServerError"];
             default: components["responses"]["default.UnexpectedResponse"];

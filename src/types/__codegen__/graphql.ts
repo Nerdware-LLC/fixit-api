@@ -84,7 +84,7 @@ export type Contact = FixitUser & {
   /** Contact ID internally identifies a user's contact */
   id: Scalars['ID']['output'];
   /** Contact phone number */
-  phone: Scalars['String']['output'];
+  phone?: Maybe<Scalars['String']['output']>;
   /** Contact Profile object */
   profile: Profile;
   /** Timestamp of the most recent Contact object update */
@@ -138,7 +138,7 @@ export type FixitUser = {
   /** User ID internally identifies individual User accounts */
   id: Scalars['ID']['output'];
   /** Phone number of either a User or Contact */
-  phone: Scalars['String']['output'];
+  phone?: Maybe<Scalars['String']['output']>;
   /** Profile object of either a User or Contact */
   profile: Profile;
   updatedAt: Scalars['DateTime']['output'];
@@ -441,8 +441,8 @@ export type User = FixitUser & {
   handle: Scalars['String']['output'];
   /** (Immutable) User ID internally identifies individual User accounts */
   id: Scalars['ID']['output'];
-  /** (Immutable) User's own phone number */
-  phone: Scalars['String']['output'];
+  /** User's own phone number */
+  phone?: Maybe<Scalars['String']['output']>;
   /** User's own Profile object */
   profile: Profile;
   /** User Stripe Connect Account info */
@@ -744,7 +744,7 @@ export type ContactResolvers<ContextType = ApolloServerResolverContext, ParentTy
   email?: Resolver<ResolversTypes['Email'], ParentType, ContextType>;
   handle?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  phone?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  phone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   profile?: Resolver<ResolversTypes['Profile'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -770,7 +770,7 @@ export type FixitUserResolvers<ContextType = ApolloServerResolverContext, Parent
   email?: Resolver<ResolversTypes['Email'], ParentType, ContextType>;
   handle?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  phone?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  phone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   profile?: Resolver<ResolversTypes['Profile'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
 }>;
@@ -861,7 +861,7 @@ export type UserResolvers<ContextType = ApolloServerResolverContext, ParentType 
   expoPushToken?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   handle?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  phone?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  phone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   profile?: Resolver<ResolversTypes['Profile'], ParentType, ContextType>;
   stripeConnectAccount?: Resolver<Maybe<ResolversTypes['UserStripeConnectAccount']>, ParentType, ContextType>;
   stripeCustomerID?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
