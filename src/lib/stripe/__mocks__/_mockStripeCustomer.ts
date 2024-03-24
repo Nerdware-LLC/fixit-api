@@ -13,7 +13,7 @@ export const mockStripeCustomer = (
   mockUser: UserItem & { subscription: UserSubscriptionItem },
   customerUpdateParams?: Stripe.CustomerUpdateParams
 ): Stripe.Customer => {
-  const { stripeCustomerID, email, phone, profile, createdAt } = mockUser;
+  const { stripeCustomerID, email, phone = null, profile, createdAt } = mockUser;
 
   const defaultPaymentMethodID =
     customerUpdateParams?.invoice_settings?.default_payment_method ?? "pm_TestTestTest";

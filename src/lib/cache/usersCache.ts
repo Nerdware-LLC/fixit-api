@@ -27,10 +27,10 @@ if (/^(dev|staging|prod)/.test(ENV.NODE_ENV)) {
   items.forEach((dbItem) => {
     // prettier-ignore
     const {
-    pk: id, data: email, handle, phone, profile, createdAt, updatedAt,
+    pk: id, data: email, handle, phone = null, profile, createdAt, updatedAt,
   } = dbItem as UnaliasedUserItem
 
-    if (id && email && handle && phone && profile && createdAt && updatedAt) {
+    if (id && email && handle && profile && createdAt && updatedAt) {
       // Only users' public fields are cached for search
       initialCacheEntries.push([
         handle,

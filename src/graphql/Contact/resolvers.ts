@@ -69,11 +69,7 @@ export const resolvers: Partial<Resolvers> = {
 
       user ||= await User.getItem({ id: parent.contactUserID });
 
-      if (!user?.phone) {
-        throw new GqlInternalServerError("Contact phone could not be found.");
-      }
-
-      return user.phone;
+      return user?.phone ?? null;
     },
     profile: async (parent) => {
       let user = usersCache.get(parent.handle);

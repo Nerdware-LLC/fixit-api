@@ -43,7 +43,7 @@ class UserModel extends Model<typeof UserModel.schema, UserItem, UserItemCreatio
     },
     phone: {
       ...COMMON_ATTRIBUTE_TYPES.PHONE,
-      required: true,
+      required: false,
     },
     expoPushToken: {
       type: "string", // The push-service may set EPT to empty string

@@ -15,7 +15,7 @@ export const typeDefs = gql`
     "Contact email address"
     email: Email!
     "Contact phone number"
-    phone: String!
+    phone: String
     "Contact Profile object"
     profile: Profile!
     "(Immutable) Contact creation timestamp"

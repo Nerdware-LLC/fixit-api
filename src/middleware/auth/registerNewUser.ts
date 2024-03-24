@@ -14,12 +14,7 @@ export const registerNewUser = mwAsyncCatchWrapper<
     body: {
       handle,
       email,
-      phone,
-      expoPushToken, //          Only mobile-app logins will have this
-      profile: profileParams, // Only Google OAuth logins will have this at reg time
-      password, //               Only local logins will have this
-      googleID, //               Only Google OAuth logins will have this
-      googleAccessToken, //      Only Google OAuth logins will have this
+      phone = null,
     },
   } = req;
 
