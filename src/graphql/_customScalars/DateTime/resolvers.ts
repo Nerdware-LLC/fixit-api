@@ -1,14 +1,7 @@
-import dayjs from "dayjs";
 import { GraphQLScalarType, Kind } from "graphql";
 import { logger } from "@/utils/logger.js";
+import { isValidTimestamp } from "@/utils/timestamps.js";
 import { helpers } from "../helpers.js";
-
-/** @returns boolean indicating whether the value is a valid DateTime scalar. */
-const isValidGqlDateTimeScalar = (value: unknown) => {
-  return (
-    value !== undefined && value !== null && !dayjs(value as Parameters<typeof dayjs>[0]).isValid()
-  );
-};
 
 export const resolvers = {
   DateTime: new GraphQLScalarType({
@@ -17,7 +10,7 @@ export const resolvers = {
 
     // parseValue = value from the client
     parseValue(value: unknown) {
-      if (!isValidGqlDateTimeScalar(value)) {
+      if (!isValidTimestamp(value)) {
         const errMsg = helpers.getScalarErrMsg("DateTime", value);
         logger.gql(errMsg);
         throw new TypeError(errMsg);
@@ -27,7 +20,7 @@ export const resolvers = {
 
     // serialize = value sent to the client
     serialize(value: unknown) {
-      if (!isValidGqlDateTimeScalar(value)) {
+      if (!isValidTimestamp(value)) {
         const errMsg = helpers.getScalarErrMsg("DateTime", value);
         logger.gql(errMsg);
         throw new TypeError(errMsg);
