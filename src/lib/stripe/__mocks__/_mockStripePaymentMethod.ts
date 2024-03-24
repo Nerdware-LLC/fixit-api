@@ -9,7 +9,7 @@ import type { SetRequired } from "type-fest";
  * @see https://stripe.com/docs/api/payment_methods/object
  */
 export const mockStripePaymentMethod = (
-  { stripeCustomerID, email, phone, profile, createdAt }: UserItem,
+  { stripeCustomerID, email, phone = null, profile, createdAt }: UserItem,
   { id: paymentMethodID, ...customValues }: SetRequired<Partial<Stripe.PaymentMethod>, "id">
 ): Stripe.PaymentMethod => {
   // Default mock PaymentMethod object

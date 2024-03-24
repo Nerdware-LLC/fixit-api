@@ -15,7 +15,7 @@ export const mockStripeInvoice = (
   {
     stripeCustomerID,
     email,
-    phone,
+    phone = null,
     profile,
     subscription,
   }: UserItem & { subscription?: UserSubscriptionItem },

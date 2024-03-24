@@ -14,4 +14,3 @@ allOf:
     required:
       - handle
       - email
-      - phone

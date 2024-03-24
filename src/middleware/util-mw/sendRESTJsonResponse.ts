@@ -1,4 +1,4 @@
-import { mwCatchWrapper } from "@/middleware/helpers.js";
+import type { RestApiRequestHandler } from "@/middleware/helpers.js";
 
 /**
  * This middleware is a fallback response handler which reads the `res.locals` object and returns
@@ -31,7 +31,7 @@ import { mwCatchWrapper } from "@/middleware/helpers.js";
  * | `stripeLink`             | `stripeLink: res.locals.stripeLink`                         |
  * | `userItems`              | `userItems: res.locals.userItems`                           |
  */
-export const sendRESTJsonResponse = mwCatchWrapper((req, res) => {
+export const sendRESTJsonResponse: RestApiRequestHandler = (req, res) => {
   // Get available `res.locals` fields which are associated with a response field:
   const { authToken, promoCodeInfo, checkoutCompletionInfo, stripeLink, userItems } = res.locals;
 
@@ -44,4 +44,4 @@ export const sendRESTJsonResponse = mwCatchWrapper((req, res) => {
     ...(!!stripeLink && { stripeLink }),
     ...(!!userItems && { userItems }),
   });
-});
+};

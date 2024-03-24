@@ -25,6 +25,8 @@ declare global {
       STRIPE_WEBHOOKS_SECRET?: string;
       STRIPE_PUBLISHABLE_KEY?: string;
       STRIPE_SECRET_KEY?: string;
+      GOOGLE_OAUTH_CLIENT_ID?: string;
+      GOOGLE_OAUTH_CLIENT_SECRET?: string;
     }
   }
 

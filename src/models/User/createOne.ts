@@ -10,6 +10,15 @@ import { logger } from "@/utils/logger.js";
 import type { UserItem, User } from "@/models/User/User.js";
 import type { Simplify, SetOptional } from "type-fest";
 
+/** `User.createOne()` method params. */
+export type UserCreateOneParams = Simplify<
+  CreateLoginParams &
+    SetOptional<
+      Pick<UserItem, "handle" | "email" | "phone" | "expoPushToken" | "profile">,
+      "profile"
+    >
+>;
+
 /**
  * `User.createOne` creates the following items:
  * - `User` (created in the DB)
@@ -20,12 +29,11 @@ export const createOne = async function (
   {
     handle,
     email,
-    phone,
-    expoPushToken, //     Only mobile users will have this
-    profile, //           Only Google logins will have this at reg-time
+    phone = null,
+    expoPushToken, //     Only mobile-app users will have this
     password, //          Only local logins will have this
-    googleID, //          Only Google logins will have this
-    googleAccessToken, // Only Google logins will have this
+    profile, //           Only Google OAuth logins will have this at reg-time
+    googleID, //          Only Google OAuth logins will have this
   }: UserCreateOneParams
 ) {
   let newUser: UserItem;
@@ -37,7 +45,7 @@ export const createOne = async function (
   // Create Stripe Customer via Stripe API
   const { id: stripeCustomerID } = await stripe.customers.create({
     email,
-    phone,
+    ...(phone && { phone }),
     ...(newUserProfile.displayName.length > 0 && { name: newUserProfile.displayName }),
   });
 
@@ -54,7 +62,7 @@ export const createOne = async function (
       ...(expoPushToken && { expoPushToken }),
       stripeCustomerID,
       profile: { ...newUserProfile },
-      login: await UserLogin.createLogin({ password, googleID, googleAccessToken }),
+      login: await UserLogin.createLogin({ password, googleID }),
     });
 
     newUserID = newUser.id;
@@ -74,7 +82,7 @@ export const createOne = async function (
       id: newUser.id,
       handle: newUser.handle,
       email: newUser.email,
-      phone: newUser.phone,
+      phone: newUser.phone ?? null,
       profile: newUser.profile,
       createdAt: newUser.createdAt,
       updatedAt: newUser.updatedAt,
@@ -119,12 +127,3 @@ export const createOne = async function (
     stripeConnectAccount: newUserStripeConnectAccount,
   };
 };
-
-/** `User.createOne()` method params. */
-export type UserCreateOneParams = Simplify<
-  CreateLoginParams &
-    SetOptional<
-      Pick<UserItem, "handle" | "email" | "phone" | "expoPushToken" | "profile">,
-      "profile"
-    >
->;

@@ -39,7 +39,6 @@ export const MOCK_USERS = {
     login: {
       type: "GOOGLE_OAUTH",
       googleID: "userB_googleID",
-      googleAccessToken: "userB_gat",
     },
     profile: {
       displayName: "Rick Sanchez",

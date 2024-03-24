@@ -35,7 +35,7 @@ export const formatAsGqlFixitUser = async (
       id: userAuthToken.id,
       handle: userAuthToken.handle,
       email: userAuthToken.email,
-      phone: userAuthToken.phone,
+      phone: userAuthToken.phone ?? null,
       profile: userAuthToken.profile,
       createdAt: userAuthToken.createdAt,
       updatedAt: userAuthToken.updatedAt,

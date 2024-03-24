@@ -1,3 +1,4 @@
+import type { ParsedGoogleOAuth2IDTokenFields } from "@/lib/googleOAuth2Client";
 import type { UserItem } from "@/models/User/User.js";
 import type { UserSubscriptionItem } from "@/models/UserSubscription";
 import type { FixitApiAuthTokenPayload } from "@/utils/AuthToken.js";
@@ -11,6 +12,8 @@ export type RestApiLocals = {
 
   /** An AuthToken payload object from an authenticated request's auth token. */
   authenticatedUser?: FixitApiAuthTokenPayload | undefined;
+  /** Fields provided by a validated Google OAuth2 ID token. */
+  googleIDTokenFields?: ParsedGoogleOAuth2IDTokenFields;
   /** A User object from the database. */
   user?: UserItem | undefined;
   /** A UserSubscription object from the database (e.g., for sub-updating mw). */

@@ -7,20 +7,17 @@ import {
   isValidEmail,
   sanitizePassword,
   isValidPassword,
-  sanitizeID,
-  isValidID,
-  sanitizeToken,
-  isValidToken,
 } from "@nerdware/ts-string-helpers";
-import { hasKey, hasKeys } from "@nerdware/ts-type-safety-utils";
+import { hasKey } from "@nerdware/ts-type-safety-utils";
 import express from "express";
 import {
   findUserByEmail,
   userLoginShouldExist,
   userLoginShouldNotExist,
   registerNewUser,
-  validatePassword,
+  validateLogin,
   getUserFromAuthHeaderToken,
+  parseGoogleIDToken,
   updateExpoPushToken,
   queryUserItems,
   checkSubscriptionStatus,
@@ -34,6 +31,7 @@ import type { RequestBodyFieldsSchema, RequestBodyValidatorFn } from "@/middlewa
  * This router handles all `/api/auth` request paths:
  * - `/api/auth/register`
  * - `/api/auth/login`
+ * - `/api/auth/google-token`
  * - `/api/auth/token`
  */
 export const authRouter = express.Router();
@@ -42,7 +40,7 @@ export const authRouter = express.Router();
  * A {@link RequestBodyFieldsSchema} that configures sanitzation and
  * validation for request body parameters used in auth routes.
  */
-export const LOGIN_REQ_BODY_FIELDS_SCHEMA: RequestBodyFieldsSchema = {
+export const LOGIN_REQ_BODY_FIELDS_SCHEMA = {
   email: {
     required: true,
     type: "string",
@@ -55,31 +53,27 @@ export const LOGIN_REQ_BODY_FIELDS_SCHEMA: RequestBodyFieldsSchema = {
     sanitize: sanitizePassword,
     validate: isValidPassword,
   },
-  googleID: {
+  googleIDToken: {
     required: false,
     type: "string",
-    sanitize: sanitizeID,
-    validate: isValidID,
+    // The Google JWT includes alphanumerics, as well as "-", ".", and "_" chars.
+    // Note that in the below regex patterns, "-" is escaped so as to not create character ranges.
+    sanitize: (value) => value.replace(/[^a-zA-Z0-9+/\-._=]/g, ""),
+    validate: (value) => /^[a-zA-Z0-9+/\-._]+={0,3}$/.test(value),
   },
-  googleAccessToken: {
-    required: false,
-    type: "string",
-    sanitize: sanitizeToken,
-    validate: isValidToken,
-  },
-} as const;
+} as const satisfies RequestBodyFieldsSchema;
 
 /**
  * A {@link RequestBodyValidatorFn} that asserts that the request body
- * contains either a password or a Google OAuth ID and access token.
+ * contains either a password or Google OAuth2 ID token.
  */
 export const requirePasswordOrGoogleOAuth: RequestBodyValidatorFn = (reqBody) => {
-  if (!hasKey(reqBody, "password") && !hasKeys(reqBody, ["googleID", "googleAccessToken"])) {
+  if (!hasKey(reqBody, "password") && !hasKey(reqBody, "googleIDToken")) {
     throw new Error("Invalid registration credentials");
   }
 };
 
-authRouter.use(
+authRouter.post(
   "/register",
   sanitizeAndValidateRequestBody({
     requestBodySchema: {
@@ -91,7 +85,7 @@ authRouter.use(
         validate: isValidHandle,
       },
       phone: {
-        required: true,
+        required: false,
         type: "string",
         sanitize: sanitizePhone,
         validate: isValidPhone,
@@ -99,27 +93,49 @@ authRouter.use(
     },
     validateRequestBody: requirePasswordOrGoogleOAuth,
   }),
+  parseGoogleIDToken, // does nothing for local-auth users
   findUserByEmail,
   userLoginShouldNotExist,
   registerNewUser
 );
 
-authRouter.use(
+authRouter.post(
   "/login",
   sanitizeAndValidateRequestBody({
     requestBodySchema: LOGIN_REQ_BODY_FIELDS_SCHEMA,
     validateRequestBody: requirePasswordOrGoogleOAuth,
   }),
+  parseGoogleIDToken, // does nothing for local-auth users
   findUserByEmail,
   userLoginShouldExist,
-  validatePassword,
+  validateLogin,
   queryUserItems,
   updateExpoPushToken,
   checkSubscriptionStatus,
   checkOnboardingStatus
 );
 
-authRouter.use(
+authRouter.post(
+  "/google-token",
+  sanitizeAndValidateRequestBody({
+    requestBodySchema: {
+      googleIDToken: {
+        ...LOGIN_REQ_BODY_FIELDS_SCHEMA.googleIDToken,
+        required: true,
+      },
+    },
+  }),
+  parseGoogleIDToken,
+  findUserByEmail,
+  userLoginShouldExist,
+  validateLogin,
+  queryUserItems,
+  updateExpoPushToken,
+  checkSubscriptionStatus,
+  checkOnboardingStatus
+);
+
+authRouter.post(
   "/token",
   getUserFromAuthHeaderToken,
   queryUserItems,

@@ -34,8 +34,8 @@ export const typeDefs = gql`
     handle: String!
     "(Immutable) User's own email address"
     email: Email!
-    "(Immutable) User's own phone number"
-    phone: String!
+    "User's own phone number"
+    phone: String
     "(Mobile-Only) User's Expo push token, used to send push notifications to the User's mobile device"
     expoPushToken: String
     "User's own Profile object"

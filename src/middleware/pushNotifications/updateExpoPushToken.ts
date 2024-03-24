@@ -1,5 +1,6 @@
 import { mwAsyncCatchWrapper } from "@/middleware/helpers.js";
 import { User } from "@/models/User/User.js";
+import { AuthError } from "@/utils/httpErrors.js";
 import type { RestApiRequestBodyByPath } from "@/types/open-api.js";
 
 /**
@@ -13,7 +14,7 @@ export const updateExpoPushToken = mwAsyncCatchWrapper<
 >(async (req, res, next) => {
   const { authenticatedUser } = res.locals;
 
-  if (!authenticatedUser) return next("User not found");
+  if (!authenticatedUser) return next(new AuthError("User not found"));
 
   const { expoPushToken } = req.body;
 

@@ -39,7 +39,7 @@ import type { WorkOrderItem } from "@/models/WorkOrder/WorkOrder.js";
  * interactions with the API.
  */
 export const queryUserItems = mwAsyncCatchWrapper(async (req, res, next) => {
-  if (!res.locals?.authenticatedUser) return next("User not found");
+  if (!res.locals?.authenticatedUser) return next(new AuthError("User not found"));
 
   // We want to retrieve items of multiple types, so we don't use a Model-instance here.
   const response = await ddbTable.ddbClient.query({

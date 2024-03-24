@@ -19,12 +19,12 @@ type Query {
   This query returns a paginated list of Users whose handle begins with the provided
   `handle` argument, which can be incomplete but must at least contain two characters:
   the beginning "@", and one character that's either alphanumeric or an underscore.
-
+  
   Note that this query is intended to be used in conjunction with a pagination utility
   like [Apollo's `fetchMore` function](https://www.apollographql.com/docs/react/pagination/core-api#the-fetchmore-function).
-
+  
   ### ROADMAP:
-
+  
   - Matching Algorithm Change: In the future, the Contact selection method used in this
     query will either be replaced by a fuzzy-matching system based on the Levenshtein-Demerau
     model, or a cloud-based search service like ElasticSearch. This change will eliminate
@@ -43,7 +43,7 @@ type Query {
     """
     The number of searchable Users to skip before returning results (default 0, min 0).
     **This argument should only be used if all of the following conditions are true:**
-
+    
       1. A previous call to this query returned the maximum number of results (i.e., `limit`).
       2. The User who made the previous call wants to retrieve more results.
       3. The `handle` argument in the previous call is a valid substring of the `handle`
@@ -119,7 +119,7 @@ interface FixitUser {
   email: Email!
 
   """Phone number of either a User or Contact"""
-  phone: String!
+  phone: String
 
   """Profile object of either a User or Contact"""
   profile: Profile!
@@ -161,7 +161,7 @@ type Contact implements FixitUser {
   email: Email!
 
   """Contact phone number"""
-  phone: String!
+  phone: String
 
   """Contact Profile object"""
   profile: Profile!
@@ -298,8 +298,8 @@ type User implements FixitUser {
   """(Immutable) User's own email address"""
   email: Email!
 
-  """(Immutable) User's own phone number"""
-  phone: String!
+  """User's own phone number"""
+  phone: String
 
   """
   (Mobile-Only) User's Expo push token, used to send push notifications to the User's mobile device

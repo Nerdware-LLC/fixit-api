@@ -1,0 +1,2 @@
+type: string
+description: "A base64-encoded JSON JWT from GoogleID services (auth: google-oauth)."

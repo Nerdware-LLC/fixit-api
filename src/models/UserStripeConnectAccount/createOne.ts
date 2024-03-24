@@ -40,19 +40,19 @@ export const createOne = async function (
     },
     business_type: "individual",
     company: {
+      ...(phone && { phone }),
       ...(profile?.businessName && { name: profile.businessName }),
-      phone,
     },
     individual: {
       email,
-      phone,
+      ...(phone && { phone }),
       ...(profile?.givenName && { first_name: profile.givenName }),
       ...(profile?.familyName && { last_name: profile.familyName }),
     },
     business_profile: {
-      ...(profile?.businessName && { name: profile.businessName }),
       support_email: email,
-      support_phone: phone,
+      ...(phone && { support_phone: phone }),
+      ...(profile?.businessName && { name: profile.businessName }),
     },
     tos_acceptance: {
       service_agreement: "full",

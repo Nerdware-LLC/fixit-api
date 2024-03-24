@@ -11,11 +11,9 @@ describe("UserLogin", () => {
 
     test("returns a GOOGLE_OAUTH UserLogin when called with a Google ID and access token", async () => {
       const googleID = "gid_123";
-      const googleAccessToken = "gat_123";
-      const result = await UserLogin.createLogin({ googleID, googleAccessToken });
+      const result = await UserLogin.createLogin({ googleID });
       expect(result.type).toBe("GOOGLE_OAUTH");
       expect(result.googleID).toBe(googleID);
-      expect(result.googleAccessToken).toBe(googleAccessToken);
     });
 
     test("throws an error when called without any params", async () => {
@@ -30,18 +28,7 @@ describe("UserLogin", () => {
 
     test(`throws an error when called with an invalid "googleID" arg`, async () => {
       const googleID = "bad";
-      const googleAccessToken = "gat_123";
-      await expect(UserLogin.createLogin({ googleID, googleAccessToken })).rejects.toThrow(
-        "Invalid Google ID"
-      );
-    });
-
-    test(`throws an error when called with an invalid "googleAccessToken" arg`, async () => {
-      const googleID = "gid_123";
-      const googleAccessToken = "bad";
-      await expect(UserLogin.createLogin({ googleID, googleAccessToken })).rejects.toThrow(
-        "Invalid Google access token"
-      );
+      await expect(UserLogin.createLogin({ googleID })).rejects.toThrow("Invalid Google ID");
     });
   });
 });

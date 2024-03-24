@@ -1,6 +1,7 @@
 import { stripe } from "@/lib/stripe/stripeClient.js";
 import { mwAsyncCatchWrapper } from "@/middleware/helpers.js";
 import { UserSubscription } from "@/models/UserSubscription/UserSubscription.js";
+import { AuthError, InternalServerError } from "@/utils/httpErrors.js";
 
 /**
  * This middleware checks if the User is authenticated, and if so, queries Stripe for
@@ -10,7 +11,7 @@ import { UserSubscription } from "@/models/UserSubscription/UserSubscription.js"
  * auth token payload values are updated as well.
  */
 export const checkSubscriptionStatus = mwAsyncCatchWrapper(async (req, res, next) => {
-  if (!res.locals?.authenticatedUser) return next("User not found");
+  if (!res.locals?.authenticatedUser) return next(new AuthError("User not found"));
 
   const { subscription, id: userID } = res.locals.authenticatedUser;
 
@@ -35,7 +36,8 @@ export const checkSubscriptionStatus = mwAsyncCatchWrapper(async (req, res, next
       /* Do NOT use Stripe's `createdAt` value for the UserSubscription SK, because it may
       not match the value in the DB. Instead, use the value from res.locals.userSubscription
       (should always be present here). */
-      if (!res.locals?.userSubscription?.createdAt) return next("Invalid subscription details");
+      if (!res.locals?.userSubscription?.createdAt)
+        return next(new InternalServerError("Invalid subscription details"));
 
       const updatedSub = await UserSubscription.updateItem(
         {

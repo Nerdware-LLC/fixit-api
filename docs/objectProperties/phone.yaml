@@ -1,4 +1,6 @@
-type: string
+type:
+  - string
+  - "null"
 description: |
   A user's phone number. Currently this API only supports US phone numbers. All
   whitespace, non-numeric characters, and country/calling code prefixes will be

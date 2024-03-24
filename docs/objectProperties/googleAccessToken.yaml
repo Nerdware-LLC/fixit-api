@@ -1,2 +1,0 @@
-type: string
-description: "The user's OAuth Google Access Token (auth: google-oauth)."

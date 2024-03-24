@@ -15,7 +15,7 @@ export const typeDefs = gql`
     "Email address of either a User or Contact"
     email: Email!
     "Phone number of either a User or Contact"
-    phone: String!
+    phone: String
     "Profile object of either a User or Contact"
     profile: Profile!
     createdAt: DateTime!

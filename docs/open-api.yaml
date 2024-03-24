@@ -3,7 +3,7 @@
 openapi: "3.1.0"
 info:
   title: Fixit REST API
-  version: "1.23.0"
+  version: "2.0.1"
   description: API for Fixit auth and user account management.
   termsOfService: "https://gofixit.app/tos"
   contact:
@@ -12,10 +12,11 @@ info:
     url: "https://github.com/trevor-anderson"
   license:
     name: Proprietary
-    url: "https://raw.githubusercontent.com/Nerdware-LLC/fixit-api/main/LICENSE?token=GHSAT0AAAAAACNMYXYE3P3MCJON2YGKRFQCZNWLHXQ"
+    url: "https://raw.githubusercontent.com/Nerdware-LLC/fixit-api/main/LICENSE"
 servers:
   - { url: "http://localhost:8080/api", description: Local Dev Server }
-  - { url: "https://gofixit.app/api", description: Production Server }
+  - { url: "https://gofixit.app/api", description: Production API }
+  - { url: "https://staging.gofixit.app/api", description: Staging API }
 tags:
   - { name: admin, description: Administrative endpoints }
   - { name: auth, description: Authentication endpoints }
@@ -30,6 +31,7 @@ paths:
   "/auth/login": { $ref: "./endpoints/auth.login.yaml" }
   "/auth/register": { $ref: "./endpoints/auth.register.yaml" }
   "/auth/token": { $ref: "./endpoints/auth.token.yaml" }
+  "/auth/google-token": { $ref: "./endpoints/auth.google-token.yaml" }
   "/connect/account-link": { $ref: "./endpoints/connect.account-link.yaml" }
   "/connect/dashboard-link": { $ref: "./endpoints/connect.dashboard-link.yaml" }
   "/subscriptions/check-promo-code": { $ref: "./endpoints/subscriptions.check-promo-code.yaml" }
@@ -40,17 +42,16 @@ components:
     JwtBearerAuth: { $ref: "./securitySchemes/JwtBearerAuth.yaml" }
   requestBodies:
     CheckPromoCodeRequest: { $ref: "./requestBodies/CheckPromoCodeRequest.yaml" }
+    GoogleTokenRequest: { $ref: "./requestBodies/GoogleTokenRequest.yaml" }
     LoginRequest: { $ref: "./requestBodies/LoginRequest.yaml" }
     RefreshAuthTokenRequest: { $ref: "./requestBodies/RefreshAuthTokenRequest.yaml" }
     StripeLinkRequest: { $ref: "./requestBodies/StripeLinkRequest.yaml" }
     UserRegistrationRequest: { $ref: "./requestBodies/UserRegistrationRequest.yaml" }
+  # prettier-ignore
   responses:
     200AuthToken: { $ref: "./responses/200.AuthToken.yaml" }
-    200AuthTokenAndPreFetchedUserItems:
-      { $ref: "./responses/200.AuthTokenAndPreFetchedUserItems.yaml" }
-    200AuthTokenAndCheckoutCompletionInfo: {
-        $ref: "./responses/200.AuthTokenAndCheckoutCompletionInfo.yaml",
-      } # prettier-ignore
+    200AuthTokenAndPreFetchedUserItems: { $ref: "./responses/200.AuthTokenAndPreFetchedUserItems.yaml" }
+    200AuthTokenAndCheckoutCompletionInfo: { $ref: "./responses/200.AuthTokenAndCheckoutCompletionInfo.yaml" }
     200CheckPromoCode: { $ref: "./responses/200.CheckPromoCode.yaml" }
     200StripeLink: { $ref: "./responses/200.StripeLink.yaml" }
     400InvalidUserInput: { $ref: "./responses/400.InvalidUserInput.yaml" }
@@ -60,6 +61,7 @@ components:
     404ResourceNotFound: { $ref: "./responses/404.ResourceNotFound.yaml" }
     5xxInternalServerError: { $ref: "./responses/5xx.InternalServerError.yaml" }
     UnexpectedResponse: { $ref: "./responses/default.UnexpectedResponse.yaml" }
+  # prettier-ignore
   schemas:
     # REQUEST-RELATED SCHEMAS:
     UserRegistrationParams: { $ref: "./schemas/UserRegistrationParams.yaml" }
@@ -67,6 +69,7 @@ components:
     LoginCredentials: { $ref: "./schemas/LoginCredentials.yaml" }
     LocalLoginCredentials: { $ref: "./schemas/LoginCredentials.Local.yaml" }
     GoogleOAuthLoginCredentials: { $ref: "./schemas/LoginCredentials.GoogleOAuth.yaml" }
+    GoogleIDTokenField: { $ref: "./schemas/GoogleIDTokenField.yaml" }
     UserProfileParams: { $ref: "./schemas/UserProfileParams.yaml" }
     ExpoPushTokenParam: { $ref: "./schemas/ExpoPushTokenParam.yaml" }
     # RESPONSE-RELATED SCHEMAS:
@@ -78,9 +81,7 @@ components:
     WorkOrder: { $ref: "./schemas/WorkOrder.yaml" }
     PromoCodeInfoResponseField: { $ref: "./schemas/PromoCodeInfoResponseField.yaml" }
     PromoCodeInfo: { $ref: "./schemas/PromoCodeInfo.yaml" }
-    CheckoutCompletionInfoResponseField: {
-        $ref: "./schemas/CheckoutCompletionInfoResponseField.yaml",
-      } # prettier-ignore
+    CheckoutCompletionInfoResponseField: { $ref: "./schemas/CheckoutCompletionInfoResponseField.yaml" }
     CheckoutCompletionInfo: { $ref: "./schemas/CheckoutCompletionInfo.yaml" }
     StripeLinkResponseField: { $ref: "./schemas/StripeLinkResponseField.yaml" }
     # OTHER SCHEMAS:
@@ -92,8 +93,7 @@ components:
     # OBJECT PROPERTIES:
     CreatedAt: { $ref: "./objectProperties/createdAt.yaml" }
     Email: { $ref: "./objectProperties/email.yaml" }
-    GoogleAccessToken: { $ref: "./objectProperties/googleAccessToken.yaml" }
-    GoogleID: { $ref: "./objectProperties/googleID.yaml" }
+    GoogleIDToken: { $ref: "./objectProperties/googleIDToken.yaml" }
     Handle: { $ref: "./objectProperties/handle.yaml" }
     Password: { $ref: "./objectProperties/password.yaml" }
     PaymentMethodID: { $ref: "./objectProperties/paymentMethodID.yaml" }

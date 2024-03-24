@@ -25,6 +25,8 @@ const {
   VITE_STRIPE_PUBLISHABLE_KEY: STRIPE_PUBLISHABLE_KEY = "pk_fake_TestTestTest",
   VITE_STRIPE_SECRET_KEY: STRIPE_SECRET_KEY = "sk_fake_TestTestTest",
   VITE_STRIPE_WEBHOOKS_SECRET: STRIPE_WEBHOOKS_SECRET = "whsec_TestTestTest",
+  VITE_GOOGLE_OAUTH_CLIENT_ID: GOOGLE_OAUTH_CLIENT_ID = "TestTestTest.apps.googleusercontent.com",
+  VITE_GOOGLE_OAUTH_CLIENT_SECRET: GOOGLE_OAUTH_CLIENT_SECRET = "TestTestTest",
 } = process.env; // eslint-disable-line node/no-process-env
 
 export const ENV = createEnvObject({
@@ -46,4 +48,6 @@ export const ENV = createEnvObject({
   STRIPE_PUBLISHABLE_KEY,
   STRIPE_SECRET_KEY,
   STRIPE_WEBHOOKS_SECRET,
+  GOOGLE_OAUTH_CLIENT_ID,
+  GOOGLE_OAUTH_CLIENT_SECRET,
 });

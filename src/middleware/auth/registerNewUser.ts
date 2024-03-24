@@ -14,14 +14,14 @@ export const registerNewUser = mwAsyncCatchWrapper<
     body: {
       handle,
       email,
-      phone,
-      expoPushToken, //          Only mobile-app logins will have this
-      profile: profileParams, // Only Google OAuth logins will have this at reg time
-      password, //               Only local logins will have this
-      googleID, //               Only Google OAuth logins will have this
-      googleAccessToken, //      Only Google OAuth logins will have this
+      phone = null,
+      expoPushToken, // Only mobile-app logins will have this
+      password, //      Only local logins will have this
     },
   } = req;
+
+  // For Google OAuth logins, get fields from the relevant res.locals object:
+  const { googleID, profile: profileParams } = res.locals.googleIDTokenFields ?? {};
 
   // Set the authenticatedUser res.locals field used by `generateAuthToken`
   res.locals.authenticatedUser = await User.createOne({
@@ -32,7 +32,6 @@ export const registerNewUser = mwAsyncCatchWrapper<
     ...(profileParams && { profile: Profile.fromParams(profileParams) }),
     password,
     googleID,
-    googleAccessToken,
   });
 
   /* Data from this endpoint is returned to the sending client, so there's

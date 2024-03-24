@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+# [2.1.0-next.1](https://github.com/Nerdware-LLC/fixit-api/compare/v2.0.1...v2.1.0-next.1) (2024-03-24)
+
+
+### Bug Fixes
+
+* correct DateTime validity logic ([6273a0a](https://github.com/Nerdware-LLC/fixit-api/commit/6273a0a4e4d6df5b466272769ab5f621a1a9d9e4))
+* ensure every next call wraps an Error ([9efc8e5](https://github.com/Nerdware-LLC/fixit-api/commit/9efc8e58eedd6d54db2ab7f9bb58f30025bf986b))
+* update google OAuth related logic ([9fa247b](https://github.com/Nerdware-LLC/fixit-api/commit/9fa247b11d083166650e81f2eb75a57701b10dc2))
+
+
+### Features
+
+* add Google OAuth2 client ([5529074](https://github.com/Nerdware-LLC/fixit-api/commit/5529074517b445d8ab9b3814995ae68dfc837b3e))
+* add googleID/googleIDToken handling ([0f8df48](https://github.com/Nerdware-LLC/fixit-api/commit/0f8df48eb6f664346515e93083f825356a49438f))
+* add isValidTimestamp util ([ce20e7f](https://github.com/Nerdware-LLC/fixit-api/commit/ce20e7f2e928644764ddc20c77e2f950d7948f6c))
+* rm requirement for user.sca.id ([e46c681](https://github.com/Nerdware-LLC/fixit-api/commit/e46c6816f79592b4432629389c3b3653e673df36))
+* set 'phone' and sca fields to allow null ([4fa7ccf](https://github.com/Nerdware-LLC/fixit-api/commit/4fa7ccfdd39e6f443928c31b078ed27709ce6b22))
+* update codegen'd types ([7cf2141](https://github.com/Nerdware-LLC/fixit-api/commit/7cf21412be8bf58cb2afd2d25f0dc8ad0c6a548f))
+* update local gql shema file for nullable phone ([9e98c85](https://github.com/Nerdware-LLC/fixit-api/commit/9e98c85af321f17e6121b9a11646ee5b4de10104))
+* update logic to allow 'phone' to be optional ([b2df714](https://github.com/Nerdware-LLC/fixit-api/commit/b2df7145e91f70282fe57b786323900b58e9f9bc))
+
 ## [2.0.1](https://github.com/Nerdware-LLC/fixit-api/compare/v2.0.0...v2.0.1) (2024-03-10)
 
 ## [2.0.1-next.1](https://github.com/Nerdware-LLC/fixit-api/compare/v2.0.0...v2.0.1-next.1) (2024-03-10)
