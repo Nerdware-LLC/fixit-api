@@ -1,0 +1,17 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/path-item
+
+# POST /auth/token
+
+post:
+  operationId: GoogleToken
+  summary: Processes JSON JWT payloads from GoogleID services (existing users only)
+  security: []
+  tags: [auth]
+  requestBody: { $ref: "../open-api.yaml#/components/requestBodies/GoogleTokenRequest" }
+  responses:
+    # TODO Update 200 to use 200.AuthTokenAndPreFetchedUserItems, then run codegen
+    "200": { $ref: "../open-api.yaml#/components/responses/200AuthToken" }
+    "400": { $ref: "../open-api.yaml#/components/responses/400InvalidUserInput" }
+    "401": { $ref: "../open-api.yaml#/components/responses/401AuthenticationRequired" }
+    "5XX": { $ref: "../open-api.yaml#/components/responses/5xxInternalServerError" }
+    default: { $ref: "../open-api.yaml#/components/responses/UnexpectedResponse" }

@@ -1,12 +1,12 @@
 ## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
 
-# REST Schema: GoogleOAuthLoginCredentials
+# REST Schema: GoogleIDTokenField
 
 type: object
-description: The user's login credentials for google-oauth authentication
+description: |
+  An object which contains a base64-encoded JSON JWT from GoogleID services
+  under the key "googleIDToken".
 properties:
-  email: { $ref: "../open-api.yaml#/components/schemas/Email" }
   googleIDToken: { $ref: "../open-api.yaml#/components/schemas/GoogleIDToken" }
 required:
-  - email
   - googleIDToken
