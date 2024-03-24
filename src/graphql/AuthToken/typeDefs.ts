@@ -5,11 +5,11 @@ export const typeDefs = gql`
     id: ID!
     handle: String!
     email: String!
-    phone: String!
+    phone: String
     profile: Profile!
     stripeCustomerID: String!
     subscription: AuthTokenPayloadSubscriptionInfo
-    stripeConnectAccount: AuthTokenPayloadStripeConnectAccountInfo!
+    stripeConnectAccount: AuthTokenPayloadStripeConnectAccountInfo
     createdAt: DateTime!
     updatedAt: DateTime!
   }
