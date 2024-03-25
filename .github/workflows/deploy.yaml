@@ -30,13 +30,13 @@ jobs:
 
       - name: Build and Push Image+Tags
         run: |
-          IMAGE_TAGS=( ${{ github.sha }} )
+          IMAGE_TAGS=( "${{ github.sha }}" )
 
-          if [ ${{ github.event_name }} == 'release' ]; then
-              IMAGE_TAGS+=( ${{ github.event.release.tag_name }} )
+          if [ "${{ github.event_name }}" == 'release' ]; then
+              IMAGE_TAGS+=( "${{ github.event.release.tag_name }}" )
           fi
 
-          if [[ ${{ github.event_name }} == 'release' && ${{ github.event.release.prerelease }} == 'false' ]]; then
+          if [[ "${{ github.event_name }}" == 'release' && "${{ github.event.release.prerelease }}" == 'false' ]]; then
               IMAGE_TAGS+=( prod latest )
           else
               IMAGE_TAGS+=( staging next )
@@ -56,7 +56,7 @@ jobs:
 
       - name: Update ECS Task Definition & Service
         run: |
-          if [[ ${{ github.event_name }} == 'release' && ${{ github.event.release.prerelease }} == 'false' ]]; then
+          if [[ "${{ github.event_name }}" == 'release' && "${{ github.event.release.prerelease }}" == 'false' ]]; then
               TASK_DEF_NAME=${{ secrets.ECS_API_TASK_DEF_PROD }}
               SERVICE_NAME=${{ secrets.ECS_API_SERVICE_NAME_PROD }}
               CLUSTER_NAME=${{ secrets.ECS_CLUSTER_NAME_PROD }}
