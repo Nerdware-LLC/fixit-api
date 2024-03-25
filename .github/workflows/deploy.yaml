@@ -6,8 +6,8 @@ on: { release: { types: [published] } }
 permissions: { id-token: write, contents: read }
 
 jobs:
-  push-to-ecr:
-    name: Build, Tag, and Push Image to Amazon ECR
+  deploy:
+    name: Deploy to ECS
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
