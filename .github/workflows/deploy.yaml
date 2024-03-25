@@ -28,47 +28,24 @@ jobs:
           mask-password: "true"
           # Note: The above makes "outputs.registry" unavailable in any subsequent jobs.
 
-      - name: Prepare Image Metadata
-        id: image-meta
-        run: |
-          # ENV-DEPENDENT VALUES:
-          if [ ${{ github.event.release.prerelease }} = true ]; then
-              ENV_TAG=staging
-              REL_POINTER_TAG=next
-              TASK_DEF_NAME=${{ secrets.ECS_API_TASK_DEF_STAGING }}
-              SERVICE_NAME=${{ secrets.ECS_API_SERVICE_NAME_STAGING }}
-              CLUSTER_NAME=${{ secrets.ECS_CLUSTER_NAME_STAGING }}
-          else
-              ENV_TAG=prod
-              REL_POINTER_TAG=latest
-              TASK_DEF_NAME=${{ secrets.ECS_API_TASK_DEF_PROD }}
-              SERVICE_NAME=${{ secrets.ECS_API_SERVICE_NAME_PROD }}
-              CLUSTER_NAME=${{ secrets.ECS_CLUSTER_NAME_PROD }}
-          fi
-
-          BASE_URI="${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_PRIVATE_REPO }}"
-
-          for gh_output_kv_pair in \
-              "base-uri=$BASE_URI" \
-              "sha-tag-uri=$BASE_URI:${{ github.sha }}" \
-              "env-tag-uri=$BASE_URI:$ENV_TAG" \
-              "rel-pointer-tag-uri=$BASE_URI:$REL_POINTER_TAG" \
-              "release-tag-uri=$BASE_URI:${{ github.event.release.tag_name }}" \
-              "task-def-name=$TASK_DEF_NAME" \
-              "service-name=$SERVICE_NAME" \
-              "cluster-name=$CLUSTER_NAME"; do
-
-              echo "$gh_output_kv_pair" >> "$GITHUB_OUTPUT"
-          done
-
       - name: Build and Push Image+Tags
         run: |
-          IMAGE_TAGS=(
-              ${{ steps.image-meta.outputs.sha-tag-uri }}
-              ${{ steps.image-meta.outputs.env-tag-uri }}
-              ${{ steps.image-meta.outputs.rel-pointer-tag-uri }}
-              ${{ steps.image-meta.outputs.release-tag-uri }}
-          )
+          IMAGE_TAGS=( ${{ github.sha }} )
+
+          if [ ${{ github.event_name }} == 'release' ]; then
+              IMAGE_TAGS+=( ${{ github.event.release.tag_name }} )
+
+              if [ ${{ github.event.release.prerelease }} == 'true' ]; then
+                  IMAGE_TAGS+=( staging next )
+              elif [ ${{ github.event.release.prerelease }} == 'false' ]; then
+                  IMAGE_TAGS+=( prod latest )
+              fi
+          elif [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
+              IMAGE_TAGS+=( staging next )
+          fi
+
+          IMAGE_REPO="${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_PRIVATE_REPO }}"
+          IMAGE_TAGS=("${IMAGE_TAGS[@]/#/$IMAGE_REPO:}")
 
           docker build ${IMAGE_TAGS[@]/#/--tag } .
 
@@ -81,11 +58,23 @@ jobs:
 
       - name: Update ECS Task Definition & Service
         run: |
+          if [ ${{ github.event.release.prerelease }} == 'true' ]; then
+              TASK_DEF_NAME=${{ secrets.ECS_API_TASK_DEF_STAGING }}
+              SERVICE_NAME=${{ secrets.ECS_API_SERVICE_NAME_STAGING }}
+              CLUSTER_NAME=${{ secrets.ECS_CLUSTER_NAME_STAGING }}
+          else
+              TASK_DEF_NAME=${{ secrets.ECS_API_TASK_DEF_PROD }}
+              SERVICE_NAME=${{ secrets.ECS_API_SERVICE_NAME_PROD }}
+              CLUSTER_NAME=${{ secrets.ECS_CLUSTER_NAME_PROD }}
+          fi
+
+          IMAGE_REPO="${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_PRIVATE_REPO }}"
+
           UPDATED_TASK_DEF_JSON=$(
               aws ecs describe-task-definition \
-                  --task-definition ${{ steps.image-meta.outputs.task-def-name }} \
+                  --task-definition $TASK_DEF_NAME \
                   --output json | \
-                  jq --arg NEW_IMAGE ${{ steps.image-meta.outputs.sha-tag-uri }} \
+                  jq --arg NEW_IMAGE "$IMAGE_REPO:${{ github.sha }}" \
                       '.taskDefinition |
                       .containerDefinitions[0].image = $NEW_IMAGE |
                       del(.taskDefinitionArn) |
@@ -101,7 +90,7 @@ jobs:
               --cli-input-json "$UPDATED_TASK_DEF_JSON"
 
           aws ecs update-service \
-              --cluster ${{ steps.image-meta.outputs.cluster-name }} \
-              --service ${{ steps.image-meta.outputs.service-name }} \
-              --task-definition ${{ steps.image-meta.outputs.task-def-name }} \
+              --cluster $CLUSTER_NAME \
+              --service $SERVICE_NAME \
+              --task-definition $TASK_DEF_NAME \
               --force-new-deployment
