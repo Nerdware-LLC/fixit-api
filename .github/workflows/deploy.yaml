@@ -34,13 +34,11 @@ jobs:
 
           if [ ${{ github.event_name }} == 'release' ]; then
               IMAGE_TAGS+=( ${{ github.event.release.tag_name }} )
+          fi
 
-              if [ ${{ github.event.release.prerelease }} == 'true' ]; then
-                  IMAGE_TAGS+=( staging next )
-              elif [ ${{ github.event.release.prerelease }} == 'false' ]; then
-                  IMAGE_TAGS+=( prod latest )
-              fi
-          elif [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
+          if [[ ${{ github.event_name }} == 'release' && ${{ github.event.release.prerelease }} == 'false' ]]; then
+              IMAGE_TAGS+=( prod latest )
+          else
               IMAGE_TAGS+=( staging next )
           fi
 
@@ -58,14 +56,14 @@ jobs:
 
       - name: Update ECS Task Definition & Service
         run: |
-          if [ ${{ github.event.release.prerelease }} == 'true' ]; then
-              TASK_DEF_NAME=${{ secrets.ECS_API_TASK_DEF_STAGING }}
-              SERVICE_NAME=${{ secrets.ECS_API_SERVICE_NAME_STAGING }}
-              CLUSTER_NAME=${{ secrets.ECS_CLUSTER_NAME_STAGING }}
-          else
+          if [[ ${{ github.event_name }} == 'release' && ${{ github.event.release.prerelease }} == 'false' ]]; then
               TASK_DEF_NAME=${{ secrets.ECS_API_TASK_DEF_PROD }}
               SERVICE_NAME=${{ secrets.ECS_API_SERVICE_NAME_PROD }}
               CLUSTER_NAME=${{ secrets.ECS_CLUSTER_NAME_PROD }}
+          else
+              TASK_DEF_NAME=${{ secrets.ECS_API_TASK_DEF_STAGING }}
+              SERVICE_NAME=${{ secrets.ECS_API_SERVICE_NAME_STAGING }}
+              CLUSTER_NAME=${{ secrets.ECS_CLUSTER_NAME_STAGING }}
           fi
 
           IMAGE_REPO="${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_PRIVATE_REPO }}"
