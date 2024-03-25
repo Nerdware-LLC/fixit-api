@@ -1,6 +1,8 @@
 name: Deploy Workflow
 
-on: { release: { types: [published] } }
+on:
+  release: { types: [published] }
+  workflow_dispatch:
 
 # These permissions are needed to interact with GitHub's OIDC Token endpoint.
 permissions: { id-token: write, contents: read }
