@@ -9,8 +9,6 @@ jobs:
   push-to-ecr:
     name: Build, Tag, and Push Image to Amazon ECR
     runs-on: ubuntu-latest
-    outputs:
-      ecr-registry: ${{ steps.login-ecr.outputs.registry }}
     steps:
       - uses: actions/checkout@v4
 
@@ -26,32 +24,54 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
         with:
           mask-password: "true"
+          # Note: The above makes "outputs.registry" unavailable in any subsequent jobs.
 
-      - run: |
-          IMAGE_TAGS=(
-            "${{ github.sha }}"
-            "${{ github.event.release.tag_name }}"
-          )
-
-          if [ "${{ github.event.release.prerelease }}" == 'true' ]; then
-            IMAGE_TAGS+=( staging next )
+      - name: Prepare Image Metadata
+        id: image-meta
+        run: |
+          # ENV-DEPENDENT VALUES:
+          if [ ${{ github.event.release.prerelease }} = true ]; then
+              ENV_TAG=staging
+              REL_POINTER_TAG=next
+              TASK_DEF_NAME=${{ secrets.ECS_API_TASK_DEF_STAGING }}
+              SERVICE_NAME=${{ secrets.ECS_API_SERVICE_NAME_STAGING }}
+              CLUSTER_NAME=${{ secrets.ECS_CLUSTER_NAME_STAGING }}
           else
-            IMAGE_TAGS+=( prod latest )
+              ENV_TAG=prod
+              REL_POINTER_TAG=latest
+              TASK_DEF_NAME=${{ secrets.ECS_API_TASK_DEF_PROD }}
+              SERVICE_NAME=${{ secrets.ECS_API_SERVICE_NAME_PROD }}
+              CLUSTER_NAME=${{ secrets.ECS_CLUSTER_NAME_PROD }}
           fi
 
-          IMAGE_REPO="${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_PRIVATE_REPO }}"
-          IMAGE_TAGS=("${IMAGE_TAGS[@]/#/$IMAGE_REPO:}")
+          BASE_URI="${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_PRIVATE_REPO }}"
+
+          for gh_output_kv_pair in \
+              "base-uri=$BASE_URI" \
+              "sha-tag-uri=$BASE_URI:${{ github.sha }}" \
+              "env-tag-uri=$BASE_URI:$ENV_TAG" \
+              "rel-pointer-tag-uri=$BASE_URI:$REL_POINTER_TAG" \
+              "release-tag-uri=$BASE_URI:${{ github.event.release.tag_name }}" \
+              "task-def-name=$TASK_DEF_NAME" \
+              "service-name=$SERVICE_NAME" \
+              "cluster-name=$CLUSTER_NAME"; do
+
+              echo "$gh_output_kv_pair" >> "$GITHUB_OUTPUT"
+          done
+
+      - name: Build and Push Image+Tags
+        run: |
+          IMAGE_TAGS=(
+              ${{ steps.image-meta.outputs.sha-tag-uri }}
+              ${{ steps.image-meta.outputs.env-tag-uri }}
+              ${{ steps.image-meta.outputs.rel-pointer-tag-uri }}
+              ${{ steps.image-meta.outputs.release-tag-uri }}
+          )
 
           docker build ${IMAGE_TAGS[@]/#/--tag } .
 
           for tag in "${IMAGE_TAGS[@]}"; do docker push "$tag"; done
 
-  update-ecs:
-    name: Update ECS Task Definition & Service
-    runs-on: ubuntu-latest
-    needs: push-to-ecr
-    if: ${{ needs.push-to-ecr.result == 'success' }}
-    steps:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.ECS_OIDC_GITHUB_ROLE_ARN }}
@@ -59,44 +79,27 @@ jobs:
 
       - name: Update ECS Task Definition & Service
         run: |
-          IMAGE_REPO="${{ needs.push-to-ecr.outputs.ecr-registry }}/${{ secrets.ECR_PRIVATE_REPO }}"
-          IMAGE_SHA_TAG="$IMAGE_REPO:${{ github.sha }}"
-
-          if [ "${{ github.event.release.prerelease }}" == 'true' ]; then
-            TASK_DEF_NAME="${{ secrets.ECS_API_TASK_DEF_STAGING }}"
-            SERVICE_NAME="${{ secrets.ECS_API_SERVICE_NAME_STAGING }}"
-            CLUSTER_NAME="${{ secrets.ECS_CLUSTER_NAME_STAGING }}"
-          else
-            TASK_DEF_NAME="${{ secrets.ECS_API_TASK_DEF_PROD }}"
-            SERVICE_NAME="${{ secrets.ECS_API_SERVICE_NAME_PROD }}"
-            CLUSTER_NAME="${{ secrets.ECS_CLUSTER_NAME_PROD }}"
-          fi
-
-          TASK_DEF_JSON=$( \
-            aws ecs describe-task-definition \
-              --task-definition "$TASK_DEF_NAME" \
-              --output json
-          )
-
-          UPDATED_TASK_DEF_JSON=$( \
-            echo $TASK_DEF_JSON | \
-            jq --arg NEW_IMAGE "$IMAGE_SHA_TAG" \
-              '.taskDefinition |
-              .containerDefinitions[0].image = $NEW_IMAGE |
-              del(.taskDefinitionArn) |
-              del(.revision) |
-              del(.status) |
-              del(.requiresAttributes) |
-              del(.compatibilities) |
-              del(.registeredAt) |
-              del(.registeredBy)'
+          UPDATED_TASK_DEF_JSON=$(
+              aws ecs describe-task-definition \
+                  --task-definition ${{ steps.image-meta.outputs.task-def-name }} \
+                  --output json | \
+                  jq --arg NEW_IMAGE ${{ steps.image-meta.outputs.sha-tag-uri }} \
+                      '.taskDefinition |
+                      .containerDefinitions[0].image = $NEW_IMAGE |
+                      del(.taskDefinitionArn) |
+                      del(.revision) |
+                      del(.status) |
+                      del(.requiresAttributes) |
+                      del(.compatibilities) |
+                      del(.registeredAt) |
+                      del(.registeredBy)'
           )
 
           aws ecs register-task-definition \
-            --cli-input-json "$UPDATED_TASK_DEF_JSON"
+              --cli-input-json "$UPDATED_TASK_DEF_JSON"
 
           aws ecs update-service \
-            --cluster $CLUSTER_NAME \
-            --service $SERVICE_NAME \
-            --task-definition $TASK_DEF_NAME \
-            --force-new-deployment
+              --cluster ${{ steps.image-meta.outputs.cluster-name }} \
+              --service ${{ steps.image-meta.outputs.service-name }} \
+              --task-definition ${{ steps.image-meta.outputs.task-def-name }} \
+              --force-new-deployment
