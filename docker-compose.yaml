@@ -16,7 +16,7 @@ services:
     ports:
       - "8080:8080"
     env_file:
-      - .env.dev
+      - .api.dev.env
     environment:
       AWS_ACCESS_KEY_ID: local
       AWS_SECRET_ACCESS_KEY: local
