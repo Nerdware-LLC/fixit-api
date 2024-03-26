@@ -24,7 +24,7 @@
     "start": "docker compose up",
     "start:dist": "API_COMMAND='node dist/index.js' docker compose up",
     "prebuild": "[ -d dist ] && rm -rf dist || true",
-    "build": "swc src --out-dir dist",
+    "build": "swc src --out-dir dist --strip-leading-paths",
     "lint": "eslint src",
     "postlint": "npm run test:types",
     "test": "vitest run",
