@@ -10,7 +10,7 @@ import {
 } from "@nerdware/ts-string-helpers";
 import { getTypeSafeError } from "@nerdware/ts-type-safety-utils";
 import { AuthError } from "@/utils/httpErrors.js";
-import { googleOAuth2Client } from "./googleOAuth2Client";
+import { googleOAuth2Client } from "./googleOAuth2Client.js";
 import type { TokenPayload as GoogleOAuth2IDTokenPayload } from "google-auth-library";
 
 /**
