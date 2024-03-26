@@ -21,8 +21,8 @@
   },
   "type": "module",
   "scripts": {
-    "start": "docker compose up",
-    "start:dist": "API_COMMAND='node dist/index.js' docker compose up",
+    "start": "docker compose up --abort-on-container-exit",
+    "start:dist": "API_COMMAND='node dist/index.js' && npm start",
     "prebuild": "[ -d dist ] && rm -rf dist || true",
     "build": "swc src --out-dir dist --strip-leading-paths",
     "lint": "eslint src",
