@@ -29,6 +29,11 @@ jobs:
           # Note: The above makes "outputs.registry" unavailable in any subsequent jobs.
 
       - name: Build and Push Image+Tags
+        # IMAGE TAGS:
+        # 1. commit sha        (always added)
+        # 2. release tag       (if release/pre-release)
+        # 3. env tag           (if release: "prod", anything else: "staging")
+        # 4. relative pointer  (if release: "latest", anything else: "next")
         run: |
           IMAGE_TAGS=( "${{ github.sha }}" )
 
