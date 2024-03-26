@@ -90,10 +90,12 @@ jobs:
           )
 
           aws ecs register-task-definition \
-              --cli-input-json "$UPDATED_TASK_DEF_JSON"
+              --cli-input-json "$UPDATED_TASK_DEF_JSON" \
+              1>/dev/null
 
           aws ecs update-service \
               --cluster $CLUSTER_NAME \
               --service $SERVICE_NAME \
               --task-definition $TASK_DEF_NAME \
-              --force-new-deployment
+              --force-new-deployment \
+              1>/dev/null
