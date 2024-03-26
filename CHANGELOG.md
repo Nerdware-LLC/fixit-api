@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [2.1.1](https://github.com/Nerdware-LLC/fixit-api/compare/v2.1.0...v2.1.1) (2024-03-26)
+
+
+### Bug Fixes
+
+* add '.js' extensions to local imports ([7210346](https://github.com/Nerdware-LLC/fixit-api/commit/7210346bd5cdb7f609f47e3b19edb8c887ff201d))
+
 ## [2.1.1-next.1](https://github.com/Nerdware-LLC/fixit-api/compare/v2.1.0...v2.1.1-next.1) (2024-03-26)
 
 
