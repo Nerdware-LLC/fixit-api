@@ -4,13 +4,14 @@ on:
   release: { types: [published] }
   workflow_dispatch:
 
-# These permissions are needed to interact with GitHub's OIDC Token endpoint.
-permissions: { id-token: write, contents: read }
-
 jobs:
   deploy:
     name: Deploy to ECS
     runs-on: ubuntu-latest
+
+    # Permissions required to use aws-actions/configure-aws-credentials:
+    permissions: { id-token: write, contents: read }
+
     steps:
       - uses: actions/checkout@v4
 
@@ -90,10 +91,12 @@ jobs:
           )
 
           aws ecs register-task-definition \
-              --cli-input-json "$UPDATED_TASK_DEF_JSON"
+              --cli-input-json "$UPDATED_TASK_DEF_JSON" \
+              1>/dev/null
 
           aws ecs update-service \
               --cluster $CLUSTER_NAME \
               --service $SERVICE_NAME \
               --task-definition $TASK_DEF_NAME \
-              --force-new-deployment
+              --force-new-deployment \
+              1>/dev/null
