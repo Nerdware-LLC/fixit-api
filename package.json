@@ -1,6 +1,6 @@
 {
   "name": "fixit-api",
-  "version": "2.1.3",
+  "version": "2.1.4",
   "description": "Fixit API services built on NodeJS and Apollo GraphQL.",
   "author": {
     "name": "Trevor Anderson",
