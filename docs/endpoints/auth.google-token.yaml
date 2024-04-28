@@ -4,13 +4,13 @@
 
 post:
   operationId: GoogleToken
-  summary: Processes JSON JWT payloads from GoogleID services (existing users only)
+  summary: Authenticates a user via Google OAuth JSON JWT from GoogleID services
   security: []
   tags: [auth]
-  requestBody: { $ref: "../open-api.yaml#/components/requestBodies/GoogleTokenRequest" }
+  requestBody:
+    $ref: "../open-api.yaml#/components/requestBodies/GoogleTokenRequest"
   responses:
-    # TODO Update 200 to use 200.AuthTokenAndPreFetchedUserItems, then run codegen
-    "200": { $ref: "../open-api.yaml#/components/responses/200AuthToken" }
+    "200": { $ref: "../open-api.yaml#/components/responses/200AuthTokenAndPreFetchedUserItems" }
     "400": { $ref: "../open-api.yaml#/components/responses/400InvalidUserInput" }
     "401": { $ref: "../open-api.yaml#/components/responses/401AuthenticationRequired" }
     "5XX": { $ref: "../open-api.yaml#/components/responses/5xxInternalServerError" }
