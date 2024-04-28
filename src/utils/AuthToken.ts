@@ -1,4 +1,5 @@
 import { isString } from "@nerdware/ts-type-safety-utils";
+import { AuthError } from "@/utils/httpErrors.js";
 import { signAndEncodeJWT, validateAndDecodeJWT } from "./jwt.js";
 import type { UserItem } from "@/models/User/User.js";
 import type { UserStripeConnectAccountItem } from "@/models/UserStripeConnectAccount/UserStripeConnectAccount.js";
@@ -12,7 +13,7 @@ import type { Simplify } from "type-fest";
  * Web Tokens (JWTs) used for authentication in the Fixit API.
  */
 export class AuthToken {
-  private encodedTokenValue: string;
+  private readonly encodedTokenValue: string;
 
   /**
    * Creates a new AuthToken by signing and encoding a JWT payload using the provided user data.
@@ -60,7 +61,7 @@ export class AuthToken {
    * @param encodedAuthToken - The encoded auth token to validate and decode.
    * @returns The decoded auth token payload.
    */
-  static validateAndDecodeAuthToken = async <
+  static readonly validateAndDecodeAuthToken = async <
     IsSubscriptionDefinitelyPresent extends boolean = false,
     IsStripeConnectAccountDefinitelyPresent extends boolean = false,
   >(
@@ -79,7 +80,7 @@ export class AuthToken {
    * @returns The decoded auth token payload.
    * @throws Error if the token is invalid.
    */
-  static getValidatedRequestAuthTokenPayload = async <
+  static readonly getValidatedRequestAuthTokenPayload = async <
     IsSubscriptionDefinitelyPresent extends boolean = false,
     IsStripeConnectAccountDefinitelyPresent extends boolean = false,
   >(
@@ -87,7 +88,7 @@ export class AuthToken {
   ) => {
     // Get token from "Authorization" header
     let token = request.get("Authorization");
-    if (!token || !isString(token)) throw new Error("Invalid token");
+    if (!token || !isString(token)) throw new AuthError("Invalid auth token");
 
     // Remove Bearer from string
     if (token.startsWith("Bearer ")) token = token.split(" ")[1]!;
@@ -106,7 +107,7 @@ export class AuthToken {
    * @param payload - The JWT payload to strip internal fields from.
    * @returns The stripped payload.
    */
-  static stripInternalJwtPayloadFields = <
+  static readonly stripInternalJwtPayloadFields = <
     Payload extends Record<string, unknown> = FixitApiAuthTokenPayload,
   >(
     payload: Payload
