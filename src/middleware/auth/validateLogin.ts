@@ -1,6 +1,7 @@
 import { mwAsyncCatchWrapper } from "@/middleware/helpers.js";
 import { AuthError, InternalServerError } from "@/utils/httpErrors.js";
 import { passwordHasher } from "@/utils/passwordHasher.js";
+import type { UserLoginLocal } from "@/models/UserLogin";
 import type { CombineUnionOfObjects } from "@/types/helpers.js";
 import type { RestApiRequestBodyByPath } from "@/types/open-api.js";
 
@@ -30,7 +31,7 @@ export const validateLogin = mwAsyncCatchWrapper<
 
     const isValidPassword = await passwordHasher.validate(
       req.body.password,
-      userItem.login.passwordHash
+      (userItem.login as UserLoginLocal).passwordHash
     );
 
     if (!isValidPassword) next(new AuthError("Invalid email or password"));

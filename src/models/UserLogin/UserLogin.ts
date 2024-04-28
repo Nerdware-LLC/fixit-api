@@ -1,6 +1,7 @@
 import { isValidPassword } from "@nerdware/ts-string-helpers";
 import { isString } from "@nerdware/ts-type-safety-utils";
 import { passwordHasher } from "@/utils/passwordHasher.js";
+import type { CombineUnionOfObjects } from "@/types/helpers.js";
 import type { Simplify } from "type-fest";
 
 /**
@@ -84,8 +85,13 @@ export type CreateLoginParams = {
 }; //                               TODO Consider mv'ind gidToken here, or pw elsewhere
 
 /**
- * A union of `UserLogin` object types, discriminated by the
- * {@link FixitApiLoginAuthType|`type` string literal property}.
+ * A combination of every `UserLogin` object type in the {@link UserLoginU} union.
+ */
+export type UserLoginObject = CombineUnionOfObjects<UserLoginU>;
+
+/**
+ * A union of `UserLogin` object types, discriminated by the {@link FixitApiLoginAuthType|`type` string literal property}.
+ * > Use this `UserLogin` type when you want type inference based on the `type` property.
  */
 export type UserLoginU = UserLoginLocal | UserLoginGoogleOAuth;
 

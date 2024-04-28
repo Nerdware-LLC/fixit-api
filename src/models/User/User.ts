@@ -7,7 +7,7 @@ import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@/models/_common/mode
 import { ddbTable } from "@/models/ddbTable.js";
 import { createOne } from "./createOne.js";
 import { userModelHelpers } from "./helpers.js";
-import type { UserLoginU } from "@/models/UserLogin/UserLogin.js";
+import type { UserLoginObject } from "@/models/UserLogin/UserLogin.js";
 import type { ItemTypeFromSchema, ItemCreationParameters } from "@nerdware/ddb-single-table";
 import type { OverrideProperties } from "type-fest";
 
@@ -103,13 +103,13 @@ export const User = new UserModel();
 /** The shape of a `User` object returned from UserModel methods. */
 export type UserItem = OverrideProperties<
   ItemTypeFromSchema<typeof UserModel.schema>,
-  { login: UserLoginU }
+  { login: UserLoginObject }
 >;
 
 /** `User` item params for `createItem()`. */
 export type UserItemCreationParams = OverrideProperties<
   ItemCreationParameters<typeof UserModel.schema>,
-  { login: UserLoginU }
+  { login: UserLoginObject }
 >;
 
 /**
