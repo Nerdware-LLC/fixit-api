@@ -7,6 +7,8 @@ import {
   isValidEmail,
   sanitizePassword,
   isValidPassword,
+  sanitizeJWT,
+  isValidJWT,
   sanitizeHex,
 } from "@nerdware/ts-string-helpers";
 import { hasKey } from "@nerdware/ts-type-safety-utils";
@@ -45,7 +47,7 @@ export const authRouter = express.Router();
  * A {@link RequestBodyFieldsSchema} that configures sanitzation and
  * validation for request body parameters used in auth routes.
  */
-export const LOGIN_REQ_BODY_FIELDS_SCHEMA = {
+export const AUTH_REQ_BODY_FIELDS_SCHEMA = {
   email: {
     required: true,
     type: "string",
@@ -61,10 +63,8 @@ export const LOGIN_REQ_BODY_FIELDS_SCHEMA = {
   googleIDToken: {
     required: false,
     type: "string",
-    // The Google JWT includes alphanumerics, as well as "-", ".", and "_" chars.
-    // Note that in the below regex patterns, "-" is escaped so as to not create character ranges.
-    sanitize: (value) => value.replace(/[^a-zA-Z0-9+/\-._=]/g, ""),
-    validate: (value) => /^[a-zA-Z0-9+/\-._]+={0,3}$/.test(value),
+    sanitize: sanitizeJWT,
+    validate: isValidJWT,
   },
 } as const satisfies RequestBodyFieldsSchema;
 
@@ -82,7 +82,7 @@ authRouter.post(
   "/register",
   sanitizeAndValidateRequestBody({
     requestBodySchema: {
-      ...LOGIN_REQ_BODY_FIELDS_SCHEMA,
+      ...AUTH_REQ_BODY_FIELDS_SCHEMA,
       handle: {
         required: true,
         type: "string",
@@ -108,7 +108,7 @@ authRouter.post(
 authRouter.post(
   "/login",
   sanitizeAndValidateRequestBody({
-    requestBodySchema: LOGIN_REQ_BODY_FIELDS_SCHEMA,
+    requestBodySchema: AUTH_REQ_BODY_FIELDS_SCHEMA,
     validateRequestBody: requirePasswordOrGoogleOAuth,
   }),
   parseGoogleIDToken, // does nothing for local-auth users
@@ -127,7 +127,7 @@ authRouter.post(
   sanitizeAndValidateRequestBody({
     requestBodySchema: {
       googleIDToken: {
-        ...LOGIN_REQ_BODY_FIELDS_SCHEMA.googleIDToken,
+        ...AUTH_REQ_BODY_FIELDS_SCHEMA.googleIDToken,
         required: true,
       },
     },
