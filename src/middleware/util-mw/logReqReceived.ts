@@ -26,5 +26,5 @@ export const logReqReceived: RestApiRequestHandler = (req, res, next) => {
 };
 
 const getReqLogMsg = (req: Request, reqInfoStr: string) => {
-  return `request received: ${reqInfoStr.padEnd(36, " ")} FROM ${req.ip}`;
+  return `request received: ${reqInfoStr.padEnd(36, " ")} FROM ${req.ip ?? "-UNKNOWN-"}`;
 };
