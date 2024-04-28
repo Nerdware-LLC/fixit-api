@@ -9,7 +9,7 @@ import {
   logReqReceived,
   sendRESTJsonResponse,
   setSecureHttpHeaders,
-  validateGqlReqContext,
+  getValidatedGqlContext,
 } from "@/middleware";
 import {
   adminRouter,
@@ -65,7 +65,7 @@ expressApp.use(/^\/api\/(auth|connect|subscriptions)/, sendRESTJsonResponse);
 expressApp.use(
   "/api",
   expressMiddleware(apolloServer, {
-    context: validateGqlReqContext,
+    context: getValidatedGqlContext,
   })
 );
 

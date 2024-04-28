@@ -1,10 +1,10 @@
-import { ApolloServer, type BaseContext } from "@apollo/server";
+import { ApolloServer } from "@apollo/server";
 import { fixitSchema } from "@/graphql/schema.js";
 import { ENV } from "@/server/env";
 import type { FixitApiAuthTokenPayload } from "@/utils/AuthToken.js";
 import type { Request } from "express";
 
-export const apolloServer = new ApolloServer<ApolloServerResolverContext>({
+export const apolloServer = new ApolloServer<ApolloServerContext>({
   schema: fixitSchema,
   csrfPrevention: true,
   introspection: ENV.NODE_ENV === "development",
@@ -20,9 +20,23 @@ export const apolloServer = new ApolloServer<ApolloServerResolverContext>({
 await apolloServer.start();
 
 /**
- * The execution context object available to all GQL resolvers.
+ * The `context` object available to all ApolloServer resolvers and plugins.
  */
-export interface ApolloServerResolverContext extends BaseContext, Partial<Request> {
-  /** The currently authenticated User's AuthToken payload. */
+export type ApolloServerContext = {
+  /** The properties from the `req` object that are included in the ApolloServer `context` object. */
+  req: Pick<
+    GqlApiRequestObject,
+    "body" | "hostname" | "ip" | "ips" | "method" | "originalUrl" | "path" | "protocol" | "subdomains" // prettier-ignore
+  >;
+  /** The authenticated User (properties acquired from their AuthToken payload. */
   user: FixitApiAuthTokenPayload<true, true>;
-}
+};
+
+/**
+ * The `req` object for GQL API requests.
+ */
+export type GqlApiRequestObject = Request<
+  Record<string, string>,
+  unknown,
+  { [key: string]: unknown; query?: string; operationName?: string }
+>;

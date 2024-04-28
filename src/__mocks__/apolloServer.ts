@@ -2,7 +2,7 @@ import { ApolloServer } from "@apollo/server";
 import { ApolloServerPluginLandingPageDisabled } from "@apollo/server/plugin/disabled";
 import { addMocksToSchema } from "@graphql-tools/mock";
 import { fixitSchema } from "@/graphql/schema.js";
-import type { ApolloServerResolverContext } from "@/apolloServer.js";
+import type { ApolloServerContext } from "@/apolloServer.js";
 
 /**
  * ### MOCK APOLLO SERVER
@@ -13,7 +13,7 @@ import type { ApolloServerResolverContext } from "@/apolloServer.js";
  * - https://www.apollographql.com/docs/apollo-server/testing/mocking
  * - https://www.apollographql.com/docs/apollo-server/testing/testing
  */
-export const apolloServer = new ApolloServer<ApolloServerResolverContext>({
+export const apolloServer = new ApolloServer<ApolloServerContext>({
   schema: addMocksToSchema({
     schema: fixitSchema,
     mocks: {

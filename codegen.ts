@@ -26,7 +26,7 @@ const codegenConfig: CodegenConfig = {
         useIndexSignature: true,
         useTypeImports: true,
         // resolver context type:
-        contextType: "@/apolloServer.js#ApolloServerResolverContext",
+        contextType: "@/apolloServer.js#ApolloServerContext",
         scalars: {
           ID: "string",
           DateTime: "Date",
