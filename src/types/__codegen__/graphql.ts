@@ -6,7 +6,7 @@ import type { InvoiceItem } from '@/models/Invoice/Invoice.js';
 import type { WorkOrderItem } from '@/models/WorkOrder/WorkOrder.js';
 import type { UserSubscriptionItem } from '@/models/UserSubscription/UserSubscription.js';
 import type { UserStripeConnectAccountItem } from '@/models/UserStripeConnectAccount/UserStripeConnectAccount.js';
-import type { ApolloServerResolverContext } from '@/apolloServer.js';
+import type { ApolloServerContext } from '@/apolloServer.js';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -35,9 +35,9 @@ export type AuthTokenPayload = {
   email: Scalars['String']['output'];
   handle: Scalars['String']['output'];
   id: Scalars['ID']['output'];
-  phone: Scalars['String']['output'];
+  phone?: Maybe<Scalars['String']['output']>;
   profile: Profile;
-  stripeConnectAccount: AuthTokenPayloadStripeConnectAccountInfo;
+  stripeConnectAccount?: Maybe<AuthTokenPayloadStripeConnectAccountInfo>;
   stripeCustomerID: Scalars['String']['output'];
   subscription?: Maybe<AuthTokenPayloadSubscriptionInfo>;
   updatedAt: Scalars['DateTime']['output'];
@@ -699,21 +699,21 @@ export type ResolversParentTypes = ResolversObject<{
   WorkOrder: WorkOrderItem;
 }>;
 
-export type AuthTokenPayloadResolvers<ContextType = ApolloServerResolverContext, ParentType extends ResolversParentTypes['AuthTokenPayload'] = ResolversParentTypes['AuthTokenPayload']> = ResolversObject<{
+export type AuthTokenPayloadResolvers<ContextType = ApolloServerContext, ParentType extends ResolversParentTypes['AuthTokenPayload'] = ResolversParentTypes['AuthTokenPayload']> = ResolversObject<{
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   handle?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  phone?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  phone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   profile?: Resolver<ResolversTypes['Profile'], ParentType, ContextType>;
-  stripeConnectAccount?: Resolver<ResolversTypes['AuthTokenPayloadStripeConnectAccountInfo'], ParentType, ContextType>;
+  stripeConnectAccount?: Resolver<Maybe<ResolversTypes['AuthTokenPayloadStripeConnectAccountInfo']>, ParentType, ContextType>;
   stripeCustomerID?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   subscription?: Resolver<Maybe<ResolversTypes['AuthTokenPayloadSubscriptionInfo']>, ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type AuthTokenPayloadStripeConnectAccountInfoResolvers<ContextType = ApolloServerResolverContext, ParentType extends ResolversParentTypes['AuthTokenPayloadStripeConnectAccountInfo'] = ResolversParentTypes['AuthTokenPayloadStripeConnectAccountInfo']> = ResolversObject<{
+export type AuthTokenPayloadStripeConnectAccountInfoResolvers<ContextType = ApolloServerContext, ParentType extends ResolversParentTypes['AuthTokenPayloadStripeConnectAccountInfo'] = ResolversParentTypes['AuthTokenPayloadStripeConnectAccountInfo']> = ResolversObject<{
   chargesEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   detailsSubmitted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -721,25 +721,25 @@ export type AuthTokenPayloadStripeConnectAccountInfoResolvers<ContextType = Apol
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type AuthTokenPayloadSubscriptionInfoResolvers<ContextType = ApolloServerResolverContext, ParentType extends ResolversParentTypes['AuthTokenPayloadSubscriptionInfo'] = ResolversParentTypes['AuthTokenPayloadSubscriptionInfo']> = ResolversObject<{
+export type AuthTokenPayloadSubscriptionInfoResolvers<ContextType = ApolloServerContext, ParentType extends ResolversParentTypes['AuthTokenPayloadSubscriptionInfo'] = ResolversParentTypes['AuthTokenPayloadSubscriptionInfo']> = ResolversObject<{
   currentPeriodEnd?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   status?: Resolver<ResolversTypes['SubscriptionStatus'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type CancelWorkOrderResponseResolvers<ContextType = ApolloServerResolverContext, ParentType extends ResolversParentTypes['CancelWorkOrderResponse'] = ResolversParentTypes['CancelWorkOrderResponse']> = ResolversObject<{
+export type CancelWorkOrderResponseResolvers<ContextType = ApolloServerContext, ParentType extends ResolversParentTypes['CancelWorkOrderResponse'] = ResolversParentTypes['CancelWorkOrderResponse']> = ResolversObject<{
   __resolveType: TypeResolveFn<'DeleteMutationResponse' | 'WorkOrder', ParentType, ContextType>;
 }>;
 
-export type ChecklistItemResolvers<ContextType = ApolloServerResolverContext, ParentType extends ResolversParentTypes['ChecklistItem'] = ResolversParentTypes['ChecklistItem']> = ResolversObject<{
+export type ChecklistItemResolvers<ContextType = ApolloServerContext, ParentType extends ResolversParentTypes['ChecklistItem'] = ResolversParentTypes['ChecklistItem']> = ResolversObject<{
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   isCompleted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type ContactResolvers<ContextType = ApolloServerResolverContext, ParentType extends ResolversParentTypes['Contact'] = ResolversParentTypes['Contact']> = ResolversObject<{
+export type ContactResolvers<ContextType = ApolloServerContext, ParentType extends ResolversParentTypes['Contact'] = ResolversParentTypes['Contact']> = ResolversObject<{
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   email?: Resolver<ResolversTypes['Email'], ParentType, ContextType>;
   handle?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -754,7 +754,7 @@ export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversT
   name: 'DateTime';
 }
 
-export type DeleteMutationResponseResolvers<ContextType = ApolloServerResolverContext, ParentType extends ResolversParentTypes['DeleteMutationResponse'] = ResolversParentTypes['DeleteMutationResponse']> = ResolversObject<{
+export type DeleteMutationResponseResolvers<ContextType = ApolloServerContext, ParentType extends ResolversParentTypes['DeleteMutationResponse'] = ResolversParentTypes['DeleteMutationResponse']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   wasDeleted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -764,7 +764,7 @@ export interface EmailScalarConfig extends GraphQLScalarTypeConfig<ResolversType
   name: 'Email';
 }
 
-export type FixitUserResolvers<ContextType = ApolloServerResolverContext, ParentType extends ResolversParentTypes['FixitUser'] = ResolversParentTypes['FixitUser']> = ResolversObject<{
+export type FixitUserResolvers<ContextType = ApolloServerContext, ParentType extends ResolversParentTypes['FixitUser'] = ResolversParentTypes['FixitUser']> = ResolversObject<{
   __resolveType: TypeResolveFn<'Contact' | 'User', ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   email?: Resolver<ResolversTypes['Email'], ParentType, ContextType>;
@@ -775,12 +775,12 @@ export type FixitUserResolvers<ContextType = ApolloServerResolverContext, Parent
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
 }>;
 
-export type GenericSuccessResponseResolvers<ContextType = ApolloServerResolverContext, ParentType extends ResolversParentTypes['GenericSuccessResponse'] = ResolversParentTypes['GenericSuccessResponse']> = ResolversObject<{
+export type GenericSuccessResponseResolvers<ContextType = ApolloServerContext, ParentType extends ResolversParentTypes['GenericSuccessResponse'] = ResolversParentTypes['GenericSuccessResponse']> = ResolversObject<{
   wasSuccessful?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type InvoiceResolvers<ContextType = ApolloServerResolverContext, ParentType extends ResolversParentTypes['Invoice'] = ResolversParentTypes['Invoice']> = ResolversObject<{
+export type InvoiceResolvers<ContextType = ApolloServerContext, ParentType extends ResolversParentTypes['Invoice'] = ResolversParentTypes['Invoice']> = ResolversObject<{
   amount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   assignedTo?: Resolver<ResolversTypes['FixitUser'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -793,7 +793,7 @@ export type InvoiceResolvers<ContextType = ApolloServerResolverContext, ParentTy
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type LocationResolvers<ContextType = ApolloServerResolverContext, ParentType extends ResolversParentTypes['Location'] = ResolversParentTypes['Location']> = ResolversObject<{
+export type LocationResolvers<ContextType = ApolloServerContext, ParentType extends ResolversParentTypes['Location'] = ResolversParentTypes['Location']> = ResolversObject<{
   city?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   country?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   region?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -802,7 +802,7 @@ export type LocationResolvers<ContextType = ApolloServerResolverContext, ParentT
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type MutationResolvers<ContextType = ApolloServerResolverContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
+export type MutationResolvers<ContextType = ApolloServerContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   _root?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   cancelWorkOrder?: Resolver<ResolversTypes['CancelWorkOrderResponse'], ParentType, ContextType, RequireFields<MutationCancelWorkOrderArgs, 'workOrderID'>>;
   createContact?: Resolver<ResolversTypes['Contact'], ParentType, ContextType, RequireFields<MutationCreateContactArgs, 'contactUserID'>>;
@@ -818,19 +818,19 @@ export type MutationResolvers<ContextType = ApolloServerResolverContext, ParentT
   updateWorkOrder?: Resolver<ResolversTypes['WorkOrder'], ParentType, ContextType, RequireFields<MutationUpdateWorkOrderArgs, 'workOrder' | 'workOrderID'>>;
 }>;
 
-export type MyInvoicesQueryReturnTypeResolvers<ContextType = ApolloServerResolverContext, ParentType extends ResolversParentTypes['MyInvoicesQueryReturnType'] = ResolversParentTypes['MyInvoicesQueryReturnType']> = ResolversObject<{
+export type MyInvoicesQueryReturnTypeResolvers<ContextType = ApolloServerContext, ParentType extends ResolversParentTypes['MyInvoicesQueryReturnType'] = ResolversParentTypes['MyInvoicesQueryReturnType']> = ResolversObject<{
   assignedToUser?: Resolver<Array<ResolversTypes['Invoice']>, ParentType, ContextType>;
   createdByUser?: Resolver<Array<ResolversTypes['Invoice']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type MyWorkOrdersQueryReturnTypeResolvers<ContextType = ApolloServerResolverContext, ParentType extends ResolversParentTypes['MyWorkOrdersQueryReturnType'] = ResolversParentTypes['MyWorkOrdersQueryReturnType']> = ResolversObject<{
+export type MyWorkOrdersQueryReturnTypeResolvers<ContextType = ApolloServerContext, ParentType extends ResolversParentTypes['MyWorkOrdersQueryReturnType'] = ResolversParentTypes['MyWorkOrdersQueryReturnType']> = ResolversObject<{
   assignedToUser?: Resolver<Array<ResolversTypes['WorkOrder']>, ParentType, ContextType>;
   createdByUser?: Resolver<Array<ResolversTypes['WorkOrder']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type ProfileResolvers<ContextType = ApolloServerResolverContext, ParentType extends ResolversParentTypes['Profile'] = ResolversParentTypes['Profile']> = ResolversObject<{
+export type ProfileResolvers<ContextType = ApolloServerContext, ParentType extends ResolversParentTypes['Profile'] = ResolversParentTypes['Profile']> = ResolversObject<{
   businessName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   displayName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   familyName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -839,7 +839,7 @@ export type ProfileResolvers<ContextType = ApolloServerResolverContext, ParentTy
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type QueryResolvers<ContextType = ApolloServerResolverContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
+export type QueryResolvers<ContextType = ApolloServerContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   _root?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   contact?: Resolver<ResolversTypes['Contact'], ParentType, ContextType, RequireFields<QueryContactArgs, 'contactID'>>;
   getUserByHandle?: Resolver<Maybe<ResolversTypes['Contact']>, ParentType, ContextType, RequireFields<QueryGetUserByHandleArgs, 'handle'>>;
@@ -855,7 +855,7 @@ export type QueryResolvers<ContextType = ApolloServerResolverContext, ParentType
   workOrder?: Resolver<ResolversTypes['WorkOrder'], ParentType, ContextType, RequireFields<QueryWorkOrderArgs, 'workOrderID'>>;
 }>;
 
-export type UserResolvers<ContextType = ApolloServerResolverContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
+export type UserResolvers<ContextType = ApolloServerContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   email?: Resolver<ResolversTypes['Email'], ParentType, ContextType>;
   expoPushToken?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -870,7 +870,7 @@ export type UserResolvers<ContextType = ApolloServerResolverContext, ParentType 
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type UserStripeConnectAccountResolvers<ContextType = ApolloServerResolverContext, ParentType extends ResolversParentTypes['UserStripeConnectAccount'] = ResolversParentTypes['UserStripeConnectAccount']> = ResolversObject<{
+export type UserStripeConnectAccountResolvers<ContextType = ApolloServerContext, ParentType extends ResolversParentTypes['UserStripeConnectAccount'] = ResolversParentTypes['UserStripeConnectAccount']> = ResolversObject<{
   chargesEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   detailsSubmitted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -880,7 +880,7 @@ export type UserStripeConnectAccountResolvers<ContextType = ApolloServerResolver
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type UserSubscriptionResolvers<ContextType = ApolloServerResolverContext, ParentType extends ResolversParentTypes['UserSubscription'] = ResolversParentTypes['UserSubscription']> = ResolversObject<{
+export type UserSubscriptionResolvers<ContextType = ApolloServerContext, ParentType extends ResolversParentTypes['UserSubscription'] = ResolversParentTypes['UserSubscription']> = ResolversObject<{
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   currentPeriodEnd?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -891,7 +891,7 @@ export type UserSubscriptionResolvers<ContextType = ApolloServerResolverContext,
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type WorkOrderResolvers<ContextType = ApolloServerResolverContext, ParentType extends ResolversParentTypes['WorkOrder'] = ResolversParentTypes['WorkOrder']> = ResolversObject<{
+export type WorkOrderResolvers<ContextType = ApolloServerContext, ParentType extends ResolversParentTypes['WorkOrder'] = ResolversParentTypes['WorkOrder']> = ResolversObject<{
   assignedTo?: Resolver<Maybe<ResolversTypes['FixitUser']>, ParentType, ContextType>;
   category?: Resolver<Maybe<ResolversTypes['WorkOrderCategory']>, ParentType, ContextType>;
   checklist?: Resolver<Maybe<Array<Maybe<ResolversTypes['ChecklistItem']>>>, ParentType, ContextType>;
@@ -911,7 +911,7 @@ export type WorkOrderResolvers<ContextType = ApolloServerResolverContext, Parent
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type Resolvers<ContextType = ApolloServerResolverContext> = ResolversObject<{
+export type Resolvers<ContextType = ApolloServerContext> = ResolversObject<{
   AuthTokenPayload?: AuthTokenPayloadResolvers<ContextType>;
   AuthTokenPayloadStripeConnectAccountInfo?: AuthTokenPayloadStripeConnectAccountInfoResolvers<ContextType>;
   AuthTokenPayloadSubscriptionInfo?: AuthTokenPayloadSubscriptionInfoResolvers<ContextType>;
