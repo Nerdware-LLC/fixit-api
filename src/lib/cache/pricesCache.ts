@@ -20,7 +20,7 @@ const { data: activeSubscriptionPrices } = await stripe.prices.list({
 // Ensure exactly 2 active subscription prices were returned from Stripe:
 if (
   activeSubscriptionPrices?.length !== 2 ||
-  !activeSubscriptionPrices.every((price) => ["MONTHLY", "ANNUAL"].includes(`${price.nickname}`))
+  !activeSubscriptionPrices.every((price) => ["MONTHLY", "ANNUAL"].includes(price.nickname ?? ""))
 ) {
   throw new InternalServerError(
     "Unable to initialize pricesCache — Stripe did not return expected prices. " +
@@ -31,7 +31,7 @@ if (
 const pricesDictionary = activeSubscriptionPrices.reduce(
   (accum, priceObject) => {
     const { nickname: priceName } = priceObject;
-    accum[`${priceName}` as SubscriptionPriceLabels] = priceObject;
+    accum[(priceName ?? "") as SubscriptionPriceLabels] = priceObject;
     // TRIAL uses the same priceID as MONTHLY:
     if (priceName === "MONTHLY") accum.TRIAL = priceObject;
     return accum;
