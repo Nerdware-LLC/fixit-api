@@ -7,7 +7,8 @@ post:
   summary: Checks promo code validity
   security: [{ JwtBearerAuth: [] }]
   tags: [checkout, subscriptions]
-  requestBody: { $ref: "../open-api.yaml#/components/requestBodies/CheckPromoCodeRequest" }
+  requestBody:
+    $ref: "../open-api.yaml#/components/requestBodies/CheckPromoCodeRequest"
   responses:
     "200": { $ref: "../open-api.yaml#/components/responses/200CheckPromoCode" }
     "400": { $ref: "../open-api.yaml#/components/responses/400InvalidUserInput" }

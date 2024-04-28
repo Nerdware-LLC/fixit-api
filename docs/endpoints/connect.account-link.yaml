@@ -7,7 +7,8 @@ post:
   summary: Provides a link to the Stripe Connect Account onboarding portal
   security: [{ JwtBearerAuth: [] }]
   tags: [stripe, stripe-connect, stripe-link]
-  requestBody: { $ref: "../open-api.yaml#/components/requestBodies/StripeLinkRequest" }
+  requestBody:
+    $ref: "../open-api.yaml#/components/requestBodies/StripeLinkRequest"
   responses:
     "200": { $ref: "../open-api.yaml#/components/responses/200StripeLink" }
     "400": { $ref: "../open-api.yaml#/components/responses/400InvalidUserInput" }

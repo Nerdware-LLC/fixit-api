@@ -4,10 +4,11 @@
 
 post:
   operationId: Login
-  summary: Authenticates a user via login credentials
+  summary: Authenticates a user via local login credentials
   security: []
   tags: [auth]
-  requestBody: { $ref: "../open-api.yaml#/components/requestBodies/LoginRequest" }
+  requestBody:
+    $ref: "../open-api.yaml#/components/requestBodies/LoginRequest"
   responses:
     "200": { $ref: "../open-api.yaml#/components/responses/200AuthTokenAndPreFetchedUserItems" }
     "400": { $ref: "../open-api.yaml#/components/responses/400InvalidUserInput" }
