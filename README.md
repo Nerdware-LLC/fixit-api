@@ -99,8 +99,6 @@ The Fixit API provides a robust, scalable, and secure backend for the Fixit SaaS
 
 ## 📖 API Schema
 
-<!-- hex color code for 'orange':  #FFA500 -->
-
 This API exposes both **REST** and **GraphQL** endpoints:
 
 <table>
