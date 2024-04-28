@@ -183,6 +183,7 @@ flowchart LR
   auth --> register("/api/auth/register \n­\n • User registration")
   auth --> login("/api/auth/login \n­\n • User logins via Local\n or OAuth mechanisms")
   auth --> googleToken("/api/auth/google-token \n­\n • User logins via Google\nOAuth2 OneTap FedCM")
+  auth --> pwReset("/api/auth/password-reset \n­\n • Password reset requests")
   auth --> token("/api/auth/token \n­\n • Refreshes auth tokens")
   connect --> accountLink("/api/connect/account-link \n­\n • Returns a link to the Stripe-hosted\nConnect onboarding portal")
   connect --> dashboardLink("/api/connect/dashboard-link \n­\n • Returns a link to the Stripe-hosted\naccount management portal")

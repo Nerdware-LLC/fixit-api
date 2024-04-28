@@ -3,7 +3,7 @@
 openapi: "3.1.0"
 info:
   title: Fixit REST API
-  version: "2.0.1"
+  version: "2.1.2"
   description: API for Fixit auth and user account management.
   termsOfService: "https://gofixit.app/tos"
   contact:
@@ -32,6 +32,8 @@ paths:
   "/auth/register": { $ref: "./endpoints/auth.register.yaml" }
   "/auth/token": { $ref: "./endpoints/auth.token.yaml" }
   "/auth/google-token": { $ref: "./endpoints/auth.google-token.yaml" }
+  "/auth/password-reset-init": { $ref: "./endpoints/auth.password-reset-init.yaml" }
+  "/auth/password-reset": { $ref: "./endpoints/auth.password-reset.yaml" }
   "/connect/account-link": { $ref: "./endpoints/connect.account-link.yaml" }
   "/connect/dashboard-link": { $ref: "./endpoints/connect.dashboard-link.yaml" }
   "/subscriptions/check-promo-code": { $ref: "./endpoints/subscriptions.check-promo-code.yaml" }
@@ -44,6 +46,8 @@ components:
     CheckPromoCodeRequest: { $ref: "./requestBodies/CheckPromoCodeRequest.yaml" }
     GoogleTokenRequest: { $ref: "./requestBodies/GoogleTokenRequest.yaml" }
     LoginRequest: { $ref: "./requestBodies/LoginRequest.yaml" }
+    PasswordResetInitRequest: { $ref: "./requestBodies/PasswordResetInitRequest.yaml" }
+    PasswordResetRequest: { $ref: "./requestBodies/PasswordResetRequest.yaml" }
     RefreshAuthTokenRequest: { $ref: "./requestBodies/RefreshAuthTokenRequest.yaml" }
     StripeLinkRequest: { $ref: "./requestBodies/StripeLinkRequest.yaml" }
     UserRegistrationRequest: { $ref: "./requestBodies/UserRegistrationRequest.yaml" }
@@ -72,6 +76,8 @@ components:
     GoogleIDTokenField: { $ref: "./schemas/GoogleIDTokenField.yaml" }
     UserProfileParams: { $ref: "./schemas/UserProfileParams.yaml" }
     ExpoPushTokenParam: { $ref: "./schemas/ExpoPushTokenParam.yaml" }
+    PasswordResetInitParams: { $ref: "./schemas/PasswordResetInitParams.yaml" }
+    PasswordResetParams: { $ref: "./schemas/PasswordResetParams.yaml" }
     # RESPONSE-RELATED SCHEMAS:
     AuthTokenResponseField: { $ref: "./schemas/AuthTokenResponseField.yaml" }
     PreFetchedUserItemsResponseField: { $ref: "./schemas/PreFetchedUserItemsResponseField.yaml" }
@@ -96,6 +102,7 @@ components:
     GoogleIDToken: { $ref: "./objectProperties/googleIDToken.yaml" }
     Handle: { $ref: "./objectProperties/handle.yaml" }
     Password: { $ref: "./objectProperties/password.yaml" }
+    PasswordResetToken: { $ref: "./objectProperties/passwordResetToken.yaml" }
     PaymentMethodID: { $ref: "./objectProperties/paymentMethodID.yaml" }
     Phone: { $ref: "./objectProperties/phone.yaml" }
     PromoCode: { $ref: "./objectProperties/promoCode.yaml" }

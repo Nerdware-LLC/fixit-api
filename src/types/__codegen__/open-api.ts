@@ -47,7 +47,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Authenticates a user via login credentials */
+        /** Authenticates a user via local login credentials */
         post: operations["Login"];
         delete?: never;
         options?: never;
@@ -81,7 +81,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Refreshes a user's auth token */
+        /** Refreshes an existing user's auth token */
         post: operations["RefreshToken"];
         delete?: never;
         options?: never;
@@ -98,8 +98,42 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Processes JSON JWT payloads from GoogleID services (existing users only) */
+        /** Authenticates a user via Google OAuth JSON JWT from GoogleID services */
         post: operations["GoogleToken"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/password-reset-init": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Initiates the password-reset flow for a user */
+        post: operations["PasswordResetInit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/password-reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Updates the user's password to complete the password-reset flow */
+        post: operations["PasswordReset"];
         delete?: never;
         options?: never;
         head?: never;
@@ -229,6 +263,15 @@ export interface components {
         ExpoPushTokenParam: {
             /** @description A user's Expo push token (only available on mobile clients). */
             expoPushToken?: string;
+        };
+        /** @description The email address of the user initiating a password reset */
+        PasswordResetInitParams: {
+            email: components["schemas"]["email"];
+        };
+        /** @description A new password and a valid password reset token */
+        PasswordResetParams: {
+            password: components["schemas"]["password"];
+            passwordResetToken: components["schemas"]["passwordResetToken"];
         };
         /** @description An object which contains an encoded and stringified auth token. */
         AuthTokenResponseField: {
@@ -510,6 +553,7 @@ export interface components {
         GoogleIDToken: components["schemas"]["googleIDToken"];
         Handle: components["schemas"]["handle"];
         Password: components["schemas"]["password"];
+        PasswordResetToken: components["schemas"]["passwordResetToken"];
         PaymentMethodID: components["schemas"]["paymentMethodID"];
         Phone: components["schemas"]["phone"];
         PromoCode: components["schemas"]["promoCode"];
@@ -562,6 +606,9 @@ export interface components {
          *     treated the same as "5555555555".
          *      */
         phone: string | null;
+        /** @description A valid password reset token provided to the user to reset their password.
+         *      */
+        passwordResetToken: string;
         /**
          * Format: uri
          * @description The URL Stripe should redirect the user to upon exiting the Stripe portal.
@@ -773,6 +820,16 @@ export interface components {
                 "application/json": components["schemas"]["LoginParams"];
             };
         };
+        PasswordResetInitRequest: {
+            content: {
+                "application/json": components["schemas"]["PasswordResetInitParams"];
+            };
+        };
+        PasswordResetRequest: {
+            content: {
+                "application/json": components["schemas"]["PasswordResetParams"];
+            };
+        };
         RefreshAuthTokenRequest: {
             content: {
                 "application/json": components["schemas"]["ExpoPushTokenParam"];
@@ -903,9 +960,51 @@ export interface operations {
         };
         requestBody: components["requestBodies"]["GoogleTokenRequest"];
         responses: {
-            200: components["responses"]["200.AuthToken"];
+            200: components["responses"]["200.AuthTokenAndPreFetchedUserItems"];
             400: components["responses"]["400.InvalidUserInput"];
             401: components["responses"]["401.AuthenticationRequired"];
+            "5XX": components["responses"]["5xx.InternalServerError"];
+            default: components["responses"]["default.UnexpectedResponse"];
+        };
+    };
+    PasswordResetInit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["PasswordResetInitRequest"];
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["400.InvalidUserInput"];
+            "5XX": components["responses"]["5xx.InternalServerError"];
+            default: components["responses"]["default.UnexpectedResponse"];
+        };
+    };
+    PasswordReset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["PasswordResetRequest"];
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["400.InvalidUserInput"];
             "5XX": components["responses"]["5xx.InternalServerError"];
             default: components["responses"]["default.UnexpectedResponse"];
         };

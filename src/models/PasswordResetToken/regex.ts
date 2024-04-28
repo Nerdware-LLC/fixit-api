@@ -1,0 +1,3 @@
+export const PW_RESET_TOKEN_SK_PREFIX_STR = "PW_RESET_TOKEN";
+
+export const PW_RESET_TOKEN_SK_REGEX = new RegExp(`^${PW_RESET_TOKEN_SK_PREFIX_STR}#[a-f0-9]{96}$`);

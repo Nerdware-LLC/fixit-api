@@ -7,6 +7,7 @@ import {
   isValidEmail,
   sanitizePassword,
   isValidPassword,
+  sanitizeHex,
 } from "@nerdware/ts-string-helpers";
 import { hasKey } from "@nerdware/ts-type-safety-utils";
 import express from "express";
@@ -23,8 +24,11 @@ import {
   checkSubscriptionStatus,
   checkOnboardingStatus,
   generateAuthToken,
+  sendPasswordResetEmail,
+  resetPassword,
 } from "@/middleware";
 import { sanitizeAndValidateRequestBody } from "@/middleware/helpers.js";
+import { PasswordResetToken } from "@/models/PasswordResetToken";
 import type { RequestBodyFieldsSchema, RequestBodyValidatorFn } from "@/middleware/helpers.js";
 
 /**
@@ -33,6 +37,7 @@ import type { RequestBodyFieldsSchema, RequestBodyValidatorFn } from "@/middlewa
  * - `/api/auth/login`
  * - `/api/auth/google-token`
  * - `/api/auth/token`
+ * - `/api/auth/pw-reset-token`
  */
 export const authRouter = express.Router();
 
@@ -96,7 +101,8 @@ authRouter.post(
   parseGoogleIDToken, // does nothing for local-auth users
   findUserByEmail,
   userLoginShouldNotExist,
-  registerNewUser
+  registerNewUser,
+  generateAuthToken
 );
 
 authRouter.post(
@@ -112,7 +118,8 @@ authRouter.post(
   queryUserItems,
   updateExpoPushToken,
   checkSubscriptionStatus,
-  checkOnboardingStatus
+  checkOnboardingStatus,
+  generateAuthToken
 );
 
 authRouter.post(
@@ -132,7 +139,38 @@ authRouter.post(
   queryUserItems,
   updateExpoPushToken,
   checkSubscriptionStatus,
-  checkOnboardingStatus
+  checkOnboardingStatus,
+  generateAuthToken
+);
+
+authRouter.post(
+  "/password-reset-init",
+  sanitizeAndValidateRequestBody({
+    requestBodySchema: {
+      email: AUTH_REQ_BODY_FIELDS_SCHEMA.email,
+    },
+  }),
+  findUserByEmail,
+  sendPasswordResetEmail
+);
+
+authRouter.post(
+  "/password-reset",
+  sanitizeAndValidateRequestBody({
+    requestBodySchema: {
+      password: {
+        ...AUTH_REQ_BODY_FIELDS_SCHEMA.password,
+        required: true,
+      },
+      passwordResetToken: {
+        type: "string",
+        required: true,
+        sanitize: sanitizeHex,
+        validate: PasswordResetToken.isRawTokenProperlyEncoded,
+      },
+    },
+  }),
+  resetPassword
 );
 
 authRouter.post(
@@ -141,7 +179,6 @@ authRouter.post(
   queryUserItems,
   updateExpoPushToken,
   checkSubscriptionStatus,
-  checkOnboardingStatus
+  checkOnboardingStatus,
+  generateAuthToken
 );
-
-authRouter.use(generateAuthToken);
