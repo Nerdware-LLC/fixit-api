@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { ENV } from "@/server/env";
+import { AuthError } from "@/utils/httpErrors.js";
 
 /**
  * Validates and decodes a JSON Web Token (JWT) using the provided private key
@@ -28,12 +29,12 @@ export const validateAndDecodeJWT = async <
       (err, decoded) => {
         if (err || !decoded) {
           reject(
-            new Error(
+            new AuthError(
               err?.name === "TokenExpiredError"
-                ? "Token expired"
+                ? "Your login credentials have expired — please sign in again."
                 : err?.name === "JsonWebTokenError"
                   ? "Signature verification failed"
-                  : "Invalid token"
+                  : "Invalid auth token"
             )
           );
         }
