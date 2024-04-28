@@ -101,6 +101,16 @@ export default [
         },
       ],
       "@typescript-eslint/prefer-reduce-type-parameter": "off",
+      "@typescript-eslint/restrict-template-expressions": [
+        "error",
+        {
+          allowAny: false,
+          allowBoolean: true,
+          allowNullish: false,
+          allowNumber: true,
+          allowRegExp: false,
+        },
+      ],
       ...eslintConfigPrettier.rules, // <-- must be last, removes rules that conflict with prettier
     },
     settings: {
