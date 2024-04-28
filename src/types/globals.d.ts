@@ -10,23 +10,31 @@ declare global {
     interface ProcessEnv {
       NODE_ENV?: "development" | "test" | "ci" | "staging" | "production";
       npm_package_version?: string;
+      // SERVER
       PROTOCOL?: string;
       DOMAIN?: string;
       PORT?: string;
+      // WEB CLIENT
+      WEB_CLIENT_URL?: string;
+      // AWS
       AWS_REGION?: string;
       DYNAMODB_TABLE_NAME?: string;
       DYNAMODB_ENDPOINT?: string;
       PINPOINT_PROJECT_ID?: string;
       SES_EMAIL_ADDRESS?: string;
+      // AUTH
       JWT_PRIVATE_KEY?: string;
       JWT_ALGORITHM?: string;
       JWT_ISSUER?: string;
       JWT_EXPIRES_IN?: string;
       BCRYPT_SALT_ROUNDS?: string;
+      // SENTRY
       SENTRY_DSN?: string;
+      // STRIPE
       STRIPE_WEBHOOKS_SECRET?: string;
       STRIPE_PUBLISHABLE_KEY?: string;
       STRIPE_SECRET_KEY?: string;
+      // GOOGLE
       GOOGLE_OAUTH_CLIENT_ID?: string;
       GOOGLE_OAUTH_CLIENT_SECRET?: string;
     }

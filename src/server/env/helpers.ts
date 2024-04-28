@@ -7,24 +7,32 @@ import type { Algorithm } from "jsonwebtoken";
 export const createEnvObject = ({
   npm_package_version,
   NODE_ENV,
+  // SERVER
   PROTOCOL,
   DOMAIN,
   PORT,
+  // WEB CLIENT
+  WEB_CLIENT_URL,
+  // AWS
   AWS_REGION,
   DYNAMODB_TABLE_NAME,
   DYNAMODB_ENDPOINT,
   PINPOINT_PROJECT_ID,
   SES_EMAIL_ADDRESS,
+  // AUTH
   JWT_PRIVATE_KEY,
   JWT_ALGORITHM,
   JWT_ISSUER,
   JWT_EXPIRES_IN,
   BCRYPT_SALT_ROUNDS,
+  // SENTRY
   SENTRY_DSN,
+  // STRIPE
   STRIPE_API_VERSION,
   STRIPE_PUBLISHABLE_KEY,
   STRIPE_SECRET_KEY,
   STRIPE_WEBHOOKS_SECRET,
+  // GOOGLE
   GOOGLE_OAUTH_CLIENT_ID,
   GOOGLE_OAUTH_CLIENT_SECRET,
 }: typeof process.env) => {
@@ -34,6 +42,7 @@ export const createEnvObject = ({
     !PROTOCOL ||
     !DOMAIN ||
     !PORT ||
+    !WEB_CLIENT_URL ||
     !AWS_REGION ||
     !DYNAMODB_TABLE_NAME ||
     !PINPOINT_PROJECT_ID ||
@@ -64,6 +73,7 @@ export const createEnvObject = ({
   return {
     NODE_ENV,
     IS_PROD: /^prod/i.test(NODE_ENV),
+    IS_DEV: /^dev/i.test(NODE_ENV),
     IS_DEPLOYED_ENV: /^(prod|staging)/i.test(NODE_ENV),
     CONFIG: {
       ...(npm_package_version && { PROJECT_VERSION: `v${npm_package_version}` }),
@@ -77,6 +87,9 @@ export const createEnvObject = ({
       PID: process.pid,
       NODE_VERSION: process.version,
       CWD: process.cwd(),
+    },
+    WEB_CLIENT: {
+      URL: WEB_CLIENT_URL,
     },
     AWS: {
       REGION: AWS_REGION,

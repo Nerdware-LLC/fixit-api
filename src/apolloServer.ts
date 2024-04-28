@@ -7,11 +7,11 @@ import type { Request } from "express";
 export const apolloServer = new ApolloServer<ApolloServerContext>({
   schema: fixitSchema,
   csrfPrevention: true,
-  introspection: ENV.NODE_ENV === "development",
+  introspection: ENV.IS_DEV,
   includeStacktraceInErrorResponses: !ENV.IS_PROD,
   status400ForVariableCoercionErrors: true,
   plugins: [
-    ...(ENV.NODE_ENV === "development"
+    ...(ENV.IS_DEV
       ? [(await import("@apollo/server/plugin/inlineTrace")).ApolloServerPluginInlineTrace()]
       : [(await import("@apollo/server/plugin/disabled")).ApolloServerPluginLandingPageDisabled()]),
   ],
