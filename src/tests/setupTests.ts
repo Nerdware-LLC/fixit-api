@@ -18,6 +18,7 @@ vi.mock("@/lib/stripe/stripeClient.js"); //   src/lib/stripe/__mocks__/stripeCli
 vi.mock("@/models/ddbTable.js"); //           src/models/__mocks__/ddbTable.ts
 vi.mock("@aws-sdk/client-dynamodb"); //       __mocks__/@aws-sdk/client-dynamodb.ts
 vi.mock("@aws-sdk/client-lambda"); //         __mocks__/@aws-sdk/client-lambda.ts
+vi.mock("@aws-sdk/client-pinpoint"); //       __mocks__/@aws-sdk/client-pinpoint.ts
 vi.mock("@aws-sdk/lib-dynamodb"); //          __mocks__/@aws-sdk/lib-dynamodb.ts
 
 /**

@@ -37,15 +37,7 @@
     "gql:update-types": "graphql-codegen-esm --config codegen.ts"
   },
   "dependencies": {
-    "@apollo/server": "^4.10.1",
-    "@aws-sdk/client-dynamodb": "^3.391.0",
-    "@aws-sdk/client-lambda": "^3.391.0",
-    "@aws-sdk/lib-dynamodb": "^3.391.0",
-    "@graphql-tools/schema": "^10.0.0",
-    "@nerdware/ddb-single-table": "^2.4.0",
-    "@nerdware/ts-string-helpers": "^1.2.1",
-    "@nerdware/ts-type-safety-utils": "^1.0.8",
-    "@sentry/node": "^7.64.0",
+    "@aws-sdk/client-pinpoint": "^3.556.0",
     "bcrypt": "^5.1.1",
     "chalk": "^5.3.0",
     "cors": "^2.8.5",

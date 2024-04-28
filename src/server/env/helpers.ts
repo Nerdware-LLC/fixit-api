@@ -13,6 +13,8 @@ export const createEnvObject = ({
   AWS_REGION,
   DYNAMODB_TABLE_NAME,
   DYNAMODB_ENDPOINT,
+  PINPOINT_PROJECT_ID,
+  SES_EMAIL_ADDRESS,
   JWT_PRIVATE_KEY,
   JWT_ALGORITHM,
   JWT_ISSUER,
@@ -34,6 +36,8 @@ export const createEnvObject = ({
     !PORT ||
     !AWS_REGION ||
     !DYNAMODB_TABLE_NAME ||
+    !PINPOINT_PROJECT_ID ||
+    !SES_EMAIL_ADDRESS ||
     !JWT_PRIVATE_KEY ||
     !JWT_ALGORITHM ||
     !JWT_ISSUER ||
@@ -78,6 +82,8 @@ export const createEnvObject = ({
       REGION: AWS_REGION,
       DYNAMODB_TABLE_NAME,
       ...(DYNAMODB_ENDPOINT && { DYNAMODB_ENDPOINT }),
+      PINPOINT_PROJECT_ID,
+      SES_EMAIL_ADDRESS,
     },
     JWT: {
       PRIVATE_KEY: JWT_PRIVATE_KEY,

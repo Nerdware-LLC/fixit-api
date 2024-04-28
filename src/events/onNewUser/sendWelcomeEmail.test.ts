@@ -1,28 +1,49 @@
-import { lambdaClient } from "@/lib/lambdaClient";
+import { pinpointClient } from "@/lib/pinpointClient";
 import { sendWelcomeEmail } from "./sendWelcomeEmail.js";
 import type { UserItem } from "@/models/User/User.js";
 
 describe("sendWelcomeEmail", () => {
-  test("invokes lambdaClient with correct arguments when newUser is valid", async () => {
+  test("invokes pinpointClient with correct arguments when newUser is valid", async () => {
     const newUser = {
       id: "USER#123",
       handle: "@test_user",
       email: "test_user@example.com",
+      profile: {
+        displayName: "Test User",
+      },
     } as UserItem;
-    const invokeEventSpy = vi.spyOn(lambdaClient, "invokeEvent");
+
+    const sendMessagesSpy = vi.spyOn(pinpointClient, "sendMessages");
 
     const result = await sendWelcomeEmail(newUser);
 
     expect(result).toBeUndefined();
-    expect(invokeEventSpy).toHaveBeenCalledWith("SendWelcomeEmail", newUser);
+    expect(sendMessagesSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: newUser.email,
+        ChannelType: "EMAIL",
+        TemplateConfiguration: {
+          EmailTemplate: {
+            Name: "new-user-welcome-email",
+          },
+        },
+        MessageConfiguration: {
+          EmailMessage: {
+            Substitutions: {
+              recipientDisplayName: [newUser.profile.displayName],
+            },
+          },
+        },
+      })
+    );
   });
 
   test("does not invoke an event when newUser is undefined", async () => {
-    const invokeEventSpy = vi.spyOn(lambdaClient, "invokeEvent");
+    const sendMessagesSpy = vi.spyOn(pinpointClient, "sendMessages");
 
     const result = await sendWelcomeEmail();
 
     expect(result).toBeUndefined();
-    expect(invokeEventSpy).not.toHaveBeenCalled();
+    expect(sendMessagesSpy).not.toHaveBeenCalled();
   });
 });

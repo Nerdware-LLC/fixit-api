@@ -16,6 +16,8 @@ declare global {
       AWS_REGION?: string;
       DYNAMODB_TABLE_NAME?: string;
       DYNAMODB_ENDPOINT?: string;
+      PINPOINT_PROJECT_ID?: string;
+      SES_EMAIL_ADDRESS?: string;
       JWT_PRIVATE_KEY?: string;
       JWT_ALGORITHM?: string;
       JWT_ISSUER?: string;

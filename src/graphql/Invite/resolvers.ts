@@ -1,30 +1,65 @@
 import { isValidPhone, isValidEmail } from "@nerdware/ts-string-helpers";
-import { isString } from "@nerdware/ts-type-safety-utils";
 import { GenericSuccessResponse } from "@/graphql/_common";
+import { pinpointClient } from "@/lib/pinpointClient";
 import { GqlUserInputError } from "@/utils/httpErrors.js";
 import type { Resolvers } from "@/types/graphql.js";
 
 export const resolvers: Partial<Resolvers> = {
   Mutation: {
-    createInvite: (_parent, { phoneOrEmail }) => {
-      if (!phoneOrEmail || !isString(phoneOrEmail)) {
-        throw new GqlUserInputError("Unable to create invite with the provided input.");
-      }
+    createInvite: async (_parent, { phoneOrEmail }, { user }) => {
+      // Get the sender's name for usage in the invite message template
+      const {
+        profile: { givenName, familyName, displayName },
+      } = user;
 
-      // Determine if arg is a valid US phone or email address
-      const argType = isValidPhone(phoneOrEmail)
-        ? "phone"
-        : isValidEmail(phoneOrEmail)
-          ? "email"
-          : null;
+      const inviteSenderDisplayName =
+        givenName && familyName ? `${givenName} ${familyName}` : givenName ?? displayName;
 
-      if (argType === "phone") {
-        // TODO Send text SMS invite
-      } else if (argType === "email") {
-        // TODO Send email invite
+      // SEE IF THE ARG IS A PHONE NUMBER OR EMAIL ADDRESS
+      if (isValidPhone(phoneOrEmail)) {
+        const phone = phoneOrEmail;
+
+        // Send text SMS invite
+        await pinpointClient.sendMessages({
+          to: phone,
+          ChannelType: "SMS",
+          TemplateConfiguration: {
+            SMSTemplate: {
+              Name: "fixit-user-invitation-sms",
+            },
+          },
+          MessageConfiguration: {
+            SMSMessage: {
+              Substitutions: {
+                senderDisplayName: [inviteSenderDisplayName],
+              },
+            },
+          },
+        });
+      } else if (isValidEmail(phoneOrEmail)) {
+        // Assign email (`as string` bc TS infers "not a string" due to `isValidPhone` check above)
+        const email = phoneOrEmail as string;
+
+        // Send email invite
+        await pinpointClient.sendMessages({
+          to: email,
+          ChannelType: "EMAIL",
+          TemplateConfiguration: {
+            EmailTemplate: {
+              Name: "fixit-user-invitation-email",
+            },
+          },
+          MessageConfiguration: {
+            EmailMessage: {
+              Substitutions: {
+                senderDisplayName: [inviteSenderDisplayName],
+              },
+            },
+          },
+        });
       } else {
         throw new GqlUserInputError(
-          "Unable to send invite - a valid phone number or email address must be provided."
+          "Unable to send invite — the provided input must be a valid phone number or email address."
         );
       }
 
