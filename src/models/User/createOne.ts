@@ -105,15 +105,15 @@ export const createOne = async function (
     if (newUserID) {
       logger.info(`Deleting User "${newUserID}" due to failed User.createOne()...`);
       this.deleteItem({ id: newUserID })
-        .then(() => logger.info(`SUCCESS: Deleted User "${newUserID}"`))
-        .catch(() => logger.error(`ERROR: FAILED TO DELETE User "${newUserID}"`));
+        .then(() => logger.info(`SUCCESS: Deleted User "${newUserID!}"`))
+        .catch(() => logger.error(`ERROR: FAILED TO DELETE User "${newUserID!}"`));
 
       // Delete the UserStripeConnectAccount, if it was created:
       if (wasUserScaCreated) {
         logger.info(`Deleting SCA of User "${newUserID}" due to failed User.createOne()...`);
         UserStripeConnectAccount.deleteItem({ userID: newUserID })
-          .then(() => logger.info(`SUCCESS: Deleted SCA of User "${newUserID}"`))
-          .catch(() => logger.error(`ERROR: FAILED TO DELETE SCA of User "${newUserID}"`));
+          .then(() => logger.info(`SUCCESS: Deleted SCA of User "${newUserID!}"`))
+          .catch(() => logger.error(`ERROR: FAILED TO DELETE SCA of User "${newUserID!}"`));
       }
     }
 

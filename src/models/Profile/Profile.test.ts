@@ -44,7 +44,7 @@ describe("Profile", () => {
         // handle + givenName => givenName
         expect(Profile.getDisplayName({ handle, givenName })).toBe(givenName);
         // handle + givenName + familyName => displayName should take the form "givenName familyName"
-        expect(Profile.getDisplayName({ handle, familyName, givenName })).toBe(`${givenName} ${familyName}`); // prettier-ignore
+        expect(Profile.getDisplayName({ handle, familyName, givenName })).toBe(`${givenName!} ${familyName!}`); // prettier-ignore
         // handle + givenName + familyName + bizName => bizName
         expect(Profile.getDisplayName({ handle, familyName, givenName, businessName })).toBe(businessName); // prettier-ignore
         // all params with explicit displayName => displayName
