@@ -23,7 +23,7 @@ export const mwAsyncCatchWrapper = <
   asyncMiddlewareFn: SetReturnType<RestApiRequestHandler<ReqBody>, Promise<void>>
 ): RestApiRequestHandler<ReqBody> => {
   return (req, res, next) => {
-    asyncMiddlewareFn(req, res, next).catch(next);
+    asyncMiddlewareFn(req, res, next).catch((err: unknown) => next(err));
   };
 };
 

@@ -11,7 +11,7 @@ import { AuthError } from "@/utils/httpErrors.js";
  */
 export const getUserFromAuthHeaderToken = mwAsyncCatchWrapper(async (req, res, next) => {
   res.locals.authenticatedUser = await AuthToken.getValidatedRequestAuthTokenPayload(req).catch(
-    (err) => {
+    (err: unknown) => {
       throw new AuthError(err); // Re-throw as AuthError
     }
   );
