@@ -9,6 +9,7 @@ export const apolloServer = new ApolloServer<ApolloServerContext>({
   csrfPrevention: true,
   introspection: ENV.NODE_ENV === "development",
   includeStacktraceInErrorResponses: !ENV.IS_PROD,
+  status400ForVariableCoercionErrors: true,
   plugins: [
     ...(ENV.NODE_ENV === "development"
       ? [(await import("@apollo/server/plugin/inlineTrace")).ApolloServerPluginInlineTrace()]
