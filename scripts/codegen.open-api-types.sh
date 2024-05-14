@@ -1,24 +1,24 @@
 #!/usr/bin/env bash
 ###############################################################################
 readonly script_name='Fixit OpenAPI Types Codegen'
+readonly script_filename="$(basename "${BASH_SOURCE[0]}")"
 
 # Script constants:
-readonly open_api_schema='schemas/OpenAPI/open-api.yaml'
+readonly schema_file='schemas/OpenAPI/open-api.yaml'
 readonly types_output='src/types/__codegen__/open-api.ts'
 
 readonly script_help="
 SCRIPT:	$script_name
 
-	This script creates TypeScript types from the Fixit OpenAPI schema.
+	This script creates TypeScript types from the Fixit OpenAPI schema file.
 
-	Schema Input:  $open_api_schema
+	Schema Input:  $schema_file
 	Types Output:  $types_output
 
-USAGE:  scripts/codegen.open-api-types.sh [OPTIONS]
+USAGE:  scripts/$script_filename [OPTIONS]
 
 OPTIONS:
-	-h, --help   	Display this help message.
-	-s, --silent	Disable script stdout log output (default: false).
+	-h, --help     Display this help message and exit.
 "
 ###############################################################################
 # PARSE SCRIPT ARGS/OPTIONS
@@ -26,21 +26,15 @@ OPTIONS:
 # If a 'help' flag was provided, log the help message and exit
 [[ "${*}" =~ (-h|help) ]] && echo "$script_help" && exit 0
 
-readonly silent="$([[ "${*}" =~ (-s|--silent) ]] && echo true || echo false)"
-
 ###############################################################################
 # UTIL FUNCTIONS
 
-# log_info: print args to stdout unless the --silent flag was provided
-function log_info() {
-	# ANSI codes: \e[96m is light-cyan text, \e[0m is reset
-	[ "$silent" != 'true' ] && printf '\e[96m%b\e[0m\n' "${@}"
-}
+# log_info: print args to stdout (ANSI: \e[96m is light-cyan text, \e[0m is reset)
+function log_info() { printf '\e[96m%b\e[0m\n' "${@}"; }
 
-# throw_error: log error-message args and exit (regardless of --silent flag)
+# throw_error: print err-msg args to stdout+stderr and exit (ANSI: \e[31m is red text)
 function throw_error() {
-	# ANSI codes: \e[31m is red text, \e[0m is reset
-	printf '\e[31m%b\e[0m\n' "🚨 ERROR: $1" "${@:2}" '(EXIT 1)'
+	printf >&2 '\e[31m%b\e[0m\n' "🚨 ERROR: $1" "${@:2}" '(EXIT 1)'
 	exit 1
 }
 
@@ -52,56 +46,24 @@ function ensure_npx_cmd_is_present() {
 		# Try invoking `nvm` to make it available
 		type nvm 1>/dev/null && nvm use 1>/dev/null
 		# If `npx` is still not available, throw an error
-		! type npx && throw_error 'Unable to fetch the GraphQL schema — npx command not found.'
+		! type npx && throw_error 'Unable to fetch the OpenAPI schema — npx command not found.'
 	fi
 }
 
 function validate_openapi_schema() {
 	log_info 'Validating the OpenAPI schema ...'
 
-	npx swagger-cli validate "$open_api_schema" ||
-		throw_error 'OpenAPI Schema validation failed.'
-}
-
-# TODO rm this part AFTER the version-field-updating stuff in semantic-release is known to work
-function update_openapi_schema_version() {
-	log_info 'Ensuring the OpenAPI schema "version" is up-to-date ...'
-
-	# Ensure the package.json is present
-	[ ! -f package.json ] &&
-		throw_error 'Unable to update the OpenAPI schema "version" — package.json not found.'
-
-	# Get "version" from package.json and open-api.yaml
-	local project_version schema_version
-	project_version="$(jq --raw-output '.version' ./package.json)"
-	schema_version="$(grep -oPm1 '(?<=version:\s")[a-zA-Z0-9.-]+(?=")' "$open_api_schema")"
-
-	log_info \
-		"    Schema version:  $schema_version" \
-		"    Project version: $project_version"
-
-	# If the schema version is the same as the project version, no need to update
-	if [ "$schema_version" == "$project_version" ]; then
-		log_info '    OpenAPI schema version is up-to-date.'
-		return
+	if npx swagger-cli validate "$schema_file" 1>/dev/null; then
+		log_info 'The OpenAPI schema is valid! 🎉\n'
 	else
-		log_info "Updating OpenAPI schema version to \"$project_version\" ..."
-	fi
-
-	# Set the schema version to the project version
-	if sed -i.BACKUP_OF_SCHEMA_FILE_BEFORE_SED.yaml \
-		"0,/version:\s/{s/version:.*/version: \"$project_version\"/}" \
-		"$open_api_schema"; then
-		# On success, remove the backup file and log the update
-		rm "$open_api_schema.BACKUP_OF_SCHEMA_FILE_BEFORE_SED.yaml"
-		log_info 'OpenAPI schema version updated successfully! 🚀'
-	else
-		throw_error 'Failed to update the OpenAPI schema version.'
+		throw_error 'The OpenAPI schema is invalid.'
 	fi
 }
 
 function generate_openapi_ts_types() {
 	log_info 'Generating OpenAPI TypeScript types ...'
+
+	local schema_file_version="$(grep -oPm1 '(?<=version:\s")[a-zA-Z0-9.-]+(?=")' "$schema_file")"
 
 	# Update OpenAPI types using NodeJS API from openapi-typescript to fix `Date` types.
 	# (Their CLI does not convert `format: date-time` values to `Date` types)
@@ -115,7 +77,7 @@ function generate_openapi_ts_types() {
 	const NULL = ts.factory.createLiteralTypeNode(ts.factory.createNull());
 
 	const ast = await openapiTS(
-		new URL('file://$PWD/$open_api_schema'),
+		new URL('file://$PWD/$schema_file'),
 		{
 			transform(schemaObject, metadata) {
 				if (schemaObject.format === 'date-time') {
@@ -129,8 +91,9 @@ function generate_openapi_ts_types() {
 
 	const tsFileContents = \`\
 	/**
-	 * This file was auto-generated by openapi-typescript.
-	 * Do not make direct changes to the file.
+	 * DO NOT MAKE DIRECT CHANGES TO THIS FILE.
+	 *
+	 * This file was auto-generated using schema version: '$schema_file_version'
 	 */
 
 	\${astToString(ast)}
@@ -149,11 +112,10 @@ function generate_openapi_ts_types() {
 ###############################################################################
 # SCRIPT EXECUTION
 
-log_info "[Script] $script_name"
+log_info "\n[Starting Script: $script_name]\n"
 
 ensure_npx_cmd_is_present
 validate_openapi_schema
-update_openapi_schema_version
 generate_openapi_ts_types
 
 ###############################################################################

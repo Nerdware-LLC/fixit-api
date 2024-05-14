@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 ###############################################################################
 readonly script_name='Publish Fixit GraphQL Schema Changes'
+readonly script_filename="$(basename "${BASH_SOURCE[0]}")"
 
 # Script constants:
 readonly typedefs_src='src/graphql/typeDefs.ts'
@@ -17,33 +18,25 @@ SCRIPT:	$script_name
 	source code (see '$typedefs_src'). The schema is then validated
 	and published using Apollo's Rover CLI.
 
-USAGE:  cicd.publish-gql-schema.sh [OPTIONS]
+USAGE:  scripts/$script_filename [OPTIONS]
 
 OPTIONS:
-	--variant=  	The graph variant to use when validating the schema. Must be
-                	one of 'prod', 'staging', or 'current' (default: '$default_variant').
-
-	--dry-run    	Only generate the local schema file, but do not publish it.
-
-	--debug	     	Prevent removal of temporary files on exit (default: false).
-
-	-s, --silent	Disable script stdout log output (default: false).
-
-	-h, --help   	Display this help message.
+	--variant=     The graph variant to use when validating the schema. If
+	               provided, must be one of 'prod', 'staging', or 'current'
+	               (default: '$default_variant').
+	--dry-run      Only generate the local schema file, but do not publish it.
+	--debug	       Prevent removal of temporary files on exit (default: false).
+	-h, --help     Display this help message and exit.
 "
 ###############################################################################
 # UTIL FUNCTIONS
 
-# log_info: print args to stdout unless the --silent flag was provided
-function log_info() {
-	# ANSI codes: \e[96m is light-cyan text, \e[0m is reset
-	[ "$silent" != 'true' ] && printf '\e[96m%b\e[0m\n' "${@}"
-}
+# log_info: print args to stdout (ANSI: \e[96m is light-cyan text, \e[0m is reset)
+function log_info() { printf '\e[96m%b\e[0m\n' "${@}"; }
 
-# throw_error: log error-message args and exit (regardless of --silent flag)
+# throw_error: print err-msg args to stdout+stderr and exit (ANSI: \e[31m is red text)
 function throw_error() {
-	# ANSI codes: \e[31m is red text, \e[0m is reset
-	printf '\e[31m%b\e[0m\n' "🚨 ERROR: $1" "${@:2}" '(EXIT 1)'
+	printf >&2 '\e[31m%b\e[0m\n' "🚨 ERROR: $1" "${@:2}" '(EXIT 1)'
 	exit 1
 }
 
@@ -53,23 +46,24 @@ function throw_error() {
 # If a 'help' flag was provided, log the help message and exit
 [[ "${*}" =~ (-h|help) ]] && echo "$script_help" && exit 0
 
-readonly silent="$([[ "${*}" =~ (-s|--silent) ]] && echo true || echo false)"
 readonly debug="$([[ "${*}" == *--debug* ]] && echo true || echo false)"
+
 readonly dry_run="$([[ "${*}" == *--dry-run* ]] && echo true || echo false)"
 
-# Parse --variant to determine the graph variant to use
 readonly variant_arg="$(grep -oPm1 '(?<=--variant(=|\s))\S+' <<<"$*")"
-
-# If --variant was provided, ensure it's a valid value
-[[ -n "$variant_arg" && ! "$variant_arg" =~ ^(prod|staging|current)$ ]] &&
-	throw_error "Invalid variant specified. Must be one of 'prod', 'staging', or 'current'."
-
-# Assign variant to the provided value or the default
 readonly variant="${variant_arg:-$default_variant}"
-readonly graph_ref="$graph_name@$variant"
 
 ###############################################################################
 # SCRIPT ACTION FUNCTIONS
+
+function ensure_graph_ref_is_valid() {
+	if [[ ! "$variant" =~ ^(prod|staging|current)$ ]]; then
+		throw_error "Invalid --variant value. Must be one of 'prod', 'staging', or 'current'."
+	fi
+
+	# If variant is valid, set global var 'graph_ref'
+	readonly graph_ref="$graph_name@$variant"
+}
 
 function ensure_npx_cmd_is_present() {
 	if ! type npx 1>/dev/null; then
@@ -83,14 +77,14 @@ function ensure_npx_cmd_is_present() {
 function setup_tmp_dir() {
 	# Global vars:
 	readonly tmp_dir="$(basename "$(
-		mktemp --tmpdir="$PWD" -d 'tmp.gql-codegen-script.XXX' ||
+		mktemp --tmpdir="$PWD" -d "tmp.${script_filename%.sh}.XXX" ||
 			throw_error 'Failed to create temporary directory.'
 	)")"
 
 	# TRAP: on EXIT, remove the tmp dir unless --debug flag is present
 	function rm_tmp_unless_debug() {
 		if [ "$debug" == 'true' ]; then
-			log_info "[DEBUG MODE]: Not removing temporary directory: '$tmp_dir'"
+			log_info "[DEBUG MODE]: Not removing temporary directory \e[0m$tmp_dir"
 		else
 			rm -rf "$tmp_dir"
 		fi
@@ -100,7 +94,7 @@ function setup_tmp_dir() {
 }
 
 function generate_local_gql_schema_file() {
-	log_info 'Generating GraphQL schema file ...'
+	log_info "Generating GraphQL schema file '\e[0m./schema.graphql\e[96m' ..."
 
 	# Global vars:
 	readonly tsc_outdir="$tmp_dir/tsc-outdir"
@@ -112,7 +106,7 @@ function generate_local_gql_schema_file() {
 		--target ESNext \
 		--module ESNext \
 		--moduleResolution Node \
-		$typedefs_src
+		"$typedefs_src"
 
 	# Now make the GQL schema from the generated JS files:
 	node --input-type=module -e "
@@ -170,21 +164,24 @@ function generate_local_gql_schema_file() {
 	fs.writeFileSync('$schema_file', sdlString);"
 
 	# Throw error if the schema file was not generated
-	[[ $? != 0 || ! -f "$schema_file" ]] && throw_error 'Failed to generate local GraphQL schema file.'
+	[[ $? != 0 || ! -f "$schema_file" ]] && throw_error 'Failed to generate GraphQL schema file.'
 
-	log_info 'Local GraphQL schema file generated successfully! 🚀'
+	log_info 'GraphQL schema file generated successfully! 🚀\n'
 }
 
 function validate_local_gql_schema() {
-	log_info "Validating the GraphQL schema for graph '$graph_ref' ..."
+	log_info "Validating the GraphQL schema for graph '\e[0m$graph_ref\e[96m' ..."
 
-	npx rover graph check "$graph_ref" --schema "$schema_file" 1>/dev/null ||
-		throw_error 'GraphQL schema validation failed.'
+	if npx rover graph check "$graph_ref" --schema "$schema_file" &>/dev/null; then
+		log_info 'The GraphQL schema is valid! 🎉\n'
+	else
+		throw_error 'The GraphQL schema is invalid.'
+	fi
 }
 
 function publish_schema_unless_dry_run() {
 	if [ "$dry_run" != 'true' ]; then
-		log_info "Publishing the GraphQL schema for graph '$graph_ref' to Apollo Studio ..."
+		log_info "Publishing the GraphQL schema for graph '\e[0m$graph_ref\e[96m' to Apollo Studio ..."
 
 		npx rover graph publish "$graph_ref" --schema "$schema_file"
 	else
@@ -195,8 +192,9 @@ function publish_schema_unless_dry_run() {
 ###############################################################################
 # SCRIPT EXECUTION
 
-log_info "[Script] $script_name"
+log_info "\n[Starting Script: $script_name]\n"
 
+ensure_graph_ref_is_valid
 ensure_npx_cmd_is_present
 setup_tmp_dir
 generate_local_gql_schema_file
