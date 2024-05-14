@@ -30,11 +30,9 @@
     "test": "vitest run",
     "test:ci": "vitest run --coverage --bail=1 --silent",
     "test:types": "tsc --project tsconfig.json --noEmit --skipLibCheck",
-    "open-api:validate": "swagger-cli validate docs/open-api.yaml",
-    "open-api:update-types": "scripts/codegen.open-api.sh",
-    "open-api:update-remote": "scripts/codegen.open-api.sh --update-swaggerhub",
-    "gql:update-schema": "rover graph fetch fixit@current > fixit@current.graphql",
-    "gql:update-types": "graphql-codegen-esm --config codegen.ts"
+    "open-api:validate-schema": "swagger-cli validate schemas/OpenAPI/open-api.yaml",
+    "open-api:update-types": "scripts/codegen.open-api-types.sh",
+    "graphql:update-types": "graphql-codegen-esm --config codegen.ts"
   },
   "dependencies": {
     "@apollo/server": "^4.10.4",
