@@ -38,23 +38,23 @@ jobs:
         if: ${{ !cancelled() }}
         run: |
           if [ ${{ steps.run-tests.outcome }} == 'success' ]; then
-            commit_status_state='success'
-            description='Tests passed'
+              commit_status_state='success'
+              description='Tests passed'
           else
-            commit_status_state='failure'
-            description='Tests failed'
+              commit_status_state='failure'
+              description='Tests failed'
           fi
 
           curl --request POST \
-            --url https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }} \
-            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-            --header 'content-type: application/json' \
-            --data "{
-              \"context\": \"tests\",
-              \"state\": \"$commit_status_state\",
-              \"description\": \"$description\",
-              \"target_url\": \"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
-            }"
+              --url https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }} \
+              --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+              --header 'content-type: application/json' \
+              --data "{
+                  \"context\": \"tests\",
+                  \"state\": \"$commit_status_state\",
+                  \"description\": \"$description\",
+                  \"target_url\": \"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
+              }"
 
       - name: Update CodeCov
         if: success()
