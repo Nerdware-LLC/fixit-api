@@ -32,7 +32,7 @@ export class FixitEventEmitter
     WorkOrderUpdated: [notifyAssigneeUpdatedWO],
     WorkOrderCancelled: [notifyAssigneeCancelledWO],
     WorkOrderCompleted: [notifyAssignorCompletedWO],
-  } as const;
+  } as const satisfies Record<string, Array<BaseEventHandler>>;
 
   private getNamedEmitter<T extends FixitEventName>(name: T): NamedEmitFn<T> {
     return (...args) => this.emit(name, ...args);
@@ -75,6 +75,8 @@ export type FixitEventName = keyof FixitEventHandlers;
 export type NamedEmitFn<EventName extends FixitEventName> = (
   ...args: Parameters<FixitEventHandlers[EventName][number]>
 ) => void;
+/** Event handler base type. */
+export type BaseEventHandler = (...args: any[]) => Promise<void>;
 
 // Augment EventEmitter to only allow the names of configured events to be emitted.
 declare module "events" {
