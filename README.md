@@ -1,12 +1,12 @@
 <div align="center">
 
-[<img src=".github/assets/Fixit_API_repo_banner.png" />](https://www.youtube.com/@nerdware-io)
+[<img src=".github/assets/Fixit_API_repo_banner.png" alt="Repo banner" />](https://www.youtube.com/@nerdware-io)
 
 Fixit is a SaaS product that provides users with powerful tools for managing maintenance and repair workflows, including in-app payments powered by [Stripe](https://stripe.com/). This repo is home to the dual-protocol Fixit API – built on NodeJS, ExpressJS, and Apollo GraphQL.
 
 Author: [Trevor Anderson](https://github.com/trevor-anderson), Solopreneur & Founder of [Nerdware](https://github.com/Nerdware-LLC)
 
-[<img src=".github/assets/powered_by_Stripe_blurple.svg" height="22" style="position:relative;top:1px;" />](https://stripe.com/ "Check out Stripe")
+[<img src=".github/assets/powered_by_Stripe_blurple.svg" height="22" style="position:relative;top:1px;" alt="Powered by Stripe" />](https://stripe.com/ "Check out Stripe")
 &nbsp;
 [![Test Workflow][gh-test-badge]](.github/workflows/test.yaml "View Test Workflow")
 &nbsp;
