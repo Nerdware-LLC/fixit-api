@@ -1,7 +1,7 @@
-import { Profile, type ProfileParams } from "./Profile.js";
+import { Profile, type CreateProfileParams } from "./Profile.js";
 
 /** Valid ProfileParams */
-const PROFILE_ARGS: ProfileParams = {
+const PROFILE_ARGS: CreateProfileParams = {
   handle: "@test_handle",
   displayName: "Person McHumanPerson",
   givenName: "Person",
