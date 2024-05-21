@@ -59,16 +59,17 @@ export default [
       "import/named": "off", //                      TS performs this check
       "import/namespace": "off", //                  TS performs this check
       "import/default": "off", //                    TS performs this check
-      "import/no-named-as-default": "off", // TS performs this check
+      "import/no-named-as-default": "off", //        TS performs this check
       "import/no-named-as-default-member": "off", // TS performs this check
       "node/no-missing-import": "off",
       "node/no-process-env": "error",
       "node/no-unpublished-import": "off",
       "node/no-unsupported-features/es-syntax": "off",
-      "@typescript-eslint/array-type": "off", // Allow "T[]" and "Array<T>"
+      "@typescript-eslint/array-type": "off", //                      Allow "T[]" and "Array<T>"
       "@typescript-eslint/consistent-indexed-object-style": "off", // Allow "Record<K, V>" and "{ [key: K]: V }"
-      "@typescript-eslint/consistent-type-definitions": "off", // Allow "type" and "interface", there are subtle usage differences
-      "@typescript-eslint/no-confusing-void-expression": "off", // <-- rule results in false positives on MW using `return next()`
+      "@typescript-eslint/consistent-type-definitions": "off", //     Allow "type" and "interface", there are subtle usage differences
+      "@typescript-eslint/no-base-to-string": "off", //               <-- false positives on objects with [Symbol.toPrimitive]
+      "@typescript-eslint/no-confusing-void-expression": "off", //    <-- false positives on MW using `return next()`
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-extraneous-class": ["error", { allowStaticOnly: true }],
       "@typescript-eslint/no-inferrable-types": "off",
