@@ -1,7 +1,7 @@
 import { getTypeSafeError, safeJsonStringify } from "@nerdware/ts-type-safety-utils";
 import { ENV } from "@/server/env";
 import { logger } from "@/utils/logger.js";
-import type { HttpErrorInterface } from "@/utils/httpErrors.js";
+import type { BaseHttpError } from "@/utils/httpErrors.js";
 import type { ErrorRequestHandler } from "express";
 
 /**
@@ -11,7 +11,7 @@ import type { ErrorRequestHandler } from "express";
 export const errorHandler: ErrorRequestHandler = (err: unknown, req, res, next) => {
   const error = getTypeSafeError(err);
 
-  const errorStatusCode = (error as HttpErrorInterface)?.statusCode || 500;
+  const errorStatusCode = (error as Partial<BaseHttpError>)?.statusCode ?? 500;
 
   if (errorStatusCode >= 500) {
     logger.error(`[SERVER ERROR] On route "${req.originalUrl}": ${safeJsonStringify(err)}`);
@@ -29,4 +29,4 @@ export const errorHandler: ErrorRequestHandler = (err: unknown, req, res, next) 
   });
 };
 
-const MASKED_ERROR_MESSAGE = "An unexpected error occurred";
+const MASKED_ERROR_MESSAGE = "An unexpected problem occurred";

@@ -19,8 +19,6 @@ const corsOptions: CorsOptions = {
     "apollographql-client-version",
     // Enable ApolloServerPluginInlineTrace
     "apollo-federation-include-trace",
-    // Permit access to Apollo Studio queries
-    "Apollo-Studio-Auth-Token",
   ],
 };
 

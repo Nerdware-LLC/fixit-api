@@ -58,14 +58,8 @@ const helmetMW = helmet({
 export const setSecureHttpHeaders: RequestHandler = (req, res, next) => {
   res.set({
     "Cache-Control": "no-store",
-    "Report-To": REPORT_TO_HTTP_HEADER_VALUE_JSON,
+    "Report-To": `{"group":"fixit-security","max_age":10886400,"url":"${ENV.CONFIG.API_FULL_URL}/admin/csp-violation"}`,
   });
 
   helmetMW(req, res, next);
 };
-
-const REPORT_TO_HTTP_HEADER_VALUE_JSON = JSON.stringify({
-  group: "fixit-security",
-  max_age: 10886400,
-  url: `${ENV.CONFIG.API_FULL_URL}/admin/csp-violation`,
-});
