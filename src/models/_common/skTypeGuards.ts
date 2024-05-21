@@ -29,14 +29,13 @@ export const isSKofType = {
  * internal-database type using the object's `sk` attribute value. For example,
  * `skTypeGuards.isUser` determines if an object is a `UserItem`.
  */
+// prettier-ignore
 export const skTypeGuards = {
   isContact: (obj: SkTypeGuardArg): obj is ContactItem => isSKofType.contact(obj?.sk),
   isInvoice: (obj: SkTypeGuardArg): obj is InvoiceItem => isSKofType.invoice(obj?.sk),
   isUser: (obj: SkTypeGuardArg): obj is UserItem => isSKofType.user(obj?.sk),
-  isUserStripeConnectAccount: (obj: SkTypeGuardArg): obj is UserSCAModelItem =>
-    isSKofType.stripeConnectAccount(obj?.sk),
-  isUserSubscription: (obj: SkTypeGuardArg): obj is UserSubModelItem =>
-    isSKofType.subscription(obj?.sk),
+  isUserSCA: (obj: SkTypeGuardArg): obj is UserSCAModelItem => isSKofType.stripeConnectAccount(obj?.sk),
+  isUserSubscription: (obj: SkTypeGuardArg): obj is UserSubModelItem =>isSKofType.subscription(obj?.sk),
   isWorkOrder: (obj: SkTypeGuardArg): obj is WorkOrderItem => isSKofType.workOrder(obj?.sk),
 };
 
