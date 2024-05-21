@@ -23,8 +23,9 @@ const codegenConfig: CodegenConfig = {
       // Plugin configs:
       config: {
         enumsAsTypes: true,
-        useIndexSignature: true,
         useTypeImports: true,
+        useIndexSignature: true,
+        defaultMapper: "Partial<{T}>",
         // resolver context type:
         contextType: "@/apolloServer.js#ApolloServerContext",
         scalars: {
