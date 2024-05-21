@@ -1,0 +1,12 @@
+type: string
+description: |
+  The Subscription's status, as provided by Stripe.
+  See https://docs.stripe.com/api/subscriptions/object#subscription_object-status
+enum:
+  - active
+  - incomplete
+  - incomplete_expired
+  - trialing
+  - past_due
+  - canceled
+  - unpaid

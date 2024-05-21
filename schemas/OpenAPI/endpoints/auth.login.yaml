@@ -1,0 +1,18 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/path-item
+
+# POST /auth/login
+
+post:
+  operationId: Login
+  summary: |
+    Authenticates a user for the purposes of accessing protected resources.
+  security: []
+  tags: [auth]
+  requestBody:
+    $ref: "../open-api.yaml#/components/requestBodies/LoginRequest"
+  responses:
+    "200": { $ref: "../open-api.yaml#/components/responses/200AuthTokenAndPreFetchedUserItems" }
+    "400": { $ref: "../open-api.yaml#/components/responses/400InvalidUserInput" }
+    "401": { $ref: "../open-api.yaml#/components/responses/401AuthenticationRequired" }
+    "5XX": { $ref: "../open-api.yaml#/components/responses/5xxInternalServerError" }
+    default: { $ref: "../open-api.yaml#/components/responses/UnexpectedResponse" }

@@ -1,0 +1,10 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/response
+
+description: |
+  [201 Created][mdn-docs] — Response for successful creation of a Stripe link.
+
+  [mdn-docs]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/201
+content:
+  application/json:
+    schema:
+      $ref: "../open-api.yaml#/components/schemas/StripeLinkResponseField"

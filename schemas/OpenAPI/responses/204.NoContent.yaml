@@ -1,0 +1,7 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/response
+
+description: |
+  [204 No Content][mdn-docs] — Generic success response which does not
+  include a response body.
+
+  [mdn-docs]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/204
