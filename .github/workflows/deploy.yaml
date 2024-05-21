@@ -36,24 +36,24 @@ jobs:
         # 3. env tag           (if release: "prod", anything else: "staging")
         # 4. relative pointer  (if release: "latest", anything else: "next")
         run: |
-          IMAGE_TAGS=( "${{ github.sha }}" )
+          image_tags=( "${{ github.sha }}" )
 
           if [ "${{ github.event_name }}" == 'release' ]; then
-              IMAGE_TAGS+=( "${{ github.event.release.tag_name }}" )
+              image_tags+=( "${{ github.event.release.tag_name }}" )
           fi
 
           if [[ "${{ github.event_name }}" == 'release' && "${{ github.event.release.prerelease }}" == 'false' ]]; then
-              IMAGE_TAGS+=( prod latest )
+              image_tags+=( prod latest )
           else
-              IMAGE_TAGS+=( staging next )
+              image_tags+=( staging next )
           fi
 
-          IMAGE_REPO="${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_PRIVATE_REPO }}"
-          IMAGE_TAGS=("${IMAGE_TAGS[@]/#/$IMAGE_REPO:}")
+          image_repo="${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_PRIVATE_REPO }}"
+          image_tags=("${image_tags[@]/#/$image_repo:}")
 
-          docker build ${IMAGE_TAGS[@]/#/--tag } .
+          docker build ${image_tags[@]/#/--tag } .
 
-          for tag in "${IMAGE_TAGS[@]}"; do docker push "$tag"; done
+          for tag in "${image_tags[@]}"; do docker push "$tag"; done
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -63,22 +63,22 @@ jobs:
       - name: Update ECS Task Definition & Service
         run: |
           if [[ "${{ github.event_name }}" == 'release' && "${{ github.event.release.prerelease }}" == 'false' ]]; then
-              TASK_DEF_NAME=${{ secrets.ECS_API_TASK_DEF_PROD }}
-              SERVICE_NAME=${{ secrets.ECS_API_SERVICE_NAME_PROD }}
-              CLUSTER_NAME=${{ secrets.ECS_CLUSTER_NAME_PROD }}
+              task_def_name=${{ secrets.ECS_API_TASK_DEF_PROD }}
+              service_name=${{ secrets.ECS_API_SERVICE_NAME_PROD }}
+              cluster_name=${{ secrets.ECS_CLUSTER_NAME_PROD }}
           else
-              TASK_DEF_NAME=${{ secrets.ECS_API_TASK_DEF_STAGING }}
-              SERVICE_NAME=${{ secrets.ECS_API_SERVICE_NAME_STAGING }}
-              CLUSTER_NAME=${{ secrets.ECS_CLUSTER_NAME_STAGING }}
+              task_def_name=${{ secrets.ECS_API_TASK_DEF_STAGING }}
+              service_name=${{ secrets.ECS_API_SERVICE_NAME_STAGING }}
+              cluster_name=${{ secrets.ECS_CLUSTER_NAME_STAGING }}
           fi
 
-          IMAGE_REPO="${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_PRIVATE_REPO }}"
+          image_repo="${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_PRIVATE_REPO }}"
 
-          UPDATED_TASK_DEF_JSON=$(
+          updated_task_def_json=$(
               aws ecs describe-task-definition \
-                  --task-definition $TASK_DEF_NAME \
+                  --task-definition $task_def_name \
                   --output json | \
-                  jq --arg NEW_IMAGE "$IMAGE_REPO:${{ github.sha }}" \
+                  jq --arg NEW_IMAGE "$image_repo:${{ github.sha }}" \
                       '.taskDefinition |
                       .containerDefinitions[0].image = $NEW_IMAGE |
                       del(.taskDefinitionArn) |
@@ -91,12 +91,12 @@ jobs:
           )
 
           aws ecs register-task-definition \
-              --cli-input-json "$UPDATED_TASK_DEF_JSON" \
+              --cli-input-json "$updated_task_def_json" \
               1>/dev/null
 
           aws ecs update-service \
-              --cluster $CLUSTER_NAME \
-              --service $SERVICE_NAME \
-              --task-definition $TASK_DEF_NAME \
+              --cluster $cluster_name \
+              --service $service_name \
+              --task-definition $task_def_name \
               --force-new-deployment \
               1>/dev/null
