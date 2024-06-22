@@ -1,0 +1,33 @@
+name: 🚀 CI/CD Workflow
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize] # default PR types
+    branches: [main, next]
+    paths: ["src/**/*", "package*.json"]
+  push:
+    branches: [main, next]
+    paths: ["src/**/*", "package*.json"]
+  # This workflow can be manually triggered
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: 🧪 Test
+    uses: ./.github/workflows/test.yaml
+    secrets: inherit
+    permissions:
+      contents: write #      to checkout the code and merge bot-PRs
+      pull-requests: write # to add coverage reports to the PR
+      statuses: write #      to update commit status
+
+  release:
+    name: 📦 Release
+    needs: test # run job if event=push and tests passed
+    if: github.event_name == 'push' && needs.test.outputs.success == 'true'
+    uses: ./.github/workflows/release.yaml
+    secrets: inherit
+    permissions:
+      attestations: write # to generate artifact attestations for dist assets
+      contents: write #     to create a release
+      issues: write #       to be able to comment on released issues

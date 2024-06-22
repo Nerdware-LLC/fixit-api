@@ -1,23 +1,24 @@
-name: Deploy Workflow
+name: 🚀 Deploy Workflow
 
 on:
+  # This workflow runs for both releases and pre-releases
   release: { types: [published] }
   workflow_dispatch:
 
 jobs:
   deploy:
-    name: Deploy to ECS
+    name: 🚀 Deploy to ECS
     runs-on: ubuntu-latest
-
-    # Permissions required to use aws-actions/configure-aws-credentials:
-    permissions: { id-token: write, contents: read }
-
+    permissions:
+      contents: read #  to checkout the code
+      id-token: write # to assume the OIDC role (configure-aws-credentials)
     steps:
       - uses: actions/checkout@v4
 
       - uses: docker/setup-buildx-action@v3
 
-      - uses: aws-actions/configure-aws-credentials@v4
+      - name: Configure AWS Credentials for ECR
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.ECR_OIDC_GITHUB_ROLE_ARN }}
           aws-region: ${{ secrets.ECR_REPO_REGION }}
@@ -55,7 +56,8 @@ jobs:
 
           for tag in "${image_tags[@]}"; do docker push "$tag"; done
 
-      - uses: aws-actions/configure-aws-credentials@v4
+      - name: Configure AWS Credentials for ECS
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.ECS_OIDC_GITHUB_ROLE_ARN }}
           aws-region: ${{ secrets.ECS_CLUSTER_REGION }}
