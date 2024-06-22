@@ -1,5 +1,7 @@
 import { isString, getTypeSafeError } from "@nerdware/ts-type-safety-utils";
+import { eventEmitter } from "@/events/eventEmitter.js";
 import { stripe } from "@/lib/stripe/stripeClient.js";
+import { SUBSCRIPTION_PRICE_NAMES as SUB_PRICE_NAMES } from "@/models/UserSubscription/enumConstants.js";
 import { UserSubscriptionService } from "@/services/UserSubscriptionService";
 import { PaymentRequiredError } from "@/utils/httpErrors.js";
 import { logger } from "@/utils/logger.js";
@@ -9,7 +11,7 @@ import type {
 } from "@/lib/stripe/types.js";
 import type { UserSubscriptionItem } from "@/models/UserSubscription";
 import type { CreateSubscriptionParams } from "@/services/UserSubscriptionService/createSubscription.js";
-import type { CheckoutCompletionInfo } from "@/types/open-api.js";
+import type { CheckoutCompletionInfo, AuthTokenPayload } from "@/types/open-api.js";
 import type Stripe from "stripe";
 import type { Simplify, OverrideProperties, SetOptional } from "type-fest";
 
@@ -20,7 +22,7 @@ export type ProcessCheckoutPaymentParams = Simplify<
   {
     paymentMethodID: string;
     request: { ip: string; userAgent: string };
-  } & CreateSubscriptionParams
+  } & OverrideProperties<CreateSubscriptionParams, { user: AuthTokenPayload }>
 >;
 
 export type CheckoutFlowSubscriptionFields = SetOptional<
@@ -71,6 +73,7 @@ export const processCheckoutPayment = async (
   let subscription: CheckoutFlowSubscriptionFields;
   // Var to hold intermediary values:
   let latestInvoice: StripeSubscriptionWithClientSecret["latest_invoice"];
+  let amountPaid: number;
 
   try {
     // Attach the payment method to the customer
@@ -119,25 +122,29 @@ export const processCheckoutPayment = async (
       /* Just to be sure the sub/payment are in the expected state, assertions are
       made regarding the expected TRIAL/PROMO_CODE. If neither conditions apply,
       Stripe should have provided `payment_intent.id`, so an error is thrown. */
-      const isTrialSub = selectedSubscription === "TRIAL" && subscription.status === "trialing";
+      const isTrialSub =
+        selectedSubscription === SUB_PRICE_NAMES.TRIAL && subscription.status === "trialing";
       const wasVipPromoCodeApplied =
         !!promoCode && latestInvoice?.discount?.coupon?.percent_off === 100;
 
-      if (!isTrialSub && !wasVipPromoCodeApplied) {
+      if (!isTrialSub && !wasVipPromoCodeApplied)
         throw new Error("Stripe Error: Failed to retrieve payment details");
-      }
 
       // Update checkoutCompletionInfo:
       checkoutCompletionInfo = {
         isCheckoutComplete: latestInvoice?.paid === true,
         // Note: for TRIAL/PROMO_CODE subs, `latest_invoice.paid` should be `true` here
       };
+
+      // Set `amountPaid` to the amount received by the payment intent
+      amountPaid = latestInvoice.payment_intent.amount_received;
     } else {
       // Confirm intent with collected payment method
       const {
         status: paymentStatus,
         client_secret: clientSecret,
         invoice,
+        amount_received,
       } = (await stripe.paymentIntents.confirm(latestInvoice.payment_intent.id, {
         payment_method: paymentMethodID,
         mandate_data: {
@@ -153,9 +160,8 @@ export const processCheckoutPayment = async (
       })) as Stripe.Response<OverrideProperties<Stripe.PaymentIntent, { invoice: Stripe.Invoice }>>;
 
       // Sanity-check: ensure the paymentStatus and clientSecret are strings
-      if (!isString(paymentStatus) || !isString(clientSecret)) {
+      if (!isString(paymentStatus) || !isString(clientSecret))
         throw new Error("Stripe Error: payment confirmation failed.");
-      }
 
       const isCheckoutComplete =
         ["succeeded", "requires_action"].includes(paymentStatus) && invoice?.paid === true;
@@ -167,12 +173,15 @@ export const processCheckoutPayment = async (
         isCheckoutComplete,
         ...(clientSecret && { clientSecret }),
       };
+
+      // Update the amountPaid value:
+      amountPaid = amount_received;
     }
 
     // Check the sub's status
     const { status: subStatusAfterPayment } = await stripe.subscriptions.retrieve(subscription.id);
 
-    // Update `res.locals.authenticatedUser` with the new subscription details:
+    // Update the `CheckoutFlowSubscriptionFields` object with the new sub details:
     subscription.status = subStatusAfterPayment;
 
     // If an error occurs, ensure the 402 status code is provided.
@@ -181,6 +190,14 @@ export const processCheckoutPayment = async (
     logger.stripe(error, "processCheckoutPayment");
     throw new PaymentRequiredError(error.message);
   }
+
+  // Emit the CheckoutCompleted event with payment details:
+  eventEmitter.emitCheckoutCompleted({
+    user,
+    priceName: selectedSubscription,
+    paymentIntentID: latestInvoice.payment_intent.id,
+    amountPaid,
+  });
 
   return {
     checkoutCompletionInfo,
