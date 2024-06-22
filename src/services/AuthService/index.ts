@@ -1,9 +1,11 @@
 import { AuthToken } from "./AuthToken.js";
 import { GoogleOAuth2IDToken } from "./GoogleOAuth2IDToken.js";
-import { authenticateUserLogin } from "./authenticateUserLogin.js";
+import { authenticateUserViaLoginCredentials } from "./authenticateUserViaLoginCredentials.js";
 import { preFetchAndSyncUserItems } from "./preFetchAndSyncUserItems.js";
 import { resetPassword } from "./resetPassword.js";
 import { sendPasswordResetEmail } from "./sendPasswordResetEmail.js";
+import { verifyUserIsAuthorizedToAccessPaidContent } from "./verifyUserIsAuthorizedToAccessPaidContent.js";
+import { verifyUserIsAuthorizedToPerformThisUpdate } from "./verifyUserIsAuthorizedToPerformThisUpdate.js";
 
 /**
  * #### AuthService
@@ -12,14 +14,22 @@ import { sendPasswordResetEmail } from "./sendPasswordResetEmail.js";
  * authentication and authorization.
  */
 export const AuthService = {
-  authenticateUserLogin,
+  /** User authentication methods */
+  authenticateUser: {
+    viaLoginCredentials: authenticateUserViaLoginCredentials,
+    viaAuthHeaderToken: AuthToken.getValidatedRequestAuthTokenPayload,
+  },
+  /** User authorization methods */
+  verifyUserIsAuthorized: {
+    toAccessPaidContent: verifyUserIsAuthorizedToAccessPaidContent,
+    toPerformThisUpdate: verifyUserIsAuthorizedToPerformThisUpdate,
+  },
   preFetchAndSyncUserItems,
   resetPassword,
   sendPasswordResetEmail,
-  // AuthToken
+  verifyUserIsAuthorizedToPerformThisUpdate,
+  /** AuthToken helper function which creates+returns a new AuthToken. */
   createAuthToken: AuthToken.create,
-  validateAndDecodeAuthToken: AuthToken.validateAndDecode,
-  getValidatedRequestAuthTokenPayload: AuthToken.getValidatedRequestAuthTokenPayload,
-  // GoogleOAuth2IDToken
+  /** GoogleOAuth2IDToken helper function which parses a GoogleOAuth2IDToken. */
   parseGoogleOAuth2IDToken: GoogleOAuth2IDToken.parse,
 } as const;
