@@ -1,11 +1,12 @@
+import { CONTACT_SK_PREFIX_STR } from "@/models/Contact";
 import type { Resolvers } from "@/types/graphql.js";
 
-export const resolvers: Partial<Resolvers> = {
-  FixitUser: {
+export const resolvers: Resolvers = {
+  PublicUserFields: {
     __resolveType: (obj): "User" | "Contact" => {
       return "__typename" in obj
         ? obj.__typename
-        : "id" in obj && obj.id.startsWith("CONTACT#")
+        : obj.id.startsWith(CONTACT_SK_PREFIX_STR)
           ? "Contact"
           : "User";
     },
