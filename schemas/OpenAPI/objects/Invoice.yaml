@@ -5,29 +5,35 @@
 type: object
 description: A pre-fetched Invoice object returned from a Fixit REST endpoint.
 externalDocs:
-  description: GQL Apollo Studio Schema Reference for the WorkOrder object.
+  description: GQL Apollo Studio Schema Reference for the Invoice object.
   url: "https://studio.apollographql.com/public/fixit/variant/current/schema/reference/objects/Invoice"
-required: [id, createdBy, assignedTo, amount, status, createdAt, updatedAt]
+required: [__typename, id, createdBy, assignedTo, amount, status, createdAt, updatedAt]
 properties:
+  __typename:
+    type: string
+    enum: [Invoice]
+    description: |
+      The object's GraphQL type name, `"Invoice"`, included to facilitate
+      writing pre-fetched objects into the front-end's Apollo Client cache.
   id:
     type: string
     description: The invoice's ID.
   createdBy:
     type: object
-    description: The user or contact who created the invoice.
+    description: The user who created the invoice.
     required: [id]
     properties:
       id:
         type: string
-        description: The ID of the user or contact who created the invoice.
+        description: The ID of the user who created the invoice.
   assignedTo:
     type: object
-    description: The user or contact to whom the invoice is assigned.
+    description: The user to whom the invoice is assigned.
     required: [id]
     properties:
       id:
         type: string
-        description: The ID of the user or contact to whom the invoice is assigned.
+        description: The ID of the user to whom the invoice is assigned.
   amount:
     type: integer
     description: |

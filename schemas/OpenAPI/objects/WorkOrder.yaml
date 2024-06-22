@@ -7,29 +7,35 @@ description: A pre-fetched WorkOrder object returned from a REST endpoint.
 externalDocs:
   description: GQL Apollo Studio Schema Reference for the WorkOrder object.
   url: "https://studio.apollographql.com/public/fixit/variant/current/schema/reference/objects/WorkOrder"
-required: [id, createdBy, status, priority, location, createdAt, updatedAt]
+required: [__typename, id, createdBy, status, priority, location, createdAt, updatedAt]
 properties:
+  __typename:
+    type: string
+    enum: [WorkOrder]
+    description: |
+      The object's GraphQL type name, `"WorkOrder"`, included to facilitate
+      writing pre-fetched objects into the front-end's Apollo Client cache.
   id:
     type: string
     description: The work order's ID.
   createdBy:
     type: object
-    description: The user or contact who created the work order.
+    description: The user who created the work order.
     required: [id]
     properties:
       id:
         type: string
-        description: The ID of the user or contact who created the work order.
+        description: The ID of the user who created the work order.
   assignedTo:
     type:
       - object
       - "null"
-    description: The user or contact to whom the work order is assigned.
+    description: The user to whom the work order is assigned.
     required: [id]
     properties:
       id:
         type: string
-        description: The ID of the user or contact to whom the work order is assigned.
+        description: The ID of the user to whom the work order is assigned.
   location: { $ref: "../open-api.yaml#/components/schemas/Location" }
   status: { $ref: "../open-api.yaml#/components/schemas/WorkOrderStatus" }
   priority: { $ref: "../open-api.yaml#/components/schemas/WorkOrderPriority" }
