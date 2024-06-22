@@ -1,8 +1,4 @@
-import { gql } from "graphql-tag";
-
-// IDEA Consider renaming field WorkOrder.contractorNotes to WorkOrder.recipientNotes
-
-export const typeDefs = gql`
+export const typeDefs = `#graphql
   "A WorkOrder is a request one User submits to another for work to be performed at a location"
   type WorkOrder {
     "(Immutable) WorkOrder ID, in the format of 'WO#{createdBy.id}#{unixTimestampUUID(createdAt)}'"

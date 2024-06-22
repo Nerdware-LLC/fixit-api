@@ -1,27 +1,4 @@
-import { gql } from "graphql-tag";
-
-/*
-  IDEA Refactor User.stripeCustomerID into a `stripeCustomer` object with below properties
-    - id
-    - defaultPaymentMethodID                                <-- simple structure
-      OR
-      defaultPaymentMethod: { id }                          <-- would allow other paymentMethod props; requires new type PaymentMethod
-      OR
-      paymentMethods: [ { id, isDefault } ]                 <-- keep data on multiple paymentMethods; requires new type PaymentMethod
-      OR
-      invoiceSettings: { defaultPaymentMethod: { id } }     <-- most closely resembles Stripe API; requires new type(s) PaymentMethod AND/OR InvoiceSettings
-
-  REASON: For mutation *payInvoice*, when creating the `paymentIntent` via the Stripe API, the
-  paying User's payment_method is set to `stripeCustomer.invoice_settings.default_payment_method`,
-  which is an internal Stripe ID string.
-
-  To obtain this payment_method ID, currently the paying User obj is queried by their Fixit
-  User ID, then the Stripe API is used to retrieve the FULL Stripe Customer object by the
-  User's `stripeCustomerID`, since in Fixit DDB, only the Stripe Customer ID is currently
-  stored.
-*/
-
-export const typeDefs = gql`
+export const typeDefs = `#graphql
   """
   User is an implementation of the FixitUser interface which includes both the
   publicly-accessible FixitUser/Contact fields as well as private fields which

@@ -1,6 +1,4 @@
-import { gql } from "graphql-tag";
-
-export const typeDefs = gql`
+export const typeDefs = `#graphql
   type Invoice {
     "(Immutable) Invoice ID, in the format of 'INV#{createdBy.id}#{unixTimestampUUID(createdAt)}'"
     id: ID!

@@ -1,6 +1,4 @@
-import { gql } from "graphql-tag";
-
-export const typeDefs = gql`
+export const typeDefs = `#graphql
   """
   Contact is a type which is simply a concrete implementation of the publicly
   accessible User fields defined in the FixitUser interface. The Contact type is
