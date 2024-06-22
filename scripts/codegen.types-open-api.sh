@@ -46,18 +46,18 @@ function ensure_npx_cmd_is_present() {
 		# Try invoking `nvm` to make it available
 		type nvm 1>/dev/null && nvm use 1>/dev/null
 		# If `npx` is still not available, throw an error
-		! type npx && throw_error 'Unable to fetch the OpenAPI schema — npx command not found.'
+		! type npx && throw_error \
+			'Unable to proceed with script execution — npx command not found.'
 	fi
 }
 
 function validate_openapi_schema() {
 	log_info 'Validating the OpenAPI schema ...'
 
-	if npx swagger-cli validate "$schema_file" 1>/dev/null; then
-		log_info 'The OpenAPI schema is valid! 🎉\n'
-	else
+	! npx redocly lint "$schema_file" 1>/dev/null &&
 		throw_error 'The OpenAPI schema is invalid.'
-	fi
+
+	log_info 'The OpenAPI schema is valid! 🎉\n'
 }
 
 function generate_openapi_ts_types() {
