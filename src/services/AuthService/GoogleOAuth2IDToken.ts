@@ -3,13 +3,13 @@ import {
   isValidID,
   sanitizeEmail,
   isValidEmail,
-  sanitizeAlphabetic,
-  isValidAlphabetic,
   sanitizeURL,
   isValidURL,
+  sanitizeName,
+  isValidName,
 } from "@nerdware/ts-string-helpers";
 import { getTypeSafeError } from "@nerdware/ts-type-safety-utils";
-import { googleOAuth2Client } from "@/lib/googleOAuth2Client/googleOAuth2Client.js";
+import { googleOAuth2Client } from "@/lib/googleOAuth2Client";
 import { AuthError } from "@/utils/httpErrors.js";
 import type { UserItem } from "@/models/User";
 import type { TokenPayload as GoogleOAuth2IDTokenPayload } from "google-auth-library";
@@ -58,25 +58,24 @@ export const GoogleOAuth2IDToken = {
     // Ensure the payload includes an `email`:
     if (!unsanitized_email) throw new AuthError(DEFAULT_GOOGLE_OAUTH_ERR_MSG);
 
-    // Sanitize the relevant payload fields (optional fields use `let`, default to null if invalid)
+    // Sanitize the relevant payload fields (optional fields use `let` & default to null if invalid)
 
     const email = sanitizeEmail(unsanitized_email);
     const googleID = sanitizeID(unsanitized_googleID);
-    let givenName = unsanitized_givenName ? sanitizeAlphabetic(unsanitized_givenName) : null;
-    let familyName = unsanitized_familyName ? sanitizeAlphabetic(unsanitized_familyName) : null;
+    let givenName = unsanitized_givenName ? sanitizeName(unsanitized_givenName) : null;
+    let familyName = unsanitized_familyName ? sanitizeName(unsanitized_familyName) : null;
     let profilePhotoUrl = unsanitized_profilePhotoURL
       ? sanitizeURL(unsanitized_profilePhotoURL)
       : null;
 
     // Validate the REQUIRED payload fields (if invalid, throw error)
-    if (!isValidEmail(email) || !isValidID(googleID)) {
+    if (!isValidEmail(email) || !isValidID(googleID))
       throw new AuthError(DEFAULT_GOOGLE_OAUTH_ERR_MSG);
-    }
 
     // Validate the OPTIONAL payload fields (if invalid, set to null)
-    if (!isValidAlphabetic(givenName)) givenName = null;
-    if (!isValidAlphabetic(familyName)) familyName = null;
-    if (!isValidURL(profilePhotoUrl)) profilePhotoUrl = null;
+    if (givenName && !isValidName(givenName)) givenName = null;
+    if (familyName && !isValidName(familyName)) familyName = null;
+    if (profilePhotoUrl && !isValidURL(profilePhotoUrl)) profilePhotoUrl = null;
 
     return {
       email,
