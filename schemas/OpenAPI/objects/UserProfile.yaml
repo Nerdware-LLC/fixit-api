@@ -3,7 +3,7 @@
 # REST Schema: UserProfile
 
 type: object
-description: Parameters for a user's profile.
+description: A user's profile.
 externalDocs:
   description: GQL Apollo Studio Schema Reference for the Profile object.
   url: "https://studio.apollographql.com/public/fixit/variant/current/schema/reference/objects/Profile"
