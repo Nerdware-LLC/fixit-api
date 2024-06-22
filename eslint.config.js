@@ -86,11 +86,12 @@ export default [
       "@typescript-eslint/no-unused-vars": [
         "warn",
         {
-          vars: "all",
-          varsIgnorePattern: "^_",
           args: "after-used",
           argsIgnorePattern: "^_",
-          ignoreRestSiblings: true,
+          vars: "all",
+          varsIgnorePattern: "^_",
+          destructuredArrayIgnorePattern: "^_",
+          ignoreRestSiblings: false,
         },
       ],
       "@typescript-eslint/prefer-for-of": "off",
