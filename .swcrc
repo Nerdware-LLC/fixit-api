@@ -17,18 +17,7 @@
       "mangle": true,
       "compress": {
         "ecma": "2022",
-        "module": true,
-        "top_retain": [
-          "UUID_V1_REGEX_STR",
-          "CONTACT_SK_PREFIX_STR",
-          "INVOICE_SK_PREFIX_STR",
-          "PW_RESET_TOKEN_SK_PREFIX_STR",
-          "STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR",
-          "USER_ID_PREFIX_STR",
-          "USER_SK_PREFIX_STR",
-          "USER_SUB_SK_PREFIX_STR",
-          "WORK_ORDER_SK_PREFIX_STR"
-        ]
+        "module": true
       }
     }
   },
