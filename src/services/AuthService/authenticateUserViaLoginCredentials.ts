@@ -4,12 +4,12 @@ import { passwordHasher } from "@/utils/passwordHasher.js";
 import type { LoginParams } from "@/models/UserLogin/UserLogin.js";
 
 /**
- * ### AuthService: authenticateUserLogin
+ * ### AuthService: authenticateUserViaLoginCredentials
  *
- * This function is used to authenticate a user login.
+ * This function is used to authenticate a user via login credentials.
  * @returns The authenticated UserItem.
  */
-export const authenticateUserLogin = async ({
+export const authenticateUserViaLoginCredentials = async ({
   email,
   password,
   googleID,
