@@ -1,8 +1,10 @@
 name: Publish API Schema
 
 on:
-  release:
-    types: [released] # Includes both releases and pre-releases
+  # This workflow runs for both releases and pre-releases
+  release: { types: [published] }
+  # This workflow can be manually triggered
+  workflow_dispatch:
 
 jobs:
   publish-open-api-schema:
@@ -15,43 +17,23 @@ jobs:
         with:
           node-version-file: ".nvmrc"
 
-      - run: npm ci --include=dev
+      - name: Setup Publication Tools
+        run: npm ci --include=dev
 
-      - env:
+      - name: Run Publication Script
+        env:
           SWAGGERHUB_API_KEY: ${{ secrets.SWAGGERHUB_API_KEY }}
         run: |
-          schema_file='schemas/OpenAPI/open-api.yaml'
-          tmp_bundle='schemas/OpenAPI/tmp-open-api-bundle.yaml'
+          # If prerelease is false, use --setdefault flag to update the default version
+          should_set_default=$(
+              [ ${{ github.event.release.prerelease }} == 'false' ] &&
+                  echo '--setdefault' ||
+                  echo ''
+          )
 
-          # Ensure the OpenAPI schema is valid
-          if ! npx swagger-cli validate $schema_file; then
-              echo "🚨 ERROR: Failed to publish OpenAPI schema — schema is invalid"
-              exit 1
-          fi
-
-          # Create a tmp bundled schema file for SwaggerHub
-          npx swagger-cli bundle $schema_file --outfile $tmp_bundle --type yaml
-
-          # Array for SwaggerHub CLI flags that are based on the release type:
-          swaggerhub_cli_release_flags=()
-
-          # For full releases, publish the schema and set it as the new default version
-          if [ ${{ github.event.release.prerelease }} == 'false' ]; then
-              swaggerhub_cli_release_flags+=(
-                  --published=publish
-                  --setdefault
-              )
-          fi
-
-          # Create a new schema version
-          npx swaggerhub api:create \
-              Nerdware/Fixit/${{ github.event.release.tag_name }} \
-              --file=$tmp_bundle \
-              --visibility=public \
-              ${swaggerhub_cli_release_flags[@]}
-
-          # Cleanup - remove the tmp file
-          rm $tmp_bundle
+          scripts/cicd.publish-schema-open-api.sh \
+              --version=${{ github.event.release.tag_name }} \
+              $should_set_default
 
   publish-graphql-schema:
     name: Publish GraphQL Schema
@@ -63,16 +45,18 @@ jobs:
         with:
           node-version-file: ".nvmrc"
 
-      - run: npm ci --include=dev
+      - name: Setup Publication Tools
+        run: npm ci --include=dev
 
-      - env:
+      - name: Run Publication Script
+        env:
           APOLLO_KEY: ${{ secrets.APOLLO_STUDIO_GRAPH_API_KEY }}
         run: |
-          # IF prerelease is false, THEN variant=prod, ELSE variant=staging
-          graph_variant="$(
+          # If prerelease is false, then variant is prod, else variant is staging
+          graph_variant=$(
               [ ${{ github.event.release.prerelease }} == 'false' ] &&
                   echo prod ||
                   echo staging
-          )"
+          )
 
-          scripts/cicd.publish-gql-schema.sh --variant=$graph_variant
+          scripts/cicd.publish-schema-graphql.sh --variant=$graph_variant
