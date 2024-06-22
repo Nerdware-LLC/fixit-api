@@ -151,6 +151,8 @@ export default [
       "vitest/no-hooks": "off",
       "vitest/prefer-expect-assertions": "off",
       "vitest/prefer-lowercase-title": ["error", { ignore: ["describe"] }],
+      "vitest/prefer-to-be-truthy": "off",
+      "vitest/prefer-to-be-falsy": "off",
       "vitest/valid-expect": "warn",
       "@typescript-eslint/no-confusing-void-expression": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
