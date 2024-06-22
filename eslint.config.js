@@ -147,7 +147,7 @@ export default [
       "vitest/max-expects": "off",
       "vitest/no-conditional-expect": "off",
       "vitest/no-disabled-tests": "warn",
-      "vitest/no-focused-tests": "warn",
+      "vitest/no-focused-tests": ["warn", { fixable: false }],
       "vitest/no-hooks": "off",
       "vitest/prefer-expect-assertions": "off",
       "vitest/prefer-lowercase-title": ["error", { ignore: ["describe"] }],
