@@ -20,7 +20,6 @@ info:
     name: Proprietary
     url: "https://raw.githubusercontent.com/Nerdware-LLC/fixit-api/main/LICENSE"
 servers:
-  - { url: "http://localhost:8080/api", description: Local Dev Server }
   - { url: "https://gofixit.app/api", description: Production API }
   - { url: "https://staging.gofixit.app/api", description: Staging API }
 tags:
