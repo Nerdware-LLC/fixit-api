@@ -1,9 +1,10 @@
 import { isValidEmail } from "@nerdware/ts-string-helpers";
 import { GraphQLScalarType, Kind } from "graphql";
 import { logger } from "@/utils/logger.js";
-import { helpers } from "../helpers.js";
+import { getScalarErrMsg } from "../helpers.js";
+import type { Resolvers } from "@/types/graphql.js";
 
-export const resolvers = {
+export const resolvers: Resolvers = {
   Email: new GraphQLScalarType({
     name: "Email",
     description: "Custom Email scalar with regex validation",
@@ -11,7 +12,7 @@ export const resolvers = {
     // parseValue = value from the client
     parseValue(value: unknown) {
       if (!isValidEmail(value)) {
-        const errMsg = helpers.getScalarErrMsg("Email", value);
+        const errMsg = getScalarErrMsg("Email", value);
         logger.gql(errMsg);
         throw new TypeError(errMsg);
       }
@@ -21,7 +22,7 @@ export const resolvers = {
     // serialize = value sent to the client
     serialize(value: unknown) {
       if (!isValidEmail(value)) {
-        const errMsg = helpers.getScalarErrMsg("Email", value);
+        const errMsg = getScalarErrMsg("Email", value);
         logger.gql(errMsg);
         throw new TypeError(errMsg);
       }

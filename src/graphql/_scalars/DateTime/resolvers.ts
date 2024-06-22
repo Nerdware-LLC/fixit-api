@@ -1,9 +1,10 @@
 import { GraphQLScalarType, Kind } from "graphql";
 import { logger } from "@/utils/logger.js";
 import { isValidTimestamp } from "@/utils/timestamps.js";
-import { helpers } from "../helpers.js";
+import { getScalarErrMsg } from "../helpers.js";
+import type { Resolvers } from "@/types/graphql.js";
 
-export const resolvers = {
+export const resolvers: Resolvers = {
   DateTime: new GraphQLScalarType({
     name: "DateTime",
     description: "Custom DateTime scalar with handling for Date objects and datetime strings",
@@ -11,7 +12,7 @@ export const resolvers = {
     // parseValue = value from the client
     parseValue(value: unknown) {
       if (!isValidTimestamp(value)) {
-        const errMsg = helpers.getScalarErrMsg("DateTime", value);
+        const errMsg = getScalarErrMsg("DateTime", value);
         logger.gql(errMsg);
         throw new TypeError(errMsg);
       }
@@ -21,7 +22,7 @@ export const resolvers = {
     // serialize = value sent to the client
     serialize(value: unknown) {
       if (!isValidTimestamp(value)) {
-        const errMsg = helpers.getScalarErrMsg("DateTime", value);
+        const errMsg = getScalarErrMsg("DateTime", value);
         logger.gql(errMsg);
         throw new TypeError(errMsg);
       }
@@ -30,10 +31,7 @@ export const resolvers = {
 
     // ast value is always in string format
     parseLiteral(ast) {
-      if (ast.kind === Kind.INT) {
-        return new Date(ast.value);
-      }
-      return null;
+      return ast.kind === Kind.INT ? new Date(ast.value) : null;
     },
   }),
 };
