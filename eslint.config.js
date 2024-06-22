@@ -142,7 +142,7 @@ export default [
       vitest: vitestPlugin,
     },
     rules: {
-      ...vitestPlugin.configs.all.rules,
+      ...vitestPlugin.configs.recommended.rules,
       "vitest/consistent-test-it": ["error", { fn: "test" }],
       "vitest/max-expects": "off",
       "vitest/no-conditional-expect": "off",
