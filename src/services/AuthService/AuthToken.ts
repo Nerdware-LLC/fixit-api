@@ -1,6 +1,6 @@
-import { getAuthHeaderToken } from "@/controllers/_helpers";
-import { InternalServerError } from "@/utils/httpErrors.js";
-import { JWT } from "@/utils/jwt.js"; 
+import { isString } from "@nerdware/ts-type-safety-utils";
+import { AuthError, InternalServerError } from "@/utils/httpErrors.js";
+import { JWT } from "@/utils/jwt.js";
 import type { AuthTokenPayload } from "@/types/open-api.js";
 import type { Request } from "express";
 import type { SetOptional } from "type-fest";
@@ -33,6 +33,19 @@ export class AuthToken {
   };
 
   /**
+   * Extracts a raw auth token string from the "Authorization" header of an incoming request.
+   */
+  static readonly getAuthHeaderToken = <R extends Request>(req: R) => {
+    // Get token from "Authorization" header
+    let token = req.get("Authorization");
+    // Ensure token exists and is a string
+    if (!token || !isString(token)) throw new AuthError("Invalid auth token");
+    // Remove 'Bearer ' from string if present
+    if (token.startsWith("Bearer ")) token = token.split(" ")[1]!;
+    return token;
+  };
+
+  /**
    * Validates the "Authorization" header of an incoming request and returns the decoded payload if valid.
    * @param request - The incoming request object.
    * @returns The decoded auth token payload.
@@ -40,9 +53,9 @@ export class AuthToken {
    */
   static readonly getValidatedRequestAuthTokenPayload = async (request: Request) => {
     // Get token from "Authorization" header
-    const token = getAuthHeaderToken(request);
+    const token = AuthToken.getAuthHeaderToken(request);
     // Validate the token; if valid, returns decoded payload.
-    return await this.validateAndDecode(token);
+    return await AuthToken.validateAndDecode(token);
   };
 
   private readonly encodedTokenValue: string;
