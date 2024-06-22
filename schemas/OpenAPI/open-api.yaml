@@ -81,7 +81,6 @@ components:
     LocalLoginCredentials: { $ref: "./objects/LoginCredentials.Local.yaml" }
     GoogleOAuthLoginCredentials: { $ref: "./objects/LoginCredentials.GoogleOAuth.yaml" }
     GoogleIDTokenField: { $ref: "./objects/GoogleIDTokenField.yaml" }
-    UserProfileParams: { $ref: "./objects/UserProfileParams.yaml" }
     ExpoPushTokenParam: { $ref: "./objects/ExpoPushTokenParam.yaml" }
     PasswordResetInitParams: { $ref: "./objects/PasswordResetInitParams.yaml" }
     PasswordResetParams: { $ref: "./objects/PasswordResetParams.yaml" }
