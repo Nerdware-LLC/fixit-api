@@ -107,10 +107,12 @@ export default [
         "error",
         {
           allowAny: false,
+          allowNever: false,
+          allowArray: true,
           allowBoolean: true,
-          allowNullish: false,
+          allowNullish: true,
           allowNumber: true,
-          allowRegExp: false,
+          allowRegExp: true,
         },
       ],
       ...eslintConfigPrettier.rules, // <-- must be last, removes rules that conflict with prettier
