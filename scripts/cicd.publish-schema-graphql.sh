@@ -21,9 +21,9 @@ SCRIPT:	$script_name
 USAGE:  scripts/$script_filename [OPTIONS]
 
 OPTIONS:
-	--variant=     The graph variant to use when validating the schema. If
-	               provided, must be one of 'prod', 'staging', or 'current'
-	               (default: '$default_variant').
+	--variant=     The graph variant to use when validating and publishing the
+	               schema. If provided, must be one of 'prod', 'staging', or
+				   'current' (default: '$default_variant').
 	--dry-run      Only generate the local schema file, but do not publish it.
 	--debug	       Prevent removal of temporary files on exit (default: false).
 	-h, --help     Display this help message and exit.
@@ -70,7 +70,8 @@ function ensure_npx_cmd_is_present() {
 		# Try invoking `nvm` to make it available
 		type nvm 1>/dev/null && nvm use 1>/dev/null
 		# If `npx` is still not available, throw an error
-		! type npx && throw_error 'Unable to fetch the GraphQL schema — npx command not found.'
+		! type npx && throw_error \
+			'Unable to proceed with script execution — npx command not found.'
 	fi
 }
 
@@ -192,7 +193,7 @@ function publish_schema_unless_dry_run() {
 ###############################################################################
 # SCRIPT EXECUTION
 
-log_info "\n[Starting Script: $script_name]\n"
+log_info "[Starting Script: $script_name]\n"
 
 ensure_graph_ref_is_valid
 ensure_npx_cmd_is_present
