@@ -6,7 +6,9 @@ import {
   type TemplateConfiguration,
   type Template,
 } from "@aws-sdk/client-pinpoint";
+import { getErrorMessage } from "@nerdware/ts-type-safety-utils";
 import { ENV } from "@/server/env";
+import { logger } from "@/utils/logger.js";
 import { fmtMessageAddresses, type PinpointMessageTo } from "./helpers.js";
 import type { OverrideProperties } from "type-fest";
 
@@ -91,14 +93,27 @@ export const pinpointClient = {
     ChannelType,
     ...messageRequest
   }: SendAppMessagesParams<Ch>) => {
-    return await _pinpointClient.send(
-      new SendMessagesCommand({
-        ApplicationId: ENV.AWS.PINPOINT_PROJECT_ID,
-        MessageRequest: {
-          ...(!!to && !!ChannelType && { Addresses: fmtMessageAddresses({ to, ChannelType }) }),
-          ...messageRequest,
-        },
-      } as any)
-    );
+    return await _pinpointClient
+      .send(
+        new SendMessagesCommand({
+          ApplicationId: ENV.AWS.PINPOINT_PROJECT_ID,
+          MessageRequest: {
+            ...(!!to && !!ChannelType && { Addresses: fmtMessageAddresses({ to, ChannelType }) }),
+            ...messageRequest,
+          },
+        } as any)
+      )
+      .catch((error: unknown) => {
+        const errMsg = getErrorMessage(error) ?? "(Unknown error)";
+        /* Currently, the Pinpoint client is not provided with adequate permissions
+        to send messages in the dev environment. Logging `errMsg` is therefore
+        conditional in order to avoid cluttering the console with expected errors. */
+        if (
+          ENV.IS_DEPLOYED_ENV ||
+          errMsg !== "The security token included in the request is invalid."
+        ) {
+          logger.error(`Error sending Pinpoint message: ${errMsg}`);
+        }
+      });
   },
 } as const;
