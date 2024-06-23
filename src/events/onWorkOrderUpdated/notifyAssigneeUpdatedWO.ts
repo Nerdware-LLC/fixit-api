@@ -105,9 +105,8 @@ export const notifyAssigneeUpdatedWO = async (
     );
 
     // If there are any deliverable push notifications, send them to the PushService
-    if (deliverablePNs.length > 0) {
+    if (deliverablePNs.length > 0)
       // Submit deliverable push msgs as the PushService Lambda fn payload
       await lambdaClient.invokeEvent("PushNotificationService", deliverablePNs);
-    }
   }
 };
