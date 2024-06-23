@@ -10,7 +10,7 @@ if (!/^[HRE]S(256|384|512)$/.test(ENV.JWT.ALGORITHM)) {
 const jwtAlgorithm = ENV.JWT.ALGORITHM as Algorithm;
 
 type BaseJwtPayload = jwt.JwtPayload & {
-  id?: string;
+  id: string;
   [key: string]: unknown;
 };
 
@@ -101,7 +101,8 @@ export class JWT {
   static readonly stripInternalPayloadFields = <Payload extends BaseJwtPayload>(
     payload: Payload
   ) => {
-    // Filter out the internal JWT fields via destructuring
+    // Filter out the internal JWT fields via destructuring.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { iss, sub, aud, exp, nbf, iat, jti, ...strippedPayload } = payload;
     return strippedPayload;
   };
