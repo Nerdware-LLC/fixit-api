@@ -1,17 +1,57 @@
-import { getRequestBodySanitizer } from "@/controllers/_helpers";
+import {
+  sanitizeEmail,
+  isValidEmail,
+  sanitizePassword,
+  isValidPassword,
+  sanitizeJWT,
+  isValidJWT,
+} from "@nerdware/ts-string-helpers";
+import { hasKey } from "@nerdware/ts-type-safety-utils";
+import { z as zod } from "zod";
+import { ApiController } from "@/controllers/ApiController.js";
 import { AuthService } from "@/services/AuthService";
-import { LOGIN_CREDENTIALS_REQ_BODY_SCHEMA, requirePasswordOrGoogleIDToken } from "./_common.js";
-import type { ApiController } from "@/controllers/types.js";
 import type { ParsedGoogleOAuth2IDTokenFields } from "@/services/AuthService/GoogleOAuth2IDToken.js";
+
+/**
+ * The Zod schema for the request body of the `/auth/login` endpoint.
+ */
+export const loginReqBodyZodSchema = zod
+  .object({
+    email: zod.string().transform(sanitizeEmail).refine(isValidEmail),
+    password: zod
+      .string()
+      .optional()
+      .transform((value) => (value ? sanitizePassword(value) : value))
+      .refine((value) => (value ? isValidPassword(value) : value === undefined)),
+    googleIDToken: zod
+      .string()
+      .optional()
+      .transform((value) => (value ? sanitizeJWT(value) : value))
+      .refine((value) => (value ? isValidJWT(value) : value === undefined)),
+    expoPushToken: zod
+      .string()
+      .optional()
+      .transform((value) => (value ? sanitizeJWT(value) : value))
+      .refine((value) => (value ? isValidJWT(value) : value === undefined)),
+  })
+  .strict()
+  .refine(
+    // Require either a `password` or `googleIDToken`:
+    (reqBody) => hasKey(reqBody, "password") || hasKey(reqBody, "googleIDToken"),
+    { message: "Invalid login credentials" }
+  );
 
 /**
  * This controller method logs in a user.
  *
  * > Endpoint: `POST /api/auth/login`
  */
-export const login: ApiController<"/auth/login"> = async (req, res, next) => {
-  try {
-    const { email, password, googleIDToken, expoPushToken } = sanitizeLoginRequest(req);
+export const login = ApiController<"/auth/login">(
+  // Req body schema:
+  loginReqBodyZodSchema,
+  // Controller logic:
+  async (req, res) => {
+    const { email, password, googleIDToken, expoPushToken } = req.body;
 
     // If a `googleIDToken` is provided, parse it:
     const { googleID }: Partial<ParsedGoogleOAuth2IDTokenFields> = googleIDToken
@@ -19,7 +59,7 @@ export const login: ApiController<"/auth/login"> = async (req, res, next) => {
       : {};
 
     // Authenticate the user:
-    const authenticatedUser = await AuthService.authenticateUserLogin({
+    const authenticatedUser = await AuthService.authenticateUser.viaLoginCredentials({
       email,
       password,
       googleID,
@@ -44,12 +84,5 @@ export const login: ApiController<"/auth/login"> = async (req, res, next) => {
       token: authToken.toString(),
       userItems,
     });
-  } catch (err) {
-    next(err);
   }
-};
-
-const sanitizeLoginRequest = getRequestBodySanitizer<"/auth/login">({
-  requestBodySchema: LOGIN_CREDENTIALS_REQ_BODY_SCHEMA,
-  validateRequestBody: requirePasswordOrGoogleIDToken,
-});
+);

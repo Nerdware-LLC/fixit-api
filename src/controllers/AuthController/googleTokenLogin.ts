@@ -1,7 +1,7 @@
-import { getRequestBodySanitizer, type FieldConfig } from "@/controllers/_helpers";
+import { sanitizeJWT, isValidJWT } from "@nerdware/ts-string-helpers";
+import { z as zod } from "zod";
+import { ApiController } from "@/controllers/ApiController.js";
 import { AuthService } from "@/services/AuthService";
-import { LOGIN_CREDENTIALS_REQ_BODY_SCHEMA } from "./_common.js";
-import type { ApiController } from "@/controllers/types.js";
 
 /**
  * This controller method logs in a user using a Google ID Token.
@@ -9,15 +9,27 @@ import type { ApiController } from "@/controllers/types.js";
  *
  * > Endpoint: `POST /api/auth/google-token`
  */
-export const googleTokenLogin: ApiController<"/auth/google-token"> = async (req, res, next) => {
-  try {
-    const { googleIDToken } = sanitizeGoogleTokenLoginRequest(req);
+export const googleTokenLogin = ApiController<"/auth/google-token">(
+  // Req body schema:
+  zod
+    .object({
+      googleIDToken: zod.string().transform(sanitizeJWT).refine(isValidJWT, {
+        message: "Invalid Google ID Token",
+      }),
+    })
+    .strict(),
+  // Controller logic:
+  async (req, res) => {
+    const { googleIDToken } = req.body;
 
     // Parse the Google ID Token:
     const { email, googleID } = await AuthService.parseGoogleOAuth2IDToken(googleIDToken);
 
     // Authenticate the user:
-    const authenticatedUser = await AuthService.authenticateUserLogin({ email, googleID });
+    const authenticatedUser = await AuthService.authenticateUser.viaLoginCredentials({
+      email,
+      googleID,
+    });
 
     // Pre-fetch User items:
     const { userItems, userSubscription, userStripeConnectAccount } =
@@ -35,17 +47,5 @@ export const googleTokenLogin: ApiController<"/auth/google-token"> = async (req,
       token: authToken.toString(),
       userItems,
     });
-  } catch (err) {
-    next(err);
   }
-};
-
-const sanitizeGoogleTokenLoginRequest = getRequestBodySanitizer<"/auth/google-token">({
-  requestBodySchema: {
-    googleIDToken: {
-      ...LOGIN_CREDENTIALS_REQ_BODY_SCHEMA.googleIDToken,
-      required: true,
-    } as FieldConfig<string>,
-    // The `sanitize` and `validate` fns in the shared defs are typed using `string | undefined`
-  },
-});
+);

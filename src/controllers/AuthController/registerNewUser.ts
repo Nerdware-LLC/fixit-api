@@ -4,28 +4,45 @@ import {
   sanitizePhone,
   isValidPhone,
 } from "@nerdware/ts-string-helpers";
-import { getRequestBodySanitizer } from "@/controllers/_helpers";
+import { hasKey } from "@nerdware/ts-type-safety-utils";
+import { z as zod } from "zod";
+import { ApiController } from "@/controllers/ApiController.js";
 import { AuthService } from "@/services/AuthService";
 import { UserService } from "@/services/UserService";
-import { LOGIN_CREDENTIALS_REQ_BODY_SCHEMA, requirePasswordOrGoogleIDToken } from "./_common.js";
-import type { ApiController } from "@/controllers/types.js";
+import { loginReqBodyZodSchema } from "./login.js";
 import type { ParsedGoogleOAuth2IDTokenFields } from "@/services/AuthService/GoogleOAuth2IDToken.js";
+
+/**
+ * The Zod schema for the request body of the `/auth/register` endpoint.
+ */
+export const registerNewUserReqBodyZodSchema = loginReqBodyZodSchema
+  .innerType()
+  .extend({
+    handle: zod.string().transform(sanitizeHandle).refine(isValidHandle),
+    phone: zod
+      .string()
+      .nullish()
+      .default(null)
+      .transform((value) => (value ? sanitizePhone(value) : null))
+      .refine((value) => (value ? isValidPhone(value) : value === null)),
+  })
+  .refine(
+    // Require either a `password` or `googleIDToken`:
+    (reqBody) => hasKey(reqBody, "password") || hasKey(reqBody, "googleIDToken"),
+    { message: "Invalid login credentials" }
+  );
 
 /**
  * This controller method registers a new user.
  *
  * > Endpoint: `POST /api/auth/register`
  */
-export const registerNewUser: ApiController<"/auth/register"> = async (req, res, next) => {
-  try {
-    const {
-      handle,
-      email,
-      phone = null,
-      password,
-      googleIDToken,
-      expoPushToken,
-    } = sanitizeRegisterUserRequest(req);
+export const registerNewUser = ApiController<"/auth/register">(
+  // Req body schema:
+  registerNewUserReqBodyZodSchema,
+  // Controller logic:
+  async (req, res) => {
+    const { handle, email, phone = null, password, googleIDToken, expoPushToken } = req.body;
 
     // If a `googleIDToken` is provided, parse it:
     const { googleID, profile }: Partial<ParsedGoogleOAuth2IDTokenFields> = googleIDToken
@@ -48,28 +65,5 @@ export const registerNewUser: ApiController<"/auth/register"> = async (req, res,
 
     // Send response:
     res.status(201).json({ token: authToken.toString() });
-  } catch (err) {
-    next(err);
   }
-};
-
-const sanitizeRegisterUserRequest = getRequestBodySanitizer<"/auth/register">({
-  requestBodySchema: {
-    handle: {
-      type: "string",
-      required: true,
-      nullable: false,
-      sanitize: sanitizeHandle,
-      validate: isValidHandle,
-    },
-    phone: {
-      type: "string",
-      required: false,
-      nullable: true,
-      sanitize: sanitizePhone,
-      validate: isValidPhone,
-    },
-    ...LOGIN_CREDENTIALS_REQ_BODY_SCHEMA,
-  },
-  validateRequestBody: requirePasswordOrGoogleIDToken,
-});
+);

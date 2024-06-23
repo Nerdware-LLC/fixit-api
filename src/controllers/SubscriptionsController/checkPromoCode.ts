@@ -1,8 +1,8 @@
 import { sanitizeAlphabetic, isValidAlphabetic } from "@nerdware/ts-string-helpers";
-import { getRequestBodySanitizer } from "@/controllers/_helpers";
+import { z as zod } from "zod";
+import { ApiController } from "@/controllers/ApiController.js";
 import { AuthService } from "@/services/AuthService";
 import { CheckoutService } from "@/services/CheckoutService";
-import type { ApiController } from "@/controllers/types.js";
 
 /**
  * This controller returns a Stripe Customer Portal link, which allows the User to
@@ -10,34 +10,25 @@ import type { ApiController } from "@/controllers/types.js";
  *
  * > Endpoint: `POST /api/subscriptions/check-promo-code`
  */
-// prettier-ignore
-export const checkPromoCode: ApiController<"/subscriptions/check-promo-code">
-  = async (req, res, next) => {
-    try {
-      // Validate the request (don't need to use the decoded payload, just validate the token)
-      await AuthService.getValidatedRequestAuthTokenPayload(req);
+export const checkPromoCode = ApiController<"/subscriptions/check-promo-code">(
+  // Req body schema:
+  zod
+    .object({
+      promoCode: zod.string().transform(sanitizeAlphabetic).refine(isValidAlphabetic),
+    })
+    .strict(),
+  // Controller logic:
+  async (req, res) => {
+    // Validate the request (don't need to use the decoded payload, just validate the token)
+    await AuthService.authenticateUser.viaAuthHeaderToken(req);
 
-      // Get the provided `promoCode`:
-      const { promoCode } = sanitizeCheckPromoCodeRequest(req);
+    // Get the provided `promoCode`:
+    const { promoCode } = req.body;
 
-      // Get the promo code info:
-      const promoCodeInfo = CheckoutService.checkPromoCode({ promoCode });
+    // Get the promo code info:
+    const promoCodeInfo = CheckoutService.checkPromoCode({ promoCode });
 
-      // Send response:
-      res.status(200).json({ promoCodeInfo });
-    } catch (err) {
-      next(err);
-    }
-  };
-
-const sanitizeCheckPromoCodeRequest = getRequestBodySanitizer<"/subscriptions/check-promo-code">({
-  requestBodySchema: {
-    promoCode: {
-      type: "string",
-      required: true,
-      nullable: false,
-      sanitize: sanitizeAlphabetic,
-      validate: isValidAlphabetic,
-    },
-  },
-});
+    // Send response:
+    res.status(200).json({ promoCodeInfo });
+  }
+);

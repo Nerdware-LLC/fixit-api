@@ -1,8 +1,7 @@
-import { sanitizeURL, isValidURL } from "@nerdware/ts-string-helpers";
-import { getRequestBodySanitizer } from "@/controllers/_helpers";
+import { ApiController } from "@/controllers/ApiController.js";
+import { returnUrlReqBodySchema } from "@/controllers/ConnectController/createAccountLink";
 import { AccountService } from "@/services/AccountService";
 import { AuthService } from "@/services/AuthService";
-import type { ApiController } from "@/controllers/types.js";
 
 /**
  * This controller returns a Stripe Customer Portal link, which allows the User to
@@ -10,15 +9,16 @@ import type { ApiController } from "@/controllers/types.js";
  *
  * > Endpoint: `POST /api/subscriptions/customer-portal`
  */
-export const createCustomerBillingPortalLink: ApiController<
-  "/subscriptions/customer-portal"
-> = async (req, res, next) => {
-  try {
+export const createCustomerBillingPortalLink = ApiController<"/subscriptions/customer-portal">(
+  // Req body schema:
+  returnUrlReqBodySchema,
+  // Controller logic:
+  async (req, res) => {
     // Validate and decode the AuthToken from the 'Authorization' header:
-    const authenticatedUser = await AuthService.getValidatedRequestAuthTokenPayload(req);
+    const authenticatedUser = await AuthService.authenticateUser.viaAuthHeaderToken(req);
 
     // Get the provided `returnURL`:
-    const { returnURL } = sanitizeCreateCustomerBillingPortalLinkRequest(req);
+    const { returnURL } = req.body;
 
     // Get the Stripe link:
     const { url: stripeLink } = await AccountService.createCustomerBillingPortalLink({
@@ -28,20 +28,5 @@ export const createCustomerBillingPortalLink: ApiController<
 
     // Send response:
     res.status(201).json({ stripeLink });
-  } catch (err) {
-    next(err);
   }
-};
-
-const sanitizeCreateCustomerBillingPortalLinkRequest =
-  getRequestBodySanitizer<"/subscriptions/customer-portal">({
-    requestBodySchema: {
-      returnURL: {
-        type: "string",
-        required: true,
-        nullable: false,
-        sanitize: sanitizeURL,
-        validate: isValidURL,
-      },
-    },
-  });
+);

@@ -1,6 +1,5 @@
 import { getTypeSafeError } from "@nerdware/ts-type-safety-utils";
-import { UserStripeConnectAccount } from "@/models/UserStripeConnectAccount";
-import { STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR } from "@/models/UserStripeConnectAccount/regex.js";
+import { UserStripeConnectAccount, SCA_SK_PREFIX_STR } from "@/models/UserStripeConnectAccount";
 import { logger } from "@/utils/logger.js";
 import type Stripe from "stripe";
 
@@ -25,7 +24,7 @@ export const connectAccountUpdated = async (rawStripeConnectAccountObj: Stripe.A
     const queryResult = await UserStripeConnectAccount.query({
       where: {
         id: stripeConnectAccountID,
-        sk: { beginsWith: STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR },
+        sk: { beginsWith: SCA_SK_PREFIX_STR },
       },
       limit: 1,
     });
