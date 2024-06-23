@@ -1,32 +1,39 @@
-import { getTypeSafeError, safeJsonStringify } from "@nerdware/ts-type-safety-utils";
+import { getTypeSafeError } from "@nerdware/ts-type-safety-utils";
 import { ENV } from "@/server/env";
 import { logger } from "@/utils/logger.js";
-import type { BaseHttpError } from "@/utils/httpErrors.js";
+import type { ErrorOrHttpError } from "@/types/globals.js";
 import type { ErrorRequestHandler } from "express";
 
-/**
- * This is the default error-handling middleware which captures errors and sends a
- * JSON response to the client.
- */
-export const errorHandler: ErrorRequestHandler = (err: unknown, req, res, next) => {
-  const error = getTypeSafeError(err);
+const DEFAULT_ERROR_MESSAGE = "An unexpected problem occurred";
 
-  const errorStatusCode = (error as Partial<BaseHttpError>)?.statusCode ?? 500;
+/**
+ * This function serves as the fallback Express error-handler.
+ *
+ *   1. Parses the provided error object (`originalError`)
+ *
+ *   2. Logs pertinent info if the error either
+ *      - **(a)** has an http `statusCode` of `5xx`, or
+ *      - **(b)** does not have a `statusCode` property
+ *
+ *   3. Sends a JSON error-response to the client
+ *      > _**In prod, `5xx` error messages are masked**_
+ */
+export const errorHandler: ErrorRequestHandler = (originalError: unknown, req, res, next) => {
+  // Parse the originalError param
+  const error = getTypeSafeError(originalError, { fallBackErrMsg: DEFAULT_ERROR_MESSAGE });
+
+  const { statusCode: errorStatusCode = 500 } = error as ErrorOrHttpError;
+  let { message: errorMessage } = error;
 
   if (errorStatusCode >= 500) {
-    logger.error(`[SERVER ERROR] On route "${req.originalUrl}": ${safeJsonStringify(err)}`);
+    logger.error({ req, originalError }, `SERVER ERROR on route "${req.originalUrl}"`);
+    // Mask 5xx error messages in production
+    if (ENV.IS_PROD) errorMessage = DEFAULT_ERROR_MESSAGE;
   }
 
-  // If streaming back to the client has already been initiated, just delegate to the default built-in error handler.
-  if (res.headersSent) return next(err);
+  // If streaming back to the client has already been initiated, use Express's built-in default-error-handler.
+  if (res.headersSent) return next(originalError);
 
   // Send JSON response to client
-  res.status(errorStatusCode).json({
-    error:
-      errorStatusCode >= 500 && ENV.IS_PROD // mask 5xx error messages in production
-        ? MASKED_ERROR_MESSAGE
-        : error.message || MASKED_ERROR_MESSAGE,
-  });
+  res.status(errorStatusCode).json({ error: errorMessage });
 };
-
-const MASKED_ERROR_MESSAGE = "An unexpected problem occurred";
