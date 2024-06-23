@@ -1,4 +1,5 @@
 import { EventEmitter } from "events";
+import { sendConfirmationEmail } from "@/events/onCheckoutCompleted";
 import { notifyAssigneeNewInvoice } from "@/events/onInvoiceCreated";
 import { notifyAssigneeDeletedInvoice } from "@/events/onInvoiceDeleted";
 import { notifyAssignorPaidInvoice } from "@/events/onInvoicePaid";
@@ -23,6 +24,7 @@ export class FixitEventEmitter
   implements Record<`emit${FixitEventName}`, (...args: any[]) => void>
 {
   static readonly EVENT_HANDLERS = {
+    CheckoutCompleted: [sendConfirmationEmail],
     InvoiceCreated: [notifyAssigneeNewInvoice],
     InvoiceUpdated: [notifyAssigneeUpdatedInvoice],
     InvoiceDeleted: [notifyAssigneeDeletedInvoice],
@@ -38,6 +40,7 @@ export class FixitEventEmitter
     return (...args) => this.emit(name, ...args);
   }
 
+  emitCheckoutCompleted = this.getNamedEmitter("CheckoutCompleted");
   emitInvoiceCreated = this.getNamedEmitter("InvoiceCreated");
   emitInvoiceUpdated = this.getNamedEmitter("InvoiceUpdated");
   emitInvoiceDeleted = this.getNamedEmitter("InvoiceDeleted");
@@ -51,17 +54,17 @@ export class FixitEventEmitter
   constructor(eventHandlers = FixitEventEmitter.EVENT_HANDLERS) {
     super();
     // Register each event's handler functions
-    Object.entries(eventHandlers).forEach(([eventName, eventHandlers]) => {
-      eventHandlers.forEach((eventHandler) =>
+    for (const eventName in eventHandlers) {
+      eventHandlers[eventName as FixitEventName].forEach((handler) =>
         this.on(
           eventName,
           // Wrap each event handler in a try/catch block to prevent unhandled errors
-          async (...args: any[]) => {
-            await eventHandler(args[0], args[1]).catch((error: unknown) => logger.error(error));
+          async (...args) => {
+            await handler(args[0], args[1]).catch((error: unknown) => logger.error(error));
           }
         )
       );
-    });
+    }
   }
 }
 
@@ -78,7 +81,7 @@ export type NamedEmitFn<EventName extends FixitEventName> = (
 /** Event handler base type. */
 export type BaseEventHandler = (...args: any[]) => Promise<void>;
 
-// Augment EventEmitter to only allow the names of configured events to be emitted.
+// This augments EventEmitter to only allow the names of configured events to be emitted.
 declare module "events" {
   interface EventEmitter {
     emit(eventName: FixitEventName, ...args: unknown[]): boolean;
