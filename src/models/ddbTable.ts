@@ -15,7 +15,7 @@ export const ddbTable = new Table({
       required: true,
       isRangeKey: true,
       index: {
-        name: "Overloaded_SK_GSI", // For relational queryies using "sk" as the hash key
+        name: "Overloaded_SK_GSI", // For queries using "sk" as the hash key
         rangeKey: "data",
         global: true,
         project: true, // all attributes
@@ -26,8 +26,8 @@ export const ddbTable = new Table({
       type: "string",
       required: true,
       index: {
-        name: "Overloaded_Data_GSI", // For relational queries using "data" as the hash key
-        rangeKey: "sk", // WO query "WorkOrdersAssignedToUser" uses this GSI SK
+        name: "Overloaded_Data_GSI", // For queries using "data" as the hash key
+        rangeKey: "sk",
         global: true,
         project: true, // all attributes
         throughput: { read: 5, write: 5 },
