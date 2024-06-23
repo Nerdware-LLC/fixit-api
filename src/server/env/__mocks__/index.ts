@@ -8,7 +8,6 @@ import { createEnvObject } from "../helpers.js";
 
 const {
   npm_package_version,
-  NODE_ENV = "test",
   // SERVER
   VITE_PROTOCOL: PROTOCOL = "http",
   VITE_DOMAIN: DOMAIN = "localhost",
@@ -17,6 +16,7 @@ const {
   VITE_WEB_CLIENT_URL: WEB_CLIENT_URL = "http://localhost:3000",
   // AWS
   VITE_AWS_REGION: AWS_REGION = "local",
+  VITE_DYNAMODB_REGION: DYNAMODB_REGION = "local",
   VITE_DYNAMODB_TABLE_NAME: DYNAMODB_TABLE_NAME = "fixit-db-test",
   VITE_DYNAMODB_ENDPOINT: DYNAMODB_ENDPOINT = "http://localhost:8000",
   VITE_PINPOINT_PROJECT_ID: PINPOINT_PROJECT_ID = "TestTestTest",
@@ -27,8 +27,9 @@ const {
   VITE_JWT_ISSUER: JWT_ISSUER = "TestTestTest",
   VITE_JWT_EXPIRES_IN: JWT_EXPIRES_IN = "5m",
   VITE_BCRYPT_SALT_ROUNDS: BCRYPT_SALT_ROUNDS = "10",
+  VITE_UUID_NAMESPACE: UUID_NAMESPACE = "aaaaaaaa-aaaa-5aaa-8aaa-aaaaaaaaaaaa", // 5=version, 8=variant
   // SENTRY
-  VITE_SENTRY_DSN: SENTRY_DSN = "TestTestTest",
+  VITE_SENTRY_DSN: SENTRY_DSN,
   // STRIPE
   VITE_STRIPE_API_VERSION: STRIPE_API_VERSION = "2022-08-01",
   VITE_STRIPE_PUBLISHABLE_KEY: STRIPE_PUBLISHABLE_KEY = "pk_fake_TestTestTest",
@@ -41,12 +42,13 @@ const {
 
 export const ENV = createEnvObject({
   ...(!!npm_package_version && { npm_package_version }),
-  NODE_ENV,
+  NODE_ENV: "test",
   PROTOCOL,
   DOMAIN,
   PORT,
   WEB_CLIENT_URL,
   AWS_REGION,
+  DYNAMODB_REGION,
   DYNAMODB_TABLE_NAME,
   DYNAMODB_ENDPOINT,
   PINPOINT_PROJECT_ID,
@@ -56,6 +58,7 @@ export const ENV = createEnvObject({
   JWT_ISSUER,
   JWT_EXPIRES_IN,
   BCRYPT_SALT_ROUNDS,
+  UUID_NAMESPACE,
   SENTRY_DSN,
   STRIPE_API_VERSION,
   STRIPE_PUBLISHABLE_KEY,
