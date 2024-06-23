@@ -1,5 +1,5 @@
 import { isString } from "@nerdware/ts-type-safety-utils";
-import { unixToDate } from "@/utils/formatters/dateTime.js";
+import { unixTimestampToDate } from "@/utils/formatters/dateTime.js";
 import type Stripe from "stripe";
 
 /**
@@ -33,8 +33,8 @@ export const normalizeStripeFields = <StripeSub extends Stripe.Subscription>(
   // Obtain+normalize fields used in the app:
   const appFields = {
     stripeCustomerID: isString(customer) ? customer : customer.id,
-    createdAt: unixToDate(created),
-    currentPeriodEnd: unixToDate(current_period_end),
+    createdAt: unixTimestampToDate(created),
+    currentPeriodEnd: unixTimestampToDate(current_period_end),
     productID: isString(product) ? product : product.id,
     priceID,
   };
