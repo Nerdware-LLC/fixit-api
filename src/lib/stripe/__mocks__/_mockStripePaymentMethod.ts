@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import merge from "lodash.merge";
+import deepMerge from "lodash.merge";
 import type { UserItem } from "@/models/User/User.js";
 import type Stripe from "stripe";
 import type { SetRequired } from "type-fest";
@@ -54,6 +54,6 @@ export const mockStripePaymentMethod = (
   };
 
   return customValues
-    ? merge(defaultMockPaymentMethodObj, customValues)
+    ? deepMerge(defaultMockPaymentMethodObj, customValues)
     : defaultMockPaymentMethodObj;
 };

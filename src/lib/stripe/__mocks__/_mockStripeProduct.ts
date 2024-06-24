@@ -1,6 +1,5 @@
 import deepMerge from "lodash.merge";
 import type Stripe from "stripe";
-import type { PartialDeep } from "type-fest";
 
 /**
  * Returns a mock Stripe Product object. Any provided args are deep-merged with
@@ -8,7 +7,9 @@ import type { PartialDeep } from "type-fest";
  *
  * @see https://stripe.com/docs/api/products/object
  */
-export const mockStripeProduct = ({ ...productArgs }: PartialDeep<Stripe.Product>) => {
+export const mockStripeProduct = ({ ...productArgs }: Partial<Stripe.Product>): Stripe.Product => {
+  /* deepMerge does NOT create a new obj, it updates+returns the first arg's
+  ref, so the DEFAULT_ object must be spread here to avoid mutating it. */
   return deepMerge({ ...DEFAULT_MOCK_STRIPE_PRODUCT_FIELDS }, productArgs);
 };
 
@@ -21,8 +22,7 @@ const DEFAULT_MOCK_STRIPE_PRODUCT_FIELDS: Stripe.Product = {
   active: true,
   created: 1678833149,
   default_price: null,
-  description:
-    "People who need to get things done use Fixit to keep in touch with customers and contractors, create work orders, submit invoices, and manage payments - all in one place.",
+  description: "The payment app for people who need to get things done.",
   images: [],
   livemode: false,
   metadata: {},

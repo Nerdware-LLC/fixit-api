@@ -1,6 +1,6 @@
 import { isPlainObject, isString } from "@nerdware/ts-type-safety-utils";
 import dayjs from "dayjs";
-import merge from "lodash.merge";
+import deepMerge from "lodash.merge";
 import { mockStripeInvoice } from "./_mockStripeInvoice.js";
 import { mockStripePaymentIntent } from "./_mockStripePaymentIntent.js";
 import { MOCK_STRIPE_PLAN } from "./_mockStripePlan.js";
@@ -115,6 +115,6 @@ export const mockStripeSubscription = (
   };
 
   return customValues
-    ? merge(defaultMockSubscriptionObj, customValues)
+    ? deepMerge(defaultMockSubscriptionObj, customValues)
     : defaultMockSubscriptionObj;
 };

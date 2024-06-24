@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import merge from "lodash.merge";
+import deepMerge from "lodash.merge";
 import { mockStripePaymentIntent } from "./_mockStripePaymentIntent.js";
 import type { UserItem } from "@/models/User/User.js";
 import type { UserSubscriptionItem } from "@/models/UserSubscription/UserSubscription.js";
@@ -155,6 +155,6 @@ export const mockStripeInvoice = (
   };
 
   return otherCustomValues
-    ? merge(defaultMockInvoiceObj, otherCustomValues)
+    ? deepMerge(defaultMockInvoiceObj, otherCustomValues)
     : defaultMockInvoiceObj;
 };
