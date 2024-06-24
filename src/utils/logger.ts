@@ -153,7 +153,7 @@ export const logger = {
   }),
   test: getLoggerUtil({
     label: "TEST",
-    msgColor: chalk.bgCyan.black,
+    msgColor: chalk.cyan,
   }),
   error: getLoggerUtil({
     label: "ERROR",
