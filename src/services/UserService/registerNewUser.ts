@@ -38,9 +38,11 @@ export const registerNewUser = async ({
   // Ensure the user does not already exist
   const [user] = await User.query({ where: { email }, limit: 1 });
 
-  if (user) {
-    throw new UserInputError("An account already exists with the provided email address.");
-  }
+  if (user) throw new UserInputError("An account already exists with the provided email address.");
+
+  // Ensure the handle is unique
+  const userByHandle = usersCache.get(handle);
+  if (userByHandle) throw new UserInputError("An account already exists with the provided handle.");
 
   // Create Profile object
   const newUserProfile = Profile.fromParams({ ...profile, handle });
@@ -95,34 +97,32 @@ export const registerNewUser = async ({
     eventEmitter.emitNewUser(newUser);
     //
   } catch (error: unknown) {
-    // TODO Add logic here to diminish logging verbosity if error was caused by invalid user input
+    // Log errors which are not UserInputErrors
+    if (!(error instanceof UserInputError)) logger.error(error, "UserService.registerNewUser");
 
-    // Log the error, and delete the Stripe Customer on fail
-    logger.error(error, "UserService.registerNewUser");
+    // This fn returns an error handler for ops that fail in this catch block:
+    const getCleanupErrHandler =
+      (descriptionOfItemThatFailedToDelete: string) => (err: unknown) => {
+        logger.error(
+          err,
+          `FAILED TO DELETE ${descriptionOfItemThatFailedToDelete} after failed registration of User with email "${email}".`
+        );
+      };
 
     // Delete the Stripe Customer:
-
-    logger.stripe(
-      `Failed to create User with email "${email}". Deleting Stripe Customer "${stripeCustomerID}"...`
-    );
-
-    await stripe.customers.del(stripeCustomerID);
-
-    logger.stripe(`Deleted Stripe Customer "${stripeCustomerID}".`);
+    await stripe.customers
+      .del(stripeCustomerID)
+      .catch(getCleanupErrHandler(`Stripe Customer "${stripeCustomerID}"`));
 
     // Delete the User, if it was created:
     if (newUser) {
-      logger.info(`Deleting User "${newUser.id}" due to failed UserService.registerNewUser()...`);
-      User.deleteItem({ id: newUser.id })
-        .then(() => logger.info(`SUCCESS: Deleted User "${newUser!.id}"`))
-        .catch(() => logger.error(`ERROR: FAILED TO DELETE User "${newUser!.id}"`));
+      await User.deleteItem({ id: newUser.id }).catch(getCleanupErrHandler(`User "${newUser.id}"`));
 
       // Delete the UserStripeConnectAccount, if it was created:
       if (newUserStripeConnectAccount) {
-        logger.info(`Deleting SCA of User "${newUser.id}" due to failed UserService.registerNewUser()...`); // prettier-ignore
-        UserStripeConnectAccount.deleteItem({ userID: newUser.id })
-          .then(() => logger.info(`SUCCESS: Deleted SCA of User "${newUser!.id}"`))
-          .catch(() => logger.error(`ERROR: FAILED TO DELETE SCA of User "${newUser!.id}"`));
+        await UserStripeConnectAccount.deleteItem({ userID: newUser.id }).catch(
+          getCleanupErrHandler(`SCA of User "${newUser.id}"`)
+        );
       }
     }
 
