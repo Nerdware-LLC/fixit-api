@@ -1,10 +1,10 @@
-import { userStripeConnectAccountModelHelpers as scaModelHelpers } from "@/models/UserStripeConnectAccount/helpers.js";
+import { scaModelHelpers } from "@/models/UserStripeConnectAccount/helpers.js";
 import { MOCK_DATES } from "./dates.js";
 import { MOCK_USERS } from "./users.js";
 import type {
   UserStripeConnectAccountItem,
   UnaliasedUserStripeConnectAccountItem,
-} from "@/models/UserStripeConnectAccount";
+} from "@/models/UserStripeConnectAccount/UserStripeConnectAccount.js";
 
 const { USER_A, USER_B, USER_C } = MOCK_USERS;
 

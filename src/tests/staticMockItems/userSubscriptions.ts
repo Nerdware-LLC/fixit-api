@@ -1,10 +1,10 @@
-import { userSubscriptionModelHelpers as subModelHelpers } from "@/models/UserSubscription/helpers.js";
+import {
+  UserSubscription,
+  type UserSubscriptionItem,
+  type UnaliasedUserSubscriptionItem,
+} from "@/models/UserSubscription/UserSubscription.js";
 import { MOCK_DATES } from "./dates.js";
 import { MOCK_USERS } from "./users.js";
-import type {
-  UserSubscriptionItem,
-  UnaliasedUserSubscriptionItem,
-} from "@/models/UserSubscription";
 
 const { USER_A, USER_B, USER_C } = MOCK_USERS;
 
@@ -12,7 +12,7 @@ export const MOCK_USER_SUBS = {
   /** Mock UserSubscription for `USER_A` */
   SUB_A: {
     userID: USER_A.id,
-    sk: subModelHelpers.sk.format(USER_A.id, MOCK_DATES.JAN_1_2020),
+    sk: UserSubscription.getFormattedSK(USER_A.id, MOCK_DATES.JAN_1_2020),
     id: "sub_AAAAAAAAAAAAAAAAAAAAAAAA",
     status: "active",
     currentPeriodEnd: MOCK_DATES.JAN_1_2021,
@@ -24,7 +24,7 @@ export const MOCK_USER_SUBS = {
   /** Mock UserSubscription for `USER_B` */
   SUB_B: {
     userID: USER_B.id,
-    sk: subModelHelpers.sk.format(USER_B.id, MOCK_DATES.JAN_2_2020),
+    sk: UserSubscription.getFormattedSK(USER_B.id, MOCK_DATES.JAN_2_2020),
     id: "sub_BBBBBBBBBBBBBBBBBBBBBBBB",
     status: "active",
     currentPeriodEnd: MOCK_DATES.JAN_1_2021,
@@ -36,7 +36,7 @@ export const MOCK_USER_SUBS = {
   /** Mock UserSubscription for `USER_C` */
   SUB_C: {
     userID: USER_C.id,
-    sk: subModelHelpers.sk.format(USER_C.id, MOCK_DATES.JAN_3_2020),
+    sk: UserSubscription.getFormattedSK(USER_C.id, MOCK_DATES.JAN_3_2020),
     id: "sub_CCCCCCCCCCCCCCCCCCCCCCCC",
     status: "active",
     currentPeriodEnd: MOCK_DATES.JAN_1_2021,

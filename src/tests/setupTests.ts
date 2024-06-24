@@ -11,10 +11,12 @@ import dayjs from "dayjs";
  *      These default mocks satisfy the needs of most unit+int tests, and
  *      are simply overridden where necessary.
  */
-
 //                                            MANUAL MOCK LOCATIONS:
 vi.mock("@/server/env"); //                   src/server/env/__mocks__/index.ts
 vi.mock("@/lib/stripe/stripeClient.js"); //   src/lib/stripe/__mocks__/stripeClient.ts
+vi.mock("@/lib/cache/productsCache.js"); //   src/lib/cache/__mocks__/productsCache.ts
+vi.mock("@/lib/cache/pricesCache.js"); //     src/lib/cache/__mocks__/pricesCache.ts
+vi.mock("@/lib/cache/usersCache.js"); //      src/lib/cache/__mocks__/usersCache.ts
 vi.mock("@/models/ddbTable.js"); //           src/models/__mocks__/ddbTable.ts
 vi.mock("@aws-sdk/client-dynamodb"); //       __mocks__/@aws-sdk/client-dynamodb.ts
 vi.mock("@aws-sdk/client-lambda"); //         __mocks__/@aws-sdk/client-lambda.ts

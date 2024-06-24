@@ -1,5 +1,4 @@
 import dayjs from "dayjs";
-import { getUnixTimestampUUID } from "@/utils/uuid.js";
 
 /**
  * Mock dates used for testing. Each date is set to the first millisecond of their
@@ -21,19 +20,6 @@ export const MOCK_DATES = {
   /** Jan 1 2021 - used for "future" date fields like `UserSubscription.currentPeriodEnd` */
   JAN_1_2021: new Date("2021-01-01T00:00:00.000Z"),
 } as const satisfies Record<string, Date>;
-
-/**
- * Timestamp UUIDv1 for each date in {@link MOCK_DATES}.
- */
-export const MOCK_DATE_v1_UUIDs = {
-  JAN_1_2020: getUnixTimestampUUID(MOCK_DATES.JAN_1_2020),
-  JAN_2_2020: getUnixTimestampUUID(MOCK_DATES.JAN_2_2020),
-  JAN_3_2020: getUnixTimestampUUID(MOCK_DATES.JAN_3_2020),
-  MAY_1_2020: getUnixTimestampUUID(MOCK_DATES.MAY_1_2020),
-  MAY_2_2020: getUnixTimestampUUID(MOCK_DATES.MAY_2_2020),
-  MAY_3_2020: getUnixTimestampUUID(MOCK_DATES.MAY_3_2020),
-  JAN_1_2021: getUnixTimestampUUID(MOCK_DATES.JAN_1_2021),
-} as const satisfies Record<string, string>;
 
 /**
  * Unix timestamps (seconds) for each date in {@link MOCK_DATES}.

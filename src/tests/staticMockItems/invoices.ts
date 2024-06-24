@@ -1,15 +1,15 @@
 import { invoiceModelHelpers } from "@/models/Invoice/helpers.js";
-import { MOCK_DATES, MOCK_DATE_v1_UUIDs as UUIDs } from "./dates.js";
+import { MOCK_DATES } from "./dates.js";
 import { MOCK_USERS } from "./users.js";
 import { MOCK_WORK_ORDERS } from "./workOrders.js";
 import type { InvoiceItem, UnaliasedInvoiceItem } from "@/models/Invoice";
 
-const { USER_A, USER_B, USER_C } = MOCK_USERS;
+const { USER_A, USER_B } = MOCK_USERS;
 
 export const MOCK_INVOICES = {
   /** [MOCK INV]  createdBy: `USER_A`, assignedTo: `USER_B`, status: `"OPEN"` */
   INV_A: {
-    id: invoiceModelHelpers.id.format(USER_A.id, UUIDs.MAY_1_2020),
+    id: invoiceModelHelpers.id.format(USER_A.id),
     createdByUserID: USER_A.id,
     assignedToUserID: USER_B.id,
     amount: 11111,
@@ -19,11 +19,11 @@ export const MOCK_INVOICES = {
     createdAt: MOCK_DATES.MAY_1_2020,
     updatedAt: MOCK_DATES.MAY_1_2020,
   },
-  /** [MOCK INV] createdBy: `USER_B`, assignedTo: `USER_C`, status: `"DISPUTED"` */
+  /** [MOCK INV] createdBy: `USER_B`, assignedTo: `USER_A`, status: `"DISPUTED"` */
   INV_B: {
-    id: invoiceModelHelpers.id.format(USER_B.id, UUIDs.MAY_2_2020),
+    id: invoiceModelHelpers.id.format(USER_B.id),
     createdByUserID: USER_B.id,
-    assignedToUserID: USER_C.id,
+    assignedToUserID: USER_A.id,
     amount: 22222,
     status: "DISPUTED",
     workOrderID: null,
@@ -33,7 +33,7 @@ export const MOCK_INVOICES = {
   },
   /** [MOCK INV] createdBy: `USER_A`, assignedTo: `USER_B`, status: `"CLOSED"` */
   INV_C: {
-    id: invoiceModelHelpers.id.format(USER_A.id, UUIDs.MAY_3_2020),
+    id: invoiceModelHelpers.id.format(USER_A.id),
     createdByUserID: USER_A.id,
     assignedToUserID: USER_B.id,
     amount: 33333,

@@ -1,14 +1,22 @@
+import { sanitizePhone } from "@nerdware/ts-string-helpers";
 import { userModelHelpers } from "@/models/User/helpers.js";
-import { normalize } from "@/utils/normalize.js";
-import { MOCK_DATES, MOCK_DATE_v1_UUIDs as UUIDs } from "./dates.js";
+import { MOCK_DATES } from "./dates.js";
 import type { UserItem, UnaliasedUserItem } from "@/models/User";
+
+const MOCK_USER_HANDLES = { USER_A: "@user_A", USER_B: "@user_B", USER_C: "@user_C" } as const;
+
+const MOCK_USER_IDS = {
+  USER_A: userModelHelpers.id.format(MOCK_USER_HANDLES.USER_A),
+  USER_B: userModelHelpers.id.format(MOCK_USER_HANDLES.USER_B),
+  USER_C: userModelHelpers.id.format(MOCK_USER_HANDLES.USER_C),
+} as const;
 
 export const MOCK_USERS = {
   /** Mock User with LOCAL login type. */
   USER_A: {
-    id: userModelHelpers.id.format(UUIDs.JAN_1_2020),
-    sk: userModelHelpers.sk.format(userModelHelpers.id.format(UUIDs.JAN_1_2020)),
-    handle: "@user_A",
+    id: MOCK_USER_IDS.USER_A,
+    sk: userModelHelpers.sk.format(MOCK_USER_IDS.USER_A),
+    handle: MOCK_USER_HANDLES.USER_A,
     email: "userA@gmail.com",
     phone: "(888) 111-1111",
     stripeCustomerID: "cus_AAAAAAAAAAAAAAAAAAAAAAAA",
@@ -29,9 +37,9 @@ export const MOCK_USERS = {
   },
   /** Mock User with GOOGLE_OAUTH login type. */
   USER_B: {
-    id: userModelHelpers.id.format(UUIDs.JAN_2_2020),
-    sk: userModelHelpers.sk.format(userModelHelpers.id.format(UUIDs.JAN_2_2020)),
-    handle: "@user_B",
+    id: MOCK_USER_IDS.USER_B,
+    sk: userModelHelpers.sk.format(MOCK_USER_IDS.USER_B),
+    handle: MOCK_USER_HANDLES.USER_B,
     email: "user_B@gmail.com",
     phone: "(888) 222-2222",
     stripeCustomerID: "cus_BBBBBBBBBBBBBBBBBBBBBBBB",
@@ -52,9 +60,9 @@ export const MOCK_USERS = {
   },
   /** Mock User with LOCAL login type. */
   USER_C: {
-    id: userModelHelpers.id.format(UUIDs.JAN_3_2020),
-    sk: userModelHelpers.sk.format(userModelHelpers.id.format(UUIDs.JAN_3_2020)),
-    handle: "@user_C",
+    id: MOCK_USER_IDS.USER_C,
+    sk: userModelHelpers.sk.format(MOCK_USER_IDS.USER_C),
+    handle: MOCK_USER_HANDLES.USER_C,
     email: "user_C@gmail.com",
     phone: "(888) 333-3333",
     stripeCustomerID: "cus_CCCCCCCCCCCCCCCCCCCCCCCC",
@@ -82,7 +90,7 @@ export const UNALIASED_MOCK_USERS = Object.fromEntries(
     {
       pk: id,
       data: email,
-      phone: normalize.phone(phone),
+      phone: sanitizePhone(phone),
       ...user,
     },
   ])
