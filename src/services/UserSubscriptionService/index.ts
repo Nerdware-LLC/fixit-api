@@ -1,20 +1,18 @@
 import { createSubscription } from "./createSubscription.js";
 import { extractClientSecret } from "./extractClientSecret.js";
+import { findUsersSubscription } from "./findUsersSubscription.js";
 import { normalizeStripeFields } from "./normalizeStripeFields.js";
 import { refreshDataFromStripe } from "./refreshDataFromStripe.js";
-import { validateSubscriptionStatus } from "./validateSubscriptionStatus.js";
-import { processCheckoutPayment } from "../CheckoutService/processCheckoutPayment.js";
 
 /**
  * #### UserSubscriptionService
  *
- * This object contains methods which implement business logic for UserSubscription operations.
+ * This object contains methods which implement business logic for User Subscription operations.
  */
 export const UserSubscriptionService = {
   createSubscription,
-  processCheckoutPayment,
+  findUsersSubscription,
   refreshDataFromStripe,
-  validateSubscriptionStatus,
   // HELPER METHODS:
   extractClientSecret,
   normalizeStripeFields,

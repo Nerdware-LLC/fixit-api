@@ -1,6 +1,7 @@
 import { promoCodesCache } from "@/lib/cache/promoCodesCache.js";
 import { stripe } from "@/lib/stripe/stripeClient.js";
 import { UserSubscription, type UserSubscriptionItem } from "@/models/UserSubscription";
+import { SUBSCRIPTION_PRICE_NAMES as SUB_PRICE_NAMES } from "@/models/UserSubscription/enumConstants.js";
 import { UserInputError } from "@/utils/httpErrors.js";
 import { normalizeStripeFields } from "./normalizeStripeFields.js";
 import type { StripeSubscriptionWithClientSecret } from "@/lib/stripe/types.js";
@@ -42,7 +43,7 @@ export const createSubscription = async ({
     customer: stripeCustomerID,
     items: [{ price: priceID }],
     ...(promoCodeID && { promotion_code: promoCodeID }),
-    ...(selectedSubscription === "TRIAL" && { trial_period_days: 14 }),
+    ...(selectedSubscription === SUB_PRICE_NAMES.TRIAL && { trial_period_days: 14 }),
     payment_behavior: "default_incomplete",
     payment_settings: { save_default_payment_method: "on_subscription" },
     expand: ["latest_invoice.payment_intent", "customer"],
