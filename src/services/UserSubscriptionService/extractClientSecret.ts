@@ -22,9 +22,8 @@ export const extractClientSecret = (
       ? ((stripeObj as any).latest_invoice.payment_intent.client_secret as string)
       : null;
 
-  if (!clientSecret) {
+  if (!clientSecret)
     throw new Error(`No client_secret found in Stripe ${capitalize(stripeObj.object)}.`);
-  }
 
   return clientSecret;
 };
