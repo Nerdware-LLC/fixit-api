@@ -1,4 +1,4 @@
-import { Location } from "@/models/Location/Location.js";
+import { Location } from "@/models/Location";
 import {
   MOCK_WORK_ORDERS,
   UNALIASED_MOCK_WORK_ORDERS,

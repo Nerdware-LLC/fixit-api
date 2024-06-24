@@ -1,6 +1,6 @@
 import { pinpointClient } from "@/lib/pinpointClient";
 import { sendWelcomeEmail } from "./sendWelcomeEmail.js";
-import type { UserItem } from "@/models/User/User.js";
+import type { UserItem } from "@/models/User";
 
 describe("sendWelcomeEmail", () => {
   test("invokes pinpointClient with correct arguments when newUser is valid", async () => {

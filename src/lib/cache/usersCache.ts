@@ -1,7 +1,7 @@
 import { USER_ID_PREFIX_STR } from "@/models/User/helpers.js";
 import { ddbTable } from "@/models/ddbTable.js";
 import { Cache } from "./Cache.js";
-import type { UnaliasedUserItem } from "@/models/User/User.js";
+import type { UnaliasedUserItem } from "@/models/User";
 import type { User, Contact } from "@/types/graphql.js";
 import type { Simplify } from "type-fest";
 

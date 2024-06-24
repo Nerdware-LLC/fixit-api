@@ -1,5 +1,5 @@
 import { PushNotification, type PushNotificationRecipient } from "./PushNotification.js";
-import type { InvoiceItem } from "@/models/Invoice/Invoice.js";
+import type { InvoiceItem } from "@/models/Invoice";
 
 /**
  * This class represents a push notification for an Invoice event.

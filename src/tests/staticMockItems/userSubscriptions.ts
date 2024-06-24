@@ -2,7 +2,7 @@ import {
   UserSubscription,
   type UserSubscriptionItem,
   type UnaliasedUserSubscriptionItem,
-} from "@/models/UserSubscription/UserSubscription.js";
+} from "@/models/UserSubscription";
 import { MOCK_DATES } from "./dates.js";
 import { MOCK_USERS } from "./users.js";
 

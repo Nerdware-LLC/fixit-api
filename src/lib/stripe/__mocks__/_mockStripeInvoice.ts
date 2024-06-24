@@ -1,8 +1,8 @@
 import dayjs from "dayjs";
 import deepMerge from "lodash.merge";
 import { mockStripePaymentIntent } from "./_mockStripePaymentIntent.js";
-import type { UserItem } from "@/models/User/User.js";
-import type { UserSubscriptionItem } from "@/models/UserSubscription/UserSubscription.js";
+import type { UserItem } from "@/models/User";
+import type { UserSubscriptionItem } from "@/models/UserSubscription";
 import type Stripe from "stripe";
 import type { PartialDeep } from "type-fest";
 

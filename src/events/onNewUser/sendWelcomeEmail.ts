@@ -1,5 +1,5 @@
 import { pinpointClient } from "@/lib/pinpointClient";
-import type { UserItem } from "@/models/User/User.js";
+import type { UserItem } from "@/models/User";
 
 /**
  * Send welcome email to new User when `NewUser` event is emitted.

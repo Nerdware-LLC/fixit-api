@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
-import type { UserItem } from "@/models/User/User.js";
-import type { UserStripeConnectAccountItem } from "@/models/UserStripeConnectAccount/UserStripeConnectAccount.js";
+import type { UserItem } from "@/models/User";
+import type { UserStripeConnectAccountItem } from "@/models/UserStripeConnectAccount";
 import type Stripe from "stripe";
 
 /**

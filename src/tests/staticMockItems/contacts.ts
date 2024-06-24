@@ -1,4 +1,4 @@
-import { Contact, type ContactItem, type UnaliasedContactItem } from "@/models/Contact/Contact.js";
+import { Contact, type ContactItem, type UnaliasedContactItem } from "@/models/Contact";
 import { MOCK_DATES } from "./dates.js";
 import { MOCK_USERS } from "./users.js";
 

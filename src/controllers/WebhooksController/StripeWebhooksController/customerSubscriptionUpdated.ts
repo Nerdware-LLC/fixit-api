@@ -1,5 +1,5 @@
 import { getTypeSafeError } from "@nerdware/ts-type-safety-utils";
-import { UserSubscription } from "@/models/UserSubscription/UserSubscription.js";
+import { UserSubscription } from "@/models/UserSubscription";
 import { UserSubscriptionService } from "@/services/UserSubscriptionService";
 import { logger } from "@/utils/logger.js";
 import type Stripe from "stripe";

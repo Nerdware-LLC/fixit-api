@@ -4,7 +4,7 @@ import { MOCK_USERS } from "./users.js";
 import type {
   UserStripeConnectAccountItem,
   UnaliasedUserStripeConnectAccountItem,
-} from "@/models/UserStripeConnectAccount/UserStripeConnectAccount.js";
+} from "@/models/UserStripeConnectAccount";
 
 const { USER_A, USER_B, USER_C } = MOCK_USERS;
 

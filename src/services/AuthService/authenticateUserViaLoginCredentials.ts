@@ -1,7 +1,7 @@
 import { User, type UserItem } from "@/models/User";
 import { AuthError, InternalServerError } from "@/utils/httpErrors.js";
 import { passwordHasher } from "@/utils/passwordHasher.js";
-import type { LoginParams } from "@/models/UserLogin/UserLogin.js";
+import type { LoginParams } from "@/models/UserLogin";
 
 /**
  * ### AuthService: authenticateUserViaLoginCredentials

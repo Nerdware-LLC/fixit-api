@@ -2,8 +2,8 @@ import { User, type UserItem } from "@/models/User";
 import { UserSCAService } from "@/services/UserSCAService";
 import { UserService } from "@/services/UserService";
 import { UserSubscriptionService } from "@/services/UserSubscriptionService";
-import type { UserStripeConnectAccountItem } from "@/models/UserStripeConnectAccount/UserStripeConnectAccount.js";
-import type { UserSubscriptionItem } from "@/models/UserSubscription/UserSubscription.js";
+import type { UserStripeConnectAccountItem } from "@/models/UserStripeConnectAccount";
+import type { UserSubscriptionItem } from "@/models/UserSubscription";
 import type { PreFetchedUserItems } from "@/types/open-api.js";
 
 /**

@@ -5,7 +5,7 @@ import { MOCK_USERS } from "./users.js";
 import type {
   PasswordResetTokenItem,
   UnaliasedPasswordResetTokenItem,
-} from "@/models/PasswordResetToken/PasswordResetToken.js";
+} from "@/models/PasswordResetToken";
 
 const { USER_A, USER_B, USER_C } = MOCK_USERS;
 

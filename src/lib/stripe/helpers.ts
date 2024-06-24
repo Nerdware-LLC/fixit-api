@@ -1,4 +1,4 @@
-import { getRegexValidatorFn } from "@nerdware/ts-string-helpers";
+import { getValidatorFn } from "@nerdware/ts-string-helpers";
 
 /**
  * An object with methods which return `true` if the given value is a string which
@@ -12,19 +12,19 @@ import { getRegexValidatorFn } from "@nerdware/ts-string-helpers";
  */
 export const isValidStripeID = {
   /** Returns `true` if `value` is a valid Stripe ConnectAccount ID (e.g., `"acct_123abc123ABC"`). */
-  connectAccount: getRegexValidatorFn(/^acct_[a-zA-Z0-9]{10,150}$/),
+  connectAccount: getValidatorFn(/^acct_[a-zA-Z0-9]{10,150}$/),
   /** Returns `true` if `value` is a valid Stripe Customer ID (e.g., `"cus_123abc123ABC"`). */
-  customer: getRegexValidatorFn(/^cus_[a-zA-Z0-9]{10,150}$/),
+  customer: getValidatorFn(/^cus_[a-zA-Z0-9]{10,150}$/),
   /** Returns `true` if `value` is a valid Stripe PaymentIntent ID (e.g., `"pi_123abc123ABC"`). */
-  paymentIntent: getRegexValidatorFn(/^pi_[a-zA-Z0-9]{10,150}$/),
+  paymentIntent: getValidatorFn(/^pi_[a-zA-Z0-9]{10,150}$/),
   /** Returns `true` if `value` is a valid Stripe PaymentMethod ID (e.g., `"pm_123abc123ABC"`). */
-  paymentMethod: getRegexValidatorFn(/^pm_[a-zA-Z0-9]{10,150}$/),
+  paymentMethod: getValidatorFn(/^pm_[a-zA-Z0-9]{10,150}$/),
   /** Returns `true` if `value` is a valid Stripe Price ID (e.g., `"price_123abc123ABC"`). */
-  price: getRegexValidatorFn(/^price_[a-zA-Z0-9]{10,150}$/),
+  price: getValidatorFn(/^price_[a-zA-Z0-9]{10,150}$/),
   /** Returns `true` if `value` is a valid Stripe Product ID (e.g., `"prod_123abc123ABC"`). */
-  product: getRegexValidatorFn(/^prod_[a-zA-Z0-9]{10,150}$/),
+  product: getValidatorFn(/^prod_[a-zA-Z0-9]{10,150}$/),
   /** Returns `true` if `value` is a valid Stripe Subscription ID (e.g., `"sub_123abc123ABC"`). */
-  subscription: getRegexValidatorFn(/^sub_[a-zA-Z0-9]{10,150}$/),
+  subscription: getValidatorFn(/^sub_[a-zA-Z0-9]{10,150}$/),
 };
 
 /**

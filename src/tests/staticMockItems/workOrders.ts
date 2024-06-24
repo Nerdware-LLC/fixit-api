@@ -3,7 +3,7 @@ import { Location } from "@/models/Location";
 import { workOrderModelHelpers as woModelHelpers } from "@/models/WorkOrder/helpers.js";
 import { MOCK_DATES } from "./dates.js";
 import { MOCK_USERS } from "./users.js";
-import type { WorkOrderItem, UnaliasedWorkOrderItem } from "@/models/WorkOrder/WorkOrder.js";
+import type { WorkOrderItem, UnaliasedWorkOrderItem } from "@/models/WorkOrder";
 
 const { USER_A, USER_B, USER_C } = MOCK_USERS;
 
