@@ -26,3 +26,9 @@ export const isValidStripeID = {
   /** Returns `true` if `value` is a valid Stripe Subscription ID (e.g., `"sub_123abc123ABC"`). */
   subscription: getRegexValidatorFn(/^sub_[a-zA-Z0-9]{10,150}$/),
 };
+
+/**
+ * Returns a sanitized Stripe ID string, with any chars removed which are
+ * neither alphanumeric nor an underscore (`_`).
+ */
+export const sanitizeStripeID = (value: string) => value.replace(/[^a-zA-Z0-9_]/g, "");
