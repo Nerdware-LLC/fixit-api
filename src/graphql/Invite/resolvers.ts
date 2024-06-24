@@ -1,12 +1,15 @@
-import { isValidPhone, isValidEmail } from "@nerdware/ts-string-helpers";
-import { GenericSuccessResponse } from "@/graphql/_common";
+import { sanitizeEmail, isValidPhone, isValidEmail } from "@nerdware/ts-string-helpers";
+import { MutationResponse } from "@/graphql/_responses";
 import { pinpointClient } from "@/lib/pinpointClient";
-import { GqlUserInputError } from "@/utils/httpErrors.js";
+import { UserInputError } from "@/utils/httpErrors.js";
 import type { Resolvers } from "@/types/graphql.js";
 
-export const resolvers: Partial<Resolvers> = {
+export const resolvers: Resolvers = {
   Mutation: {
     createInvite: async (_parent, { phoneOrEmail }, { user }) => {
+      // Sanitize phoneOrEmail
+      phoneOrEmail = sanitizeEmail(phoneOrEmail); // <-- works bc the fn allows digit chars
+
       // Get the sender's name for usage in the invite message template
       const {
         profile: { givenName, familyName, displayName },
@@ -58,12 +61,12 @@ export const resolvers: Partial<Resolvers> = {
           },
         });
       } else {
-        throw new GqlUserInputError(
+        throw new UserInputError(
           "Unable to send invite — the provided input must be a valid phone number or email address."
         );
       }
 
-      return new GenericSuccessResponse({ wasSuccessful: true });
+      return new MutationResponse({ success: true });
     },
   },
 };

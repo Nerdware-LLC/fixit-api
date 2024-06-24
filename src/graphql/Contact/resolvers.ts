@@ -1,20 +1,20 @@
-import { DeleteMutationResponse } from "@/graphql/_common";
-import { usersCache } from "@/lib/cache/usersCache.js";
-import { Contact } from "@/models/Contact/Contact.js";
-import { User } from "@/models/User/User.js";
-import { GqlUserInputError, GqlInternalServerError } from "@/utils/httpErrors.js";
+import { DeleteMutationResponse } from "@/graphql/_responses";
+import { Contact, contactModelHelpers } from "@/models/Contact";
+import { userModelHelpers } from "@/models/User";
+import { ContactService } from "@/services/ContactService";
+import { UserService } from "@/services/UserService";
 import type { Resolvers } from "@/types/graphql.js";
 
-export const resolvers: Partial<Resolvers> = {
+export const resolvers: Resolvers = {
   Query: {
     contact: async (_parent, { contactID }, { user }) => {
-      const contact = await Contact.getItem({ userID: user.id, id: contactID });
+      // Sanitize contactID
+      contactID = contactModelHelpers.id.sanitizeAndValidate(contactID);
 
-      if (!contact) {
-        throw new GqlUserInputError("A contact with the provided ID could not be found.");
-      }
-
-      return contact;
+      return await ContactService.findContactByID({
+        authenticatedUserID: user.id,
+        contactID,
+      });
     },
     myContacts: async (_parent, _args, { user }) => {
       return await Contact.query({
@@ -27,59 +27,34 @@ export const resolvers: Partial<Resolvers> = {
   },
   Mutation: {
     createContact: async (_parent, { contactUserID }, { user }) => {
-      // First, ensure the user hasn't somehow sent their own ID
-      if (contactUserID.toUpperCase() === user.id.toUpperCase()) {
-        throw new GqlUserInputError("Can not add yourself as a contact");
-      }
+      // Sanitize contactUserID
+      contactUserID = userModelHelpers.id.sanitizeAndValidate(contactUserID);
 
-      const requestedUser = await User.getItem({ id: contactUserID });
-
-      if (!requestedUser) throw new GqlUserInputError("Requested user not found.");
-
-      // create method won't overwrite existing, if Contact already exists.
-      return await Contact.createItem({
-        userID: user.id,
-        contactUserID: requestedUser.id,
-        handle: requestedUser.handle,
+      return await ContactService.createContact({
+        authenticatedUserID: user.id,
+        contactUserID,
       });
     },
     deleteContact: async (_parent, { contactID }, { user }) => {
-      // Test to ensure `contactID` is a valid contact ID
-      if (!Contact.isValidID(contactID)) throw new GqlUserInputError("Invalid contact ID.");
+      // Sanitize contactID
+      contactID = contactModelHelpers.id.sanitizeAndValidate(contactID);
 
       await Contact.deleteItem({ userID: user.id, id: contactID });
 
-      return new DeleteMutationResponse({ id: contactID, wasDeleted: true });
+      return new DeleteMutationResponse({ success: true, id: contactID });
     },
   },
   Contact: {
     email: async (parent) => {
-      let user = usersCache.get(parent.handle);
-
-      user ||= await User.getItem({ id: parent.contactUserID });
-
-      if (!user?.email) {
-        throw new GqlInternalServerError("Contact email could not be found.");
-      }
-
+      const user = await UserService.getUserByHandleOrID(parent);
       return user.email;
     },
     phone: async (parent) => {
-      let user = usersCache.get(parent.handle);
-
-      user ||= await User.getItem({ id: parent.contactUserID });
-
+      const user = await UserService.getUserByHandleOrID(parent);
       return user?.phone ?? null;
     },
     profile: async (parent) => {
-      let user = usersCache.get(parent.handle);
-
-      user ||= await User.getItem({ id: parent.contactUserID });
-
-      if (!user?.profile) {
-        throw new GqlInternalServerError("Contact profile could not be found.");
-      }
-
+      const user = await UserService.getUserByHandleOrID(parent);
       return user.profile;
     },
   },
