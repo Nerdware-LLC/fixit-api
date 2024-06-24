@@ -1,23 +1,22 @@
 import { safeJsonStringify } from "@nerdware/ts-type-safety-utils";
 import { usersCache } from "@/lib/cache/usersCache.js";
-import { Contact } from "@/models/Contact/Contact.js";
-import { Invoice } from "@/models/Invoice/Invoice.js";
-import { UserStripeConnectAccount as UserSCA } from "@/models/UserStripeConnectAccount/UserStripeConnectAccount.js";
-import { UserSubscription } from "@/models/UserSubscription/UserSubscription.js";
-import { WorkOrder } from "@/models/WorkOrder/WorkOrder.js";
+import { Contact, type ContactItem } from "@/models/Contact";
+import { Invoice, type InvoiceItem } from "@/models/Invoice";
+import { USER_SK_PREFIX_STR } from "@/models/User";
+import { UserStripeConnectAccount as UserSCA } from "@/models/UserStripeConnectAccount";
+import { UserSubscription, type UserSubscriptionItem } from "@/models/UserSubscription";
+import { WorkOrder, type WorkOrderItem } from "@/models/WorkOrder";
 import { skTypeGuards } from "@/models/_common/skTypeGuards.js";
 import { ddbTable } from "@/models/ddbTable.js";
 import { AuthError, InternalServerError } from "@/utils/httpErrors.js";
 import { logger } from "@/utils/logger.js";
-import type { ContactItem } from "@/models/Contact/Contact.js";
-import type { InvoiceItem } from "@/models/Invoice/Invoice.js";
-import type { UserItem } from "@/models/User/User.js";
-import type { UserStripeConnectAccountItem } from "@/models/UserStripeConnectAccount/UserStripeConnectAccount.js";
-import type { UserSubscriptionItem } from "@/models/UserSubscription/UserSubscription.js";
-import type { WorkOrderItem } from "@/models/WorkOrder/WorkOrder.js";
+import type { UserItem } from "@/models/User";
+import type { UserStripeConnectAccountItem } from "@/models/UserStripeConnectAccount";
 import type { PreFetchedUserItems } from "@/types/open-api.js";
 
 /**
+ * ### UserService: queryUserItems
+ *
  * This function queries/fetches/pre-fetches the following types of User items:
  *
  * - Subscription(s)      - used for authentication and authorization
@@ -46,7 +45,7 @@ export const queryUserItems = async ({
     KeyConditionExpression: `pk = :userID AND sk BETWEEN :skStart AND :skEnd`,
     ExpressionAttributeValues: {
       ":userID": authenticatedUserID,
-      ":skStart": `#DATA#${authenticatedUserID}`,
+      ":skStart": `${USER_SK_PREFIX_STR}#${authenticatedUserID}`,
       ":skEnd": "~",
       // In utf8 byte order, tilde comes after numbers, upper+lowercase letters, #, and $.
     },
@@ -73,12 +72,17 @@ export const queryUserItems = async ({
       ) => {
         // Use type-guards to determine the type of the current item, and add it to the appropriate accum field
         if (skTypeGuards.isUser(current)) return accum;
-      else if (skTypeGuards.isContact(current)) accum.rawContacts.push(current);
-      else if (skTypeGuards.isInvoice(current)) accum.rawInvoices.push(current);
-      else if (skTypeGuards.isUserSubscription(current)) accum.rawSubscription = current;
-      else if (skTypeGuards.isUserSCA(current)) accum.rawStripeConnectAccount = current;
-      else if (skTypeGuards.isWorkOrder(current)) accum.rawWorkOrders.push(current);
-      else logger.warn(`[queryUserItems] The following ITEM was returned by the "queryUserItems" DDB query, but items of this type are not handled by the reducer. ${safeJsonStringify(current, null, 2)}`); // prettier-ignore
+        else if (skTypeGuards.isContact(current)) accum.rawContacts.push(current);
+        else if (skTypeGuards.isInvoice(current)) accum.rawInvoices.push(current);
+        else if (skTypeGuards.isUserSubscription(current)) accum.rawSubscription = current;
+        else if (skTypeGuards.isUserSCA(current)) accum.rawStripeConnectAccount = current;
+        else if (skTypeGuards.isWorkOrder(current)) accum.rawWorkOrders.push(current);
+        else logger.warn(
+            `[queryUserItems] The following ITEM was returned by the "queryUserItems" DDB query, but ` +
+            `no handler has been implemented for items of this type in the item-categorization reducer.
+            — ITEM: ${safeJsonStringify(current, null, 2)}`
+          ); // prettier-ignore
+
         return accum;
       },
       {
@@ -112,44 +116,75 @@ export const queryUserItems = async ({
   has a large number of workOrders/invoices. */
 
   const returnedUserItems: PreFetchedUserItems = {
-    workOrders: rawWorkOrders.map((rawWorkOrder) => {
-      // Process workOrder from its raw internal shape:
-      const { createdByUserID, assignedToUserID, ...workOrderFields } =
-        WorkOrder.processItemAttributes.fromDB<WorkOrderItem>(rawWorkOrder);
+    myWorkOrders: rawWorkOrders.reduce(
+      (accum: PreFetchedUserItems["myWorkOrders"], rawWorkOrder) => {
+        // Process workOrder from its raw internal shape:
+        const { createdByUserID, assignedToUserID, ...workOrderFields } =
+          WorkOrder.processItemAttributes.fromDB<WorkOrderItem>(rawWorkOrder);
 
-      return {
-        // Fields which are nullable/optional in GQL schema must be provided, default to null:
-        category: null,
-        checklist: null,
-        dueDate: null,
-        entryContact: null,
-        entryContactPhone: null,
-        scheduledDateTime: null,
-        contractorNotes: null,
-        // workOrder values override above defaults:
-        ...workOrderFields,
-        // createdBy and assignedTo objects are formatted for the GQL client cache:
-        createdBy: { id: createdByUserID },
-        assignedTo: assignedToUserID ? { id: assignedToUserID } : null,
-      };
-    }),
-    invoices: rawInvoices.map((rawInvoice) => {
-      // Process invoice from its raw internal shape:
-      const { createdByUserID, assignedToUserID, workOrderID, ...invoiceFields } =
-        Invoice.processItemAttributes.fromDB<InvoiceItem>(rawInvoice);
+        const workOrder = {
+          // Fields which are nullable/optional in GQL schema must be provided, default to null:
+          category: null,
+          checklist: null,
+          dueDate: null,
+          entryContact: null,
+          entryContactPhone: null,
+          scheduledDateTime: null,
+          contractorNotes: null,
+          // workOrder values override above defaults:
+          ...workOrderFields,
+          // __typename, createdBy, and assignedTo fields are formatted for the GQL client cache:
+          __typename: "WorkOrder" as const,
+          createdBy: { id: createdByUserID },
+          assignedTo: assignedToUserID ? { id: assignedToUserID } : null,
+        };
 
-      return {
-        // Fields which are nullable/optional in GQL schema must be provided, default to null:
-        stripePaymentIntentID: null,
-        // invoice values override above defaults:
-        ...invoiceFields,
-        // createdBy and assignedTo objects are formatted for the GQL client cache:
-        createdBy: { id: createdByUserID },
-        assignedTo: { id: assignedToUserID },
-        workOrder: workOrderID ? { id: workOrderID } : null,
-      };
-    }),
-    contacts: rawContacts.map((rawContact) => {
+        if (createdByUserID === authenticatedUserID) accum.createdByUser.push(workOrder);
+        else if (assignedToUserID === authenticatedUserID) accum.assignedToUser.push(workOrder);
+        else logger.warn(
+            `[queryUserItems] The following WorkOrder was returned by the "queryUserItems" ` +
+            `DDB query, but it was neither createdBy nor assignedTo the authenticated user.
+            — AuthenticatedUserID: ${authenticatedUserID}
+            — WorkOrderItem: ${safeJsonStringify(workOrder, null, 2)}`
+          ); // prettier-ignore
+
+        return accum;
+      },
+      { createdByUser: [], assignedToUser: [] }
+    ),
+
+    myInvoices: rawInvoices.reduce(
+      (accum: PreFetchedUserItems["myInvoices"], rawInvoice) => {
+        // Process invoice from its raw internal shape:
+        const { createdByUserID, assignedToUserID, workOrderID, ...invoiceFields } =
+          Invoice.processItemAttributes.fromDB<InvoiceItem>(rawInvoice);
+
+        const invoice = {
+          // Fields which are nullable/optional in GQL schema must be provided, default to null:
+          stripePaymentIntentID: null,
+          // invoice values override above defaults:
+          ...invoiceFields,
+          // __typename, createdBy, and assignedTo fields are formatted for the GQL client cache:
+          __typename: "Invoice" as const,
+          createdBy: { id: createdByUserID },
+          assignedTo: { id: assignedToUserID },
+          workOrder: workOrderID ? { id: workOrderID } : null,
+        };
+
+        if (createdByUserID === authenticatedUserID) accum.createdByUser.push(invoice);
+        else if (assignedToUserID === authenticatedUserID) accum.assignedToUser.push(invoice);
+        else logger.warn(
+            `[queryUserItems] The following Invoice was returned by the "queryUserItems" ` +
+            `DDB query, but it was neither createdBy nor assignedTo the authenticated user.
+            — AuthenticatedUserID: ${authenticatedUserID}
+            — WorkOrderItem: ${safeJsonStringify(invoice, null, 2)}`
+          ); // prettier-ignore
+
+        return accum;
+      },
+      { createdByUser: [], assignedToUser: [] }
+    ),
+    myContacts: rawContacts.map((rawContact) => {
       // Process contact from its raw internal shape:
       const contact = Contact.processItemAttributes.fromDB<ContactItem>(rawContact);
 
@@ -161,6 +196,7 @@ export const queryUserItems = async ({
       } = usersCache.get(contact.handle) ?? {};
 
       return {
+        __typename: "Contact" as const,
         id: contact.id,
         handle: contact.handle,
         email,
