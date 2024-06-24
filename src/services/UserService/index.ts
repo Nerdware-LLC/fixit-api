@@ -1,3 +1,4 @@
+import { getUserByHandleOrID } from "./getUserByHandleOrID.js";
 import { queryUserItems } from "./queryUserItems.js";
 import { registerNewUser } from "./registerNewUser.js";
 
@@ -7,6 +8,7 @@ import { registerNewUser } from "./registerNewUser.js";
  * This object contains methods which implement business logic for User operations.
  */
 export const UserService = {
+  getUserByHandleOrID,
   queryUserItems,
   registerNewUser,
 } as const;
