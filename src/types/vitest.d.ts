@@ -13,7 +13,6 @@ interface CustomMatchers<_ = any, R = unknown> {
 
 declare module "vitest" {
   interface AsymmetricMatchersContaining extends CustomMatchers {
-    stringMatching(expected: string | RegExp): unknown;
     /**
      * Test if the `received` value passes the provided function.
      * This is an asymmetric version of the existing [`toSatisfy`][toSatisfyLink] matcher.
