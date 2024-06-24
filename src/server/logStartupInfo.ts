@@ -3,15 +3,15 @@ import { logger } from "@/utils/logger.js";
 
 const {
   NODE_ENV,
-  AWS: { REGION },
+  AWS,
   CONFIG: { PROJECT_VERSION, TIMEZONE, OS_PLATFORM, PID, NODE_VERSION, API_BASE_URL, PORT, CWD },
 } = ENV;
 
-if (ENV.NODE_ENV === "development") {
+if (ENV.IS_DEV) {
   logger.server(
     `(SERVER STARTUP) 🚀 fixit-api ${PROJECT_VERSION || ""}
-    App Env ...... ${NODE_ENV}
-    AWS Region ... ${REGION}
+    NODE_ENV...... ${NODE_ENV}
+    AWS Region ... ${AWS.REGION}
     Timezone ..... ${TIMEZONE}
     Platform ..... ${OS_PLATFORM}
     PID .......... ${PID}
