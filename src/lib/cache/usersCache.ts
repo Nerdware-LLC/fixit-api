@@ -1,5 +1,5 @@
+import { USER_ID_PREFIX_STR } from "@/models/User/helpers.js";
 import { ddbTable } from "@/models/ddbTable.js";
-import { ENV } from "@/server/env";
 import { Cache } from "./Cache.js";
 import type { UnaliasedUserItem } from "@/models/User/User.js";
 import type { User, Contact } from "@/types/graphql.js";
@@ -10,35 +10,30 @@ export type UsersCacheEntry = [User["handle"], UsersCacheObject];
 
 const initialCacheEntries: Array<UsersCacheEntry> = [];
 
-// In dev/staging/prod, initialize the usersCache with all users from the DDB table:
-if (/^(dev|staging|prod)/.test(ENV.NODE_ENV)) {
-  const { Items: items = [] } = await ddbTable.ddbClient.scan({
-    TableName: ddbTable.tableName,
-    ProjectionExpression: "pk, sk, #data, handle, phone, profile",
-    FilterExpression: "begins_with(pk, :user_pk_prefix)",
-    ExpressionAttributeNames: {
-      "#data": "data",
-    },
-    ExpressionAttributeValues: {
-      ":user_pk_prefix": "USER#",
-    },
-  });
+// Initialize the usersCache with all active users:
+const { Items: items = [] } = await ddbTable.ddbClient.scan({
+  TableName: ddbTable.tableName,
+  ProjectionExpression: "pk, sk, #data, handle, phone, profile",
+  FilterExpression: "begins_with(pk, :user_pk_prefix)",
+  ExpressionAttributeNames: {
+    "#data": "data",
+  },
+  ExpressionAttributeValues: {
+    ":user_pk_prefix": `${USER_ID_PREFIX_STR}#`,
+  },
+});
 
-  items.forEach((dbItem) => {
-    // prettier-ignore
-    const {
+items.forEach((dbItem) => {
+  // prettier-ignore
+  const {
     pk: id, data: email, handle, phone = null, profile, createdAt, updatedAt,
   } = dbItem as UnaliasedUserItem
 
-    if (id && email && handle && profile && createdAt && updatedAt) {
-      // Only users' public fields are cached for search
-      initialCacheEntries.push([
-        handle,
-        { id, email, handle, phone, profile, createdAt, updatedAt },
-      ]);
-    }
-  });
-}
+  if (id && email && handle && profile && createdAt && updatedAt) {
+    // Only users' public fields are cached for search
+    initialCacheEntries.push([handle, { id, email, handle, phone, profile, createdAt, updatedAt }]);
+  }
+});
 
 /**
  * API local cache for searching Users by `User.handle`.
