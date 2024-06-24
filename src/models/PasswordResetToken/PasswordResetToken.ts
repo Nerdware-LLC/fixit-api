@@ -5,38 +5,44 @@ import dayjs from "dayjs";
 import { userModelHelpers } from "@/models/User/helpers.js";
 import { COMMON_ATTRIBUTES } from "@/models/_common/modelAttributes.js";
 import { ddbTable } from "@/models/ddbTable.js";
-import { passwordResetTokenModelHelpers } from "./helpers.js";
+import { passwordResetTokenModelHelpers as pwResetTokenModelHelpers } from "./helpers.js";
 import type { ItemTypeFromSchema, ItemCreationParameters } from "@nerdware/ddb-single-table";
 
 /**
  * PasswordResetToken Model
  *
- * > **TTL = 15 minutes**
+ * > _**Item TTL = 15 minutes**_
  */
 class PasswordResetTokenModel extends Model<typeof PasswordResetTokenModel.schema> {
   static readonly ENCODING: BufferEncoding = "hex";
   static readonly BYTE_LENGTH: number = 48;
   static readonly CHAR_LENGTH: number = PasswordResetTokenModel.BYTE_LENGTH * 2; // 1 hex byte = 2 chars
 
+  static readonly createToken = () => {
+    return randomBytes(PasswordResetTokenModel.BYTE_LENGTH).toString(
+      PasswordResetTokenModel.ENCODING
+    );
+  };
+
   static readonly schema = ddbTable.getModelSchema({
     pk: {
       type: "string",
       alias: "token",
-      default: () =>
-        randomBytes(PasswordResetTokenModel.BYTE_LENGTH).toString(PasswordResetTokenModel.ENCODING),
+      default: () => PasswordResetTokenModel.createToken(),
       required: true,
     },
     sk: {
       type: "string",
-      default: (pwResetToken: { pk: string }) =>
-        pwResetToken?.pk ? passwordResetTokenModelHelpers.sk.format(pwResetToken.pk) : undefined,
-      validate: passwordResetTokenModelHelpers.sk.isValid,
+      default: ({ pk: token }: { pk?: string }) =>
+        token ? pwResetTokenModelHelpers.sk.format(token) : undefined,
+      validate: pwResetTokenModelHelpers.sk.isValid,
       required: true,
     },
     data: {
       type: "string",
-      default: (pwResetToken: { pk?: string }) =>
-        pwResetToken?.pk ? `#DATA#${pwResetToken.pk}` : undefined,
+      default: ({ pk: token, sk }: { pk?: string; sk?: string }) =>
+        sk ? sk : token ? pwResetTokenModelHelpers.sk.format(token) : undefined,
+      validate: pwResetTokenModelHelpers.data.isValid,
       required: true,
     },
     userID: {
@@ -74,20 +80,42 @@ class PasswordResetTokenModel extends Model<typeof PasswordResetTokenModel.schem
   }
 
   // PASSWORD RESET TOKEN — Instance methods:
+  readonly createToken = PasswordResetTokenModel.createToken;
   readonly isRawTokenProperlyEncoded = PasswordResetTokenModel.isRawTokenProperlyEncoded;
   readonly isTokenValid = PasswordResetTokenModel.isTokenValid;
+  readonly getFormattedSK = pwResetTokenModelHelpers.sk.format;
 }
 
+/**
+ * PasswordResetToken Model
+ *
+ * > _**Item TTL = 15 minutes**_
+ */
 export const PasswordResetToken = new PasswordResetTokenModel();
 
-/**
- * The shape of a `PasswordResetToken` object returned from Model methods.
- */
-export type PasswordResetTokenItem = ItemTypeFromSchema<typeof PasswordResetTokenModel.schema>;
+/** The shape of a `PasswordResetToken` object returned from Model methods. */
+export type PasswordResetTokenItem = ItemTypeFromSchema<
+  typeof PasswordResetTokenModel.schema,
+  {
+    aliasKeys: true;
+    optionalIfDefault: false;
+    nullableIfOptional: false;
+    autoAddTimestamps: false;
+  }
+>;
 
-/**
- * `PasswordResetToken` item params for `createItem()`.
- */
-export type PasswordResetTokenItemCreationParams = ItemCreationParameters<
+/** `PasswordResetToken` item params for `createItem()`. */
+export type PasswordResetTokenCreateItemParams = ItemCreationParameters<
   typeof PasswordResetTokenModel.schema
+>;
+
+/** The shape of a raw/unaliased `PasswordResetToken` object in the DB. */
+export type UnaliasedPasswordResetTokenItem = ItemTypeFromSchema<
+  typeof PasswordResetTokenModel.schema,
+  {
+    aliasKeys: false;
+    optionalIfDefault: false;
+    nullableIfOptional: true;
+    autoAddTimestamps: false;
+  }
 >;

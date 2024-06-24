@@ -1,16 +1,24 @@
-import { createModelHelpers } from "@/models/_common/modelHelpers.js";
-import { PW_RESET_TOKEN_SK_REGEX, PW_RESET_TOKEN_SK_PREFIX_STR as SK_PREFIX } from "./regex.js";
+import {
+  createMapOfStringAttrHelpers,
+  createHelpersForStrAttr,
+  getCompoundAttrRegex,
+  DELIMETER,
+  type MapOfStringAttrHelpers,
+} from "@/models/_common";
 
-export const passwordResetTokenModelHelpers = createModelHelpers({
-  sk: {
-    regex: PW_RESET_TOKEN_SK_REGEX,
+export const PW_RESET_TOKEN_SK_PREFIX_STR = "PW_RESET_TOKEN";
 
-    /**
-     * PasswordResetToken "sk" value formatter.
-     *
-     * @param {string} token - The hex-encoded token value.
-     * @returns {string} A formatted PasswordResetToken "sk" attribute value.
-     */
-    format: (token: string) => `${SK_PREFIX}#${token}`,
-  },
+const pwResetTokenSKattrHelpers = createHelpersForStrAttr("sk", {
+  /** Validation regex for `PasswordResetToken.sk` compound attribute. */
+  regex: getCompoundAttrRegex([
+    PW_RESET_TOKEN_SK_PREFIX_STR,
+    /^[a-f0-9]{96}$/, // Regex pattern for 48-bit hex tokens (96 characters long)
+  ]),
+  /** PasswordResetToken "sk" value formatter. */
+  format: (token: string) => `${PW_RESET_TOKEN_SK_PREFIX_STR}${DELIMETER}${token}`,
 });
+
+export const passwordResetTokenModelHelpers = createMapOfStringAttrHelpers({
+  sk: pwResetTokenSKattrHelpers,
+  data: pwResetTokenSKattrHelpers, // PRT `data` attribute is currently equal to the `sk` attribute
+}) satisfies MapOfStringAttrHelpers;

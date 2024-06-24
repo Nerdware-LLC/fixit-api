@@ -3,8 +3,7 @@ import { isValidHandle } from "@nerdware/ts-string-helpers";
 import { userModelHelpers } from "@/models/User/helpers.js";
 import { COMMON_ATTRIBUTES } from "@/models/_common/modelAttributes.js";
 import { ddbTable } from "@/models/ddbTable.js";
-import { contactModelHelpers } from "./helpers.js";
-import { CONTACT_SK_PREFIX_STR } from "./regex.js";
+import { contactModelHelpers, CONTACT_SK_PREFIX_STR } from "./helpers.js";
 import type { ItemTypeFromSchema, ItemCreationParameters } from "@nerdware/ddb-single-table";
 
 /**
@@ -50,18 +49,16 @@ class ContactModel extends Model<typeof ContactModel.schema> {
   readonly isValidID = contactModelHelpers.id.isValid;
 }
 
+/** Contact Model */
 export const Contact = new ContactModel();
 
 /** The shape of a `Contact` object returned from ContactModel methods. */
 export type ContactItem = ItemTypeFromSchema<typeof ContactModel.schema>;
 
 /** `Contact` item params for `createItem()`. */
-export type ContactItemCreationParams = ItemCreationParameters<typeof ContactModel.schema>;
+export type ContactCreateItemParams = ItemCreationParameters<typeof ContactModel.schema>;
 
-/**
- * The shape of a `Contact` object in the DB.
- * > This type is used to mock `@aws-sdk/lib-dynamodb` responses.
- */
+/** The shape of a raw/unaliased `Contact` object in the DB. */
 export type UnaliasedContactItem = ItemTypeFromSchema<
   typeof ContactModel.schema,
   {

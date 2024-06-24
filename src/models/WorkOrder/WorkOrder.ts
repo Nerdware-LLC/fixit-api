@@ -5,12 +5,10 @@ import { userModelHelpers } from "@/models/User/helpers.js";
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@/models/_common/modelAttributes.js";
 import { ddbTable } from "@/models/ddbTable.js";
 import { WORK_ORDER_ENUM_CONSTANTS } from "./enumConstants.js";
-import { workOrderModelHelpers as woModelHelpers } from "./helpers.js";
-import { WORK_ORDER_SK_PREFIX_STR } from "./regex.js";
+import { workOrderModelHelpers as woModelHelpers, WO_SK_PREFIX_STR } from "./helpers.js";
 import type {
   ItemTypeFromSchema,
   ItemCreationParameters,
-  ItemParameters,
   ModelSchemaOptions,
 } from "@nerdware/ddb-single-table";
 import type { OverrideProperties } from "type-fest";
@@ -33,10 +31,8 @@ class WorkOrderModel extends Model<
     sk: {
       type: "string",
       alias: "id",
-      default: (woItem: { pk?: string; createdAt?: Date }) =>
-        woItem?.pk && woItem?.createdAt
-          ? woModelHelpers.id.format(woItem.pk, woItem.createdAt)
-          : undefined,
+      default: ({ pk: createdByUserID }: { pk?: string }) =>
+        createdByUserID ? woModelHelpers.id.format(createdByUserID) : undefined,
       validate: woModelHelpers.id.isValid,
       required: true,
     },
@@ -69,13 +65,7 @@ class WorkOrderModel extends Model<
       validate: (value: string) => Location.validateCompoundString(value),
       required: true,
       transformValue: {
-        /* Clients provide "location" as an object with properties "country", "region", "city",
-        "streetLine1", and "streetLine2". This transformation converts these client location input
-        objects into a string which adheres to the above pattern and serves as a composite attribute
-        value. Storing "location" in this way makes it possible to flexibly query the DynamoDB db
-        for access patterns like "Find all work orders on Foo Street".  */
         toDB: (location: Location) => Location.convertToCompoundString(location),
-        // This fromDB reverses the toDB, returning a "location" object from db format.
         fromDB: (locationCompoundStr: string) => Location.parseCompoundString(locationCompoundStr),
       },
     },
@@ -97,7 +87,7 @@ class WorkOrderModel extends Model<
           schema: {
             id: {
               type: "string",
-              default: (woItem: { sk: string }) => woModelHelpers.checklistItemID.format(woItem.sk),
+              default: (wo: { sk: string }) => woModelHelpers.checklistItemID.format(wo.sk),
               validate: woModelHelpers.checklistItemID.isValid,
               required: true,
             },
@@ -146,9 +136,10 @@ class WorkOrderModel extends Model<
   readonly PRIORITIES = WORK_ORDER_ENUM_CONSTANTS.PRIORITIES;
   readonly STATUSES = WORK_ORDER_ENUM_CONSTANTS.STATUSES;
   readonly CATEGORIES = WORK_ORDER_ENUM_CONSTANTS.CATEGORIES;
-  readonly SK_PREFIX = WORK_ORDER_SK_PREFIX_STR;
+  readonly SK_PREFIX = WO_SK_PREFIX_STR;
 }
 
+/** WorkOrder Model */
 export const WorkOrder = new WorkOrderModel();
 
 /** The shape of a `WorkOrder` object returned from WorkOrderModel methods. */
@@ -163,13 +154,7 @@ export type WorkOrderItemCreationParams = OverrideProperties<
   { assignedToUserID: string | null; location: Location }
 >;
 
-/** `WorkOrder` item params for `updateItem()`. */
-export type WorkOrderItemUpdateParams = ItemParameters<WorkOrderItemCreationParams>;
-
-/**
- * The shape of a `WorkOrder` object in the DB.
- * > This type is used to mock `@aws-sdk/lib-dynamodb` responses.
- */
+/** The shape of a raw/unaliased `WorkOrder` object in the DB. */
 export type UnaliasedWorkOrderItem = ItemTypeFromSchema<
   typeof WorkOrderModel.schema,
   {

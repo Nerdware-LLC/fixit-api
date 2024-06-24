@@ -20,10 +20,10 @@ export class UserLogin {
    * @returns A promise that resolves to the created UserLogin object.
    * @throws Error if the provided parameters are invalid.
    */
-  public static readonly createLogin = async <Params extends CreateLoginParams>({
+  public static readonly createLogin = async ({
     password,
     googleID,
-  }: Params) => {
+  }: LoginParams): Promise<UserLoginLocal | UserLoginGoogleOAuth> => {
     // Run the appropriate method based on the provided params
     const userLogin = isString(password)
       ? await UserLogin.createLoginLocal(password)
@@ -34,11 +34,7 @@ export class UserLogin {
     // Ensure that the userLogin object is not null:
     if (!userLogin) throw new Error("Invalid login credentials");
 
-    return userLogin as Params extends { password: string }
-      ? UserLoginLocal
-      : Params extends { googleID: string }
-        ? UserLoginGoogleOAuth
-        : never;
+    return userLogin;
   };
 
   /**
@@ -77,12 +73,12 @@ export class UserLogin {
 // LOGIN TYPES:
 
 /**
- * Parameters for creating a `UserLogin` object.
+ * `UserLogin` params
  */
-export type CreateLoginParams = {
-  password?: string | undefined; // <-- UserLogin class currently hashes passwords
-  googleID?: string | undefined; // <-- googleIDToken is processed by upstream mw
-}; //                               TODO Consider mv'ind gidToken here, or pw elsewhere
+export type LoginParams = {
+  password?: string | undefined;
+  googleID?: string | undefined;
+};
 
 /**
  * A combination of every `UserLogin` object type in the {@link UserLoginU} union.

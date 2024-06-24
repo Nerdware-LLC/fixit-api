@@ -1,13 +1,13 @@
-import { createModelHelpers } from "@/models/_common/modelHelpers.js";
-import {
-  STRIPE_CONNECT_ACCOUNT_SK_PREFIX_STR as SCA_SK_PREFIX,
-  STRIPE_CONNECT_ACCOUNT_SK_REGEX as SCA_SK_REGEX,
-} from "./regex.js";
+import { userModelHelpers } from "@/models/User/helpers.js";
+import { createMapOfStringAttrHelpers, getCompoundAttrRegex, DELIMETER } from "@/models/_common";
 
-export const userStripeConnectAccountModelHelpers = createModelHelpers({
+export const SCA_SK_PREFIX_STR = "STRIPE_CONNECT_ACCOUNT";
+
+export const scaModelHelpers = createMapOfStringAttrHelpers({
   sk: {
-    regex: SCA_SK_REGEX,
-    /** Returns a formatted UserStripeConnectAccount "sk" value */
-    format: (userID: string) => `${SCA_SK_PREFIX}#${userID}`,
+    /** Validation regex for `UserStripeConnectAccount.sk` values. */
+    regex: getCompoundAttrRegex([SCA_SK_PREFIX_STR, userModelHelpers.id.regex]),
+    /** Returns a formatted `UserStripeConnectAccount.sk` value. */
+    format: (userID: string) => `${SCA_SK_PREFIX_STR}${DELIMETER}${userID}`,
   },
 });

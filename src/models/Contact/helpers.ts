@@ -1,10 +1,16 @@
-import { createModelHelpers } from "@/models/_common/modelHelpers.js";
-import { CONTACT_SK_PREFIX_STR as SK_PREFIX, CONTACT_SK_REGEX } from "./regex.js";
+import { sanitizeID } from "@nerdware/ts-string-helpers";
+import { userModelHelpers } from "@/models/User/helpers.js";
+import { createMapOfStringAttrHelpers, getCompoundAttrRegex, DELIMETER } from "@/models/_common";
 
-export const contactModelHelpers = createModelHelpers({
+export const CONTACT_SK_PREFIX_STR = "CONTACT";
+
+export const contactModelHelpers = createMapOfStringAttrHelpers({
   id: {
-    regex: CONTACT_SK_REGEX,
-    /** Returns a formatted Contact "id" value (alias for "sk" attribute) */
-    format: (contactUserID: string) => `${SK_PREFIX}#${contactUserID}`,
+    /** Validation regex for Contact IDs. */
+    regex: getCompoundAttrRegex([CONTACT_SK_PREFIX_STR, userModelHelpers.id.regex]),
+    /** Sanitizes a Contact ID value. */
+    sanitize: sanitizeID,
+    /** Returns a formatted Contact "id" value. */
+    format: (contactUserID: string) => `${CONTACT_SK_PREFIX_STR}${DELIMETER}${contactUserID}`,
   },
 });

@@ -6,14 +6,14 @@ describe("UserLogin", () => {
       const password = "MockPassword@123";
       const result = await UserLogin.createLogin({ password });
       expect(result.type).toBe("LOCAL");
-      expect(result.passwordHash).toBeTypeOf("string");
+      expect((result as any).passwordHash).toBeTypeOf("string");
     });
 
     test("returns a GOOGLE_OAUTH UserLogin when called with a Google ID and access token", async () => {
       const googleID = "gid_123";
       const result = await UserLogin.createLogin({ googleID });
       expect(result.type).toBe("GOOGLE_OAUTH");
-      expect(result.googleID).toBe(googleID);
+      expect((result as any).googleID).toBe(googleID);
     });
 
     test("throws an error when called without any params", async () => {

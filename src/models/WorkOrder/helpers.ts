@@ -1,48 +1,36 @@
-import { isDate, isString } from "@nerdware/ts-type-safety-utils";
-import { createModelHelpers } from "@/models/_common/modelHelpers.js";
-import { getUnixTimestampUUID } from "@/utils/uuid.js";
-import {
-  WORK_ORDER_SK_PREFIX_STR as WO_SK_PREFIX,
-  WORK_ORDER_ID_REGEX,
-  WO_CHECKLIST_ITEM_ID_REGEX,
-} from "./regex.js";
+import { sanitizeID } from "@nerdware/ts-string-helpers";
+import { userModelHelpers } from "@/models/User/helpers.js";
+import { createMapOfStringAttrHelpers, getCompoundAttrRegex, DELIMETER } from "@/models/_common";
+import { getRandomUUIDv4, UUID_REGEX } from "@/utils/uuid.js";
 
-export const workOrderModelHelpers = createModelHelpers({
+export const WO_SK_PREFIX_STR = "WO";
+export const WO_CHECKLIST_ITEM_ID_INFIX_STR = "CHECKLIST_ITEM";
+
+export const workOrderModelHelpers = createMapOfStringAttrHelpers({
   id: {
-    regex: WORK_ORDER_ID_REGEX,
-
-    /** Returns a formatted WorkOrder "id" value (alias for "sk" attribute) */
-
-    /**
-     * WorkOrder "id" value formatter (alias for "sk" attribute).
-     *
-     * @param {Date|string} createdAt - The WorkOrder's "createdAt" timestamp value represented as
-     * either a Date object or unix timestamp UUID string. If provided as a Date object, it will
-     * be converted to a Unix timestamp UUID string.
-     *
-     * @returns {string} A formatted WorkOrder "id" value (alias for "sk" attribute).
-     */
-    format: (createdByUserID: string, createdAt: Date | string) => {
-      // prettier-ignore
-      return `${WO_SK_PREFIX}#${createdByUserID}#${isDate(createdAt) ? getUnixTimestampUUID(createdAt) : createdAt}`;
+    regex: getCompoundAttrRegex([WO_SK_PREFIX_STR, userModelHelpers.id.regex, UUID_REGEX]),
+    /** WorkOrder "id" value formatter (uses {@link getRandomUUIDv4}). */
+    format: (createdByUserID: string) => {
+      return `${WO_SK_PREFIX_STR}${DELIMETER}${createdByUserID}${DELIMETER}${getRandomUUIDv4()}`;
     },
+    /** Sanitizes a WorkOrder ID value. */
+    sanitize: sanitizeID,
   },
   checklistItemID: {
-    regex: WO_CHECKLIST_ITEM_ID_REGEX,
-
-    /**
-     * WorkOrder checklist item "id" value formatter.
-     *
-     * @param {Date|string} createdAt - The WorkOrder checklist item's "createdAt" timestamp value
-     * represented as either a Date object or unix timestamp UUID string. If not provided, the
-     * current time will be used (`new Date()`). If provided as a Date object, it will be converted
-     * to a Unix timestamp UUID string.
-     *
-     * @returns {string} A formatted WorkOrder checklist item "id" value.
-     */
-    format: (woID: string, createdAt?: Date | string) => {
-      // prettier-ignore
-      return `${woID}#CHECKLIST_ITEM#${isString(createdAt) ? createdAt : getUnixTimestampUUID(createdAt)}`;
+    regex: getCompoundAttrRegex([
+      // The WorkOrder:
+      WO_SK_PREFIX_STR,
+      userModelHelpers.id.regex,
+      UUID_REGEX,
+      // The checklist item:
+      WO_CHECKLIST_ITEM_ID_INFIX_STR,
+      UUID_REGEX,
+    ]),
+    /** WorkOrder checklist item "id" value formatter (uses {@link getRandomUUIDv4}). */
+    format: (woID: string) => {
+      return `${woID}${DELIMETER}${WO_CHECKLIST_ITEM_ID_INFIX_STR}${DELIMETER}${getRandomUUIDv4()}`;
     },
+    /** Sanitizes a WorkOrderChecklistItem ID value. */
+    sanitize: sanitizeID,
   },
 });

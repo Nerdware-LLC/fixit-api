@@ -35,10 +35,10 @@ export const ddbTable = new Table({
     },
   } as const,
   ddbClient: {
-    region: ENV.AWS.REGION,
-    ...(ENV.AWS?.DYNAMODB_ENDPOINT && { endpoint: ENV.AWS.DYNAMODB_ENDPOINT }),
+    region: ENV.AWS.DYNAMODB_REGION,
+    ...(ENV.AWS.DYNAMODB_ENDPOINT && { endpoint: ENV.AWS.DYNAMODB_ENDPOINT }),
     // dynamodb-local is used in dev
-    ...(ENV.AWS.REGION === "local" && {
+    ...(ENV.IS_DEV && {
       credentials: {
         accessKeyId: "local",
         secretAccessKey: "local",

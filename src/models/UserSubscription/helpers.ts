@@ -1,17 +1,31 @@
+import { isString } from "@nerdware/ts-type-safety-utils";
 import dayjs from "dayjs";
-import { createModelHelpers } from "@/models/_common/modelHelpers.js";
-import {
-  USER_SUB_SK_PREFIX_STR as SUB_SK_PREFIX,
-  USER_SUB_SK_REGEX as SUB_SK_REGEX,
-} from "./regex.js";
+import { pricesCache } from "@/lib/cache/pricesCache.js";
+import { userModelHelpers } from "@/models/User/helpers.js";
+import { createMapOfStringAttrHelpers, getCompoundAttrRegex, DELIMETER } from "@/models/_common";
+import { UNIX_TIMESTAMP_REGEX } from "@/utils/timestamps.js";
 
-export const userSubscriptionModelHelpers = createModelHelpers({
-  sk: {
-    regex: SUB_SK_REGEX,
+export const SUB_SK_PREFIX_STR = "SUBSCRIPTION";
 
-    /** Returns a formatted UserSubscription "sk" value */
-    format: (userID: string, createdAt: Date) => {
-      return `${SUB_SK_PREFIX}#${userID}#${dayjs(createdAt).unix()}`;
+export const subModelHelpers = {
+  ...createMapOfStringAttrHelpers({
+    sk: {
+      /** Validation regex for `UserSubscription.sk` values. */
+      regex: getCompoundAttrRegex([
+        SUB_SK_PREFIX_STR,
+        userModelHelpers.id.regex,
+        UNIX_TIMESTAMP_REGEX,
+      ]),
+      /** Returns a formatted UserSubscription "sk" value. */
+      format: (userID: string, createdAt: Date) => {
+        return `${SUB_SK_PREFIX_STR}${DELIMETER}${userID}${DELIMETER}${dayjs(createdAt).unix()}`;
+      },
+    },
+  }),
+  /** priceID validation uses cache data rather than regex patterns. */
+  priceID: {
+    isValid: (value?: unknown) => {
+      return isString(value) && pricesCache.values().some(({ id: priceID }) => priceID === value);
     },
   },
-});
+};

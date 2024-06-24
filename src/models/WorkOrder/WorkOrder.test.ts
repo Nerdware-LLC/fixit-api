@@ -10,7 +10,7 @@ const { WO_A, WO_B, WO_C } = MOCK_WORK_ORDERS;
 
 describe("WorkOrder Model", () => {
   describe("WorkOrder.createItem()", () => {
-    test("returns a valid WorkOrder when called with valid arguments", async () => {
+    test("returns a valid WorkOrder when called with valid arguments (ORIGINAL", async () => {
       // Arrange mock WorkOrders
       for (const key in MOCK_WORK_ORDERS) {
         // Get createItem inputs from mock WorkOrder
@@ -27,6 +27,7 @@ describe("WorkOrder Model", () => {
         });
       }
     });
+
     test(`throws an Error when called without a valid "createdByUserID"`, async () => {
       await expect(() =>
         WorkOrder.createItem({

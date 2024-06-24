@@ -1,8 +1,7 @@
-import { isValidPhone } from "@nerdware/ts-string-helpers";
+import { isValidPhone, sanitizePhone } from "@nerdware/ts-string-helpers";
 import { isString, isSafeInteger } from "@nerdware/ts-type-safety-utils";
 import dayjs from "dayjs";
-import { fmt } from "@/utils/formatters";
-import { normalize } from "@/utils/normalize.js";
+import { prettifyPhoneNumStr } from "@/utils/formatters/phone.js";
 import { isValidTimestamp } from "@/utils/timestamps.js";
 import type { ModelSchemaAttributeConfig } from "@nerdware/ddb-single-table";
 
@@ -12,9 +11,9 @@ export const COMMON_ATTRIBUTE_TYPES = {
     validate: (value: unknown) => isString(value) && isValidPhone(value),
     transformValue: {
       /** If a phone-value is provided, all non-digit chars are rm'd */
-      toDB: (value: unknown) => (isString(value) ? normalize.phone(value) : null),
+      toDB: (value: unknown) => (isString(value) ? sanitizePhone(value) : null),
       /** Prettify phone num strings like `"8881234567"` into `"(888) 123-4567"` */
-      fromDB: (value: unknown) => (isString(value) ? fmt.prettifyPhoneNum(value) : null),
+      fromDB: (value: unknown) => (isString(value) ? prettifyPhoneNumStr(value) : null),
     },
   },
 
