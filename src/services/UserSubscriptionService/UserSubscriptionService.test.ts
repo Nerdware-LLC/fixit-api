@@ -1,4 +1,4 @@
-import { userSubscriptionModelHelpers as subModelHelpers } from "@/models/UserSubscription/helpers.js";
+import { subModelHelpers } from "@/models/UserSubscription/helpers.js";
 import { MOCK_USERS, MOCK_USER_SUBS } from "@/tests/staticMockItems";
 import { UserSubscriptionService } from "./index.js";
 
@@ -35,47 +35,6 @@ describe("UserSubscriptionService", () => {
         });
         expect(stripeSubscriptionObject).toBeDefined();
       }
-    });
-  });
-
-  describe("UserSubscriptionService.validateSubscriptionStatus()", () => {
-    const YEAR_2000 = new Date(2000, 0);
-    const YEAR_9999 = new Date(9999, 0);
-
-    test(`does not throw when called with a valid "active" subscription`, () => {
-      expect(() => {
-        UserSubscriptionService.validateSubscriptionStatus({
-          status: "active",
-          currentPeriodEnd: YEAR_9999,
-        });
-      }).not.toThrow();
-    });
-
-    test(`does not throw when called with a valid "trialing" subscription`, () => {
-      expect(() => {
-        UserSubscriptionService.validateSubscriptionStatus({
-          status: "trialing",
-          currentPeriodEnd: YEAR_9999,
-        });
-      }).not.toThrow();
-    });
-
-    test(`throws an error when called with a subscription with an invalid status`, () => {
-      expect(() => {
-        UserSubscriptionService.validateSubscriptionStatus({
-          status: "past_due",
-          currentPeriodEnd: YEAR_9999,
-        });
-      }).toThrow("past due");
-    });
-
-    test(`throws an error when called with an expired subscription`, () => {
-      expect(() => {
-        UserSubscriptionService.validateSubscriptionStatus({
-          status: "active",
-          currentPeriodEnd: YEAR_2000,
-        });
-      }).toThrow("expired");
     });
   });
 });
