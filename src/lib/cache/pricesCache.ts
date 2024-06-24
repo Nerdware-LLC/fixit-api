@@ -1,26 +1,29 @@
 import { safeJsonStringify } from "@nerdware/ts-type-safety-utils";
+import { productsCache } from "@/lib/cache/productsCache.js";
 import { stripe } from "@/lib/stripe/stripeClient.js";
+import {
+  SUBSCRIPTION_PRICE_NAMES as PRICE_NAMES,
+  SUBSCRIPTION_PRODUCT_NAMES as PRODUCT_NAMES,
+} from "@/models/UserSubscription/enumConstants.js";
 import { InternalServerError } from "@/utils/httpErrors.js";
 import { Cache } from "./Cache.js";
-import { FIXIT_SUBSCRIPTION_PRODUCT_NAME, productsCache } from "./productsCache.js";
-import type { OpenApiSchemas } from "@/types/open-api.js";
+import type { SubscriptionPriceName } from "@/types/graphql.js";
 import type Stripe from "stripe";
 import type { Entries } from "type-fest";
-
-/** The names of Fixit Subscription prices: "TRIAL", "MONTHLY", "ANNUAL" */
-type SubscriptionPriceLabels = OpenApiSchemas["SubscriptionPriceName"];
 
 // Initialize the pricesCache with all active subscription prices:
 
 const { data: activeSubscriptionPrices } = await stripe.prices.list({
   active: true,
-  product: productsCache.get(FIXIT_SUBSCRIPTION_PRODUCT_NAME)!.id,
+  product: productsCache.get(PRODUCT_NAMES.FIXIT_SUBSCRIPTION)!.id,
 });
 
 // Ensure exactly 2 active subscription prices were returned from Stripe:
 if (
   activeSubscriptionPrices?.length !== 2 ||
-  !activeSubscriptionPrices.every((price) => ["MONTHLY", "ANNUAL"].includes(price.nickname ?? ""))
+  !activeSubscriptionPrices.every((price) =>
+    ([PRICE_NAMES.ANNUAL, PRICE_NAMES.MONTHLY] as Array<string>).includes(price.nickname ?? "")
+  )
 ) {
   throw new InternalServerError(
     "Unable to initialize pricesCache — Stripe did not return expected prices. " +
@@ -31,17 +34,17 @@ if (
 const pricesDictionary = activeSubscriptionPrices.reduce(
   (accum, priceObject) => {
     const { nickname: priceName } = priceObject;
-    accum[(priceName ?? "") as SubscriptionPriceLabels] = priceObject;
+    accum[(priceName ?? "") as SubscriptionPriceName] = priceObject;
     // TRIAL uses the same priceID as MONTHLY:
-    if (priceName === "MONTHLY") accum.TRIAL = priceObject;
+    if (priceName === PRICE_NAMES.MONTHLY) accum.TRIAL = priceObject;
     return accum;
   },
-  { ANNUAL: {}, MONTHLY: {}, TRIAL: {} } as Record<SubscriptionPriceLabels, Stripe.Price>
+  { ANNUAL: {}, MONTHLY: {}, TRIAL: {} } as Record<SubscriptionPriceName, Stripe.Price>
 );
 
 /**
  * API local cache for Stripe `Price` objects, keyed by `price.nickname`.
  */
-export const pricesCache = new Cache<Stripe.Price, SubscriptionPriceLabels>(
+export const pricesCache = new Cache<Stripe.Price, SubscriptionPriceName>(
   Object.entries(pricesDictionary) as Entries<typeof pricesDictionary>
 );

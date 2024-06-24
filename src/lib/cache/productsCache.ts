@@ -1,23 +1,15 @@
 import { safeJsonStringify } from "@nerdware/ts-type-safety-utils";
 import { stripe } from "@/lib/stripe/stripeClient.js";
+import { SUBSCRIPTION_PRODUCT_NAMES as PRODUCT_NAMES } from "@/models/UserSubscription/enumConstants.js";
 import { InternalServerError } from "@/utils/httpErrors.js";
 import { Cache } from "./Cache.js";
 import type Stripe from "stripe";
 
-/**
- * The `"Fixit Subscription"` Product `"name"`.
- */
-export const FIXIT_SUBSCRIPTION_PRODUCT_NAME =
-  "Fixit Subscription" as const satisfies Stripe.Product["name"];
-
-export type ProductsCacheEntry = [typeof FIXIT_SUBSCRIPTION_PRODUCT_NAME, Stripe.Product];
-
 // Initialize the productsCache with all active products:
-
 const { data: activeProducts } = await stripe.products.list({ active: true });
 
 const fixitSubscriptionProduct = activeProducts?.find(
-  (prod) => prod.name === FIXIT_SUBSCRIPTION_PRODUCT_NAME
+  (prod) => prod.name === PRODUCT_NAMES.FIXIT_SUBSCRIPTION
 );
 
 // Ensure the Fixit Subscription product was returned from Stripe:
@@ -30,9 +22,7 @@ if (!fixitSubscriptionProduct) {
 
 /**
  * API local cache for Stripe `Product` objects, keyed by `product.name`.
- *
- * > Currently this only contains the `"Fixit Subscription"` Product object.
  */
-export const productsCache = new Cache<Stripe.Product, typeof FIXIT_SUBSCRIPTION_PRODUCT_NAME>([
-  [FIXIT_SUBSCRIPTION_PRODUCT_NAME, fixitSubscriptionProduct],
+export const productsCache = new Cache<Stripe.Product, typeof PRODUCT_NAMES.FIXIT_SUBSCRIPTION>([
+  [PRODUCT_NAMES.FIXIT_SUBSCRIPTION, fixitSubscriptionProduct],
 ]);
