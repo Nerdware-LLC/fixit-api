@@ -1,6 +1,6 @@
 import { isValidStripeID } from "@/lib/stripe/helpers.js";
 import { userModelHelpers } from "@/models/User/helpers.js";
-import { userStripeConnectAccountModelHelpers as scaModelHelpers } from "@/models/UserStripeConnectAccount/helpers.js";
+import { scaModelHelpers } from "@/models/UserStripeConnectAccount/helpers.js";
 import { MOCK_USER_SCAs, MOCK_USERS } from "@/tests/staticMockItems";
 import { UserSCAService } from "./index.js";
 
