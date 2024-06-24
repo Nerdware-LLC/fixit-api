@@ -91,18 +91,14 @@ export type RestApiResponseByPath = Simplify<
   RestApiPOSTSuccessResponseByPath & RestApiGETSuccessResponseByPath
 >;
 
-///////////////////////////////////////////////////////////////////////////////
-// REST API — OpenAPI Schema Types
+// Response Schema Types:
 
 /** The decoded payload of a Fixit API auth token. */
 export type AuthTokenPayload = OpenApiSchemas["AuthTokenPayload"];
-
 /** Pre-fetched User items. */
 export type PreFetchedUserItems = OpenApiSchemas["PreFetchedUserItems"];
-
 /** Info returned from the checkout-completion endpoint. */
 export type CheckoutCompletionInfo = OpenApiSchemas["CheckoutCompletionInfo"];
-
 /** Info returned from the check-promo-code endpoint. */
 export type PromoCodeInfo = OpenApiSchemas["PromoCodeInfo"];
 

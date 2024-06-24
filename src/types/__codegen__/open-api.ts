@@ -286,19 +286,38 @@ export interface components {
         PreFetchedUserItemsResponseField: {
             userItems: components["schemas"]["PreFetchedUserItems"];
         };
-        /** @description A User's pre-fetched WorkOrders, Invoices, and Contacts (used on logins).
+        /** @description A User's pre-fetched WorkOrders, Invoices, and Contacts, which are written
+         *     into the client's Apollo Client cache on the front-end (used on logins).
+         *     This object's properties correspond to GraphQL queries of the same name.
          *      */
         PreFetchedUserItems: {
-            /** @description The user's work orders. */
-            workOrders: components["schemas"]["WorkOrder"][];
-            /** @description The user's invoices. */
-            invoices: components["schemas"]["Invoice"][];
-            /** @description The user's contacts. */
-            contacts: components["schemas"]["Contact"][];
+            /** @description Pre-fetched `myWorkOrders` query objects for the front-end cache. */
+            myWorkOrders: {
+                /** @description Work orders created by the user. */
+                createdByUser: components["schemas"]["WorkOrder"][];
+                /** @description Work orders assigned to the user. */
+                assignedToUser: components["schemas"]["WorkOrder"][];
+            };
+            /** @description Pre-fetched `myInvoices` query objects for the front-end cache. */
+            myInvoices: {
+                /** @description Invoices created by the user. */
+                createdByUser: components["schemas"]["Invoice"][];
+                /** @description Invoices assigned to the user. */
+                assignedToUser: components["schemas"]["Invoice"][];
+            };
+            /** @description Pre-fetched `myContacts` query objects for the front-end cache. */
+            myContacts: components["schemas"]["Contact"][];
         };
         /** @description A pre-fetched Contact object returned from a REST endpoint. */
         Contact: {
-            /** @description The contact's ID */
+            /**
+             * @description The object's GraphQL type name, `"Contact"`, included to facilitate
+             *     writing pre-fetched objects into the front-end's Apollo Client cache.
+             *
+             * @enum {string}
+             */
+            __typename: "Contact";
+            /** @description The contact's user ID */
             id: string;
             handle: components["schemas"]["handle"];
             email: components["schemas"]["email"];
@@ -309,16 +328,23 @@ export interface components {
         };
         /** @description A pre-fetched Invoice object returned from a Fixit REST endpoint. */
         Invoice: {
+            /**
+             * @description The object's GraphQL type name, `"Invoice"`, included to facilitate
+             *     writing pre-fetched objects into the front-end's Apollo Client cache.
+             *
+             * @enum {string}
+             */
+            __typename: "Invoice";
             /** @description The invoice's ID. */
             id: string;
-            /** @description The user or contact who created the invoice. */
+            /** @description The user who created the invoice. */
             createdBy: {
-                /** @description The ID of the user or contact who created the invoice. */
+                /** @description The ID of the user who created the invoice. */
                 id: string;
             };
-            /** @description The user or contact to whom the invoice is assigned. */
+            /** @description The user to whom the invoice is assigned. */
             assignedTo: {
-                /** @description The ID of the user or contact to whom the invoice is assigned. */
+                /** @description The ID of the user to whom the invoice is assigned. */
                 id: string;
             };
             /** @description The Invoice amount, represented as an integer which reflects USD centage
@@ -339,16 +365,23 @@ export interface components {
         };
         /** @description A pre-fetched WorkOrder object returned from a REST endpoint. */
         WorkOrder: {
+            /**
+             * @description The object's GraphQL type name, `"WorkOrder"`, included to facilitate
+             *     writing pre-fetched objects into the front-end's Apollo Client cache.
+             *
+             * @enum {string}
+             */
+            __typename: "WorkOrder";
             /** @description The work order's ID. */
             id: string;
-            /** @description The user or contact who created the work order. */
+            /** @description The user who created the work order. */
             createdBy: {
-                /** @description The ID of the user or contact who created the work order. */
+                /** @description The ID of the user who created the work order. */
                 id: string;
             };
-            /** @description The user or contact to whom the work order is assigned. */
+            /** @description The user to whom the work order is assigned. */
             assignedTo?: {
-                /** @description The ID of the user or contact to whom the work order is assigned. */
+                /** @description The ID of the user to whom the work order is assigned. */
                 id: string;
             } | null;
             location: components["schemas"]["Location"];
