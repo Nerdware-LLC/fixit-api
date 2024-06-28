@@ -1,6 +1,7 @@
 import { DeleteMutationResponse } from "@/graphql/_responses/index.js";
+import { User } from "@/models/User";
+import { WORK_ORDER_STATUSES as WO_STATUSES } from "@/models/WorkOrder/enumConstants.js";
 import { workOrderModelHelpers } from "@/models/WorkOrder/helpers.js";
-import { UserService } from "@/services/UserService";
 import { WorkOrderService } from "@/services/WorkOrderService";
 import { createWorkOrderZodSchema, updateWorkOrderZodSchema } from "./helpers.js";
 import type { Resolvers } from "@/types/graphql.js";
@@ -61,17 +62,20 @@ export const resolvers: Resolvers = {
     },
   },
   WorkOrder: {
-    createdBy: async (workOrder, _args, { user }) => {
-      return workOrder.createdByUserID === user.id
-        ? user
-        : await UserService.getUserByHandleOrID({ id: workOrder.createdByUserID });
+    createdBy: async ({ createdByUserID }, _args, { user }) => {
+      if (createdByUserID === user.id) return user;
+
+      const createdByUser = await User.getItem({ id: createdByUserID });
+
+      return createdByUser!;
     },
-    assignedTo: async (workOrder, _args, { user }) => {
-      return !workOrder?.assignedToUserID
-        ? null
-        : workOrder.assignedToUserID === user.id
-          ? user
-          : await UserService.getUserByHandleOrID({ id: workOrder.assignedToUserID });
+    assignedTo: async ({ assignedToUserID }, _args, { user }) => {
+      if (!assignedToUserID || assignedToUserID === WO_STATUSES.UNASSIGNED) return null;
+      if (assignedToUserID === user.id) return user;
+
+      const assignedToUser = await User.getItem({ id: assignedToUserID });
+
+      return assignedToUser!;
     },
   },
   CancelWorkOrderResponse: {
