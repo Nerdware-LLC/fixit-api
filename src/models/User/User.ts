@@ -6,7 +6,7 @@ import { isValidDisplayName, isValidProfilePhotoUrl } from "@/models/Profile/hel
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@/models/_common/modelAttributes.js";
 import { ddbTable } from "@/models/ddbTable.js";
 import { userModelHelpers } from "./helpers.js";
-import type { UserLoginObject } from "@/models/UserLogin/UserLogin.js";
+import type { UserLoginObject } from "@/models/UserLogin";
 import type { ItemTypeFromSchema, ItemCreationParameters } from "@nerdware/ddb-single-table";
 import type { OverrideProperties } from "type-fest";
 
