@@ -1,3 +1,4 @@
+import { hasKey } from "@nerdware/ts-type-safety-utils";
 import { DeleteMutationResponse } from "@/graphql/_responses/index.js";
 import { User } from "@/models/User";
 import { WORK_ORDER_STATUSES as WO_STATUSES } from "@/models/WorkOrder/enumConstants.js";
@@ -80,9 +81,9 @@ export const resolvers: Resolvers = {
   },
   CancelWorkOrderResponse: {
     __resolveType(parent) {
-      return "createdBy" in parent
+      return hasKey(parent, "createdBy") || hasKey(parent, "location")
         ? "WorkOrder"
-        : parent.id && "wasDeleted" in parent
+        : parent.id && hasKey(parent, "success")
           ? "DeleteMutationResponse"
           : null; // null --> GraphQLError is thrown
     },
