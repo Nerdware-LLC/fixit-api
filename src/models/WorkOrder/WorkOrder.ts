@@ -1,6 +1,6 @@
 import { Model } from "@nerdware/ddb-single-table";
 import { isString } from "@nerdware/ts-type-safety-utils";
-import { Location } from "@/models/Location/Location.js";
+import { Location } from "@/models/Location";
 import { userModelHelpers } from "@/models/User/helpers.js";
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@/models/_common/modelAttributes.js";
 import { ddbTable } from "@/models/ddbTable.js";
