@@ -46,15 +46,15 @@ export const resolvers: Resolvers = {
   },
   Contact: {
     email: async (parent) => {
-      const user = await UserService.getUserByHandleOrID(parent);
+      const user = await UserService.getUserByHandle(parent);
       return user.email;
     },
     phone: async (parent) => {
-      const user = await UserService.getUserByHandleOrID(parent);
+      const user = await UserService.getUserByHandle(parent);
       return user?.phone ?? null;
     },
     profile: async (parent) => {
-      const user = await UserService.getUserByHandleOrID(parent);
+      const user = await UserService.getUserByHandle(parent);
       return user.profile;
     },
   },

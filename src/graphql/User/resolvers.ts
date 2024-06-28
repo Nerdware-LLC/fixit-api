@@ -1,22 +1,19 @@
 import { sanitizeHandle, isValidHandle } from "@nerdware/ts-string-helpers";
 import { isSafeInteger } from "@nerdware/ts-type-safety-utils";
 import { usersCache, type UsersCacheEntry } from "@/lib/cache/usersCache.js";
+import { UserService } from "@/services/UserService";
 import { UserInputError } from "@/utils/httpErrors.js";
 import type { ContactItem } from "@/models/Contact";
 import type { Resolvers } from "@/types/graphql.js";
 
 export const resolvers: Resolvers = {
   Query: {
-    getUserByHandle: (_parent, { handle }) => {
+    getUserByHandle: async (_parent, { handle }) => {
       // Sanitize and validate the provided handle
       handle = sanitizeHandle(handle);
       if (!isValidHandle(handle)) throw new UserInputError(`Invalid value for field: "handle"`);
 
-      const cachedUser = usersCache.get(handle);
-
-      if (!cachedUser) throw new UserInputError("User not found.");
-
-      return cachedUser;
+      return await UserService.getUserByHandle({ handle });
     },
     searchForUsersByHandle: (
       _parent,

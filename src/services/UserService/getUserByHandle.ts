@@ -1,25 +1,20 @@
 import { usersCache } from "@/lib/cache/usersCache.js";
-import { User } from "@/models/User";
+import { User, userModelHelpers } from "@/models/User";
 import type { User as GqlUser } from "@/types/graphql.js";
 
 /**
- * ### UserService: getUserByHandleOrID
+ * ### UserService: getUserByHandle
  */
-export const getUserByHandleOrID = async ({
-  id: userID,
-  handle: userHandle,
-}: {
-  id: string;
-  handle?: string | undefined;
-}): Promise<GqlUser> => {
-  let publicUser: GqlUser | undefined;
-
-  // Else check usersCache if an itemUserHandle was provided
-  if (userHandle) publicUser = usersCache.get(userHandle);
+export const getUserByHandle = async ({ handle }: { handle: string }): Promise<GqlUser> => {
+  // Check usersCache
+  let publicUser: GqlUser | undefined = usersCache.get(handle);
 
   // If neither of the above methods yielded data for publicUser, get it from the DB as a last resort.
   if (!publicUser) {
-    publicUser = await User.getItem({ id: userID });
+    publicUser = await User.getItem({
+      id: userModelHelpers.id.format(handle),
+    });
+
     // If we found a user, cache it for future use.
     if (publicUser) usersCache.set(publicUser.handle, publicUser);
   }

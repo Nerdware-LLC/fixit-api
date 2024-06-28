@@ -64,11 +64,19 @@ export const resolvers: Resolvers = {
     },
   },
   Invoice: {
-    createdBy: async (invoice, _args) => {
-      return await UserService.getUserByHandleOrID({ id: invoice.createdByUserID });
+    createdBy: async ({ createdByUserID }, _args, { user }) => {
+      if (createdByUserID === user.id) return user;
+
+      const createdByUser = await User.getItem({ id: createdByUserID });
+
+      return createdByUser!;
     },
-    assignedTo: async (invoice, _args) => {
-      return await UserService.getUserByHandleOrID({ id: invoice.assignedToUserID });
+    assignedTo: async ({ assignedToUserID }, _args, { user }) => {
+      if (assignedToUserID === user.id) return user;
+
+      const assignedToUser = await User.getItem({ id: assignedToUserID });
+
+      return assignedToUser!;
     },
     workOrder: async (invoice, _args) => {
       if (!invoice?.workOrderID) return null;
