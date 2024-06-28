@@ -1,8 +1,8 @@
 import { DeleteMutationResponse } from "@/graphql/_responses/index.js";
 import { invoiceModelHelpers } from "@/models/Invoice/helpers.js";
+import { User } from "@/models/User";
 import { WorkOrder } from "@/models/WorkOrder";
 import { InvoiceService } from "@/services/InvoiceService";
-import { UserService } from "@/services/UserService";
 import { UserInputError } from "@/utils/httpErrors.js";
 import { createInvoiceZodSchema } from "./helpers.js";
 import type { Resolvers } from "@/types/graphql.js";
