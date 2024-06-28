@@ -78,10 +78,10 @@ export const resolvers: Resolvers = {
 
       return assignedToUser!;
     },
-    workOrder: async (invoice, _args) => {
-      if (!invoice?.workOrderID) return null;
+    workOrder: async ({ workOrderID }, _args) => {
+      if (!workOrderID) return null;
 
-      const [workOrder] = await WorkOrder.query({ where: { id: invoice.workOrderID }, limit: 1 });
+      const [workOrder] = await WorkOrder.query({ where: { id: workOrderID }, limit: 1 });
 
       return workOrder ?? null;
     },
