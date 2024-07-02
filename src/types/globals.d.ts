@@ -1,13 +1,4 @@
-import type { HttpError } from "@/utils/httpErrors.js";
 import type { JsonValue } from "type-fest";
-import type { CombineUnionOfObjects } from "./helpers.js";
-
-/**
- * This type is a {@link CombineUnionOfObjects|combination} of the base Error
- * class and the app's custom internal HttpError interface. It's used in error
- * handlers to allow for greater flexibility in handling errors.
- */
-export type ErrorOrHttpError = CombineUnionOfObjects<Error | HttpError>;
 
 declare global {
   namespace NodeJS {
@@ -54,14 +45,15 @@ declare global {
   /**
    * This declaration makes the following modifications to the `JSON.parse` typedef:
    *
-   * - For the `text: string` argument overload, the `any` return type is replaced with
-   *   {@link JsonValue | type-fest's `JsonValue`} .
+   * - For the `text: string` argument overload, the `any` return type is replaced with {@link JsonValue}.
    * - Add `number` overload, since `JSON.parse(42)` is valid and returns `42`.
    * - Add `null` overload, since `JSON.parse(null)` is valid and returns `null`.
    */
   interface JSON {
-    parse(text: string, reviver?: (this: any, key: string, value: unknown) => unknown): JsonValue;
-    parse(text: number, reviver?: (this: any, key: string, value: unknown) => unknown): number;
-    parse(text: null, reviver?: (this: any, key: string, value: unknown) => unknown): null;
+    parse(text: string, reviver?: JsonParseReviver): JsonValue;
+    parse(text: number, reviver?: JsonParseReviver): number;
+    parse(text: null, reviver?: JsonParseReviver): null;
   }
+
+  type JsonParseReviver = (this: typeof JSON, key: string, value: unknown) => unknown;
 }

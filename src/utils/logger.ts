@@ -8,7 +8,6 @@ import * as Sentry from "@sentry/node";
 import chalk, { type ChalkInstance } from "chalk";
 import dayjs from "dayjs";
 import { ENV } from "@/server/env";
-import type { ErrorOrHttpError } from "@/types/globals.js";
 
 /* eslint-disable no-console */
 
@@ -207,6 +206,6 @@ type LoggerFn = (
 
 /** Internal type for `handleLogError` fns used in `getLoggerUtil`. */
 type ErrorLoggerFn = (
-  error: ErrorOrHttpError,
+  error: unknown,
   msgPrefix?: GetLogMessageArgsProvidedByHandler["msgPrefix"]
 ) => void;
