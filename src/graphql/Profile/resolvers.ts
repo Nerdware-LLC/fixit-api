@@ -27,7 +27,7 @@ export const resolvers: Resolvers = {
 
       return {
         ...user.profile,
-        ...(result?.profile ?? {}),
+        ...result.profile,
       };
     },
   },

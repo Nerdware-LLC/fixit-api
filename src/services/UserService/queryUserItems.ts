@@ -52,7 +52,7 @@ export const queryUserItems = async ({
     Limit: 100, // <-- ensures users with many items don't experience a delayed response
   });
 
-  const items = response?.Items;
+  const items = response.Items;
 
   // Sanity check: If no items were found, throw AuthError
   if (!Array.isArray(items) || items.length === 0) throw new AuthError("User does not exist");

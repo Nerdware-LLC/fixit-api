@@ -27,7 +27,7 @@ export const mockStripeSubscription = (
   const currentPeriodStart = currentPeriodEndDayObject.subtract(1, "month").unix(); // <-- 1 month is arbitrary here
 
   const defaultPaymentMethodID: string =
-    isPlainObject(default_payment_method) && isString(default_payment_method?.id)
+    isPlainObject(default_payment_method) && isString(default_payment_method.id)
       ? default_payment_method.id
       : isString(default_payment_method)
         ? default_payment_method
@@ -114,7 +114,5 @@ export const mockStripeSubscription = (
     trial_start: null,
   };
 
-  return customValues
-    ? deepMerge(defaultMockSubscriptionObj, customValues)
-    : defaultMockSubscriptionObj;
+  return deepMerge(defaultMockSubscriptionObj, customValues);
 };

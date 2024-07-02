@@ -91,7 +91,8 @@ const getLoggerUtil = ({
     ? {
         handleLogError: (error, msgPrefix) => {
           // If error has a `statusCode` and the `statusCode` is under 500, ignore it.
-          if (isSafeInteger(error?.statusCode) && error.statusCode < 500) return;
+          const statusCode = (error as { statusCode?: number }).statusCode;
+          if (isSafeInteger(statusCode) && statusCode < 500) return;
           Sentry.captureException(error);
           // stderr goes to CloudWatch in deployed envs
           console.error(getLogMessage({ label, input: error, msgPrefix }));

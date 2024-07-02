@@ -15,12 +15,16 @@ export type RestApiEndpoint = Simplify<keyof paths>;
 
 /** A union of REST API **`POST`** endpoints. */
 export type RestApiPOSTendpoint = {
-  [Path in keyof paths]: paths[Path] extends { post: Record<string, any> } ? Path : never;
+  [Path in keyof paths]: paths[Path] extends { post: Record<string, NonNullable<unknown>> }
+    ? Path
+    : never;
 }[keyof paths];
 
 /** A union of REST API **`GET`** endpoints. */
 export type RestApiGETendpoint = {
-  [Path in keyof paths]: paths[Path] extends { get: Record<string, any> } ? Path : never;
+  [Path in keyof paths]: paths[Path] extends { get: Record<string, NonNullable<unknown>> }
+    ? Path
+    : never;
 }[keyof paths];
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -47,7 +51,9 @@ type ExtractPOSTRequestBodyContent<
 // REST API Response Types
 
 /** The shape of a response object with JSON content. */
-type BaseResponseContentJson = { content: { "application/json": Record<string, any> } };
+type BaseResponseContentJson = {
+  content: { "application/json": Record<string, NonNullable<unknown>> };
+};
 
 /** The shape of an OpenAPI operation with success-response status codes. */
 type BaseOpSuccessResponses = operations[keyof operations] & {

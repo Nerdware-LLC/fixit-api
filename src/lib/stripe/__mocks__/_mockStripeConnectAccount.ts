@@ -34,7 +34,7 @@ export const mockStripeConnectAccount = ({
   // The fields below are not currently used by the app, but are included here for completeness.
   business_profile: {
     mcc: null,
-    name: profile?.businessName ?? null,
+    name: profile.businessName ?? null,
     product_description: null,
     support_address: null,
     support_email: email,

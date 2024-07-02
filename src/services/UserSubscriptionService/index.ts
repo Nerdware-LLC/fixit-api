@@ -1,5 +1,4 @@
 import { createSubscription } from "./createSubscription.js";
-import { extractClientSecret } from "./extractClientSecret.js";
 import { findUsersSubscription } from "./findUsersSubscription.js";
 import { normalizeStripeFields } from "./normalizeStripeFields.js";
 import { refreshDataFromStripe } from "./refreshDataFromStripe.js";
@@ -12,8 +11,6 @@ import { refreshDataFromStripe } from "./refreshDataFromStripe.js";
 export const UserSubscriptionService = {
   createSubscription,
   findUsersSubscription,
-  refreshDataFromStripe,
-  // HELPER METHODS:
-  extractClientSecret,
   normalizeStripeFields,
+  refreshDataFromStripe,
 };

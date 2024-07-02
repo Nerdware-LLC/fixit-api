@@ -31,7 +31,7 @@ export const createSubscription = async ({
   stripeSubscriptionObject: Stripe.Response<StripeSubscriptionWithClientSecret>;
 }> => {
   // Ascertain the subscription's Stripe price ID
-  const priceID = UserSubscription.PRICE_IDS?.[selectedSubscription];
+  const priceID = UserSubscription.PRICE_IDS[selectedSubscription];
   // Sanity check - ensure a priceID exists for the selected subscription
   if (!priceID) throw new UserInputError("Invalid subscription");
 

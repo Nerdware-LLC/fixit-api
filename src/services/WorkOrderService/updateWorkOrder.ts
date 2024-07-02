@@ -24,7 +24,7 @@ export const updateWorkOrder = async ({
     throw new UserInputError("A work order with the provided ID could not be found.");
 
   AuthService.verifyUserIsAuthorized.toPerformThisUpdate(existingWO, {
-    idOfUserWhoCanPerformThisUpdate: existingWO?.createdByUserID,
+    idOfUserWhoCanPerformThisUpdate: existingWO.createdByUserID,
     authenticatedUserID,
     forbiddenStatuses: {
       CANCELLED: "The requested work order has been cancelled and cannot be updated.",
@@ -38,7 +38,7 @@ export const updateWorkOrder = async ({
       User/Contact ID, then the status should be updated to ASSIGNED.
     - Otherwise, the status should remain unchanged. */
   const upToDateStatus =
-    existingWO.status === "ASSIGNED" && update?.assignedToUserID === "UNASSIGNED"
+    existingWO.status === "ASSIGNED" && update.assignedToUserID === "UNASSIGNED"
       ? "UNASSIGNED"
       : existingWO.status === "UNASSIGNED" &&
           userModelHelpers.id.isValid(update.assignedToUserID?.replace(/CONTACT#/, ""))

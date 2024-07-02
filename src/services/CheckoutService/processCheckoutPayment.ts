@@ -88,9 +88,9 @@ export const processCheckoutPayment = async (
     let nonExpiredSubscription: StripeSubscriptionWithClientSecret | undefined;
 
     // See if there's an existing non-expired subscription
-    if (!!subscriptions && (subscriptions?.data?.length ?? 0) >= 1) {
+    if (subscriptions.data.length >= 1) {
       nonExpiredSubscription = subscriptions.data.find(
-        (sub) => sub?.id.startsWith("sub") && sub?.status !== "incomplete_expired"
+        (sub) => sub.id.startsWith("sub") && sub.status !== "incomplete_expired"
       );
     }
 
@@ -118,21 +118,21 @@ export const processCheckoutPayment = async (
     The `latest_invoice` will not have a `payment_intent.id` in checkout situations
     which don't involve an immediate payment — i.e., if the user selected a TRIAL,
     or provided a VIP `promoCode` which grants them 100% off at checkout. */
-    if (!latestInvoice?.payment_intent?.id) {
+    if (!latestInvoice.payment_intent.id) {
       /* Just to be sure the sub/payment are in the expected state, assertions are
       made regarding the expected TRIAL/PROMO_CODE. If neither conditions apply,
       Stripe should have provided `payment_intent.id`, so an error is thrown. */
       const isTrialSub =
         selectedSubscription === SUB_PRICE_NAMES.TRIAL && subscription.status === "trialing";
       const wasVipPromoCodeApplied =
-        !!promoCode && latestInvoice?.discount?.coupon?.percent_off === 100;
+        !!promoCode && latestInvoice.discount?.coupon.percent_off === 100;
 
       if (!isTrialSub && !wasVipPromoCodeApplied)
         throw new Error("Stripe Error: Failed to retrieve payment details");
 
       // Update checkoutCompletionInfo:
       checkoutCompletionInfo = {
-        isCheckoutComplete: latestInvoice?.paid === true,
+        isCheckoutComplete: latestInvoice.paid === true,
         // Note: for TRIAL/PROMO_CODE subs, `latest_invoice.paid` should be `true` here
       };
 
@@ -164,7 +164,7 @@ export const processCheckoutPayment = async (
         throw new Error("Stripe Error: payment confirmation failed.");
 
       const isCheckoutComplete =
-        ["succeeded", "requires_action"].includes(paymentStatus) && invoice?.paid === true;
+        ["succeeded", "requires_action"].includes(paymentStatus) && invoice.paid === true;
 
       if (!isCheckoutComplete) throw new Error("Your payment was declined.");
 

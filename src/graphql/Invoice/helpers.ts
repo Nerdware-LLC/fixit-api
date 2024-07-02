@@ -21,7 +21,7 @@ export const createInvoiceZodSchema = zod
       .nullish()
       .default(null)
       .transform((value) => (isString(value) ? woModelHelpers.id.sanitize(value) : null))
-      .refine((value) => (isString(value) ? woModelHelpers.id.isValid(value) : value === null), {
+      .refine((value) => (isString(value) ? woModelHelpers.id.isValid(value) : true), {
         message: "Invalid value for field: 'workOrderID'",
       }),
   })

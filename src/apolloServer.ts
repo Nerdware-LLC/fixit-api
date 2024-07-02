@@ -103,7 +103,7 @@ export const getAuthenticatedApolloContext: ContextFunction<
     // Expected error.statusCode values: 401 or 403 (default to 401 if undefined for whatever reason)
     const errorStatusCode = (error as Partial<HttpError>).statusCode ?? 401;
     // Get the HTTP-error-config for the statusCode
-    const httpErrorConfig = HTTP_ERROR_CONFIGS?.[errorStatusCode] ?? HTTP_ERROR_CONFIGS[401];
+    const httpErrorConfig = HTTP_ERROR_CONFIGS[errorStatusCode] ?? HTTP_ERROR_CONFIGS[401];
     // Re-throw as GraphQLError (ApolloServer's formatError fn is not called for ctx-fn errors)
     throw new GraphQLError(httpErrorConfig.defaultErrorMsg, {
       extensions: httpErrorConfig.gqlErrorExtensions,

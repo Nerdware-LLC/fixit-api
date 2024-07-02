@@ -19,7 +19,7 @@ export const cancelWorkOrder = async ({
     throw new UserInputError("A work order with the provided ID could not be found.");
 
   AuthService.verifyUserIsAuthorized.toPerformThisUpdate(existingWO, {
-    idOfUserWhoCanPerformThisUpdate: existingWO?.createdByUserID,
+    idOfUserWhoCanPerformThisUpdate: existingWO.createdByUserID,
     authenticatedUserID,
     forbiddenStatuses: {
       CANCELLED: "The requested work order has already been cancelled.",

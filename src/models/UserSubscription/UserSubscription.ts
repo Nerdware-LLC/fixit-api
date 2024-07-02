@@ -37,7 +37,7 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
     sk: {
       type: "string",
       default: (sub: { pk?: string; createdAt?: Date }) =>
-        sub?.pk && sub?.createdAt ? subModelHelpers.sk.format(sub.pk, sub.createdAt) : undefined,
+        sub.pk && sub.createdAt ? subModelHelpers.sk.format(sub.pk, sub.createdAt) : undefined,
       validate: subModelHelpers.sk.isValid,
       required: true,
     },
@@ -58,8 +58,7 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
       // Not using type=enum here bc Product IDs are env-dependent and not known until runtime.
       transformValue: {
         // This toDB allows the value to be a Product `id` OR `name`
-        toDB: (value: string) =>
-          productsCache.has(value as any) ? productsCache.get(value as any)!.id : value,
+        toDB: (value: string) => (productsCache.has(value) ? productsCache.get(value)!.id : value),
       },
     },
     priceID: {

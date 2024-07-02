@@ -23,9 +23,7 @@ export const normalizeStripeFields = <StripeSub extends Stripe.Subscription>(
   const { customer, created, current_period_end, items } = stripeSubObject;
 
   // Ensure there's at least 1 subscription-item in the `items` array:
-  if (!items.data[0]) {
-    throw new Error("Stripe Subscription object has no items.");
-  }
+  if (!items.data[0]) throw new Error("Stripe Subscription object has no items.");
 
   // Get the `id` and related `product` of the `price` of the first sub-item:
   const { id: priceID, product } = items.data[0].price;

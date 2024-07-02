@@ -65,7 +65,7 @@ type BaseStringAttrHelpersInput = {
   sanitize?: (value: string) => string;
   /** Returns a string formatted for the respective attribute using the provided values. */
   format?: (...args: any[]) => string;
-  [otherProperties: string]: any;
+  [otherProperties: string]: unknown;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

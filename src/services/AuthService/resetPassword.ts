@@ -36,7 +36,7 @@ export const resetPassword = async ({
   );
 
   // If `updatedUser.login.passwordHash` isn't the new pw hash, throw a 500 error
-  if (updatedUser?.login?.passwordHash !== newLocalUserLoginObj.passwordHash) {
+  if (updatedUser.login.passwordHash !== newLocalUserLoginObj.passwordHash) {
     throw new InternalServerError(
       "We're sorry, but we were unable to update your password at this time. Please try again, or contact support if the problem persists."
     );

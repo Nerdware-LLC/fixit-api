@@ -154,7 +154,5 @@ export const mockStripeInvoice = (
     webhooks_delivered_at: null,
   };
 
-  return otherCustomValues
-    ? deepMerge(defaultMockInvoiceObj, otherCustomValues)
-    : defaultMockInvoiceObj;
+  return deepMerge(defaultMockInvoiceObj, otherCustomValues);
 };

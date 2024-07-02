@@ -51,7 +51,7 @@ export const resolvers: Resolvers = {
     },
     phone: async (parent) => {
       const user = await UserService.getUserByHandle(parent);
-      return user?.phone ?? null;
+      return user.phone ?? null;
     },
     profile: async (parent) => {
       const user = await UserService.getUserByHandle(parent);

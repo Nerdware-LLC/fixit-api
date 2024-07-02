@@ -13,7 +13,7 @@ export const notifyAssigneeCancelledWO = async (cancelledWO?: WorkOrderItem) => 
   if (!cancelledWO) return;
 
   // If new WorkOrder was UNASSIGNED, return.
-  if (!cancelledWO?.assignedToUserID) return;
+  if (!cancelledWO.assignedToUserID) return;
 
   const assigneeUser = await User.getItem({ id: cancelledWO.assignedToUserID });
 

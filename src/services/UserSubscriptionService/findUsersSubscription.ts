@@ -18,27 +18,25 @@ export const findUsersSubscription = async ({
   authenticatedUserID: string;
 }) => {
   /*
-          Although unlikely, it is possible for users to have multiple subs.
-          To guard against these edge cases, this query returns the most recently
-          created subscription with an "active" status. See below comment.
+    Although unlikely, it is possible for users to have multiple subs.
+    To guard against these edge cases, this query returns the most recently
+    created subscription with an "active" status. See below comment.
 
-          currentSub win conditions in order of precedence:
-            - currentSub is 1st in subs array
-            - currentSub.status is "active" and subToReturn is NOT "active"
-            - currentSub.status is "active" and created more recently than subToReturn
-            - neither are "active", and currentSub was updated more recently than subToReturn
-        */
-  return (
-    await UserSubscription.query({
-      where: {
-        userID: authenticatedUserID,
-        sk: { beginsWith: UserSubscription.SK_PREFIX },
-      },
-    })
-  ).reduce((subToReturn, currentSub) => {
-    if (!subToReturn) {
-      subToReturn = currentSub;
-    } else if (
+    currentSub win conditions in order of precedence:
+      - currentSub is 1st in subs array
+      - currentSub.status is "active" and subToReturn is NOT "active"
+      - currentSub.status is "active" and created more recently than subToReturn
+      - neither are "active", and currentSub was updated more recently than subToReturn
+  */
+  const subs = await UserSubscription.query({
+    where: {
+      userID: authenticatedUserID,
+      sk: { beginsWith: UserSubscription.SK_PREFIX },
+    },
+  });
+
+  return subs.reduce((subToReturn, currentSub) => {
+    if (
       currentSub.status === "active" &&
       (subToReturn.status !== "active" || wasCreatedEarlier(currentSub, subToReturn))
     ) {

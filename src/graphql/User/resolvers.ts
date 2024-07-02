@@ -28,10 +28,10 @@ export const resolvers: Resolvers = {
       if (!isSafeInteger(startIndex) || startIndex < 0)
         throw new UserInputError(`Invalid value for field: "offset"`);
 
-      limit = Math.max(10, Math.min(limit ?? 10, 50)); // limit must be between 10 and 50
-      startIndex = Math.max(0, startIndex ?? 0); // startIndex must be >= 0
+      limit = Math.max(10, Math.min(limit, 50)); // limit must be between 10 and 50 (default: 10)
+      startIndex = Math.max(0, startIndex); // startIndex must be >= 0 (default: 0)
 
-      const userCacheEntriesToSearch = usersCache.entries()?.slice(startIndex) ?? [];
+      const userCacheEntriesToSearch = usersCache.entries().slice(startIndex);
       const matchingUsers: Array<ContactItem> = [];
 
       // Why not use reduce? Because we want to break out of the loop once we've found enough matches.

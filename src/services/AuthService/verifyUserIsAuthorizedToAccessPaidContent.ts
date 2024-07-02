@@ -25,13 +25,13 @@ export const verifyUserIsAuthorizedToAccessPaidContent = ({
   if (
     !status ||
     !hasKey(SUB_STATUS_AUTH_METADATA, status) ||
-    SUB_STATUS_AUTH_METADATA[status]?.isValid !== true ||
+    SUB_STATUS_AUTH_METADATA[status].isValid !== true ||
     !currentPeriodEnd ||
     !dayjs(currentPeriodEnd).isValid()
   ) {
     throw new Error(
       !!status && hasKey(SUB_STATUS_AUTH_METADATA, status)
-        ? SUB_STATUS_AUTH_METADATA[status]?.reason ?? "Invalid subscription."
+        ? SUB_STATUS_AUTH_METADATA[status].reason ?? "Invalid subscription."
         : "Invalid subscription."
     );
   }

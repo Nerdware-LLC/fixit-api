@@ -36,7 +36,7 @@ export const createWorkOrderZodSchema = zod
       .nullish()
       .default(null)
       .transform((value) => (value ? (sanitizeAlphabetic(value) as typeof value) : value))
-      .refine((value) => (value ? WO_ENUMS.CATEGORIES.includes(value) : value === null)),
+      .refine((value) => (value ? WO_ENUMS.CATEGORIES.includes(value) : true)),
     checklist: zod.array(createChecklistItemZodSchema).nullish().default(null),
     description: zod
       .string()
@@ -63,7 +63,7 @@ export const createWorkOrderZodSchema = zod
       .nullish()
       .default("NORMAL")
       .transform((value) => (value ? (sanitizeAlphabetic(value) as typeof value) : value))
-      .refine((value) => (value ? WO_ENUMS.PRIORITIES.includes(value) : value === null)),
+      .refine((value) => (value ? WO_ENUMS.PRIORITIES.includes(value) : true)),
     scheduledDateTime: zod.date().nullish().default(null),
   })
   .strict() satisfies ZodObjectWithShape<CreateWorkOrderInput>;

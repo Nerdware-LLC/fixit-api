@@ -21,7 +21,7 @@ export const payInvoice = async ({
   if (!existingInv) throw new UserInputError("An invoice with the provided ID could not be found.");
 
   AuthService.verifyUserIsAuthorized.toPerformThisUpdate(existingInv, {
-    idOfUserWhoCanPerformThisUpdate: existingInv?.assignedToUserID,
+    idOfUserWhoCanPerformThisUpdate: existingInv.assignedToUserID,
     authenticatedUserID: authenticatedUser.id,
     forbiddenStatuses: {
       CLOSED: "The requested invoice has already been closed.",
@@ -51,7 +51,7 @@ export const payInvoice = async ({
     },
   });
 
-  const wasInvoiceSuccessfullyPaid = paymentIntent?.status === "succeeded";
+  const wasInvoiceSuccessfullyPaid = paymentIntent.status === "succeeded";
 
   const updatedInvoice = await Invoice.updateItem(
     { id: existingInv.id, createdByUserID: existingInv.createdByUserID },

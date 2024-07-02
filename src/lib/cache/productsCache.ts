@@ -8,7 +8,7 @@ import type Stripe from "stripe";
 // Initialize the productsCache with all active products:
 const { data: activeProducts } = await stripe.products.list({ active: true });
 
-const fixitSubscriptionProduct = activeProducts?.find(
+const fixitSubscriptionProduct = activeProducts.find(
   (prod) => prod.name === PRODUCT_NAMES.FIXIT_SUBSCRIPTION
 );
 

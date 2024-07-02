@@ -55,7 +55,7 @@ export class FixitEventEmitter
     super();
     // Register each event's handler functions
     for (const eventName in eventHandlers) {
-      eventHandlers[eventName as FixitEventName].forEach((handler) =>
+      eventHandlers[eventName as FixitEventName].forEach((handler: BaseEventHandler) =>
         this.on(
           eventName,
           // Wrap each event handler in a try/catch block to prevent unhandled errors

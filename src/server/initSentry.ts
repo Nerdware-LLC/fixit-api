@@ -7,7 +7,7 @@ if (ENV.SENTRY_DSN) {
     dsn: ENV.SENTRY_DSN,
     environment: ENV.NODE_ENV,
     tracesSampleRate: 1.0,
-    ...(ENV.CONFIG?.PROJECT_VERSION && {
+    ...(ENV.CONFIG.PROJECT_VERSION && {
       release: ENV.CONFIG.PROJECT_VERSION,
     }),
   });

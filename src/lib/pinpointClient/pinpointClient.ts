@@ -100,8 +100,8 @@ export const pinpointClient = {
           MessageRequest: {
             ...(!!to && !!ChannelType && { Addresses: fmtMessageAddresses({ to, ChannelType }) }),
             ...messageRequest,
-          },
-        } as any)
+          } as MessageRequest,
+        })
       )
       .catch((error: unknown) => {
         const errMsg = getErrorMessage(error) ?? "(Unknown error)";

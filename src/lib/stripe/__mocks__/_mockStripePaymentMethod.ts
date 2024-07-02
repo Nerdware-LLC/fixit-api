@@ -53,7 +53,5 @@ export const mockStripePaymentMethod = (
     metadata: {},
   };
 
-  return customValues
-    ? deepMerge(defaultMockPaymentMethodObj, customValues)
-    : defaultMockPaymentMethodObj;
+  return deepMerge(defaultMockPaymentMethodObj, customValues);
 };

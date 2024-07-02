@@ -18,7 +18,7 @@ export const updateInvoiceAmount = async ({
   if (!existingInv) throw new UserInputError("An invoice with the provided ID could not be found.");
 
   AuthService.verifyUserIsAuthorized.toPerformThisUpdate(existingInv, {
-    idOfUserWhoCanPerformThisUpdate: existingInv?.createdByUserID,
+    idOfUserWhoCanPerformThisUpdate: existingInv.createdByUserID,
     authenticatedUserID: authenticatedUser.id,
     forbiddenStatuses: {
       CLOSED: "The requested invoice has already been closed.",

@@ -75,11 +75,11 @@ export const formatApolloError: NonNullable<
     extensions: {
       // Apollo's typing implies `code` could be explicitly `undefined`, which is why spread syntax is not used here.
       code:
-        gqlFormattedErrorExts?.code ??
+        gqlFormattedErrorExts.code ??
         httpErrorGqlExtensions?.code ??
         HTTP_ERROR_CONFIGS[500].gqlErrorExtensions.code,
       http: {
-        status: gqlFormattedErrorExts?.http?.status ?? httpErrorStatusCode,
+        status: gqlFormattedErrorExts.http?.status ?? httpErrorStatusCode,
       },
     },
   };

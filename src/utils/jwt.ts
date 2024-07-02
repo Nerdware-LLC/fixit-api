@@ -76,7 +76,7 @@ export class JWT {
           if (err || !decoded) {
             const errName = err?.name ?? "default";
             const errMsg =
-              decodeErrMsgs?.[errName] ??
+              decodeErrMsgs[errName] ??
               decodeErrMsgs.default ??
               JWT.DEFAULT_DECODE_ERR_MSGS.default;
             reject(new AuthError(errMsg));

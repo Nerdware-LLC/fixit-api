@@ -29,7 +29,7 @@ items.forEach((dbItem) => {
     pk: id, data: email, handle, phone = null, profile, createdAt, updatedAt,
   } = dbItem as UnaliasedUserItem
 
-  if (id && email && handle && profile && createdAt && updatedAt) {
+  if (id && email && handle) {
     // Only users' public fields are cached for search
     initialCacheEntries.push([handle, { id, email, handle, phone, profile, createdAt, updatedAt }]);
   }

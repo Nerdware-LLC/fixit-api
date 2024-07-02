@@ -90,9 +90,9 @@ export class AuthToken {
 
     // Ensure required fields are present
     // prettier-ignore
-    if (!id || !handle || !email || !profile || !stripeCustomerID || !stripeConnectAccount || !createdAt || !updatedAt) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!id || !handle || !email || !profile || !stripeCustomerID || !stripeConnectAccount || !createdAt || !updatedAt)
       throw new InternalServerError("Invalid user data provided to AuthToken constructor");
-    }
 
     // Form the token payload using only the permitted fields
     const payload: AuthTokenPayload = {

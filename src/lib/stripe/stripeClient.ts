@@ -1,7 +1,7 @@
 import Stripe, { type Stripe as StripeTypeNamespace } from "stripe";
 import { ENV } from "@/server/env";
 
-if (!ENV?.STRIPE?.SECRET_KEY) {
+if (!ENV.STRIPE.SECRET_KEY) {
   throw new Error("Unable to initialize Stripe client");
 }
 

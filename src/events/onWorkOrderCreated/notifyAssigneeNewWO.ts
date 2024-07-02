@@ -13,7 +13,7 @@ export const notifyAssigneeNewWO = async (newWO?: WorkOrderItem) => {
   if (!newWO) return;
 
   // If new WorkOrder is UNASSIGNED, return.
-  if (!newWO?.assignedToUserID) return;
+  if (!newWO.assignedToUserID) return;
 
   const assigneeUser = await User.getItem({ id: newWO.assignedToUserID });
 

@@ -41,18 +41,18 @@ export const registerNewUserSCA = async ({
     business_type: "individual",
     company: {
       ...(phone && { phone }),
-      ...(profile?.businessName && { name: profile.businessName }),
+      ...(profile.businessName && { name: profile.businessName }),
     },
     individual: {
       email,
       ...(phone && { phone }),
-      ...(profile?.givenName && { first_name: profile.givenName }),
-      ...(profile?.familyName && { last_name: profile.familyName }),
+      ...(profile.givenName && { first_name: profile.givenName }),
+      ...(profile.familyName && { last_name: profile.familyName }),
     },
     business_profile: {
       support_email: email,
       ...(phone && { support_phone: phone }),
-      ...(profile?.businessName && { name: profile.businessName }),
+      ...(profile.businessName && { name: profile.businessName }),
     },
     tos_acceptance: {
       service_agreement: "full",

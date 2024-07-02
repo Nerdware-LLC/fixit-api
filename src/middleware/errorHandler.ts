@@ -1,7 +1,8 @@
 import { getTypeSafeError } from "@nerdware/ts-type-safety-utils";
 import { ENV } from "@/server/env";
 import { logger } from "@/utils/logger.js";
-import type { ErrorOrHttpError } from "@/types/globals.js";
+import type { CombineUnionOfObjects } from "@/types/helpers.js";
+import type { HttpError } from "@/utils/httpErrors.js";
 import type { ErrorRequestHandler } from "express";
 
 const DEFAULT_ERROR_MESSAGE = "An unexpected problem occurred";
@@ -22,7 +23,7 @@ export const errorHandler: ErrorRequestHandler = (originalError: unknown, req, r
   // Parse the originalError param
   const error = getTypeSafeError(originalError, { fallBackErrMsg: DEFAULT_ERROR_MESSAGE });
 
-  const { statusCode: errorStatusCode = 500 } = error as ErrorOrHttpError;
+  const { statusCode: errorStatusCode = 500 } = error as CombineUnionOfObjects<Error | HttpError>;
   let { message: errorMessage } = error;
 
   if (errorStatusCode >= 500) {
@@ -32,7 +33,7 @@ export const errorHandler: ErrorRequestHandler = (originalError: unknown, req, r
   }
 
   // If streaming back to the client has already been initiated, use Express's built-in default-error-handler.
-  if (res.headersSent) return next(originalError);
+  if (res.headersSent) next(originalError);
 
   // Send JSON response to client
   res.status(errorStatusCode).json({ error: errorMessage });

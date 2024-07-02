@@ -1,5 +1,6 @@
 import { ENV } from "@/server/env";
 import type { UserItem } from "@/models/User";
+import type { Primitive } from "type-fest";
 
 /**
  * Represents a push notification.
@@ -18,7 +19,7 @@ export class PushNotification {
     _apiEnv: typeof ENV.NODE_ENV;
     _pushEventName: string;
     _recipientUser: PushNotificationRecipient["id"];
-    [key: string]: any;
+    [key: string]: NonNullable<unknown>;
   };
 
   /**
@@ -55,5 +56,5 @@ export class PushNotification {
  * User-fields which define the {@link PushNotification} recipient.
  */
 export type PushNotificationRecipient = Pick<UserItem, "id" | "expoPushToken"> & {
-  [key: string]: any;
+  [key: string]: Primitive | object;
 };

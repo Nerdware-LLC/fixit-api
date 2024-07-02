@@ -1,4 +1,5 @@
 import { safeJsonStringify } from "@nerdware/ts-type-safety-utils";
+import Stripe from "stripe";
 import { productsCache } from "@/lib/cache/productsCache.js";
 import { stripe } from "@/lib/stripe/stripeClient.js";
 import {
@@ -8,7 +9,6 @@ import {
 import { InternalServerError } from "@/utils/httpErrors.js";
 import { Cache } from "./Cache.js";
 import type { SubscriptionPriceName } from "@/types/graphql.js";
-import type Stripe from "stripe";
 import type { Entries } from "type-fest";
 
 // Initialize the pricesCache with all active subscription prices:
@@ -20,7 +20,7 @@ const { data: activeSubscriptionPrices } = await stripe.prices.list({
 
 // Ensure exactly 2 active subscription prices were returned from Stripe:
 if (
-  activeSubscriptionPrices?.length !== 2 ||
+  activeSubscriptionPrices.length !== 2 ||
   !activeSubscriptionPrices.every((price) =>
     ([PRICE_NAMES.ANNUAL, PRICE_NAMES.MONTHLY] as Array<string>).includes(price.nickname ?? "")
   )
@@ -32,14 +32,18 @@ if (
 }
 
 const pricesDictionary = activeSubscriptionPrices.reduce(
-  (accum, priceObject) => {
+  (accum: Record<SubscriptionPriceName, Stripe.Price>, priceObject) => {
     const { nickname: priceName } = priceObject;
     accum[(priceName ?? "") as SubscriptionPriceName] = priceObject;
     // TRIAL uses the same priceID as MONTHLY:
     if (priceName === PRICE_NAMES.MONTHLY) accum.TRIAL = priceObject;
     return accum;
   },
-  { ANNUAL: {}, MONTHLY: {}, TRIAL: {} } as Record<SubscriptionPriceName, Stripe.Price>
+  {
+    ANNUAL: {} as Stripe.Price,
+    MONTHLY: {} as Stripe.Price,
+    TRIAL: {} as Stripe.Price,
+  }
 );
 
 /**

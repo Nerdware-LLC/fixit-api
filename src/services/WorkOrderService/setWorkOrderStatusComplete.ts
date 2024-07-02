@@ -19,7 +19,7 @@ export const setWorkOrderStatusComplete = async ({
     throw new UserInputError("A work order with the provided ID could not be found.");
 
   AuthService.verifyUserIsAuthorized.toPerformThisUpdate(existingWO, {
-    idOfUserWhoCanPerformThisUpdate: existingWO?.assignedToUserID,
+    idOfUserWhoCanPerformThisUpdate: existingWO.assignedToUserID,
     authenticatedUserID,
     forbiddenStatuses: {
       UNASSIGNED: "Only the work order's assignee may perform this update.",

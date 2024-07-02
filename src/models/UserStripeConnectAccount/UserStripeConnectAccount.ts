@@ -18,7 +18,7 @@ const userStripeConnectAccountModelSchema = ddbTable.getModelSchema({
   sk: {
     type: "string",
     default: (userSCA: { pk?: string }) =>
-      userSCA?.pk ? scaModelHelpers.sk.format(userSCA.pk) : undefined,
+      userSCA.pk ? scaModelHelpers.sk.format(userSCA.pk) : undefined,
     validate: scaModelHelpers.sk.isValid,
     required: true,
   },

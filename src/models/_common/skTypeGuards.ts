@@ -34,16 +34,16 @@ const isSKofType = {
  */
 // prettier-ignore
 export const skTypeGuards = {
-  isContact: (obj: SkTypeGuardArg): obj is ContactItem => isSKofType.contact(obj?.sk),
-  isInvoice: (obj: SkTypeGuardArg): obj is InvoiceItem => isSKofType.invoice(obj?.sk),
-  isUser: (obj: SkTypeGuardArg): obj is UserItem => isSKofType.user(obj?.sk),
-  isUserSCA: (obj: SkTypeGuardArg): obj is UserSCAModelItem => isSKofType.sca(obj?.sk),
-  isUserSubscription: (obj: SkTypeGuardArg): obj is UserSubModelItem => isSKofType.subscription(obj?.sk),
-  isWorkOrder: (obj: SkTypeGuardArg): obj is WorkOrderItem => isSKofType.workOrder(obj?.sk),
-  isPwResetToken: (obj: SkTypeGuardArg): obj is PwResetTokenItem => isSKofType.pwResetToken(obj?.sk),
+  isContact: (obj: SkTypeGuardArg): obj is ContactItem => isSKofType.contact(obj.sk),
+  isInvoice: (obj: SkTypeGuardArg): obj is InvoiceItem => isSKofType.invoice(obj.sk),
+  isUser: (obj: SkTypeGuardArg): obj is UserItem => isSKofType.user(obj.sk),
+  isUserSCA: (obj: SkTypeGuardArg): obj is UserSCAModelItem => isSKofType.sca(obj.sk),
+  isUserSubscription: (obj: SkTypeGuardArg): obj is UserSubModelItem => isSKofType.subscription(obj.sk),
+  isWorkOrder: (obj: SkTypeGuardArg): obj is WorkOrderItem => isSKofType.workOrder(obj.sk),
+  isPwResetToken: (obj: SkTypeGuardArg): obj is PwResetTokenItem => isSKofType.pwResetToken(obj.sk),
 };
 
-export interface SkTypeGuardArg {
+interface SkTypeGuardArg {
   sk?: string;
-  [K: PropertyKey]: any;
+  [K: PropertyKey]: unknown;
 }

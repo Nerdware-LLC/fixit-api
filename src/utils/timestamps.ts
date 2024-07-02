@@ -62,7 +62,7 @@ export const isValidTimestamp = (
   }
 
   // `value` is cast to any, bc the previous checks ensure it won't throw
-  return dayjs(value as any).isValid();
+  return dayjs(value as DayJsCtorParamType).isValid();
 };
 
 /**
