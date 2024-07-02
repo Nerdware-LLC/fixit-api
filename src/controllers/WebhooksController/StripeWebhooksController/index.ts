@@ -1,13 +1,17 @@
 import { connectAccountUpdated } from "./connectAccountUpdated.js";
 import { customerSubscriptionDeleted } from "./customerSubscriptionDeleted.js";
 import { customerSubscriptionUpdated } from "./customerSubscriptionUpdated.js";
+import type Stripe from "stripe";
+import type { StripeWebhookHandler } from "../types.js";
 
 /**
  * This controller maps Stripe webhook event-names to their respective event-handlers.
  *
  * See the [StripeWebhooksController README](./README.md) for more info.
  */
-export const StripeWebhooksController: Record<string, ((dataObj: any) => Promise<void>) | null> = {
+export const StripeWebhooksController: {
+  readonly [EventName in Stripe.DiscriminatedEvent.Type]?: StripeWebhookHandler<EventName> | null;
+} = {
   "account.application.authorized": null,
   "account.application.deauthorized": null,
   "account.external_account.created": null,

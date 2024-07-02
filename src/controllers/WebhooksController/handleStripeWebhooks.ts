@@ -6,6 +6,7 @@ import { logger } from "@/utils/logger.js";
 import { StripeWebhooksController } from "./StripeWebhooksController";
 import type { RequestHandler } from "express";
 import type Stripe from "stripe";
+import type { GetDataObjectTypeForEvent } from "./types.js";
 
 /**
  * `handleStripeWebhooks` is a tuple containing two Express middleware functions:
@@ -22,10 +23,10 @@ import type Stripe from "stripe";
  *    See the [StripeWebhooksController README](./StripeWebhooksController/README.md)
  *    for more info on how this API handles Stripe webhook events.
  */
-export const handleStripeWebhooks: [RequestHandler, RequestHandler] = [
+export const handleStripeWebhooks: [RequestHandler, RequestHandler<never, unknown, Buffer>] = [
   express.raw({ type: "application/json" }),
-  (req, res, next) => {
-    let event: Stripe.Event | undefined;
+  async (req, res, next) => {
+    let event: Stripe.DiscriminatedEvent | undefined;
 
     try {
       // Construct Stripe event object
@@ -33,16 +34,16 @@ export const handleStripeWebhooks: [RequestHandler, RequestHandler] = [
         req.body,
         req.headers["stripe-signature"] as string | string[] | Buffer,
         ENV.STRIPE.WEBHOOKS_SECRET
-      );
+      ) as Stripe.DiscriminatedEvent;
     } catch (err: unknown) {
       const error = getTypeSafeError(err);
       logger.stripe(error, "Webhook signature verification failed");
       res.status(400).send(`Webhook Error: ${error.message}`);
     }
 
-    if (!event) return next(new Error("ERROR: Stripe webook event object not found"));
+    if (!event) return next(new Error("Stripe webook event object not found"));
 
-    const eventHandler = StripeWebhooksController?.[event.type];
+    const eventHandler = StripeWebhooksController[event.type];
 
     /*
       If `eventHandler` is
@@ -53,23 +54,16 @@ export const handleStripeWebhooks: [RequestHandler, RequestHandler] = [
 
     // Log the webhook and its actionability
     logger.webhook(
-      safeJsonStringify(
-        {
-          isActionableEvent: !!eventHandler,
-          isHandledEvent: eventHandler !== undefined,
-          eventType: event.type,
-          eventObject: event.data.object,
-        },
-        null,
-        2
-      )
+      `Stripe webhook received: "${event.type}" ` +
+        `(HANDLED: ${eventHandler !== undefined}, ACTIONABLE: ${!!eventHandler}) ` +
+        `EVENT DATA: ${safeJsonStringify(event.data.object, null, 2)}`
     );
 
     // If an event handler exists, invoke it and acknowledge receipt of the event
     if (eventHandler) {
-      eventHandler(event.data.object)
-        .then(() => res.status(200).json({ received: true }))
-        .catch((err: unknown) => next(err));
+      await eventHandler(event.data.object as GetDataObjectTypeForEvent<typeof event.type>);
     }
+
+    res.status(200).json({ received: true });
   },
 ];

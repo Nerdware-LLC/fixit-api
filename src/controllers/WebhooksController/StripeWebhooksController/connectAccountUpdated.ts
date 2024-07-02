@@ -17,7 +17,7 @@ export const connectAccountUpdated = async (rawStripeConnectAccountObj: Stripe.A
     payouts_enabled: payoutsEnabled,
   } = rawStripeConnectAccountObj;
 
-  let userID;
+  let userID: string | undefined;
 
   try {
     // Get "userID" needed for the primary key
@@ -29,13 +29,12 @@ export const connectAccountUpdated = async (rawStripeConnectAccountObj: Stripe.A
       limit: 1,
     });
 
-    const userID = queryResult?.[0]?.userID;
+    const userID = queryResult[0]?.userID;
 
-    if (!userID) {
+    if (!userID)
       throw new Error(
         `UserStripeConnectAccount not found for StripeConnectAccount ID: "${stripeConnectAccountID}"`
       );
-    }
 
     // Now update the user's Stripe Connect Account item in the db
     await UserStripeConnectAccount.updateItem(

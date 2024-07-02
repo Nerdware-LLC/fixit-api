@@ -16,7 +16,7 @@ export const customerSubscriptionDeleted = async (
   const { id: subID, createdAt } =
     UserSubscriptionService.normalizeStripeFields(rawStripeSubscriptionObj);
 
-  let userID;
+  let userID: string | undefined;
 
   try {
     // Submit query for the UserSubscription item

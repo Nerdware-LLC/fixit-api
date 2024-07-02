@@ -27,7 +27,7 @@ export const customerSubscriptionUpdated = async (
     createdAt,
   } = UserSubscriptionService.normalizeStripeFields(rawStripeSubscriptionObj);
 
-  let userID;
+  let userID: string | undefined;
 
   try {
     // Submit query for the UserSubscription item
