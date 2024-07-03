@@ -138,12 +138,8 @@ export default [
     rules: {
       ...vitestPlugin.configs.recommended.rules,
       "vitest/consistent-test-it": ["error", { fn: "test" }],
-      "vitest/max-expects": "off",
-      "vitest/no-conditional-expect": "off",
       "vitest/no-disabled-tests": "warn",
       "vitest/no-focused-tests": ["warn", { fixable: false }],
-      "vitest/no-hooks": "off",
-      "vitest/prefer-expect-assertions": "off",
       "vitest/prefer-lowercase-title": ["error", { ignore: ["describe"] }],
       "vitest/prefer-to-be-truthy": "off",
       "vitest/prefer-to-be-falsy": "off",
