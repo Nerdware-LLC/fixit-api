@@ -63,7 +63,7 @@ function validate_openapi_schema() {
 function generate_openapi_ts_types() {
 	log_info 'Generating OpenAPI TypeScript types ...'
 
-	local schema_file_version="$(grep -oPm1 '(?<=version:\s")[a-zA-Z0-9.-]+(?=")' "$schema_file")"
+	local schema_file_version="$(grep -oPm1 '(?<=version:\s)[a-zA-Z0-9.-]+' "$schema_file")"
 
 	# Update OpenAPI types using NodeJS API from openapi-typescript to fix `Date` types.
 	# (Their CLI does not convert `format: date-time` values to `Date` types)
@@ -96,7 +96,7 @@ function generate_openapi_ts_types() {
 		 *
 		 * DO NOT MAKE DIRECT CHANGES TO THIS FILE.
 		 *
-		 * This file was auto-generated using schema version: \\\`\"$schema_file_version\"\\\`
+		 * This file was auto-generated using schema version: \\\`$schema_file_version\\\`
 		 */
 
 		\${astToString(ast)}
