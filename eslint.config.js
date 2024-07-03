@@ -52,7 +52,7 @@ export default [
       "default-case-last": "error", // switch-case statements' default case must be last
       eqeqeq: ["error", "always"],
       "no-console": "warn",
-      "prefer-const": "warn",
+      "prefer-const": ["warn", { destructuring: "all" }],
       "prefer-object-has-own": "error",
       "prefer-promise-reject-errors": "error",
       semi: ["error", "always"],
