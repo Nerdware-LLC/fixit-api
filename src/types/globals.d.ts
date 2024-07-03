@@ -43,17 +43,12 @@ declare global {
   }
 
   /**
-   * This declaration makes the following modifications to the `JSON.parse` typedef:
-   *
-   * - For the `text: string` argument overload, the `any` return type is replaced with {@link JsonValue}.
-   * - Add `number` overload, since `JSON.parse(42)` is valid and returns `42`.
-   * - Add `null` overload, since `JSON.parse(null)` is valid and returns `null`.
+   * This declaration adds `JSON.parse` overload that replaces `any` with {@link JsonValue}.
    */
   interface JSON {
-    parse(text: string, reviver?: JsonParseReviver): JsonValue;
-    parse(text: number, reviver?: JsonParseReviver): number;
-    parse(text: null, reviver?: JsonParseReviver): null;
+    parse(
+      text: JsonValue,
+      reviver?: (this: typeof JSON, key: string, value: unknown) => unknown
+    ): JsonValue;
   }
-
-  type JsonParseReviver = (this: typeof JSON, key: string, value: unknown) => unknown;
 }
