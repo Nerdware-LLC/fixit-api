@@ -3,7 +3,7 @@
  *
  * DO NOT MAKE DIRECT CHANGES TO THIS FILE.
  *
- * This file was auto-generated using schema version: `"2.1.2"`
+ * This file was auto-generated using schema version: `2.1.2`
  */
 
 export interface paths {
@@ -247,19 +247,6 @@ export interface components {
          *      */
         GoogleIDTokenField: {
             googleIDToken: components["schemas"]["googleIDToken"];
-        };
-        /** @description Parameters for a user's profile. */
-        UserProfileParams: {
-            /** @description The user's display name. */
-            displayName?: string;
-            /** @description The user's family name. */
-            familyName?: string;
-            /** @description The user's given name. */
-            givenName?: string;
-            /** @description The user's business name. */
-            businessName?: string;
-            /** @description The user's profile picture URL. */
-            photoUrl?: string;
         };
         /** @description A user's Expo push token, which is used to send push notifications to the user's mobile device. This is an optional parameter which is only sent from mobile clients.
          *      */
@@ -581,7 +568,7 @@ export interface components {
              */
             country: string;
         };
-        /** @description Parameters for a user's profile. */
+        /** @description A user's profile. */
         UserProfile: {
             /** @description The user's display name. */
             displayName: string;
