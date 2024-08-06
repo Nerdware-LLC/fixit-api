@@ -48,7 +48,7 @@ export type StripeSubscriptionWithClientSecret = OverrideProperties<
 /** See type {@link StripeSubscriptionWithClientSecret} */
 export type StripeInvoiceWithClientSecret = OverrideProperties<
   Stripe.Invoice,
-  { payment_intent: StripePaymentIntentWithClientSecret }
+  { payment_intent: StripePaymentIntentWithClientSecret | null }
 >;
 
 /** See type {@link StripeInvoiceWithClientSecret} */
