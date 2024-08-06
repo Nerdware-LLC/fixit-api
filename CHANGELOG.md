@@ -4,6 +4,56 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+# [2.2.0](https://github.com/Nerdware-LLC/fixit-api/compare/v2.1.4...v2.2.0) (2024-08-06)
+
+
+### Bug Fixes
+
+* add check for nullish req.body ([d770924](https://github.com/Nerdware-LLC/fixit-api/commit/d770924c62b43776d7bfad76d0b7e9a61d115ab1))
+* add check for undefined req.body ([36facb4](https://github.com/Nerdware-LLC/fixit-api/commit/36facb471b8511b560125d496db27a7aa351e491))
+* add default str for nullish paymentIntentID value ([0ff42ea](https://github.com/Nerdware-LLC/fixit-api/commit/0ff42ea85326fc210fa9f056fe00e9f9a1628741))
+* add explicit 'unknown' typing to err params in catch ([54ce108](https://github.com/Nerdware-LLC/fixit-api/commit/54ce10855cfc21d1737ef27c7f84c9d7a10c2bb1))
+* add fallback str in case req.ip is nullish ([0b819f5](https://github.com/Nerdware-LLC/fixit-api/commit/0b819f51f4fcf0947708fe0e450cabcab23f9bbf))
+* add handle lookup to ensure uniqueness ([dd8536a](https://github.com/Nerdware-LLC/fixit-api/commit/dd8536a8c8c9bb704b7077c8450297a1e7b5f093))
+* add opt chains for nullish lookups ([063adbe](https://github.com/Nerdware-LLC/fixit-api/commit/063adbec588ba244068e93377526bda4e5971295))
+* add status400ForVariableCoercionErrors:true per apollo recommendation ([6cb5a21](https://github.com/Nerdware-LLC/fixit-api/commit/6cb5a21a21168363074c124c369ca40b430228b0))
+* correct imports ([97e5e07](https://github.com/Nerdware-LLC/fixit-api/commit/97e5e07433a9d99ed8c66abd33bf40c4a65f7131))
+* correct the 200 response to 200AuthTokenAndPreFetchedUserItems ([36cc8d3](https://github.com/Nerdware-LLC/fixit-api/commit/36cc8d3102cf9a019c8cb9964d16db9f551464ee))
+* **mock:** promisify return type of InvokeCommand ([cf663a9](https://github.com/Nerdware-LLC/fixit-api/commit/cf663a94293eb81644b66fdce88bb8654f7dd216))
+* **mock:** promisify return type of SendMessagesCommand ([fc4eba4](https://github.com/Nerdware-LLC/fixit-api/commit/fc4eba4416df35ac5f52af2ea21ad767ac15024c))
+* replace sanitizeID w correct regex impl ([f9145b4](https://github.com/Nerdware-LLC/fixit-api/commit/f9145b427ca11c80c8684f800ec7dd97030c0271))
+* rm export of deleted express types file ([b04e5e6](https://github.com/Nerdware-LLC/fixit-api/commit/b04e5e6c4981f407a5ef7f6b214abf5823168b23))
+* rm unnecessary as-cast from obj.__typename ([d681187](https://github.com/Nerdware-LLC/fixit-api/commit/d681187288e603e4e49deaebfc9585ec7664ee4c))
+* update ENV value paths ([115f51b](https://github.com/Nerdware-LLC/fixit-api/commit/115f51bf310ba6690a20e941c0b89af41d791aca))
+* update GQL codegen's types w Context typing and docstring descriptions ([026a1ef](https://github.com/Nerdware-LLC/fixit-api/commit/026a1ef07660c1cd2b571eb0965fa5365c89194d))
+* update regex used to skip webhooks body parsing ([df8aadf](https://github.com/Nerdware-LLC/fixit-api/commit/df8aadfbbe1c31efbe8e59cdbe8a52540e2e0e8a))
+* update req.body type to be possibly undefined ([f200471](https://github.com/Nerdware-LLC/fixit-api/commit/f200471303af190fedc6cda3b9ce4c8f0d5424c1))
+
+
+### Features
+
+* add auth method verifyUserIsAuthorizedToAccessPaidContent ([bd59a3d](https://github.com/Nerdware-LLC/fixit-api/commit/bd59a3dbd85b77261fe79a159e28a6890d1e614e))
+* add ContactService ([3d0e228](https://github.com/Nerdware-LLC/fixit-api/commit/3d0e2287408a0baf7e0b3b06e71efaa9fbfa8802))
+* add emit 'CheckoutCompleted' event ([c79c011](https://github.com/Nerdware-LLC/fixit-api/commit/c79c0114cbac47a65bbb876e80a94b066db98576))
+* add env vars for v5 UUID namespace and others ([d2cfd4d](https://github.com/Nerdware-LLC/fixit-api/commit/d2cfd4da13b1dc81976884c2e0db236b7c23697e))
+* add error-handling to `sendMessages` ([8001abe](https://github.com/Nerdware-LLC/fixit-api/commit/8001abe0ccff522c4a5af7d0cb9872f268b2540c))
+* add event 'CheckoutCompleted' and handler `sendConfirmationEmail` ([e541826](https://github.com/Nerdware-LLC/fixit-api/commit/e5418266e07cdb70d4e656ac2c98b5e65c13140f))
+* add httpServer wrapper ([1c52013](https://github.com/Nerdware-LLC/fixit-api/commit/1c52013670ce738e5d22286f6d0d484c19948e18))
+* add InvoiceService ([5712d61](https://github.com/Nerdware-LLC/fixit-api/commit/5712d61315d95a7cec39741cbde9713747e1b0a1))
+* add method 'getUserByHandleOrID' ([a14f92a](https://github.com/Nerdware-LLC/fixit-api/commit/a14f92a586b2de12b56d7bbed455d058e75de988))
+* add pinpoint sdk, lib wrapper, and SendMessages invocations ([d7ba6a2](https://github.com/Nerdware-LLC/fixit-api/commit/d7ba6a21d1f5de6f152801e4c39c3091add164e6))
+* add reset-password functionality ([b7b7c41](https://github.com/Nerdware-LLC/fixit-api/commit/b7b7c41ebc1c597094e5f07bd7208c640a8a646a))
+* add type BaseEventHandler for static EVENT_HANDLERS ([7d210e8](https://github.com/Nerdware-LLC/fixit-api/commit/7d210e8f35a359b3f3244e568dd806e9538ea73a))
+* add UserService method 'getUserByHandleOrID' ([7ffb750](https://github.com/Nerdware-LLC/fixit-api/commit/7ffb7507cbeed2179ec33b176b81a4b9b40e526b))
+* add WorkOrderService ([58422cf](https://github.com/Nerdware-LLC/fixit-api/commit/58422cfab997358d16a6c5aafe080daad04e3ad6))
+* add zod schema for gql input types ([cccc837](https://github.com/Nerdware-LLC/fixit-api/commit/cccc83742e9cc23dee63283b7d57a928175cdff1))
+* add zod-related util types ([4e72dc1](https://github.com/Nerdware-LLC/fixit-api/commit/4e72dc16fdb85116de075c498a0022259681c782))
+* migrate FixitUser interface to PublicUserFields ([daa0393](https://github.com/Nerdware-LLC/fixit-api/commit/daa039384737ae3dbd37c24023be9233ad5ab47c))
+* rm AuthToken gql typeDef ([e2fa376](https://github.com/Nerdware-LLC/fixit-api/commit/e2fa3764160bb15cfbce29ae9dddf7aa9e6f6f2b))
+* rm GQL-specific HttpError classes ([9a3a683](https://github.com/Nerdware-LLC/fixit-api/commit/9a3a6836f663ecd27fb9f0d9a5e9ef37d59b2dd1))
+* rm old method ([677af6f](https://github.com/Nerdware-LLC/fixit-api/commit/677af6f9a82e81a0f7d04c0a634d130c9af60c05))
+* rm res.locals types ([686bef2](https://github.com/Nerdware-LLC/fixit-api/commit/686bef2c81459d9767ec512aef0ce60a86d4c0c4))
+* rm unused sanitizeStripeID fn ([0e6c2e6](https://github.com/Nerdware-LLC/fixit-api/commit/0e6c2e6d1a1cc8a21391e22e76180ed511306b9c))
 
 # [2.2.0-next.1](https://github.com/Nerdware-LLC/fixit-api/compare/v2.1.2...v2.2.0-next.1) (2024-08-06)
 

@@ -3,7 +3,7 @@
 openapi: 3.1.0
 info:
   title: Fixit REST API
-  version: 2.2.0-next.1
+  version: 2.2.0
   summary: OpenAPI Schema for the Fixit REST API.
   description: |
     This schema describes the Fixit REST API, which is used for Fixit
