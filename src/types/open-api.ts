@@ -28,9 +28,11 @@ export type RestApiGETendpoint = {
 
 /** A map of REST API **`POST`** endpoints to their respective request-body objects. */
 export type RestApiRequestBodyByPath = {
-  [Path in RestApiPOSTendpoint]: CombineUnionOfObjects<
-    ExtractPOSTRequestBodyContent<paths[Path]["post"]["requestBody"]>
-  >;
+  [Path in RestApiPOSTendpoint]: undefined extends paths[Path]["post"]["requestBody"]
+    ?
+        | CombineUnionOfObjects<ExtractPOSTRequestBodyContent<paths[Path]["post"]["requestBody"]>>
+        | undefined
+    : CombineUnionOfObjects<ExtractPOSTRequestBodyContent<paths[Path]["post"]["requestBody"]>>;
 };
 
 /** Extract the type/shape of a POST request's `req.body` () */
