@@ -118,7 +118,7 @@ export const processCheckoutPayment = async (
     The `latest_invoice` will not have a `payment_intent.id` in checkout situations
     which don't involve an immediate payment — i.e., if the user selected a TRIAL,
     or provided a VIP `promoCode` which grants them 100% off at checkout. */
-    if (!latestInvoice.payment_intent.id) {
+    if (!latestInvoice.payment_intent?.id) {
       /* Just to be sure the sub/payment are in the expected state, assertions are
       made regarding the expected TRIAL/PROMO_CODE. If neither conditions apply,
       Stripe should have provided `payment_intent.id`, so an error is thrown. */
@@ -137,7 +137,7 @@ export const processCheckoutPayment = async (
       };
 
       // Set `amountPaid` to the amount received by the payment intent
-      amountPaid = latestInvoice.payment_intent.amount_received;
+      amountPaid = latestInvoice.payment_intent?.amount_received ?? 0;
     } else {
       // Confirm intent with collected payment method
       const {
@@ -195,7 +195,7 @@ export const processCheckoutPayment = async (
   eventEmitter.emitCheckoutCompleted({
     user,
     priceName: selectedSubscription,
-    paymentIntentID: latestInvoice.payment_intent.id,
+    paymentIntentID: latestInvoice.payment_intent?.id,
     amountPaid,
   });
 
