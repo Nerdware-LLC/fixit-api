@@ -69,7 +69,7 @@ This project uses [Semantic Release](https://github.com/semantic-release/semanti
 >
 > The robot minions work hard to manage these - **_please don't upset them_** 🤖
 
-Once tests are passing on your pull request, and it has been approved by a maintainer, it will be merged into the `next` branch, which will trigger a versioned pre-release. After final review and approval of the pre-release build, a maintainer will merge `next` into `main`, which will trigger a release build of the package to be published to [npm](https://www.npmjs.com/package/ddb-single-table).
+Once tests are passing on your pull request, and it has been approved by a maintainer, it will be merged into the `next` branch, which will trigger a versioned pre-release. After final review and approval of the pre-release build, a maintainer will merge `next` into `main`, which will trigger a release build.
 
 ## Code of Conduct
 
