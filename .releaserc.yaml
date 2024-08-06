@@ -29,7 +29,7 @@ plugins:
     - npmPublish: false
 
   - - "@aensley/semantic-release-openapi"
-    - apiSpecFiles": ["schemas/OpenAPI/open-api.yaml"]
+    - apiSpecFiles: ["schemas/OpenAPI/open-api.yaml"]
 
   - - "@semantic-release/github"
     - addReleases: bottom
