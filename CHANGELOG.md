@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+
 # [2.2.0-next.1](https://github.com/Nerdware-LLC/fixit-api/compare/v2.1.2...v2.2.0-next.1) (2024-08-06)
 
 
@@ -54,6 +55,10 @@ All notable changes to this project will be documented in this file.
 * rm old method ([677af6f](https://github.com/Nerdware-LLC/fixit-api/commit/677af6f9a82e81a0f7d04c0a634d130c9af60c05))
 * rm res.locals types ([686bef2](https://github.com/Nerdware-LLC/fixit-api/commit/686bef2c81459d9767ec512aef0ce60a86d4c0c4))
 * rm unused sanitizeStripeID fn ([0e6c2e6](https://github.com/Nerdware-LLC/fixit-api/commit/0e6c2e6d1a1cc8a21391e22e76180ed511306b9c))
+
+## [2.1.4](https://github.com/Nerdware-LLC/fixit-api/compare/v2.1.3...v2.1.4) (2024-04-04)
+
+## [2.1.3](https://github.com/Nerdware-LLC/fixit-api/compare/v2.1.2...v2.1.3) (2024-04-03)
 
 ## [2.1.2](https://github.com/Nerdware-LLC/fixit-api/compare/v2.1.1...v2.1.2) (2024-03-26)
 
