@@ -53,7 +53,7 @@ expressApp.setupMiddleware = () => {
 
   // BODY-PARSING (webhooks routes handle their own body parsing)
   expressApp.use(
-    /^\/api(\/(admin|auth|connect|subscriptions))?/,
+    /^\/api\/?((?!webhooks)\w+)?/,
     express.json({
       type: ["application/json", "application/csp-report", "application/reports+json"],
     })
