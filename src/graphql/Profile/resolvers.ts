@@ -1,8 +1,9 @@
-import { Profile } from "@/models/Profile/Profile.js";
-import { User } from "@/models/User/User.js";
+import { Profile } from "@/models/Profile";
+import { User } from "@/models/User";
+import { createProfileZodSchema } from "./helpers.js";
 import type { Resolvers } from "@/types/graphql.js";
 
-export const resolvers: Partial<Resolvers> = {
+export const resolvers: Resolvers = {
   Query: {
     myProfile: async (_parent, _args, { user }) => {
       const result = await User.getItem({ id: user.id });
@@ -12,8 +13,11 @@ export const resolvers: Partial<Resolvers> = {
   },
   Mutation: {
     updateProfile: async (_parent, { profile: profileInput }, { user }) => {
+      // Sanitize and validate the provided profileInput
+      profileInput = createProfileZodSchema.parse(profileInput);
+
       const result = await User.updateItem(
-        { id: user.id, sk: User.getFormattedSK(user.id) },
+        { id: user.id },
         {
           update: {
             profile: Profile.fromParams(profileInput),
@@ -23,7 +27,7 @@ export const resolvers: Partial<Resolvers> = {
 
       return {
         ...user.profile,
-        ...(result?.profile ?? {}),
+        ...result.profile,
       };
     },
   },

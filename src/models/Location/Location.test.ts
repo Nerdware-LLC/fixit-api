@@ -10,7 +10,7 @@ const TEST_LOCATION = {
 };
 
 /** {@link TEST_LOCATION} in compound-string form. */
-const TEST_LOCATION_COMPOUND_STRING = "USA#California#San_Francisco#123_Main_St.#Apt_4";
+const TEST_LOCATION_COMPOUND_STRING = "USA#California#San%20Francisco#123%20Main%20St.#Apt%204";
 
 describe("Location Model", () => {
   /* Explicitly set TEST_LOCATION prototype so `toStrictEqual` works
@@ -60,7 +60,7 @@ describe("Location Model", () => {
       const result1 = Location.convertToCompoundString(location1);
       const result2 = Location.convertToCompoundString(location2);
       expect(result1).toStrictEqual(TEST_LOCATION_COMPOUND_STRING);
-      expect(result2).toBe("USA#California#San_Francisco#456_Foo_Blvd.");
+      expect(result2).toBe("USA#California#San%20Francisco#456%20Foo%20Blvd.#");
     });
   });
 

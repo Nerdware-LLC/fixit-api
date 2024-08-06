@@ -1,0 +1,14 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/response
+
+description: |
+  [200 OK][mdn-docs] — Response for a successful authentication request. This
+  response includes an authentication token, as well as pre-fetched user items
+  to be stored in the client cache.
+
+  [mdn-docs]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/200
+content:
+  application/json:
+    schema:
+      allOf:
+        - $ref: "../open-api.yaml#/components/schemas/AuthTokenResponseField"
+        - $ref: "../open-api.yaml#/components/schemas/PreFetchedUserItemsResponseField"

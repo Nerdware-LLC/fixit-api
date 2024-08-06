@@ -1,7 +1,5 @@
-import { gql } from "graphql-tag";
-
-export const typeDefs = gql`
+export const typeDefs = `#graphql
   extend type Mutation {
-    createInvite(phoneOrEmail: String!): GenericSuccessResponse!
+    createInvite(phoneOrEmail: String!): MutationResponse!
   }
 `;

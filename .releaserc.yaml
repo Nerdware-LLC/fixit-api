@@ -28,6 +28,9 @@ plugins:
   - - "@semantic-release/npm"
     - npmPublish: false
 
+  - - "@aensley/semantic-release-openapi"
+    - apiSpecFiles: ["schemas/OpenAPI/open-api.yaml"]
+
   - - "@semantic-release/github"
     - addReleases: bottom
       assignees: trevor-anderson
@@ -58,3 +61,4 @@ plugins:
         - "package.json"
         - "package-lock.json"
         - "npm-shrinkwrap.json"
+        - "schemas/OpenAPI/open-api.yaml"

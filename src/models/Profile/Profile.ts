@@ -1,5 +1,5 @@
 import type { Profile as GqlSchemaProfileType } from "@/types/graphql.js";
-import type { Simplify } from "type-fest";
+import type { Simplify, SetNonNullable } from "type-fest";
 
 /**
  * A `Profile` object represents a user's profile information.
@@ -47,7 +47,7 @@ export class Profile implements NonNullableProfile {
     givenName,
     familyName,
     businessName,
-  }: ProfileParams) => {
+  }: CreateProfileParams) => {
     return displayName
       ? displayName
       : businessName
@@ -62,7 +62,7 @@ export class Profile implements NonNullableProfile {
   /**
    * Returns a `Profile`-shaped object from the given params.
    */
-  static readonly fromParams = (params: ProfileParams) => new Profile(params);
+  static readonly fromParams = (params: CreateProfileParams) => new Profile(params);
 
   constructor({
     handle,
@@ -71,7 +71,7 @@ export class Profile implements NonNullableProfile {
     familyName,
     businessName,
     photoUrl,
-  }: ProfileParams) {
+  }: CreateProfileParams) {
     if (givenName) this.givenName = givenName;
     if (familyName) this.familyName = familyName;
     if (businessName) this.businessName = businessName;
@@ -91,13 +91,11 @@ export class Profile implements NonNullableProfile {
  * The {@link Profile} class implements this type, which reflects the GraphQL
  * {@link GqlSchemaProfileType|Profile} type with all fields made `NonNullable`.
  */
-type NonNullableProfile = {
-  [Key in keyof GqlSchemaProfileType]: NonNullable<GqlSchemaProfileType[Key]>;
-};
+type NonNullableProfile = SetNonNullable<GqlSchemaProfileType, keyof GqlSchemaProfileType>;
 
 /**
  * The parameters that go into creating a new {@link Profile|`Profile`} object.
  */
-export type ProfileParams = Simplify<{
+export type CreateProfileParams = Simplify<{
   [Key in "handle" | keyof GqlSchemaProfileType]?: string | null | undefined;
 }>;

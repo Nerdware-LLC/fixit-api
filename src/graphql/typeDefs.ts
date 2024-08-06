@@ -1,35 +1,37 @@
-import * as authToken from "./AuthToken/typeDefs.js";
 import * as checklist from "./Checklist/typeDefs.js";
 import * as contact from "./Contact/typeDefs.js";
-import * as fixitUser from "./FixitUser/typeDefs.js";
+import * as graphQLErrorExtensions from "./GraphQLError/typeDefs.js";
 import * as invite from "./Invite/typeDefs.js";
 import * as invoice from "./Invoice/typeDefs.js";
 import * as location from "./Location/typeDefs.js";
 import * as profile from "./Profile/typeDefs.js";
+import * as publicUserFields from "./PublicUserFields/typeDefs.js";
 import * as user from "./User/typeDefs.js";
 import * as userStripeConnectAccount from "./UserStripeConnectAccount/typeDefs.js";
 import * as userSubscription from "./UserSubscription/typeDefs.js";
 import * as workOrder from "./WorkOrder/typeDefs.js";
-import * as deleteMutationResponse from "./_common/DeleteMutationResponse/typeDefs.js";
-import * as genericSuccessResponse from "./_common/GenericSuccessResponse/typeDefs.js";
-import * as dateTimeCustomScalar from "./_customScalars/DateTime/typeDefs.js";
-import * as emailCustomScalar from "./_customScalars/Email/typeDefs.js";
+import * as deleteMutationResponse from "./_responses/DeleteMutationResponse/typeDefs.js";
+import * as mutationResponse from "./_responses/MutationResponse/typeDefs.js";
 import * as root from "./_root/typeDefs.js";
+import * as dateTimeCustomScalar from "./_scalars/DateTime/typeDefs.js";
+import * as emailCustomScalar from "./_scalars/Email/typeDefs.js";
 
 /**
- * Fixit API GQL Schema TypeDefs
+ * Fixit API — GraphQL Schema TypeDefs
  */
-export const typeDefs = [
-  // EXTENDABLE ROOT TYPES
+export const typeDefs: Array<string> = [
+  // ROOT TYPES
   root.typeDefs,
   // CUSTOM SCALARS
   dateTimeCustomScalar.typeDefs,
   emailCustomScalar.typeDefs,
+  // GQL ERROR EXTENSION TYPES
+  graphQLErrorExtensions.typeDefs,
   // MUTATION REPONSE TYPES
+  mutationResponse.typeDefs,
   deleteMutationResponse.typeDefs,
-  genericSuccessResponse.typeDefs,
   // INTERFACES
-  fixitUser.typeDefs,
+  publicUserFields.typeDefs,
   // CONCRETE TYPES
   checklist.typeDefs,
   contact.typeDefs,
@@ -40,8 +42,6 @@ export const typeDefs = [
   user.typeDefs,
   userSubscription.typeDefs,
   workOrder.typeDefs,
-  // SIDE-EFFECT MUTATIONS
+  // OTHER TYPES
   invite.typeDefs,
-  // OTHER TYPES SHARED WITH CLIENT
-  authToken.typeDefs,
 ];

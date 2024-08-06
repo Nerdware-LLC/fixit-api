@@ -1,0 +1,26 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/path-item
+
+# GET /admin/healthcheck
+
+get:
+  operationId: Healthcheck
+  summary: Responds to load balancer healthchecks.
+  security: []
+  tags: [admin]
+  responses:
+    "200":
+      description: |
+        [200 OK](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/200)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                enum: [SUCCESS]
+                description: The string constant "SUCCESS".
+            required:
+              - message
+    "4XX": { $ref: "../open-api.yaml#/components/responses/UnexpectedResponse" }
+    default: { $ref: "../open-api.yaml#/components/responses/UnexpectedResponse" }

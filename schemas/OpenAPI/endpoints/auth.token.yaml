@@ -1,0 +1,16 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/path-item
+
+# POST /auth/token
+
+post:
+  operationId: RefreshToken
+  summary: Refreshes an existing user's auth token.
+  security: [{ JwtBearerAuth: [] }]
+  tags: [auth]
+  requestBody:
+    $ref: "../open-api.yaml#/components/requestBodies/RefreshAuthTokenRequest"
+  responses:
+    "200": { $ref: "../open-api.yaml#/components/responses/200AuthTokenAndPreFetchedUserItems" }
+    "401": { $ref: "../open-api.yaml#/components/responses/401AuthenticationRequired" }
+    "5XX": { $ref: "../open-api.yaml#/components/responses/5xxInternalServerError" }
+    default: { $ref: "../open-api.yaml#/components/responses/UnexpectedResponse" }

@@ -1,0 +1,9 @@
+type: string
+description: The WorkOrder's status.
+enum:
+  - UNASSIGNED
+  - ASSIGNED
+  - IN_PROGRESS
+  - DEFERRED
+  - CANCELLED
+  - COMPLETE

@@ -1,0 +1,35 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
+
+# REST Schema: AuthTokenPayloadStripeConnectAccountInfo
+
+type: object
+description: |
+  An object within the payload of a user's Fixit API auth token with data
+  relating to their current status in the Stripe Connect onboarding flow.
+externalDocs:
+  description: GQL Apollo Studio Schema Reference for the UserStripeConnectAccount object.
+  url: https://studio.apollographql.com/public/fixit/variant/current/schema/reference/objects/UserStripeConnectAccount
+properties:
+  id:
+    type: string
+    description: An identifier for the Stripe Connect Account.
+  detailsSubmitted:
+    type: boolean
+    description: |
+      A boolean indicating whether the user has submitted their details to
+      Stripe Connect in the onboarding flow.
+  chargesEnabled:
+    type: boolean
+    description: |
+      A boolean indicating whether the user has enabled charges on their
+      Stripe Connect Account.
+  payoutsEnabled:
+    type: boolean
+    description: |
+      A boolean indicating whether the user has enabled payouts on their
+      Stripe Connect Account.
+required:
+  - id
+  - detailsSubmitted
+  - chargesEnabled
+  - payoutsEnabled

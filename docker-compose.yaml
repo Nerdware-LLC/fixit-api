@@ -1,4 +1,3 @@
-version: "3.8"
 name: fixit-backend
 
 # This docker-compose file provides quick all-in-one setup for local development.

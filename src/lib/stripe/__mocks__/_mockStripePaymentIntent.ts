@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import merge from "lodash.merge";
+import deepMerge from "lodash.merge";
 import type Stripe from "stripe";
 import type { PartialDeep, SetOptional } from "type-fest";
 
@@ -72,6 +72,6 @@ export const mockStripePaymentIntent = (
   };
 
   return customValues
-    ? merge(defaultMockPaymentIntentObj, customValues)
+    ? deepMerge(defaultMockPaymentIntentObj, customValues)
     : defaultMockPaymentIntentObj;
 };

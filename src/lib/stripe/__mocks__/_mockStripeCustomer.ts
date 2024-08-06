@@ -1,8 +1,8 @@
 import dayjs from "dayjs";
-import merge from "lodash.merge";
+import deepMerge from "lodash.merge";
 import { mockStripeSubscription } from "./_mockStripeSubscription.js";
-import type { UserItem } from "@/models/User/User.js";
-import type { UserSubscriptionItem } from "@/models/UserSubscription/UserSubscription.js";
+import type { UserItem } from "@/models/User";
+import type { UserSubscriptionItem } from "@/models/UserSubscription";
 import type Stripe from "stripe";
 
 /**
@@ -19,7 +19,7 @@ export const mockStripeCustomer = (
     customerUpdateParams?.invoice_settings?.default_payment_method ?? "pm_TestTestTest";
 
   // Default mock Customer object
-  const defaultMockCustomerObj: Stripe.Customer = {
+  const defaultMockCustomerObj = {
     object: "customer",
     id: stripeCustomerID,
     email,
@@ -43,10 +43,10 @@ export const mockStripeCustomer = (
     livemode: false,
     metadata: {},
     shipping: null,
-  };
+  } as const satisfies Stripe.Customer;
 
   return customerUpdateParams
-    ? merge(defaultMockCustomerObj, customerUpdateParams)
+    ? deepMerge(defaultMockCustomerObj, customerUpdateParams)
     : defaultMockCustomerObj;
 };
 

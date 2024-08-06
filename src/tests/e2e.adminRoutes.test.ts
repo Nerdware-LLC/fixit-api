@@ -1,15 +1,13 @@
 import request from "supertest";
-import { expressApp } from "@/expressApp.js";
-import { ENV } from "@/server/env";
-import type { Server } from "http";
+import { httpServer, type HttpServerWithCustomStart } from "@/httpServer.js";
 
 vi.mock("@/apolloServer.js");
 
 describe("[e2e][Server Requests] Routes /api/admin/*", () => {
-  let server: Server;
+  let server: HttpServerWithCustomStart;
 
-  beforeAll(() => {
-    server = expressApp.listen(ENV.CONFIG.PORT);
+  beforeAll(async () => {
+    server = await httpServer.start(0);
   });
 
   afterAll(() => {
@@ -18,20 +16,21 @@ describe("[e2e][Server Requests] Routes /api/admin/*", () => {
 
   describe("GET /api/admin/healthcheck", () => {
     test(`returns "SUCCESS" message in request body`, async () => {
-      const response = await request(expressApp).get("/api/admin/healthcheck");
+      const response = await request(httpServer).get("/api/admin/healthcheck");
+
       expect(response.statusCode).toBe(200);
-      expect(response.body?.message).toBe("SUCESS");
+      expect(response.body?.message).toBe("SUCCESS");
     });
   });
 
   describe("POST /api/admin/csp-violation", () => {
-    test("returns response status code 200", async () => {
-      const response = await request(expressApp)
+    test("returns response status code 204", async () => {
+      const response = await request(httpServer)
         .post("/api/admin/csp-violation")
         .send({
           "csp-report": JSON.stringify({ "csp-report": "MOCK_CSP_VIOLATION_REPORT" }),
         });
-      expect(response.statusCode).toBe(200);
+      expect(response.statusCode).toBe(204);
     });
   });
 });

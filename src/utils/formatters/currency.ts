@@ -1,45 +1,79 @@
+import { sanitizeNumeric } from "@nerdware/ts-string-helpers";
+import { isSafeInteger, safeJsonStringify } from "@nerdware/ts-type-safety-utils";
 import { i18nFormats } from "./i18n.js";
 import type { SupportedLocale } from "./i18n.js";
 
-export type NumberToStringFormatter = (num: number, intlNumberFormat: Intl.NumberFormat) => string;
-export type NumberToLocaleStringFormatter = (num: number, locale?: SupportedLocale) => string;
+/**
+ * Converts the provided `currencyStr` into an integer.
+ *
+ * > - If `currencyStr` has two decimal places, the decimal point is removed.
+ * > - If `currencyStr` does not have two decimal places, `"00"` is appended to the string.
+ *
+ * ```ts
+ * currencyStrToInt("$25.99"); //   2599
+ * currencyStrToInt("$ 25.00"); //  2500
+ * currencyStrToInt("$25"); //      2500
+ * currencyStrToInt("$2,500"); // 250000
+ * ```
+ *
+ * @param currencyStr - The currency amount as a string.
+ * @returns The currency amount as an integer.
+ * @throws If `currencyStr` is not a valid currency string.
+ */
+export const currencyStrToInt = (currencyStr: string): number => {
+  // Validate the input:
+  if (!/^\$?\s?(\d{1,3}(,\d{3})*(\.\d{2})?)$/.test(currencyStr))
+    throw new Error(
+      `Invalid value: expected a currency string, but received ${safeJsonStringify(currencyStr)}`
+    );
 
-const validateAndFormatInt: NumberToStringFormatter = (value, intlNumberFormat) => {
-  if (!Number.isSafeInteger(value)) {
-    throw new Error(`Currency formatter received an invalid value: ${value}`);
-  }
+  // If the string has two decimal places, remove the decimal point, otherwise append '00'.
+  const centageStr = /\.\d{2}$/.test(currencyStr)
+    ? currencyStr.replace(".", "")
+    : `${currencyStr}00`;
 
-  return intlNumberFormat.format(value / 100);
+  // Remove all non-digit chars
+  const centageDigitsStr = sanitizeNumeric(centageStr);
+
+  // Return the integer representation of the string.
+  return parseInt(centageDigitsStr, 10);
 };
 
 /**
- * Converts an integer into a string formatted as a currency amount.
- * > The `int` is divided by 100.
+ * Converts an integer representing a currency's _minor unit_ into a currency-formatted string.
+ *
+ * > The _minor unit_ is the smallest denomination of a currency, e.g., cents for USD.
  *
  * ```ts
- * formatIntToCurrencyStr(123456); //  "$1,234.56"
+ * intToCurrencyStr(123456); //  "$1,234.56"
+ * intToCurrencyStr(123456,  //  "$1,235"
+ *   { shouldRound: true }
+ * );
  * ```
  *
- * @param int - The integer representing a currency amount.
- * @returns The currency amount as a formatted string.
- * @throws If `int` is not a safe integer.
+ * @param minorCurrencyUnitInteger - The integer representing the currency amount in the minor unit.
+ * @param options - The options for formatting the currency string.
+ * @returns The currency-formatted string.
+ * @throws If the `minorCurrencyUnitInteger` is not a safe integer.
  */
-export const intToCurrencyStr: NumberToLocaleStringFormatter = (int, locale = "enUS") => {
-  return validateAndFormatInt(int, i18nFormats[locale].number.currency);
-};
+export const intToCurrencyStr = (
+  minorCurrencyUnitInteger: number,
+  {
+    locale = "enUS",
+    shouldRound = false,
+  }: {
+    locale?: SupportedLocale;
+    shouldRound?: boolean;
+  } = {}
+) => {
+  if (!isSafeInteger(minorCurrencyUnitInteger))
+    throw new Error(
+      `Invalid value: expected a safe integer, but received ${safeJsonStringify(minorCurrencyUnitInteger)}`
+    );
 
-/**
- * Converts an integer into a string formatted as a currency amount, rounded to the nearest dollar.
- * > The `int` is divided by 100.
- *
- * ```ts
- * formatIntToCurrencyRoundedStr(123456); // "$1,235"
- * ```
- *
- * @param int - The integer representing a currency amount.
- * @returns The currency amount as a formatted string, rounded to the nearest dollar.
- * @throws If `int` is not a safe integer.
- */
-export const intToCurrencyRoundedStr: NumberToLocaleStringFormatter = (int, locale = "enUS") => {
-  return validateAndFormatInt(int, i18nFormats[locale].number.currencyRounded);
+  const intlNumberFormat = shouldRound
+    ? i18nFormats[locale].number.currencyRounded
+    : i18nFormats[locale].number.currency;
+
+  return intlNumberFormat.format(minorCurrencyUnitInteger / 100);
 };

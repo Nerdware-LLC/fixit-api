@@ -1,0 +1,21 @@
+type:
+  - string
+  - "null"
+description: The WorkOrder's category.
+enum:
+  - null
+  - DRYWALL
+  - ELECTRICAL
+  - FLOORING
+  - GENERAL
+  - HVAC
+  - LANDSCAPING
+  - MASONRY
+  - PAINTING
+  - PAVING
+  - PEST
+  - PLUMBING
+  - ROOFING
+  - TRASH
+  - TURNOVER
+  - WINDOWS

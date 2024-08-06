@@ -1,20 +1,19 @@
 import { isString } from "@nerdware/ts-type-safety-utils";
 import request from "supertest";
-import { expressApp } from "@/expressApp.js";
-import { isValidStripeID } from "@/lib/stripe/isValidStripeID.js";
+import { httpServer, type HttpServerWithCustomStart } from "@/httpServer.js";
+import { isValidStripeID } from "@/lib/stripe/helpers.js";
 import { stripe } from "@/lib/stripe/stripeClient.js";
-import { ENV } from "@/server/env";
+import { SUBSCRIPTION_PRICE_NAMES as SUB_PRICE_NAMES } from "@/models/UserSubscription/enumConstants.js";
+import { AuthToken } from "@/services/AuthService/AuthToken.js";
 import { MOCK_USERS, MOCK_USER_SUBS, MOCK_USER_SCAs } from "@/tests/staticMockItems";
-import { AuthToken } from "@/utils/AuthToken.js";
-import type { Server } from "http";
 
 vi.mock("@/apolloServer.js");
 
 describe("[e2e][Server Requests] Routes /api/subscriptions/*", () => {
-  let server: Server;
+  let server: HttpServerWithCustomStart;
 
-  beforeAll(() => {
-    server = expressApp.listen(ENV.CONFIG.PORT);
+  beforeAll(async () => {
+    server = await httpServer.start(0);
   });
 
   afterAll(() => {
@@ -27,30 +26,30 @@ describe("[e2e][Server Requests] Routes /api/subscriptions/*", () => {
       const mockAuthToken = new AuthToken({
         ...MOCK_USERS.USER_A,
         stripeConnectAccount: MOCK_USER_SCAs.SCA_A,
-        // No "subscription" field here - User doesn't yet have a sub.
+        subscription: null, // No subscription yet
       });
 
-      // Stub stripe.paymentMethods.attach response for findOrCreateStripeSubscription
+      // Stub stripe.paymentMethods.attach response in CheckoutService.processPayment
       vi.spyOn(stripe.paymentMethods, "attach").mockResolvedValueOnce(undefined as any);
-      // Stub stripe.customers.update response for findOrCreateStripeSubscription
+      // Stub stripe.customers.update response in CheckoutService.processPayment
       vi.spyOn(stripe.customers, "update").mockResolvedValueOnce({
         subscriptions: { data: [] },
       } as any);
-      // Ensure manual ddbDocClient stubs are used for UserSubscription.upsertOne
+      // Ensure manual ddbDocClient stubs are used for upserting the UserSub
       vi.mock("@aws-sdk/lib-dynamodb"); // <repo_root>/__mocks__/@aws-sdk/lib-dynamodb.ts
 
       // Send the request
-      const { status, body: responseBody } = await request(expressApp)
+      const { status, body: responseBody } = await request(httpServer)
         .post("/api/subscriptions/submit-payment")
         .set("Authorization", `Bearer ${mockAuthToken.toString()}`)
-        .send({ selectedSubscription: "ANNUAL", paymentMethodID: "pm_TestTestTest" });
+        .send({ selectedSubscription: SUB_PRICE_NAMES.ANNUAL, paymentMethodID: "pm_TestTestTest" });
 
       // Assert the response
-      expect(status).toBe(200);
+      expect(status).toBe(201);
       assert(isString(responseBody?.token), "response.body.token is not present");
 
       // Assert the token payload
-      const tokenPayload = await AuthToken.validateAndDecodeAuthToken(responseBody.token);
+      const tokenPayload = await AuthToken.validateAndDecode(responseBody.token);
       expect(tokenPayload).toStrictEqual({
         id: MOCK_USERS.USER_A.id,
         handle: MOCK_USERS.USER_A.handle,
@@ -93,13 +92,13 @@ describe("[e2e][Server Requests] Routes /api/subscriptions/*", () => {
       } as any);
 
       // Send the request
-      const { status, body: responseBody } = await request(expressApp)
+      const { status, body: responseBody } = await request(httpServer)
         .post("/api/subscriptions/customer-portal")
         .set("Authorization", `Bearer ${mockAuthToken.toString()}`)
         .send({ returnURL: "https://mock-return-url.com" });
 
       // Assert the response
-      expect(status).toBe(200);
+      expect(status).toBe(201);
       expect(responseBody).toStrictEqual({ stripeLink: mockStripeLink });
     });
   });

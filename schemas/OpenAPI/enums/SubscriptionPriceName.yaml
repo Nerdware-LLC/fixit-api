@@ -1,0 +1,15 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
+
+# REST Schema: SubscriptionPriceName
+
+type: string
+enum:
+  - ANNUAL
+  - MONTHLY
+  - TRIAL
+externalDocs:
+  description: GQL Apollo Studio Schema Reference for the SubscriptionPriceName enum.
+  url: "https://studio.apollographql.com/public/fixit/variant/current/schema/reference/enums/SubscriptionPriceName"
+description: |
+  The Fixit Subscription price name — this value corresponds to the [Stripe Price
+  "nickname" field](https://stripe.com/docs/api/prices/object#price_object-nickname).

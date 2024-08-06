@@ -1,0 +1,62 @@
+name: Publish API Schema
+
+on:
+  # This workflow runs for both releases and pre-releases
+  release: { types: [published] }
+  # This workflow can be manually triggered
+  workflow_dispatch:
+
+jobs:
+  publish-open-api-schema:
+    name: Publish OpenAPI Schema
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Setup Publication Tools
+        run: npm ci --include=dev
+
+      - name: Run Publication Script
+        env:
+          SWAGGERHUB_API_KEY: ${{ secrets.SWAGGERHUB_API_KEY }}
+        run: |
+          # If prerelease is false, use --setdefault flag to update the default version
+          should_set_default=$(
+              [ ${{ github.event.release.prerelease }} == 'false' ] &&
+                  echo '--setdefault' ||
+                  echo ''
+          )
+
+          scripts/cicd.publish-schema-open-api.sh \
+              --version=${{ github.event.release.tag_name }} \
+              $should_set_default
+
+  publish-graphql-schema:
+    name: Publish GraphQL Schema
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Setup Publication Tools
+        run: npm ci --include=dev
+
+      - name: Run Publication Script
+        env:
+          APOLLO_KEY: ${{ secrets.APOLLO_STUDIO_GRAPH_API_KEY }}
+        run: |
+          # If prerelease is false, then variant is prod, else variant is staging
+          graph_variant=$(
+              [ ${{ github.event.release.prerelease }} == 'false' ] &&
+                  echo prod ||
+                  echo staging
+          )
+
+          scripts/cicd.publish-schema-graphql.sh --variant=$graph_variant

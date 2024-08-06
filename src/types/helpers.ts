@@ -4,9 +4,11 @@
  * built-in generics.
  */
 
-/** Intermediate type used by {@link CombineUnionOfObjects}. */
+/**
+ * Intermediate type used by {@link CombineUnionOfObjects}.
+ */
 type AddMissingFieldsAsPartial<
-  T extends Record<PropertyKey, unknown>,
+  T extends object,
   K extends PropertyKey = T extends unknown ? keyof T : never,
 > = T extends unknown ? T & Partial<Record<Exclude<K, keyof T>, undefined>> : never;
 
@@ -32,6 +34,6 @@ type AddMissingFieldsAsPartial<
  *    }
  * ```
  */
-export type CombineUnionOfObjects<T extends Record<PropertyKey, unknown>> = {
+export type CombineUnionOfObjects<T extends object> = {
   [Key in keyof AddMissingFieldsAsPartial<T>]: AddMissingFieldsAsPartial<T>[Key];
 };

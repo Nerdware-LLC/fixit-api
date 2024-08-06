@@ -1,0 +1,27 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
+
+# REST Schema: UserProfile
+
+type: object
+description: A user's profile.
+externalDocs:
+  description: GQL Apollo Studio Schema Reference for the Profile object.
+  url: "https://studio.apollographql.com/public/fixit/variant/current/schema/reference/objects/Profile"
+properties:
+  displayName:
+    type: string
+    description: The user's display name.
+  familyName:
+    type: [string, "null"]
+    description: The user's family name.
+  givenName:
+    type: [string, "null"]
+    description: The user's given name.
+  businessName:
+    type: [string, "null"]
+    description: The user's business name.
+  photoUrl:
+    type: [string, "null"]
+    description: The user's profile picture URL.
+required:
+  - displayName

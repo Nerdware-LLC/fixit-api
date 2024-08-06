@@ -1,18 +1,16 @@
 import request from "supertest";
-import { expressApp } from "@/expressApp.js";
+import { httpServer, type HttpServerWithCustomStart } from "@/httpServer.js";
 import { stripe } from "@/lib/stripe/stripeClient.js";
-import { ENV } from "@/server/env";
+import { AuthToken } from "@/services/AuthService/AuthToken.js";
 import { MOCK_USERS, MOCK_USER_SUBS, MOCK_USER_SCAs } from "@/tests/staticMockItems";
-import { AuthToken } from "@/utils/AuthToken.js";
-import type { Server } from "http";
 
 vi.mock("@/apolloServer.js");
 
 describe("[e2e][Server Requests] Routes /api/connect/*", () => {
-  let server: Server;
+  let server: HttpServerWithCustomStart;
 
-  beforeAll(() => {
-    server = expressApp.listen(ENV.CONFIG.PORT);
+  beforeAll(async () => {
+    server = await httpServer.start(0);
   });
 
   afterAll(() => {
@@ -34,13 +32,13 @@ describe("[e2e][Server Requests] Routes /api/connect/*", () => {
       vi.spyOn(stripe.accountLinks, "create").mockResolvedValueOnce({ url: mockStripeLink } as any);
 
       // Send the request
-      const { status, body: responseBody } = await request(expressApp)
+      const { status, body: responseBody } = await request(httpServer)
         .post("/api/connect/account-link")
         .set("Authorization", `Bearer ${mockAuthToken.toString()}`)
         .send({ returnURL: "https://mock-return-url.com" });
 
       // Assert the response
-      expect(status).toBe(200);
+      expect(status).toBe(201);
       expect(responseBody).toStrictEqual({ stripeLink: mockStripeLink });
     });
   });
@@ -62,12 +60,12 @@ describe("[e2e][Server Requests] Routes /api/connect/*", () => {
       } as any);
 
       // Send the request
-      const { status, body: responseBody } = await request(expressApp)
+      const { status, body: responseBody } = await request(httpServer)
         .get("/api/connect/dashboard-link")
         .set("Authorization", `Bearer ${mockAuthToken.toString()}`);
 
       // Assert the response
-      expect(status).toBe(200);
+      expect(status).toBe(201);
       expect(responseBody).toStrictEqual({ stripeLink: mockStripeLink });
     });
   });

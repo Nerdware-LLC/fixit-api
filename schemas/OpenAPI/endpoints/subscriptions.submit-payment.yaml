@@ -1,0 +1,29 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/path-item
+
+# POST /subscriptions/submit-payment
+
+post:
+  operationId: SubscriptionsSubmitPayment
+  summary: Processes checkout payment information.
+  security: [{ JwtBearerAuth: [] }]
+  tags: [checkout, subscriptions, stripe]
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            # prettier-ignore
+            selectedSubscription: { $ref: "../open-api.yaml#/components/schemas/SubscriptionPriceName" }
+            paymentMethodID: { $ref: "../open-api.yaml#/components/schemas/PaymentMethodID" }
+            promoCode: { $ref: "../open-api.yaml#/components/schemas/PromoCode" }
+          required:
+            - selectedSubscription
+            - paymentMethodID
+  responses:
+    "201": { $ref: "../open-api.yaml#/components/responses/201AuthTokenAndCheckoutCompletionInfo" }
+    "400": { $ref: "../open-api.yaml#/components/responses/400InvalidUserInput" }
+    "401": { $ref: "../open-api.yaml#/components/responses/401AuthenticationRequired" }
+    "5XX": { $ref: "../open-api.yaml#/components/responses/5xxInternalServerError" }
+    default: { $ref: "../open-api.yaml#/components/responses/UnexpectedResponse" }

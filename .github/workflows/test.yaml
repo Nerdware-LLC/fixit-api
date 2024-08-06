@@ -1,22 +1,25 @@
-name: Test Workflow
+name: 🧪 Test Workflow
 
 on:
+  # This workflow is called by the CI/CD Workflow (see ./cicd.yaml)
+  workflow_call:
+    secrets:
+      CODECOV_TOKEN: { required: true }
+    outputs:
+      success:
+        description: "Whether the tests passed"
+        value: ${{ jobs.run-tests.outputs.success }}
+  # This workflow can be manually triggered
   workflow_dispatch:
-  pull_request:
-    types: [opened, reopened, synchronize] # default PR types
-    branches: [main, next]
-    paths: ["src/**/*", "package*.json"]
-  push:
-    branches: [main, next]
-    paths: ["src/**/*", "package*.json"]
 
 jobs:
-  test:
-    name: Run Tests
+  run-tests:
+    name: 🧪 Run Tests
     runs-on: ubuntu-latest
+    outputs:
+      success: ${{ steps.run-tests.outputs.success }}
     permissions:
-      contents: read #       to checkout the code
-      pull-requests: write # to add coverage reports to the PR
+      contents: read # to checkout the code
     steps:
       - uses: actions/checkout@v4
 
@@ -24,52 +27,85 @@ jobs:
         with:
           node-version-file: ".nvmrc"
 
-      - run: npm ci --include=dev
+      - name: Install Dependencies
+        run: npm ci --include=dev
 
-      - name: Lint
+      - name: Run Linters
         run: npm run lint
 
       - name: Run Tests
-        if: success()
         id: run-tests
-        run: npm run test:ci
-
-      - name: Update GitHub Commit Status
-        if: ${{ !cancelled() }}
         run: |
-          if [ ${{ steps.run-tests.outcome }} == 'success' ]; then
-            commit_status_state='success'
-            description='Tests passed'
-          else
-            commit_status_state='failure'
-            description='Tests failed'
-          fi
+          npm run test:ci
+          echo "success=$( [ $? == 0 ] && echo true || echo false )" >> "$GITHUB_OUTPUT"
 
-          curl --request POST \
-            --url https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }} \
-            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-            --header 'content-type: application/json' \
-            --data "{
-              \"context\": \"tests\",
-              \"state\": \"$commit_status_state\",
-              \"description\": \"$description\",
-              \"target_url\": \"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
-            }"
+      - name: Upload Test Coverage Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-coverage-reports
+          path: ./coverage
 
-      - name: Update CodeCov
-        if: success()
-        uses: codecov/codecov-action@v4
+  update-codecov:
+    name: ☂️ Update CodeCov
+    runs-on: ubuntu-latest
+    needs: run-tests # run job if tests passed
+    if: needs.run-tests.outputs.success == 'true'
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: test-coverage-reports }
+      - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-      - name: Update PR with Coverage Reports
-        if: github.event_name == 'pull_request'
+  update-pull-request:
+    name: 📝 Update PR
+    runs-on: ubuntu-latest
+    needs: run-tests # run job if event=PR and tests passed
+    if: github.event_name == 'pull_request' && needs.run-tests.outputs.success == 'true'
+    permissions:
+      contents: write #      to auto-merge dependabot PRs
+      pull-requests: write # to update the PR
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Test Coverage Reports
+        uses: actions/download-artifact@v4
+        with: { name: test-coverage-reports, path: ./coverage }
+      - name: Add Vitest Test Coverage Report to PR
         uses: davelosert/vitest-coverage-report-action@v2
+      - name: "(dependabot🤖) Approve & Auto-Merge PR"
+        if: github.actor == 'dependabot[bot]'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          gh pr review --approve "$PR_URL"
+          gh pr merge --auto --merge "$PR_URL"
 
-  release:
-    name: Release if Tests Passed (push/dispatch only)
-    needs: test
-    if: github.event_name != 'pull_request' && needs.test.result == 'success'
-    uses: ./.github/workflows/release.yaml
-    secrets:
-      SEMANTIC_RELEASE_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
+  update-github-commit-status:
+    name: 📡 Update GitHub Commit Status
+    runs-on: ubuntu-latest
+    needs: run-tests # always run job unless the workflow was cancelled
+    if: ${{ !cancelled() }}
+    permissions:
+      statuses: write # to update commit status
+    steps:
+      - run: |
+          if [ ${{ needs.run-tests.outputs.success }} == 'true' ]; then
+              commit_status_state='success'
+              description='Tests passed'
+          else
+              commit_status_state='failure'
+              description='Tests failed'
+          fi
+
+          curl --request POST \
+              --url https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }} \
+              --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+              --header 'Accept: application/vnd.github+json' \
+              --header 'X-GitHub-Api-Version: 2022-11-28' \
+              --data "{
+                  \"context\": \"tests\",
+                  \"state\": \"$commit_status_state\",
+                  \"description\": \"$description\",
+                  \"target_url\": \"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
+              }"
