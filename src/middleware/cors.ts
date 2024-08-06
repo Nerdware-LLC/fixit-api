@@ -2,22 +2,26 @@ import cors, { type CorsOptions } from "cors";
 import { ENV } from "@/server/env";
 
 const corsOptions: CorsOptions = {
+  credentials: true,
+
   origin: [
-    "https://studio.apollographql.com",
-    ...(/^(dev|test)/.test(ENV.NODE_ENV)
-      ? [/localhost/]
-      : [/^https:\/\/(www\.)?((demo|staging)\.)?gofixit.app/]),
+    ENV.WEB_CLIENT.URL,
+    "https://studio.apollographql.com", // Apollo Studio origin for introspection
   ],
+
   allowedHeaders: [
     "Content-Type",
     "Authorization",
-    // Sentry tracing http headers:
+    // Sentry tracing base http headers
     "sentry-trace",
     "baggage",
-    // Apollo GraphQL http headers:
+    // Apollo GraphQL base http headers
     "apollographql-client-name",
     "apollographql-client-version",
-    // Enable ApolloServerPluginInlineTrace
+    "Apollo-Require-Preflight",
+    // Apollo GraphQL header for mobile clients
+    "X-Apollo-Operation-Name",
+    // Apollo GraphQL header to enable ApolloServerPluginInlineTrace
     "apollo-federation-include-trace",
   ],
 };
