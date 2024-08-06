@@ -1,0 +1,17 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/path-item
+
+# POST /connect/account-link
+
+post:
+  operationId: ConnectAccountLink
+  summary: Provides a link to the Stripe Connect Account onboarding portal.
+  security: [{ JwtBearerAuth: [] }]
+  tags: [stripe, stripe-connect, stripe-link]
+  requestBody:
+    $ref: "../open-api.yaml#/components/requestBodies/StripeLinkRequest"
+  responses:
+    "201": { $ref: "../open-api.yaml#/components/responses/201StripeLink" }
+    "400": { $ref: "../open-api.yaml#/components/responses/400InvalidUserInput" }
+    "401": { $ref: "../open-api.yaml#/components/responses/401AuthenticationRequired" }
+    "5XX": { $ref: "../open-api.yaml#/components/responses/5xxInternalServerError" }
+    default: { $ref: "../open-api.yaml#/components/responses/UnexpectedResponse" }

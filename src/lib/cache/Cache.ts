@@ -5,12 +5,12 @@ import type { LiteralToPrimitive } from "type-fest";
  * explicit type to be specified for the stored data. If no type is provided,
  * this defaults to `any`.
  */
-export interface CacheEntry<StoredDataType = any> {
+export interface CacheEntry<StoredDataType = NonNullable<unknown>> {
   data: StoredDataType;
   expiresAt?: number | undefined;
 }
 
-export class Cache<StoredDataType = any, CacheKeyType = string> {
+export class Cache<StoredDataType = NonNullable<unknown>, CacheKeyType = string> {
   protected readonly _cache: Map<CacheKeyType, CacheEntry<StoredDataType>>;
 
   constructor(initialEntries: Array<[CacheKeyType, StoredDataType]> = []) {
@@ -86,9 +86,11 @@ export class Cache<StoredDataType = any, CacheKeyType = string> {
    * @param {CacheKeyType} key - The cache key to use to retrieve the data.
    * @returns {StoredDataType|undefined} The data stored under the provided key, or undefined if no unexpired data is found.
    */
-  readonly get = (key: CacheKeyType): StoredDataType | undefined => {
-    const { data, expiresAt } = this._cache.get(key) ?? {};
-    if (!this.isExpiredAndDeleted(key, { expiresAt })) return data;
+  readonly get = (
+    key: CacheKeyType | LiteralToPrimitive<CacheKeyType>
+  ): StoredDataType | undefined => {
+    const { data, expiresAt } = this._cache.get(key as CacheKeyType) ?? {};
+    if (!this.isExpiredAndDeleted(key as CacheKeyType, { expiresAt })) return data;
   };
 
   /**

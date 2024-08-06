@@ -1,14 +1,13 @@
-import { contactModelHelpers } from "@/models/Contact/helpers.js";
+import { Contact, type ContactItem, type UnaliasedContactItem } from "@/models/Contact";
 import { MOCK_DATES } from "./dates.js";
 import { MOCK_USERS } from "./users.js";
-import type { ContactItem, UnaliasedContactItem } from "@/models/Contact";
 
 const { USER_A, USER_B, USER_C } = MOCK_USERS;
 
 export const MOCK_CONTACTS = {
   /** USER_A contact-connection with USER_B */
   CONTACT_A: {
-    id: contactModelHelpers.id.format(USER_B.id),
+    id: Contact.getFormattedID(USER_B.id),
     userID: USER_A.id,
     handle: USER_A.handle,
     contactUserID: USER_B.id,
@@ -17,7 +16,7 @@ export const MOCK_CONTACTS = {
   },
   /** USER_A contact-connection with USER_C */
   CONTACT_B: {
-    id: contactModelHelpers.id.format(USER_C.id),
+    id: Contact.getFormattedID(USER_C.id),
     userID: USER_A.id,
     handle: USER_A.handle,
     contactUserID: USER_C.id,
@@ -26,7 +25,7 @@ export const MOCK_CONTACTS = {
   },
   /** USER_B contact-connection with USER_A */
   CONTACT_C: {
-    id: contactModelHelpers.id.format(USER_A.id),
+    id: Contact.getFormattedID(USER_A.id),
     userID: USER_B.id,
     handle: USER_B.handle,
     contactUserID: USER_A.id,

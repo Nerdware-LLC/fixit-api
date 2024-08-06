@@ -2,17 +2,17 @@ import { Model } from "@nerdware/ddb-single-table";
 import { hasKey } from "@nerdware/ts-type-safety-utils";
 import { pricesCache } from "@/lib/cache/pricesCache.js";
 import { productsCache } from "@/lib/cache/productsCache.js";
-import { isValidStripeID } from "@/lib/stripe/isValidStripeID.js";
+import { isValidStripeID } from "@/lib/stripe/helpers.js";
 import { userModelHelpers } from "@/models/User/helpers.js";
 import { COMMON_ATTRIBUTE_TYPES, COMMON_ATTRIBUTES } from "@/models/_common/modelAttributes.js";
 import { ddbTable } from "@/models/ddbTable.js";
-import { SUBSCRIPTION_ENUM_CONSTANTS } from "./enumConstants.js";
-import { userSubscriptionModelHelpers as subModelHelpers } from "./helpers.js";
-import { normalizeStripeFields } from "./normalizeStripeFields.js";
-import { USER_SUB_SK_PREFIX_STR as SUB_SK_PREFIX } from "./regex.js";
-import { upsertOne } from "./upsertOne.js";
-import { validateSubscription, validatePriceID, validatePromoCode } from "./validators.js";
-import type { OpenApiSchemas } from "@/types/open-api.js";
+import {
+  SUBSCRIPTION_ENUMS,
+  SUBSCRIPTION_PRICE_NAMES as PRICE_NAMES,
+  SUBSCRIPTION_PRODUCT_NAMES as PRODUCT_NAMES,
+} from "./enumConstants.js";
+import { subModelHelpers, SUB_SK_PREFIX_STR } from "./helpers.js";
+import type { SubscriptionPriceName } from "@/types/graphql.js";
 import type { ItemTypeFromSchema, ItemCreationParameters } from "@nerdware/ddb-single-table";
 import type Stripe from "stripe";
 
@@ -20,11 +20,11 @@ import type Stripe from "stripe";
  * UserSubscription Model
  */
 class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
-  static readonly PRODUCT_ID = productsCache.get("Fixit Subscription")!.id;
-  static readonly PRICE_IDS: Record<SubscriptionPriceLabels, Stripe.Price["id"]> = {
-    ANNUAL: pricesCache.get("ANNUAL")!.id,
-    MONTHLY: pricesCache.get("MONTHLY")!.id,
-    TRIAL: pricesCache.get("TRIAL")!.id,
+  static readonly PRODUCT_ID = productsCache.get(PRODUCT_NAMES.FIXIT_SUBSCRIPTION)!.id;
+  static readonly PRICE_IDS: Record<SubscriptionPriceName, Stripe.Price["id"]> = {
+    ANNUAL: pricesCache.get(PRICE_NAMES.ANNUAL)!.id,
+    MONTHLY: pricesCache.get(PRICE_NAMES.MONTHLY)!.id,
+    TRIAL: pricesCache.get(PRICE_NAMES.TRIAL)!.id,
   };
 
   static readonly schema = ddbTable.getModelSchema({
@@ -37,7 +37,7 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
     sk: {
       type: "string",
       default: (sub: { pk?: string; createdAt?: Date }) =>
-        sub?.pk && sub?.createdAt ? subModelHelpers.sk.format(sub.pk, sub.createdAt) : undefined,
+        sub.pk && sub.createdAt ? subModelHelpers.sk.format(sub.pk, sub.createdAt) : undefined,
       validate: subModelHelpers.sk.isValid,
       required: true,
     },
@@ -58,14 +58,13 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
       // Not using type=enum here bc Product IDs are env-dependent and not known until runtime.
       transformValue: {
         // This toDB allows the value to be a Product `id` OR `name`
-        toDB: (value: string) =>
-          productsCache.has(value as any) ? productsCache.get(value as any)!.id : value,
+        toDB: (value: string) => (productsCache.has(value) ? productsCache.get(value)!.id : value),
       },
     },
     priceID: {
       type: "string",
       required: true,
-      validate: validatePriceID,
+      validate: subModelHelpers.priceID.isValid,
       // Not using type=enum here bc Price IDs are env-dependent and not known until runtime.
       transformValue: {
         // This toDB allows the value to be a Price `id` OR `name`
@@ -77,7 +76,7 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
     },
     status: {
       type: "enum",
-      oneOf: SUBSCRIPTION_ENUM_CONSTANTS.STATUSES,
+      oneOf: SUBSCRIPTION_ENUMS.STATUSES,
       required: true,
     },
     ...COMMON_ATTRIBUTES.TIMESTAMPS, // "createdAt" and "updatedAt" timestamps
@@ -90,29 +89,22 @@ class UserSubscriptionModel extends Model<typeof UserSubscriptionModel.schema> {
   // USER SUBSCRIPTION MODEL — Instance properties and methods:
   readonly PRODUCT_ID = UserSubscriptionModel.PRODUCT_ID;
   readonly PRICE_IDS = UserSubscriptionModel.PRICE_IDS;
-  readonly SK_PREFIX = SUB_SK_PREFIX;
+  readonly SK_PREFIX = SUB_SK_PREFIX_STR;
   readonly getFormattedSK = subModelHelpers.sk.format;
-  readonly normalizeStripeFields = normalizeStripeFields;
-  readonly upsertOne = upsertOne;
-  readonly validateExisting = validateSubscription;
-  readonly validatePriceID = validatePriceID;
-  readonly validatePromoCode = validatePromoCode;
 }
 
+/** UserSubscription Model */
 export const UserSubscription = new UserSubscriptionModel();
 
 /** The shape of a `UserSubscription` object returned from Model methods. */
 export type UserSubscriptionItem = ItemTypeFromSchema<typeof UserSubscriptionModel.schema>;
 
 /** `UserSubscription` item params for `createItem()`. */
-export type UserSubscriptionItemCreationParams = ItemCreationParameters<
+export type UserSubscriptionCreateItemParams = ItemCreationParameters<
   typeof UserSubscriptionModel.schema
 >;
 
-/**
- * The shape of a `UserSubscription` object in the DB.
- * > This type is used to mock `@aws-sdk/lib-dynamodb` responses.
- */
+/** The shape of a raw/unaliased `UserSubscription` object in the DB. */
 export type UnaliasedUserSubscriptionItem = ItemTypeFromSchema<
   typeof UserSubscriptionModel.schema,
   {
@@ -121,6 +113,3 @@ export type UnaliasedUserSubscriptionItem = ItemTypeFromSchema<
     nullableIfOptional: true;
   }
 >;
-
-/** The names of Fixit Subscription prices: "TRIAL", "MONTHLY", "ANNUAL" */
-export type SubscriptionPriceLabels = OpenApiSchemas["SubscriptionPriceName"];

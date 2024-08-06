@@ -29,7 +29,7 @@ const initialCacheEntries: Array<PromoCodesCacheEntry> = activePromoCodes.map(
     /* The `coupon` object type-def specifies "discount" is a nullable
     float, but this app's promoCodes are all integers. If this is somehow
     not the case in the returned Stripe object(s), throw an error. */
-    if (!isSafeInteger(coupon?.percent_off)) {
+    if (!isSafeInteger(coupon.percent_off)) {
       throw new InternalServerError(
         "Unable to initialize promoCodesCache — Stripe returned a PromoCode object " +
           `with an invalid "percent_off": ${safeJsonStringify(stripePromoCodeObject)}`

@@ -1,0 +1,3 @@
+type: string
+description: |
+  Base64URL-encoded JSON JWT from GoogleID services (auth: google-oauth).

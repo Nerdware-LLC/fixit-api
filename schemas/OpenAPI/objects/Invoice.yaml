@@ -1,0 +1,60 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
+
+# REST Schema: Invoice
+
+type: object
+description: A pre-fetched Invoice object returned from a Fixit REST endpoint.
+externalDocs:
+  description: GQL Apollo Studio Schema Reference for the Invoice object.
+  url: "https://studio.apollographql.com/public/fixit/variant/current/schema/reference/objects/Invoice"
+required: [__typename, id, createdBy, assignedTo, amount, status, createdAt, updatedAt]
+properties:
+  __typename:
+    type: string
+    enum: [Invoice]
+    description: |
+      The object's GraphQL type name, `"Invoice"`, included to facilitate
+      writing pre-fetched objects into the front-end's Apollo Client cache.
+  id:
+    type: string
+    description: The invoice's ID.
+  createdBy:
+    type: object
+    description: The user who created the invoice.
+    required: [id]
+    properties:
+      id:
+        type: string
+        description: The ID of the user who created the invoice.
+  assignedTo:
+    type: object
+    description: The user to whom the invoice is assigned.
+    required: [id]
+    properties:
+      id:
+        type: string
+        description: The ID of the user to whom the invoice is assigned.
+  amount:
+    type: integer
+    description: |
+      The Invoice amount, represented as an integer which reflects USD centage
+      (i.e., an 'amount' of 1 = $0.01 USD).
+  status: { $ref: "../open-api.yaml#/components/schemas/InvoiceStatus" }
+  stripePaymentIntentID:
+    type:
+      - string
+      - "null"
+    description: |
+      The ID of the most recent successful paymentIntent applied to the Invoice, if any.
+  workOrder:
+    type:
+      - object
+      - "null"
+    description: The work order associated with the invoice.
+    required: [id]
+    properties:
+      id:
+        type: string
+        description: The ID of the work order associated with the invoice.
+  createdAt: { $ref: "../open-api.yaml#/components/schemas/CreatedAt" }
+  updatedAt: { $ref: "../open-api.yaml#/components/schemas/UpdatedAt" }

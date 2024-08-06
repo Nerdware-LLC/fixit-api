@@ -1,24 +1,22 @@
-import { isDate } from "@nerdware/ts-type-safety-utils";
-import { createModelHelpers } from "@/models/_common/modelHelpers.js";
-import { getUnixTimestampUUID } from "@/utils/uuid.js";
-import { INVOICE_SK_PREFIX_STR as SK_PREFIX, INVOICE_SK_REGEX } from "./regex.js";
+import { isSafeInteger } from "@nerdware/ts-type-safety-utils";
+import { userModelHelpers } from "@/models/User/helpers.js";
+import { createHelpersForStrAttr, getCompoundAttrRegex, DELIMETER } from "@/models/_common";
+import { getRandomUUIDv4, UUID_REGEX } from "@/utils/uuid.js";
 
-export const invoiceModelHelpers = createModelHelpers({
-  id: {
-    regex: INVOICE_SK_REGEX,
+export const INVOICE_SK_PREFIX_STR = "INV";
 
-    /**
-     * Invoice "id" value formatter.
-     *
-     * @param {Date|string} createdAt - The Invoice's "createdAt" timestamp value represented as
-     * either a Date object or unix timestamp UUID string. If provided as a Date object, it will
-     * be converted to a Unix timestamp UUID string.
-     *
-     * @returns {string} A formatted Invoice "id" value (alias for "sk" attribute).
-     */
-    format: (createdByUserID: string, createdAt: Date | string) => {
-      // prettier-ignore
-      return `${SK_PREFIX}#${createdByUserID}#${isDate(createdAt) ? getUnixTimestampUUID(createdAt) : createdAt}`;
+export const invoiceModelHelpers = {
+  id: createHelpersForStrAttr("id", {
+    /** Invoice ID validation regex. */
+    regex: getCompoundAttrRegex([INVOICE_SK_PREFIX_STR, userModelHelpers.id.regex, UUID_REGEX]),
+    /** Sanitizes an Invoice ID value. */
+    sanitize: (str: string) => str.replace(/[^a-zA-Z0-9_@#-]/g, ""), // handle chars, UUID chars, and the delimeter
+    /** Invoice "id" value formatter. */
+    format: (createdByUserID: string) => {
+      return `${INVOICE_SK_PREFIX_STR}${DELIMETER}${createdByUserID}${DELIMETER}${getRandomUUIDv4()}`;
     },
+  }),
+  amount: {
+    isValid: (value?: unknown) => isSafeInteger(value) && value > 0,
   },
-});
+};

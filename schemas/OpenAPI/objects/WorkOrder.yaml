@@ -1,0 +1,89 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
+
+# REST Schema: WorkOrder
+
+type: object
+description: A pre-fetched WorkOrder object returned from a REST endpoint.
+externalDocs:
+  description: GQL Apollo Studio Schema Reference for the WorkOrder object.
+  url: "https://studio.apollographql.com/public/fixit/variant/current/schema/reference/objects/WorkOrder"
+required: [__typename, id, createdBy, status, priority, location, createdAt, updatedAt]
+properties:
+  __typename:
+    type: string
+    enum: [WorkOrder]
+    description: |
+      The object's GraphQL type name, `"WorkOrder"`, included to facilitate
+      writing pre-fetched objects into the front-end's Apollo Client cache.
+  id:
+    type: string
+    description: The work order's ID.
+  createdBy:
+    type: object
+    description: The user who created the work order.
+    required: [id]
+    properties:
+      id:
+        type: string
+        description: The ID of the user who created the work order.
+  assignedTo:
+    type:
+      - object
+      - "null"
+    description: The user to whom the work order is assigned.
+    required: [id]
+    properties:
+      id:
+        type: string
+        description: The ID of the user to whom the work order is assigned.
+  location: { $ref: "../open-api.yaml#/components/schemas/Location" }
+  status: { $ref: "../open-api.yaml#/components/schemas/WorkOrderStatus" }
+  priority: { $ref: "../open-api.yaml#/components/schemas/WorkOrderPriority" }
+  category: { $ref: "../open-api.yaml#/components/schemas/WorkOrderCategory" }
+  description:
+    type:
+      - string
+      - "null"
+    description: The work order's description.
+  checklist:
+    type:
+      - array
+      - "null"
+    items:
+      type: object
+      description: A checklist item.
+      required: [id, description, isCompleted]
+      properties:
+        id: { type: string, description: The ID of the checklist item. }
+        description: { type: string, description: The description of the checklist item. }
+        isCompleted: { type: boolean, description: Whether the checklist item is completed. }
+    description: The work order's checklist.
+  dueDate:
+    type:
+      - string
+      - "null"
+    format: date-time
+    description: Timestamp of the WorkOrder's due date.
+  scheduledDateTime:
+    type:
+      - string
+      - "null"
+    format: date-time
+    description: Timestamp of the WorkOrder's scheduled completion.
+  entryContact:
+    type:
+      - string
+      - "null"
+    description: The name of the work order's entry contact, if any.
+  entryContactPhone:
+    type:
+      - string
+      - "null"
+    description: The phone number of the work order's entry contact, if any.
+  contractorNotes:
+    type:
+      - string
+      - "null"
+    description: Notes from the WorkOrder's recipient.
+  createdAt: { $ref: "../open-api.yaml#/components/schemas/CreatedAt" }
+  updatedAt: { $ref: "../open-api.yaml#/components/schemas/UpdatedAt" }

@@ -1,16 +1,43 @@
-name: Release Workflow
-
-# This workflow is called by the Test workflow when all tests pass.
+name: 📦 Release Workflow
 
 on:
-  workflow_dispatch:
+  # This workflow is called by the CI/CD Workflow (see ./cicd.yaml)
   workflow_call:
     secrets:
       SEMANTIC_RELEASE_TOKEN: { required: true }
+  # This workflow can be manually triggered
+  workflow_dispatch:
 
 jobs:
   release:
-    name: Release
-    uses: Nerdware-LLC/reusable-action-workflows/.github/workflows/release.yaml@main
-    secrets:
-      SEMANTIC_RELEASE_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
+    name: 📦 Release
+    runs-on: ubuntu-latest
+    permissions:
+      attestations: write # to generate artifact attestations for dist assets
+      contents: write #     to create a release
+      issues: write #       to be able to comment on released issues
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Install Dependencies
+        run: npm ci --include=dev
+
+      - name: Build Dist Assets
+        run: npm run build
+
+      - name: Run Semantic-Release
+        id: semantic-release
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          extra_plugins: |
+            @aensley/semantic-release-openapi@1.1.8
+            @semantic-release/changelog@6.0.3
+            @semantic-release/git@10.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}

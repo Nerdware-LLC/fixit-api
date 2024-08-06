@@ -1,0 +1,24 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
+
+# REST Schema: Contact
+
+type: object
+description: A pre-fetched Contact object returned from a REST endpoint.
+externalDocs:
+  description: GQL Apollo Studio Schema Reference for the Contact object.
+  url: "https://studio.apollographql.com/public/fixit/variant/current/schema/reference/objects/Contact"
+required: [__typename, id, handle, email, phone, profile, createdAt, updatedAt]
+properties:
+  __typename:
+    type: string
+    enum: [Contact]
+    description: |
+      The object's GraphQL type name, `"Contact"`, included to facilitate
+      writing pre-fetched objects into the front-end's Apollo Client cache.
+  id: { type: string, description: The contact's user ID }
+  handle: { $ref: "../open-api.yaml#/components/schemas/Handle" }
+  email: { $ref: "../open-api.yaml#/components/schemas/Email" }
+  phone: { $ref: "../open-api.yaml#/components/schemas/Phone" }
+  profile: { $ref: "../open-api.yaml#/components/schemas/UserProfile" }
+  createdAt: { $ref: "../open-api.yaml#/components/schemas/CreatedAt" }
+  updatedAt: { $ref: "../open-api.yaml#/components/schemas/UpdatedAt" }

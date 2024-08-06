@@ -1,0 +1,15 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
+
+# REST Schema: UserRegistrationParams
+
+allOf:
+  - $ref: "../open-api.yaml#/components/schemas/LoginCredentials"
+  - $ref: "../open-api.yaml#/components/schemas/ExpoPushTokenParam"
+  - type: object
+    properties:
+      handle: { $ref: "../open-api.yaml#/components/schemas/Handle" }
+      email: { $ref: "../open-api.yaml#/components/schemas/Email" }
+      phone: { $ref: "../open-api.yaml#/components/schemas/Phone" }
+    required:
+      - handle
+      - email

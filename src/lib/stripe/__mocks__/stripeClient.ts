@@ -1,3 +1,7 @@
+import {
+  SUBSCRIPTION_PRODUCT_NAMES as SUB_PRODUCT_NAMES,
+  SUBSCRIPTION_PRICE_NAMES as SUB_PRICE_NAMES,
+} from "@/models/UserSubscription/enumConstants.js";
 import { findMock } from "@/tests/staticMockItems/_helpers.js";
 import { mockStripeBillingPortalSession } from "./_mockStripeBillingPortalSession.js";
 import { mockStripeConnectAccount } from "./_mockStripeConnectAccount.js";
@@ -27,6 +31,8 @@ import type { SetRequired, AsyncReturnType } from "type-fest";
  *   like `RequestOptions` (which this app never uses) instead of something like the
  *   `CustomerCreateParams` object. So instead we grab the 1st overload with util type
  *   {@link ParamsOfFirstOverload}.
+ *
+ * // TODO Replace this mock Stripe client with individual mocks in each respective test (rm dep)
  */
 export const stripe: MockStripeAPI = {
   accountLinks: {
@@ -172,13 +178,13 @@ export const stripe: MockStripeAPI = {
         object: "list",
         data: [
           mockStripePrice({
-            id: "price_TestMONTHLY",
-            nickname: "MONTHLY",
+            id: `price_Test${SUB_PRICE_NAMES.MONTHLY}`,
+            nickname: SUB_PRICE_NAMES.MONTHLY,
             recurring: { interval: "month" },
           }),
           mockStripePrice({
-            id: "price_TestANNUAL",
-            nickname: "ANNUAL",
+            id: `price_Test${SUB_PRICE_NAMES.ANNUAL}`,
+            nickname: SUB_PRICE_NAMES.ANNUAL,
             recurring: { interval: "year" },
           }),
         ],
@@ -189,7 +195,12 @@ export const stripe: MockStripeAPI = {
     list: async () => {
       return Promise.resolve({
         object: "list",
-        data: [mockStripeProduct({ name: "Fixit Subscription", id: "prod_TestTestTest" })],
+        data: [
+          mockStripeProduct({
+            name: SUB_PRODUCT_NAMES.FIXIT_SUBSCRIPTION,
+            id: "prod_TestTestTest",
+          }),
+        ],
       });
     },
   },

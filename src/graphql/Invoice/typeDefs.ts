@@ -1,13 +1,11 @@
-import { gql } from "graphql-tag";
-
-export const typeDefs = gql`
+export const typeDefs = `#graphql
   type Invoice {
-    "(Immutable) Invoice ID, in the format of 'INV#{createdBy.id}#{unixTimestampUUID(createdAt)}'"
+    "(Immutable) Invoice ID, in the format of 'INV#{createdBy.id}#{UUID}'"
     id: ID!
-    "(Immutable) The FixitUser who created/sent the Invoice"
-    createdBy: FixitUser!
-    "(Immutable) The FixitUser to whom the Invoice was assigned, AKA the Invoice's recipient"
-    assignedTo: FixitUser!
+    "(Immutable) The User who created/sent the Invoice"
+    createdBy: User!
+    "(Immutable) The User to whom the Invoice was assigned, AKA the Invoice's recipient"
+    assignedTo: User!
     "The Invoice amount, represented as an integer which reflects USD centage (i.e., an 'amount' of 1 = $0.01 USD)"
     amount: Int!
     "The Invoice status; this field is controlled by the API and can not be directly edited by Users"
@@ -33,12 +31,12 @@ export const typeDefs = gql`
 
   extend type Query {
     invoice(invoiceID: ID!): Invoice!
-    myInvoices: MyInvoicesQueryReturnType!
+    myInvoices: MyInvoicesQueryResponse!
   }
 
   # QUERY RETURN TYPES
 
-  type MyInvoicesQueryReturnType {
+  type MyInvoicesQueryResponse {
     createdByUser: [Invoice!]!
     assignedToUser: [Invoice!]!
   }

@@ -8,27 +8,31 @@ export default defineConfig({
     /* `restoreMocks` accomplishes the following:
       - clears all spies of `spy.mock.calls` and `spy.mock.results` (same as clearMocks:true)
       - removes any mocked implementations (same as mockReset:true)
-      - restores the original implementation so fns don't return undefined like with mockReset
-    */
+      - restores the original implementation so fns don't return undefined like with mockReset */
     restoreMocks: true,
     globals: true,
     silent: true,
     environment: "node",
     include: ["**/?(*.)test.?(c|m)[tj]s"],
     setupFiles: ["src/tests/setupTests.ts"],
-    // This server.deps.inline config allows mocking the package's underlying @aws-sdk imports
     server: {
       deps: {
+        // This config allows mocking the package's underlying @aws-sdk imports
         inline: ["@nerdware/ddb-single-table"],
       },
     },
-    reporters: ["default", ...(process.env.GITHUB_ACTIONS ? [new GithubActionsReporter()] : [])],
+    reporters: [
+      "default",
+      // GithubActionsReporter is used to format test results for GitHub Actions
+      ...(process.env.GITHUB_ACTIONS ? [new GithubActionsReporter()] : []),
+    ],
     coverage: {
       include: ["src/**/*.ts"],
       exclude: [...coverageConfigDefaults.exclude, "**/tests/**/*", "**/__mocks__/**/*"],
       reporter: [
         ...coverageConfigDefaults.reporter,
-        "json-summary", // <-- used by vitest-coverage-report GitHub Action
+        // 'json-summary' is used by the vitest-coverage-report GitHub Action
+        ...(process.env.GITHUB_ACTIONS ? ["json-summary"] : []),
       ],
     },
   },

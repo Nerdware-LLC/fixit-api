@@ -11,6 +11,8 @@ import type { PartialDeep } from "type-fest";
 export const mockStripePromotionCode = ({
   ...promoCodeArgs
 }: PartialDeep<Stripe.PromotionCode>): Stripe.PromotionCode => {
+  /* deepMerge does NOT create a new obj, it updates+returns the first arg's
+  ref, so the DEFAULT_ object must be spread here to avoid mutating it. */
   return deepMerge({ ...DEFAULT_MOCK_PROMO_CODE_FIELDS }, promoCodeArgs);
 };
 

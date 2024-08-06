@@ -1,5 +1,3 @@
-import type { Algorithm } from "jsonwebtoken";
-
 /**
  * @returns a readonly `ENV` object with environment variables used throughout the application.
  * @throws an error if required env vars are missing, or if certain env var values are invalid.
@@ -7,22 +5,34 @@ import type { Algorithm } from "jsonwebtoken";
 export const createEnvObject = ({
   npm_package_version,
   NODE_ENV,
+  // SERVER
   PROTOCOL,
   DOMAIN,
   PORT,
+  // WEB CLIENT
+  WEB_CLIENT_URL,
+  // AWS
   AWS_REGION,
+  DYNAMODB_REGION,
   DYNAMODB_TABLE_NAME,
   DYNAMODB_ENDPOINT,
+  PINPOINT_PROJECT_ID,
+  SES_EMAIL_ADDRESS,
+  // AUTH
   JWT_PRIVATE_KEY,
   JWT_ALGORITHM,
   JWT_ISSUER,
   JWT_EXPIRES_IN,
   BCRYPT_SALT_ROUNDS,
+  UUID_NAMESPACE,
+  // SENTRY
   SENTRY_DSN,
+  // STRIPE
   STRIPE_API_VERSION,
   STRIPE_PUBLISHABLE_KEY,
   STRIPE_SECRET_KEY,
   STRIPE_WEBHOOKS_SECRET,
+  // GOOGLE
   GOOGLE_OAUTH_CLIENT_ID,
   GOOGLE_OAUTH_CLIENT_SECRET,
 }: typeof process.env) => {
@@ -32,14 +42,17 @@ export const createEnvObject = ({
     !PROTOCOL ||
     !DOMAIN ||
     !PORT ||
+    !WEB_CLIENT_URL ||
     !AWS_REGION ||
     !DYNAMODB_TABLE_NAME ||
+    !PINPOINT_PROJECT_ID ||
+    !SES_EMAIL_ADDRESS ||
     !JWT_PRIVATE_KEY ||
     !JWT_ALGORITHM ||
     !JWT_ISSUER ||
     !JWT_EXPIRES_IN ||
     !BCRYPT_SALT_ROUNDS ||
-    !SENTRY_DSN ||
+    !UUID_NAMESPACE ||
     !STRIPE_API_VERSION ||
     !STRIPE_PUBLISHABLE_KEY ||
     !STRIPE_SECRET_KEY ||
@@ -47,26 +60,25 @@ export const createEnvObject = ({
     !GOOGLE_OAUTH_CLIENT_ID ||
     !GOOGLE_OAUTH_CLIENT_SECRET
   ) {
-    throw new Error("Missing required environment variables.");
+    throw new Error("Missing required environment variables");
   }
 
-  // Ensure the provided JWT_ALGORITHM is supported
-  if (!/^[HRE]S(256|384|512)$/.test(JWT_ALGORITHM)) {
-    throw new Error("Unsupported JWT_ALGORITHM");
-  }
+  if (!/^(development|test|staging|production)$/.test(NODE_ENV))
+    throw new Error("Unknown NODE_ENV");
 
   const API_BASE_URL = `${PROTOCOL}://${DOMAIN}`;
 
   return {
     NODE_ENV,
-    IS_PROD: /^prod/i.test(NODE_ENV),
-    IS_DEPLOYED_ENV: /^(prod|staging)/i.test(NODE_ENV),
+    IS_DEV: NODE_ENV === "development",
+    IS_PROD: NODE_ENV === "production",
+    IS_DEPLOYED_ENV: /^(production|staging)$/.test(NODE_ENV),
     CONFIG: {
       ...(npm_package_version && { PROJECT_VERSION: `v${npm_package_version}` }),
-      TIMEZONE: new Date().toString().match(/([A-Z]+[+-][0-9]+.*)/)?.[1] ?? "-",
+      TIMEZONE: new Date().toString().match(/([A-Z]+[+-][0-9]+.*)/)?.[0] ?? "-",
       PROTOCOL,
       DOMAIN,
-      PORT,
+      PORT: Number(PORT),
       API_BASE_URL,
       API_FULL_URL: `${API_BASE_URL}:${PORT}/api`,
       OS_PLATFORM: process.platform,
@@ -74,18 +86,25 @@ export const createEnvObject = ({
       NODE_VERSION: process.version,
       CWD: process.cwd(),
     },
+    WEB_CLIENT: {
+      URL: WEB_CLIENT_URL,
+    },
     AWS: {
       REGION: AWS_REGION,
+      DYNAMODB_REGION: DYNAMODB_REGION ?? AWS_REGION,
       DYNAMODB_TABLE_NAME,
-      ...(DYNAMODB_ENDPOINT && { DYNAMODB_ENDPOINT }),
+      DYNAMODB_ENDPOINT,
+      PINPOINT_PROJECT_ID,
+      SES_EMAIL_ADDRESS,
     },
     JWT: {
       PRIVATE_KEY: JWT_PRIVATE_KEY,
-      ALGORITHM: JWT_ALGORITHM as Algorithm,
+      ALGORITHM: JWT_ALGORITHM,
       ISSUER: JWT_ISSUER,
       EXPIRES_IN: JWT_EXPIRES_IN,
     },
-    BCRYPT_SALT_ROUNDS: parseInt(BCRYPT_SALT_ROUNDS, 10),
+    BCRYPT_SALT_ROUNDS: Number(BCRYPT_SALT_ROUNDS),
+    UUID_NAMESPACE,
     SENTRY_DSN,
     STRIPE: {
       API_VERSION: STRIPE_API_VERSION,

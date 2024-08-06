@@ -1,4 +1,5 @@
 import deepMerge from "lodash.merge";
+import { SUBSCRIPTION_PRICE_NAMES } from "@/models/UserSubscription/enumConstants.js";
 import { MOCK_DATE_UNIX_TIMESTAMPS } from "@/tests/staticMockItems/dates.js";
 import type Stripe from "stripe";
 import type { PartialDeep } from "type-fest";
@@ -9,7 +10,9 @@ import type { PartialDeep } from "type-fest";
  *
  * @see https://stripe.com/docs/api/prices/object
  */
-export const mockStripePrice = ({ ...priceArgs }: PartialDeep<Stripe.Price>) => {
+export const mockStripePrice = ({ ...priceArgs }: PartialDeep<Stripe.Price>): Stripe.Price => {
+  /* deepMerge does NOT create a new obj, it updates+returns the first arg's
+  ref, so the DEFAULT_ object must be spread here to avoid mutating it. */
   return deepMerge({ ...DEFAULT_MOCK_STRIPE_PRICE_FIELDS }, priceArgs);
 };
 
@@ -18,16 +21,17 @@ export const mockStripePrice = ({ ...priceArgs }: PartialDeep<Stripe.Price>) => 
  */
 const DEFAULT_MOCK_STRIPE_PRICE_FIELDS: Stripe.Price = {
   object: "price",
-  id: "price_TestANNUAL",
+  id: `price_Test${SUBSCRIPTION_PRICE_NAMES.ANNUAL}`,
   active: true,
   billing_scheme: "per_unit",
   created: MOCK_DATE_UNIX_TIMESTAMPS.JAN_1_2020,
   currency: "usd",
+  currency_options: {},
   custom_unit_amount: null,
   livemode: false,
   lookup_key: null,
   metadata: {},
-  nickname: "ANNUAL",
+  nickname: SUBSCRIPTION_PRICE_NAMES.ANNUAL,
   product: "prod_TestTestTest",
   recurring: {
     aggregate_usage: null,

@@ -20,23 +20,26 @@ const codegenConfig: CodegenConfig = {
     // This objects keys are Codegen output target files
     "src/types/__codegen__/graphql.ts": {
       plugins: ["typescript", "typescript-resolvers"],
+
       // Plugin configs:
       config: {
         enumsAsTypes: true,
-        useIndexSignature: true,
         useTypeImports: true,
+        useIndexSignature: true,
+        defaultMapper: "Partial<{T}>",
+
         // resolver context type:
-        contextType: "@/apolloServer.js#ApolloServerResolverContext",
+        contextType: "@/apolloServer.js#ApolloServerContext",
         scalars: {
           ID: "string",
           DateTime: "Date",
           Email: "string",
         },
+
         // `mappers` type overrides:
         mappers: {
-          User: "@/models/User/User.js#UserItem",
           Contact: "@/models/Contact/Contact.js#ContactItem",
-          FixitUser: "@/graphql/FixitUser/types.js#FixitUserCodegenInterface",
+          PublicUserFields: "@/graphql/PublicUserFields/types.js#PublicUserFieldsCodegenInterface",
           Invoice: "@/models/Invoice/Invoice.js#InvoiceItem",
           WorkOrder: "@/models/WorkOrder/WorkOrder.js#WorkOrderItem",
           UserSubscription: "@/models/UserSubscription/UserSubscription.js#UserSubscriptionItem",

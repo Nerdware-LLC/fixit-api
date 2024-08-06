@@ -2,26 +2,30 @@ import {
   MOCK_USER_SCAs,
   UNALIASED_MOCK_USER_SCAs,
 } from "@/tests/staticMockItems/userStripeConnectAccounts.js";
-import { MOCK_USERS } from "@/tests/staticMockItems/users.js";
 import { UserStripeConnectAccount } from "./UserStripeConnectAccount.js";
 
 describe("UserStripeConnectAccount Model", () => {
-  describe("UserStripeConnectAccount.createOne()", () => {
+  describe("UserStripeConnectAccount.createItem()", () => {
     test("returns a valid UserStripeConnectAccount when called with valid args", async () => {
-      // Act on the UserStripeConnectAccount Model's createOne method
-      const result = await UserStripeConnectAccount.createOne({
-        userID: MOCK_USER_SCAs.SCA_A.userID,
-        ...MOCK_USERS.USER_A,
-      });
+      // Arrange mock UserSCA inputs
+      for (const key in MOCK_USER_SCAs) {
+        // Get input for UserStripeConnectAccount.createItem() method
+        const input = MOCK_USER_SCAs[key as keyof typeof MOCK_USER_SCAs];
 
-      // Assert the result
-      expect(result).toStrictEqual({
-        ...MOCK_USER_SCAs.SCA_A,
-        createdAt: expect.any(Date),
-        updatedAt: expect.any(Date),
-      });
+        // Act on the UserStripeConnectAccount Model's createItem method
+        const result = await UserStripeConnectAccount.createItem(input);
+
+        // Assert the result
+        expect(result).toStrictEqual({
+          ...input,
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
+        });
+      }
     });
   });
+
+  // TODO Make test for UserStripeConnectAccount.updateItem()
 
   describe("UserStripeConnectAccount.deleteItem()", () => {
     test(`returns a deleted UserStripeConnectAccount's "userID"`, async () => {

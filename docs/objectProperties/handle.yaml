@@ -1,5 +1,0 @@
-type: string
-description: A user's Fixit handle.
-pattern: "^@[a-zA-Z0-9_]{3,50}$"
-examples:
-  - "@foo_user"

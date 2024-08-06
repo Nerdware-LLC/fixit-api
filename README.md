@@ -1,12 +1,12 @@
 <div align="center">
 
-[<img src=".github/assets/Fixit_API_repo_banner.png" />](https://www.youtube.com/@nerdware-io)
+[<img src=".github/assets/Fixit_API_repo_banner.png" alt="Repo banner" />](https://www.youtube.com/@nerdware-io)
 
 Fixit is a SaaS product that provides users with powerful tools for managing maintenance and repair workflows, including in-app payments powered by [Stripe](https://stripe.com/). This repo is home to the dual-protocol Fixit API – built on NodeJS, ExpressJS, and Apollo GraphQL.
 
 Author: [Trevor Anderson](https://github.com/trevor-anderson), Solopreneur & Founder of [Nerdware](https://github.com/Nerdware-LLC)
 
-[<img src=".github/assets/powered_by_Stripe_blurple.svg" height="22" style="position:relative;top:1px;" />](https://stripe.com/ "Check out Stripe")
+[<img src=".github/assets/powered_by_Stripe_blurple.svg" height="22" style="position:relative;top:1px;" alt="Powered by Stripe" />](https://stripe.com/ "Check out Stripe")
 &nbsp;
 [![Test Workflow][gh-test-badge]](.github/workflows/test.yaml "View Test Workflow")
 &nbsp;
@@ -46,6 +46,7 @@ Author: [Trevor Anderson](https://github.com/trevor-anderson), Solopreneur & Fou
   - [REST Endpoints Diagram](#rest-endpoints-diagram)
   - [GraphQL Schema](#graphql-schema)
 - [🔐 User Authentication](#-user-authentication)
+- [💎 Premium SaaS Products](#-premium-saas-products)
 - [🗄️ DynamoDB Database](#️-dynamodb-database)
   - [Fixit-API Access Patterns](#fixit-api-access-patterns)
   - [Single Table Design](#single-table-design)
@@ -98,8 +99,6 @@ The Fixit API provides a robust, scalable, and secure backend for the Fixit SaaS
 > </table>
 
 ## 📖 API Schema
-
-<!-- hex color code for 'orange':  #FFA500 -->
 
 This API exposes both **REST** and **GraphQL** endpoints:
 
@@ -183,6 +182,7 @@ flowchart LR
   auth --> register("/api/auth/register \n­\n • User registration")
   auth --> login("/api/auth/login \n­\n • User logins via Local\n or OAuth mechanisms")
   auth --> googleToken("/api/auth/google-token \n­\n • User logins via Google\nOAuth2 OneTap FedCM")
+  auth --> pwReset("/api/auth/password-reset \n­\n • Password reset requests")
   auth --> token("/api/auth/token \n­\n • Refreshes auth tokens")
   connect --> accountLink("/api/connect/account-link \n­\n • Returns a link to the Stripe-hosted\nConnect onboarding portal")
   connect --> dashboardLink("/api/connect/dashboard-link \n­\n • Returns a link to the Stripe-hosted\naccount management portal")
@@ -216,6 +216,16 @@ Check out the [Fixit GraphQL Schema Explorer](https://studio.apollographql.com/p
 This API uses self-vended [JSON Web Tokens](https://jwt.io/introduction) to manage user authentication and authorization.
 
 <!-- TODO Write more re: API auth mechanisms -->
+
+## 💎 Premium SaaS Products
+
+The table below lists currently available Fixit SaaS products. Subscription management is powered by [Stripe](https://stripe.com/billing).
+
+| Product                 | Description          | Price (USD) | Promo Code(s) Available? |
+| :---------------------- | -------------------- | :---------: | :----------------------: |
+| Fixit SaaS Subscription | 14-Day Free Trial    |     $0      |           N/A            |
+| Fixit SaaS Subscription | Monthly Subscription |  $5/month   |            ✓             |
+| Fixit SaaS Subscription | Annual Subscription  |  $50/year   |            ✓             |
 
 ## 🗄️ DynamoDB Database
 

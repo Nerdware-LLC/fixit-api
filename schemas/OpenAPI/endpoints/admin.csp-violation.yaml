@@ -1,0 +1,17 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/path-item
+
+# POST /admin/csp-violation
+
+post:
+  operationId: CspViolation
+  summary: Logs CSP violation reports.
+  security: []
+  tags: [admin]
+  requestBody:
+    content:
+      application/csp-report:
+        schema: { $ref: "../open-api.yaml#/components/schemas/CspViolationReport" }
+  responses:
+    "204": { $ref: "../open-api.yaml#/components/responses/204NoContent" }
+    "4XX": { $ref: "../open-api.yaml#/components/responses/UnexpectedResponse" }
+    default: { $ref: "../open-api.yaml#/components/responses/UnexpectedResponse" }

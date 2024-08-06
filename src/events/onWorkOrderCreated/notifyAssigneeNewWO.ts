@@ -1,7 +1,7 @@
 import { WorkOrderPushNotification } from "@/events/pushNotifications";
 import { lambdaClient } from "@/lib/lambdaClient";
-import { User } from "@/models/User/User.js";
-import type { WorkOrderItem } from "@/models/WorkOrder/WorkOrder.js";
+import { User } from "@/models/User";
+import type { WorkOrderItem } from "@/models/WorkOrder";
 
 /**
  * Notify assignee of new WorkOrder when `WorkOrderAssigned` event is emitted.
@@ -13,7 +13,7 @@ export const notifyAssigneeNewWO = async (newWO?: WorkOrderItem) => {
   if (!newWO) return;
 
   // If new WorkOrder is UNASSIGNED, return.
-  if (!newWO?.assignedToUserID) return;
+  if (!newWO.assignedToUserID) return;
 
   const assigneeUser = await User.getItem({ id: newWO.assignedToUserID });
 

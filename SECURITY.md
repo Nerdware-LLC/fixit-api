@@ -1,6 +1,6 @@
 # Security Policy
 
-### Reporting a Vulnerability:
+### Reporting a Vulnerability
 
 Any effort to discover and disclose security vulnerabilities in a responsible manner is deeply appreciated. Instead of opening a GitHub Issue for security vulnerabilities, please email [trevor@nerdware.cloud](mailto:trevor@nerdware.cloud) with the bug report.
 
