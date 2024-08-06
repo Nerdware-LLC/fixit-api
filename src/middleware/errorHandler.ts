@@ -19,7 +19,11 @@ const DEFAULT_ERROR_MESSAGE = "An unexpected problem occurred";
  *   3. Sends a JSON error-response to the client
  *      > _**In prod, `5xx` error messages are masked**_
  */
-export const errorHandler: ErrorRequestHandler = (originalError: unknown, req, res, next) => {
+export const errorHandler: ErrorRequestHandler<
+  Record<string, string>,
+  unknown,
+  Record<string, unknown>
+> = (originalError: unknown, req, res, next) => {
   // Parse the originalError param
   const error = getTypeSafeError(originalError, { fallBackErrMsg: DEFAULT_ERROR_MESSAGE });
 
@@ -27,7 +31,13 @@ export const errorHandler: ErrorRequestHandler = (originalError: unknown, req, r
   let { message: errorMessage } = error;
 
   if (errorStatusCode >= 500) {
-    logger.error({ req, originalError }, `SERVER ERROR on route "${req.originalUrl}"`);
+    // Destructure req to get pertinent info
+    const { baseUrl, body, headers, ips, method, originalUrl, path } = req;
+    logger.error(
+      { originalError, req: { baseUrl, body, headers, ips, method, originalUrl, path } },
+      `SERVER ERROR on route "${req.originalUrl}"`
+    );
+
     // Mask 5xx error messages in production
     if (ENV.IS_PROD) errorMessage = DEFAULT_ERROR_MESSAGE;
   }
