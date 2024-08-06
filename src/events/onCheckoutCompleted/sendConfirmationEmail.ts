@@ -33,7 +33,7 @@ export const sendConfirmationEmail = async ({
           productName: [
             `${SUBSCRIPTION_PRODUCT_NAMES.FIXIT_SUBSCRIPTION} (${capitalize(priceName)})`,
           ],
-          paymentIntentID: [paymentIntentID],
+          paymentIntentID: [paymentIntentID ?? "N/A"],
           amountPaid: [amountPaid],
         },
       },
@@ -44,6 +44,6 @@ export const sendConfirmationEmail = async ({
 export type CheckoutConfirmationData = {
   user: AuthTokenPayload;
   priceName: SubscriptionPriceName;
-  paymentIntentID: string;
+  paymentIntentID: string | null | undefined;
   amountPaid: string | number;
 };
