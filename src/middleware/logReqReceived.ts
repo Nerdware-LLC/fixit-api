@@ -14,11 +14,11 @@ import type { Request, RequestHandler } from "express";
 export const logReqReceived: RequestHandler<
   Record<string, string>,
   unknown,
-  { [k: string]: unknown }
+  Record<string, unknown> | undefined
 > = (req, res, next) => {
   if (req.originalUrl === "/api") {
     // Only log GQL /api requests if req.body.operationName exists
-    if (isString(req.body.operationName))
+    if (isString(req.body?.operationName))
       logger.gql(getReqLogMsg(req, `OPERATION ${req.body.operationName}`));
   } else if (req.originalUrl !== "/api/admin/healthcheck") {
     logger.server(getReqLogMsg(req, `PATH ${req.originalUrl}`));
