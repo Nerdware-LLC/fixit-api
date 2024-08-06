@@ -33,6 +33,9 @@ const userModelSchema = ddbTable.getModelSchema({
     alias: "email",
     validate: isValidEmail,
     required: true,
+    transformValue: {
+      toDB: (email: string) => email.toLowerCase(),
+    },
   },
   handle: {
     type: "string",
