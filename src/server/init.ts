@@ -2,7 +2,7 @@ import "./initSentry.js";
 import "./processEventHandlers.js";
 import "./logStartupInfo.js";
 
-/* The imports in this file achieve the following:
+/* The side-effect imports in this file achieve the following:
 
   sentry            Initialize Sentry
   processHandlers   Initialize NodeJS process event handlers

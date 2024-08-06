@@ -1,34 +1,17 @@
 import { getTypeSafeError } from "@nerdware/ts-type-safety-utils";
 import { logger } from "@/utils/logger.js";
 
-Object.entries({
-  uncaughtException: 1,
-  unhandledRejection: 2,
-}).forEach(([errEvent, errExitCode]) => {
-  process.on(errEvent, (error) => {
-    logger.error(getTypeSafeError(error));
-    process.exitCode = errExitCode;
-  });
+process.on("uncaughtException", (error: Error) => {
+  logger.error(error, `(Process Event "uncaughtException")`);
 });
 
-["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signalType) => {
-  // eslint-disable-next-line no-process-exit
-  process.once(signalType, () => process.exit(process?.exitCode ?? 0));
+process.on("unhandledRejection", (rejectionReason: unknown) => {
+  const error = getTypeSafeError(rejectionReason);
+  logger.error(error, `(Process Event "unhandledRejection")`);
+  throw error;
 });
 
 process.on("exit", (exitCode) => {
-  // If zero, exit normally
-  if (exitCode === 0) {
-    logger.server("Exiting Process (EXIT_CODE: 0)");
-  } else {
-    // Else, log the error type
-    const errorDescription =
-      exitCode === 1
-        ? "UNCAUGHT_EXCEPTION"
-        : exitCode === 2
-          ? "UNHANDLED_REJECTION"
-          : "UNHANDLED_ERROR_EXIT_CODE";
-
-    logger.error(`EXITING PROCESS: ${errorDescription} (EXIT_CODE: ${exitCode})`);
-  }
+  const loggerFn = exitCode === 0 ? logger.server : logger.error;
+  loggerFn(`(Process Event "exit") EXIT_CODE: ${exitCode}`);
 });

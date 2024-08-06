@@ -1,0 +1,3 @@
+type: string
+format: email
+description: User's email address.

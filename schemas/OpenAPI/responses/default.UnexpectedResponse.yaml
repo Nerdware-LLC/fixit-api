@@ -1,0 +1,6 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/response
+
+description: |
+  [Unexpected Response] The server encountered an unexpected condition that
+  prevented it from fulfilling the request. This fallback applies if no defined
+  response status codes match the response.

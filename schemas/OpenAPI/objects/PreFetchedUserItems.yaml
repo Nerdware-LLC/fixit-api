@@ -1,0 +1,51 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
+
+# REST Schema: PreFetchedUserItems
+
+type: object
+description: |
+  A User's pre-fetched WorkOrders, Invoices, and Contacts, which are written
+  into the client's Apollo Client cache on the front-end (used on logins).
+  This object's properties correspond to GraphQL queries of the same name.
+required: [myWorkOrders, myInvoices, myContacts]
+properties:
+  myWorkOrders:
+    type: object
+    description: Pre-fetched `myWorkOrders` query objects for the front-end cache.
+    externalDocs:
+      description: Apollo Studio Schema Reference for the `myWorkOrders` GQL query.
+      url: "https://studio.apollographql.com/public/fixit/variant/current/schema/reference#myWorkOrders"
+    required: [createdByUser, assignedToUser]
+    properties:
+      createdByUser:
+        type: array
+        description: Work orders created by the user.
+        items: { $ref: "../open-api.yaml#/components/schemas/WorkOrder" }
+      assignedToUser:
+        type: array
+        description: Work orders assigned to the user.
+        items: { $ref: "../open-api.yaml#/components/schemas/WorkOrder" }
+  myInvoices:
+    type: object
+    description: Pre-fetched `myInvoices` query objects for the front-end cache.
+    externalDocs:
+      description: Apollo Studio Schema Reference for the `myInvoices` GQL query.
+      url: "https://studio.apollographql.com/public/fixit/variant/current/schema/reference#myInvoices"
+    required: [createdByUser, assignedToUser]
+    properties:
+      createdByUser:
+        type: array
+        description: Invoices created by the user.
+        items: { $ref: "../open-api.yaml#/components/schemas/Invoice" }
+      assignedToUser:
+        type: array
+        description: Invoices assigned to the user.
+        items: { $ref: "../open-api.yaml#/components/schemas/Invoice" }
+  myContacts:
+    type: array
+    description: Pre-fetched `myContacts` query objects for the front-end cache.
+    externalDocs:
+      description: Apollo Studio Schema Reference for the `myInvoices` GQL query.
+      url: "https://studio.apollographql.com/public/fixit/variant/current/schema/reference#myInvoices"
+    items:
+      $ref: "../open-api.yaml#/components/schemas/Contact"

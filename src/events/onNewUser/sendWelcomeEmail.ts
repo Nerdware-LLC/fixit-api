@@ -1,5 +1,5 @@
-import { lambdaClient } from "@/lib/lambdaClient";
-import type { UserItem } from "@/models/User/User.js";
+import { pinpointClient } from "@/lib/pinpointClient";
+import type { UserItem } from "@/models/User";
 
 /**
  * Send welcome email to new User when `NewUser` event is emitted.
@@ -10,9 +10,20 @@ import type { UserItem } from "@/models/User/User.js";
 export const sendWelcomeEmail = async (newUser?: UserItem) => {
   if (!newUser) return;
 
-  await lambdaClient.invokeEvent("SendWelcomeEmail", {
-    id: newUser.id,
-    handle: newUser.handle,
-    email: newUser.email,
+  await pinpointClient.sendMessages({
+    to: newUser.email,
+    ChannelType: "EMAIL",
+    TemplateConfiguration: {
+      EmailTemplate: {
+        Name: "new-user-welcome-email",
+      },
+    },
+    MessageConfiguration: {
+      EmailMessage: {
+        Substitutions: {
+          recipientDisplayName: [newUser.profile.displayName],
+        },
+      },
+    },
   });
 };

@@ -1,0 +1,32 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
+
+# REST Schema: AuthTokenPayload
+
+type: object
+description: User's Fixit API auth token payload object.
+# prettier-ignore
+properties:
+  id: { type: string, description: An identifier for the user. }
+  handle: { $ref: "../open-api.yaml#/components/schemas/Handle" }
+  email: { $ref: "../open-api.yaml#/components/schemas/Email" }
+  phone: { $ref: "../open-api.yaml#/components/schemas/Phone" }
+  profile: { $ref: "../open-api.yaml#/components/schemas/UserProfile" }
+  stripeCustomerID: { $ref: "../open-api.yaml#/components/schemas/StripeCustomerID" }
+  stripeConnectAccount: { $ref: "../open-api.yaml#/components/schemas/AuthTokenPayloadStripeConnectAccountInfo" }
+  subscription:
+    oneOf:
+      - $ref: "../open-api.yaml#/components/schemas/AuthTokenPayloadSubscriptionInfo"
+      - { type: "null", description: "The user does not have a subscription." }
+  createdAt: { $ref: "../open-api.yaml#/components/schemas/CreatedAt" }
+  updatedAt: { $ref: "../open-api.yaml#/components/schemas/UpdatedAt" }
+required:
+  - id
+  - handle
+  - email
+  - phone
+  - profile
+  - stripeCustomerID
+  - stripeConnectAccount
+  - subscription
+  - createdAt
+  - updatedAt

@@ -17,7 +17,7 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "types": ["node", "vitest/globals"],
+    "types": ["node", "vitest/globals", "stripe-event-types"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]

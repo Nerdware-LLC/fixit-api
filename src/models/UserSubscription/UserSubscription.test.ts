@@ -4,14 +4,14 @@ import {
 } from "@/tests/staticMockItems/userSubscriptions.js";
 import { MOCK_USERS } from "@/tests/staticMockItems/users.js";
 import { UserSubscription } from "./UserSubscription.js";
-import { userSubscriptionModelHelpers as subModelHelpers } from "./helpers.js";
+import { subModelHelpers } from "./helpers.js";
 
 describe("UserSubscription Model", () => {
-  describe("UserSubscription.upsertOne()", () => {
+  describe("UserSubscription.upsertItem()", () => {
     test("returns a valid UserSubscription when called with valid arguments", async () => {
       // Arrange mock UserSubscriptions
       for (const key in MOCK_USER_SUBS) {
-        // Get upsertOne inputs from mock UserSub
+        // Get upsertItem inputs from mock UserSub
         const mockSub = MOCK_USER_SUBS[key as keyof typeof MOCK_USER_SUBS];
 
         // Ascertain the mock User associated with this mock UserSub
@@ -22,28 +22,24 @@ describe("UserSubscription Model", () => {
               ? MOCK_USERS.USER_B
               : MOCK_USERS.USER_C;
 
-        // Act on the UserSubscription Model's upsertOne method (check sub name AND priceID):
+        // Act on the UserSubscription Model's upsertItem method:
 
-        const result_withSubName = await UserSubscription.upsertOne({
-          user: associatedMockUser,
-          selectedSubscription: mockSub.priceID.split("price_Test")[1] as any,
-          // all mock sub priceIDs are prefixed with "price_Test" (e.g., "price_TestANNUAL")
-        });
-        const result_withPriceID = await UserSubscription.upsertOne({
-          user: associatedMockUser,
+        const result = await UserSubscription.upsertItem({
+          userID: associatedMockUser.id,
+          id: mockSub.id,
+          currentPeriodEnd: mockSub.currentPeriodEnd,
+          productID: mockSub.productID,
           priceID: mockSub.priceID,
+          status: mockSub.status,
+          // all mock sub priceIDs are prefixed with "price_Test" (e.g., "price_TestANNUAL")
         });
 
         // Assert the results
-        [result_withSubName, result_withPriceID].forEach((result) => {
-          /* toMatchObject is used because the upsertOne method's return-value includes fields
-          returned from the Stripe API that are not in the Model (e.g., "latest_invoice"). */
-          expect(result).toMatchObject({
-            ...mockSub,
-            sk: expect.toSatisfyFn((value: string) => subModelHelpers.sk.isValid(value)),
-            createdAt: expect.any(Date),
-            updatedAt: expect.any(Date),
-          });
+        expect(result).toStrictEqual({
+          ...mockSub,
+          sk: expect.toSatisfyFn((value: string) => subModelHelpers.sk.isValid(value)),
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
         });
       }
     });
@@ -121,35 +117,6 @@ describe("UserSubscription Model", () => {
         },
         ReturnValues: "ALL_OLD",
       });
-    });
-  });
-
-  describe("UserSubscription.validateExisting()", () => {
-    const YEAR_2000 = new Date(2000, 0);
-    const YEAR_9999 = new Date(9999, 0);
-
-    test(`does not throw when called with a valid "active" subscription`, () => {
-      expect(() => {
-        UserSubscription.validateExisting({ status: "active", currentPeriodEnd: YEAR_9999 });
-      }).not.toThrow();
-    });
-
-    test(`does not throw when called with a valid "trialing" subscription`, () => {
-      expect(() => {
-        UserSubscription.validateExisting({ status: "trialing", currentPeriodEnd: YEAR_9999 });
-      }).not.toThrow();
-    });
-
-    test(`throws an error when called with a subscription with an invalid status`, () => {
-      expect(() => {
-        UserSubscription.validateExisting({ status: "past_due", currentPeriodEnd: YEAR_9999 });
-      }).toThrow("past due");
-    });
-
-    test(`throws an error when called with an expired subscription`, () => {
-      expect(() => {
-        UserSubscription.validateExisting({ status: "active", currentPeriodEnd: YEAR_2000 });
-      }).toThrow("expired");
     });
   });
 });

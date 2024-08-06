@@ -1,0 +1,22 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
+
+# REST Schema: AuthTokenPayloadSubscriptionInfo
+
+type: object
+description: |
+  An object within the payload of a user's Fixit API auth token with data
+  relating to their current Fixit Subscription status.
+externalDocs:
+  description: GQL Apollo Studio Schema Reference for the UserSubscription object.
+  url: https://studio.apollographql.com/public/fixit/variant/current/schema/reference/objects/UserSubscription
+properties:
+  id: { type: string, description: An identifier for the subscription. }
+  status: { $ref: "../open-api.yaml#/components/schemas/SubscriptionStatus" }
+  currentPeriodEnd:
+    type: string
+    format: date-time
+    description: Timestamp indicating the end of the current billing period.
+required:
+  - id
+  - status
+  - currentPeriodEnd

@@ -8,9 +8,10 @@ import * as Sentry from "@sentry/node";
 import chalk, { type ChalkInstance } from "chalk";
 import dayjs from "dayjs";
 import { ENV } from "@/server/env";
-import type { HttpErrorInterface } from "./httpErrors";
 
 /* eslint-disable no-console */
+
+const jsonStrSpaces = ENV.IS_PROD ? 0 : 2;
 
 /**
  * Returns a log message string.
@@ -27,7 +28,7 @@ const getLogMessage = ({
   if (labelColor) formattedLabel = labelColor(formattedLabel);
 
   let formattedMsg = msgPrefix ? `${msgPrefix} ` : "";
-  formattedMsg += getErrorMessage(input) || safeJsonStringify(input);
+  formattedMsg += getErrorMessage(input) || safeJsonStringify(input, null, jsonStrSpaces);
   if (msgColor) formattedMsg = msgColor(formattedMsg);
 
   return `${formattedLabel} ${formattedMsg}`;
@@ -91,7 +92,8 @@ const getLoggerUtil = ({
     ? {
         handleLogError: (error, msgPrefix) => {
           // If error has a `statusCode` and the `statusCode` is under 500, ignore it.
-          if (isSafeInteger(error?.statusCode) && error.statusCode < 500) return;
+          const statusCode = (error as { statusCode?: number }).statusCode;
+          if (isSafeInteger(statusCode) && statusCode < 500) return;
           Sentry.captureException(error);
           // stderr goes to CloudWatch in deployed envs
           console.error(getLogMessage({ label, input: error, msgPrefix }));
@@ -153,7 +155,7 @@ export const logger = {
   }),
   test: getLoggerUtil({
     label: "TEST",
-    msgColor: chalk.bgCyan.black,
+    msgColor: chalk.cyan,
   }),
   error: getLoggerUtil({
     label: "ERROR",
@@ -206,6 +208,6 @@ type LoggerFn = (
 
 /** Internal type for `handleLogError` fns used in `getLoggerUtil`. */
 type ErrorLoggerFn = (
-  error: Error & Partial<HttpErrorInterface>,
+  error: unknown,
   msgPrefix?: GetLogMessageArgsProvidedByHandler["msgPrefix"]
 ) => void;

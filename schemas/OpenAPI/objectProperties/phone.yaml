@@ -1,0 +1,8 @@
+type:
+  - string
+  - "null"
+description: |
+  User's phone number. Currently this API only supports US phone numbers. All
+  whitespace, non-numeric characters, and country/calling code prefixes will be
+  stripped from the phone number upon receipt, so "+1 (555) 555-5555" will be
+  treated the same as "5555555555".

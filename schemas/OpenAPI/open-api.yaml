@@ -1,0 +1,126 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml
+
+openapi: 3.1.0
+info:
+  title: Fixit REST API
+  version: 2.2.0
+  summary: OpenAPI Schema for the Fixit REST API.
+  description: |
+    This schema describes the Fixit REST API, which is used for Fixit
+    authentication and user account management.
+    ### Schema Links:
+    - [SwaggerHub Schema Ref](https://app.swaggerhub.com/apis/Nerdware/Fixit)
+    - [Fixit API GitHub Repo](https://github.com/Nerdware-LLC/fixit-api)
+  termsOfService: "https://gofixit.app/tos"
+  contact:
+    name: Trevor Anderson
+    email: "Trevor@Nerdware.cloud"
+    url: "https://github.com/trevor-anderson"
+  license:
+    name: Proprietary
+    url: "https://raw.githubusercontent.com/Nerdware-LLC/fixit-api/main/LICENSE"
+servers:
+  - { url: "https://gofixit.app/api", description: Production API }
+  - { url: "https://staging.gofixit.app/api", description: Staging API }
+tags:
+  - { name: admin, description: Administrative endpoints }
+  - { name: auth, description: Authentication endpoints }
+  - { name: checkout, description: Checkout-related endpoints }
+  - { name: stripe, description: Stripe-related endpoints }
+  - { name: stripe-connect, description: StripeConnect-related endpoints }
+  - { name: stripe-link, description: Endpoints which return a Stripe link }
+  - { name: subscriptions, description: Subscription management endpoints }
+paths:
+  "/admin/csp-violation": { $ref: "./endpoints/admin.csp-violation.yaml" }
+  "/admin/healthcheck": { $ref: "./endpoints/admin.healthcheck.yaml" }
+  "/auth/login": { $ref: "./endpoints/auth.login.yaml" }
+  "/auth/register": { $ref: "./endpoints/auth.register.yaml" }
+  "/auth/token": { $ref: "./endpoints/auth.token.yaml" }
+  "/auth/google-token": { $ref: "./endpoints/auth.google-token.yaml" }
+  "/auth/password-reset-init": { $ref: "./endpoints/auth.password-reset-init.yaml" }
+  "/auth/password-reset": { $ref: "./endpoints/auth.password-reset.yaml" }
+  "/connect/account-link": { $ref: "./endpoints/connect.account-link.yaml" }
+  "/connect/dashboard-link": { $ref: "./endpoints/connect.dashboard-link.yaml" }
+  "/subscriptions/check-promo-code": { $ref: "./endpoints/subscriptions.check-promo-code.yaml" }
+  "/subscriptions/customer-portal": { $ref: "./endpoints/subscriptions.customer-portal.yaml" }
+  "/subscriptions/submit-payment": { $ref: "./endpoints/subscriptions.submit-payment.yaml" }
+components:
+  securitySchemes:
+    JwtBearerAuth: { $ref: "./securitySchemes/JwtBearerAuth.yaml" }
+  requestBodies:
+    CheckPromoCodeRequest: { $ref: "./requestBodies/CheckPromoCodeRequest.yaml" }
+    GoogleTokenRequest: { $ref: "./requestBodies/GoogleTokenRequest.yaml" }
+    LoginRequest: { $ref: "./requestBodies/LoginRequest.yaml" }
+    PasswordResetInitRequest: { $ref: "./requestBodies/PasswordResetInitRequest.yaml" }
+    PasswordResetRequest: { $ref: "./requestBodies/PasswordResetRequest.yaml" }
+    RefreshAuthTokenRequest: { $ref: "./requestBodies/RefreshAuthTokenRequest.yaml" }
+    StripeLinkRequest: { $ref: "./requestBodies/StripeLinkRequest.yaml" }
+    UserRegistrationRequest: { $ref: "./requestBodies/UserRegistrationRequest.yaml" }
+  # prettier-ignore
+  responses:
+    200AuthTokenAndPreFetchedUserItems: { $ref: "./responses/200.AuthTokenAndPreFetchedUserItems.yaml" }
+    200CheckPromoCode: { $ref: "./responses/200.CheckPromoCode.yaml" }
+    200OK: { $ref: "./responses/200.OK.yaml" }
+    201AuthToken: { $ref: "./responses/201.AuthToken.yaml" }
+    201AuthTokenAndCheckoutCompletionInfo: { $ref: "./responses/201.AuthTokenAndCheckoutCompletionInfo.yaml" }
+    201StripeLink: { $ref: "./responses/201.StripeLink.yaml" }
+    204NoContent: { $ref: "./responses/204.NoContent.yaml" }
+    400InvalidUserInput: { $ref: "./responses/400.InvalidUserInput.yaml" }
+    401AuthenticationRequired: { $ref: "./responses/401.AuthenticationRequired.yaml" }
+    402PaymentRequired: { $ref: "./responses/402.PaymentRequired.yaml" }
+    403Forbidden: { $ref: "./responses/403.Forbidden.yaml" }
+    404ResourceNotFound: { $ref: "./responses/404.ResourceNotFound.yaml" }
+    5xxInternalServerError: { $ref: "./responses/5xx.InternalServerError.yaml" }
+    UnexpectedResponse: { $ref: "./responses/default.UnexpectedResponse.yaml" }
+  # prettier-ignore
+  schemas:
+    # REQUEST-RELATED SCHEMAS:
+    UserRegistrationParams: { $ref: "./objects/UserRegistrationParams.yaml" }
+    LoginParams: { $ref: "./objects/LoginParams.yaml" }
+    LoginCredentials: { $ref: "./objects/LoginCredentials.yaml" }
+    LocalLoginCredentials: { $ref: "./objects/LoginCredentials.Local.yaml" }
+    GoogleOAuthLoginCredentials: { $ref: "./objects/LoginCredentials.GoogleOAuth.yaml" }
+    GoogleIDTokenField: { $ref: "./objects/GoogleIDTokenField.yaml" }
+    ExpoPushTokenParam: { $ref: "./objects/ExpoPushTokenParam.yaml" }
+    PasswordResetInitParams: { $ref: "./objects/PasswordResetInitParams.yaml" }
+    PasswordResetParams: { $ref: "./objects/PasswordResetParams.yaml" }
+    # RESPONSE-RELATED SCHEMAS:
+    AuthTokenResponseField: { $ref: "./objects/AuthTokenResponseField.yaml" }
+    PreFetchedUserItemsResponseField: { $ref: "./objects/PreFetchedUserItemsResponseField.yaml" }
+    PreFetchedUserItems: { $ref: "./objects/PreFetchedUserItems.yaml" }
+    Contact: { $ref: "./objects/Contact.yaml" }
+    Invoice: { $ref: "./objects/Invoice.yaml" }
+    WorkOrder: { $ref: "./objects/WorkOrder.yaml" }
+    PromoCodeInfoResponseField: { $ref: "./objects/PromoCodeInfoResponseField.yaml" }
+    PromoCodeInfo: { $ref: "./objects/PromoCodeInfo.yaml" }
+    CheckoutCompletionInfoResponseField: { $ref: "./objects/CheckoutCompletionInfoResponseField.yaml" }
+    CheckoutCompletionInfo: { $ref: "./objects/CheckoutCompletionInfo.yaml" }
+    StripeLinkResponseField: { $ref: "./objects/StripeLinkResponseField.yaml" }
+    # OTHER OBJECT SCHEMAS:
+    AuthTokenPayload: { $ref: "./objects/AuthTokenPayload.yaml" }
+    AuthTokenPayloadSubscriptionInfo: { $ref: "./objects/AuthTokenPayloadSubscriptionInfo.yaml" }
+    AuthTokenPayloadStripeConnectAccountInfo: { $ref: "./objects/AuthTokenPayloadStripeConnectAccountInfo.yaml" }
+    CspViolationReport: { $ref: "./objects/CspViolationReport.yaml" }
+    Error: { $ref: "./objects/Error.yaml" }
+    Location: { $ref: "./objects/Location.yaml" }
+    UserProfile: { $ref: "./objects/UserProfile.yaml" }
+    # ENUM PROPERTIES:
+    InvoiceStatus: { $ref: "./enums/InvoiceStatus.yaml" }
+    SubscriptionPriceName: { $ref: "./enums/SubscriptionPriceName.yaml" }
+    SubscriptionStatus: { $ref: "./enums/SubscriptionStatus.yaml" }
+    WorkOrderCategory: { $ref: "./enums/WorkOrderCategory.yaml" }
+    WorkOrderPriority: { $ref: "./enums/WorkOrderPriority.yaml" }
+    WorkOrderStatus: { $ref: "./enums/WorkOrderStatus.yaml" }
+    # OTHER OBJECT PROPERTIES:
+    CreatedAt: { $ref: "./objectProperties/createdAt.yaml" }
+    Email: { $ref: "./objectProperties/email.yaml" }
+    GoogleIDToken: { $ref: "./objectProperties/googleIDToken.yaml" }
+    Handle: { $ref: "./objectProperties/handle.yaml" }
+    Password: { $ref: "./objectProperties/password.yaml" }
+    PasswordResetToken: { $ref: "./objectProperties/passwordResetToken.yaml" }
+    PaymentMethodID: { $ref: "./objectProperties/paymentMethodID.yaml" }
+    Phone: { $ref: "./objectProperties/phone.yaml" }
+    PromoCode: { $ref: "./objectProperties/promoCode.yaml" }
+    ReturnURL: { $ref: "./objectProperties/returnURL.yaml" }
+    StripeCustomerID: { $ref: "./objectProperties/stripeCustomerID.yaml" }
+    UpdatedAt: { $ref: "./objectProperties/updatedAt.yaml" }

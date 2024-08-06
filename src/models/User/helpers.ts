@@ -1,39 +1,29 @@
-import { isDate } from "@nerdware/ts-type-safety-utils";
-import { createModelHelpers } from "@/models/_common/modelHelpers.js";
-import { getUnixTimestampUUID } from "@/utils/uuid.js";
-import {
-  USER_ID_PREFIX_STR as ID_PREFIX,
-  USER_ID_REGEX,
-  USER_SK_PREFIX_STR as SK_PREFIX,
-  USER_SK_REGEX,
-} from "./regex.js";
+import { isValidHandle } from "@nerdware/ts-string-helpers";
+import { createMapOfStringAttrHelpers, getCompoundAttrRegex, DELIMETER } from "@/models/_common";
 
-export const userModelHelpers = createModelHelpers({
+export const USER_ID_PREFIX_STR = "USER";
+export const USER_SK_PREFIX_STR = `${DELIMETER}DATA`;
+
+export const userModelHelpers = createMapOfStringAttrHelpers({
   id: {
-    regex: USER_ID_REGEX,
-
-    /**
-     * User "id" value formatter.
-     *
-     * @param {Date|string} createdAt - The User's "createdAt" timestamp value represented as
-     * either a Date object or unix timestamp UUID string. If provided as a Date object, it will
-     * be converted to a Unix timestamp UUID string.
-     *
-     * @returns {string} A formatted User "id" value (alias for "pk" attribute).
-     */
-    format: (createdAt: Date | string) => {
-      return `${ID_PREFIX}#${isDate(createdAt) ? getUnixTimestampUUID(createdAt) : createdAt}`;
-    },
+    /** Validation regex for User IDs. */
+    regex: getCompoundAttrRegex([USER_ID_PREFIX_STR, isValidHandle._regex]),
+    /** User "id" value formatter. */
+    format: (handle: string) => `${USER_ID_PREFIX_STR}${DELIMETER}${handle}`,
+    /** Sanitizes a User ID value (permits `handle` chars and the {@link DELIMETER} char). */
+    sanitize: (str: string) => str.replace(/[^a-zA-Z0-9_@#]/g, ""),
   },
   sk: {
-    regex: USER_SK_REGEX,
-
-    /**
-     * User "sk" value formatter.
-     *
-     * @param {string} userID - The User's "id".
-     * @returns {string} A formatted User "sk" attribute value.
-     */
-    format: (userID: string) => `${SK_PREFIX}#${userID}`,
+    /** Validation regex for User `sk` attribute values. */
+    regex: getCompoundAttrRegex([USER_SK_PREFIX_STR, USER_ID_PREFIX_STR, isValidHandle._regex]),
+    /** User "sk" value formatter. */
+    format: (userID: string) => `${USER_SK_PREFIX_STR}${DELIMETER}${userID}`,
   },
 });
+
+/**
+ * User Model helper fn which extracts a User's `handle` from their `id`.
+ */
+export const extractHandleFromUserID = (userID: string): string => {
+  return userID.substring(USER_ID_PREFIX_STR.length + 1);
+};

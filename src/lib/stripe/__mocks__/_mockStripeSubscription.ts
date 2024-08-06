@@ -1,12 +1,12 @@
 import { isPlainObject, isString } from "@nerdware/ts-type-safety-utils";
 import dayjs from "dayjs";
-import merge from "lodash.merge";
+import deepMerge from "lodash.merge";
 import { mockStripeInvoice } from "./_mockStripeInvoice.js";
 import { mockStripePaymentIntent } from "./_mockStripePaymentIntent.js";
 import { MOCK_STRIPE_PLAN } from "./_mockStripePlan.js";
 import { mockStripePrice } from "./_mockStripePrice.js";
-import type { UserItem } from "@/models/User/User.js";
-import type { UserSubscriptionItem } from "@/models/UserSubscription/UserSubscription.js";
+import type { UserItem } from "@/models/User";
+import type { UserSubscriptionItem } from "@/models/UserSubscription";
 import type Stripe from "stripe";
 import type { PartialDeep } from "type-fest";
 
@@ -27,7 +27,7 @@ export const mockStripeSubscription = (
   const currentPeriodStart = currentPeriodEndDayObject.subtract(1, "month").unix(); // <-- 1 month is arbitrary here
 
   const defaultPaymentMethodID: string =
-    isPlainObject(default_payment_method) && isString(default_payment_method?.id)
+    isPlainObject(default_payment_method) && isString(default_payment_method.id)
       ? default_payment_method.id
       : isString(default_payment_method)
         ? default_payment_method
@@ -114,7 +114,5 @@ export const mockStripeSubscription = (
     trial_start: null,
   };
 
-  return customValues
-    ? merge(defaultMockSubscriptionObj, customValues)
-    : defaultMockSubscriptionObj;
+  return deepMerge(defaultMockSubscriptionObj, customValues);
 };

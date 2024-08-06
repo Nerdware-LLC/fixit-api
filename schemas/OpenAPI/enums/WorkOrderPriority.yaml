@@ -1,0 +1,6 @@
+type: string
+description: The WorkOrder's priority.
+enum:
+  - LOW
+  - NORMAL
+  - HIGH

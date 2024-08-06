@@ -1,4 +1,4 @@
-import { userStripeConnectAccountModelHelpers as scaModelHelpers } from "@/models/UserStripeConnectAccount/helpers.js";
+import { scaModelHelpers } from "@/models/UserStripeConnectAccount/helpers.js";
 import { MOCK_DATES } from "./dates.js";
 import { MOCK_USERS } from "./users.js";
 import type {

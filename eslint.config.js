@@ -48,48 +48,45 @@ export default [
         ...tsEslint.configs.stylisticTypeChecked, // prettier-ignore
       ].reduce((acc, { rules = {} }) => ({ ...acc, ...rules }), {}),
       // RULE CUSTOMIZATIONS:
-      "default-case": "error",
-      "default-case-last": "error",
+      "default-case": "error", //      switch-case statements must have a default case
+      "default-case-last": "error", // switch-case statements' default case must be last
       eqeqeq: ["error", "always"],
       "no-console": "warn",
-      "prefer-const": "warn",
+      "prefer-const": ["warn", { destructuring: "all" }],
       "prefer-object-has-own": "error",
       "prefer-promise-reject-errors": "error",
       semi: ["error", "always"],
       "import/named": "off", //                      TS performs this check
       "import/namespace": "off", //                  TS performs this check
       "import/default": "off", //                    TS performs this check
-      "import/no-named-as-default": "off", // TS performs this check
+      "import/no-named-as-default": "off", //        TS performs this check
       "import/no-named-as-default-member": "off", // TS performs this check
-      "node/no-missing-import": "off",
+      "node/no-missing-import": "off", //   Does not work with path aliases
       "node/no-process-env": "error",
-      "node/no-unpublished-import": "off",
-      "node/no-unsupported-features/es-syntax": "off",
-      "@typescript-eslint/array-type": "off", // Allow "T[]" and "Array<T>"
+      "node/no-unpublished-import": ["error", { allowModules: ["type-fest"] }],
+      "node/no-unsupported-features/es-syntax": "off", //             Allow dynamic import (no config option)
+      "@typescript-eslint/array-type": "off", //                      Allow "T[]" and "Array<T>"
       "@typescript-eslint/consistent-indexed-object-style": "off", // Allow "Record<K, V>" and "{ [key: K]: V }"
-      "@typescript-eslint/consistent-type-definitions": "off", // Allow "type" and "interface", there are subtle usage differences
-      "@typescript-eslint/no-confusing-void-expression": "off", // <-- rule results in false positives on MW using `return next()`
-      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/consistent-type-definitions": "off", //     Allow "type" and "interface", there are subtle usage differences
+      "@typescript-eslint/no-confusing-void-expression": "off", //    Allow 1-line arrow fns to return void for readability
+      "@typescript-eslint/no-explicit-any": ["error", { ignoreRestArgs: true }],
       "@typescript-eslint/no-extraneous-class": ["error", { allowStaticOnly: true }],
       "@typescript-eslint/no-inferrable-types": "off",
-      "@typescript-eslint/no-invalid-void-type": "off", // Allow "void" in unions
       "@typescript-eslint/no-misused-promises": [
         "error",
         { checksVoidReturn: { arguments: false } },
       ],
       "@typescript-eslint/no-non-null-assertion": "off",
       "@typescript-eslint/no-unnecessary-boolean-literal-compare": "off", // Allow "if (x === true)"
-      "@typescript-eslint/no-unnecessary-condition": "off", // Allow option chains to convey "dont know if preceding exists"
-      "@typescript-eslint/no-unsafe-argument": "off",
-      "@typescript-eslint/no-unsafe-member-access": "off",
       "@typescript-eslint/no-unused-vars": [
         "warn",
         {
-          vars: "all",
-          varsIgnorePattern: "^_",
           args: "after-used",
           argsIgnorePattern: "^_",
-          ignoreRestSiblings: true,
+          vars: "all",
+          varsIgnorePattern: "^_",
+          destructuredArrayIgnorePattern: "^_",
+          ignoreRestSiblings: false,
         },
       ],
       "@typescript-eslint/prefer-for-of": "off",
@@ -100,7 +97,18 @@ export default [
           ignorePrimitives: { string: true },
         },
       ],
-      "@typescript-eslint/prefer-reduce-type-parameter": "off",
+      "@typescript-eslint/restrict-template-expressions": [
+        "error",
+        {
+          allowAny: false,
+          allowNever: false,
+          allowArray: true,
+          allowBoolean: true,
+          allowNullish: true,
+          allowNumber: true,
+          allowRegExp: true,
+        },
+      ],
       ...eslintConfigPrettier.rules, // <-- must be last, removes rules that conflict with prettier
     },
     settings: {
@@ -128,18 +136,23 @@ export default [
       vitest: vitestPlugin,
     },
     rules: {
-      ...vitestPlugin.configs.all.rules,
+      ...vitestPlugin.configs.recommended.rules,
       "vitest/consistent-test-it": ["error", { fn: "test" }],
-      "vitest/max-expects": "off",
-      "vitest/no-conditional-expect": "off",
       "vitest/no-disabled-tests": "warn",
-      "vitest/no-focused-tests": "warn",
-      "vitest/no-hooks": "off",
-      "vitest/prefer-expect-assertions": "off",
+      "vitest/no-focused-tests": ["warn", { fixable: false }],
       "vitest/prefer-lowercase-title": ["error", { ignore: ["describe"] }],
+      "vitest/prefer-to-be-truthy": "off",
+      "vitest/prefer-to-be-falsy": "off",
       "vitest/valid-expect": "warn",
+      "node/no-unpublished-import": [
+        "error",
+        { allowModules: ["type-fest", "vitest", "supertest", "@graphql-tools/mock"] },
+      ],
       "@typescript-eslint/no-confusing-void-expression": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unsafe-argument": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
     },
   },
   ////////////////////////////////////////////////////////////////

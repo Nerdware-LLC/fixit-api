@@ -1,5 +1,3 @@
-import { isValidStripeID } from "@/lib/stripe/isValidStripeID.js";
-import { userStripeConnectAccountModelHelpers as scaModelHelpers } from "@/models/UserStripeConnectAccount/helpers.js";
 import { MOCK_USERS, UNALIASED_MOCK_USERS } from "@/tests/staticMockItems/users.js";
 import { User } from "./User.js";
 import { userModelHelpers } from "./helpers.js";
@@ -7,49 +5,35 @@ import { userModelHelpers } from "./helpers.js";
 const { USER_A, USER_B, USER_C } = MOCK_USERS;
 
 describe("User Model", () => {
-  describe("User.createOne()", () => {
+  describe("User.createItem()", () => {
     test("returns a valid User when called with valid arguments", async () => {
       // Arrange mock Users
       for (const key in MOCK_USERS) {
-        // Get input for User.createOne() method
-        const mockUser = MOCK_USERS[key as keyof typeof MOCK_USERS];
-        const input = {
-          ...mockUser,
-          ...(mockUser.login.type === "LOCAL" ? { password: "MockPassword@123" } : mockUser.login),
-        };
+        // Get input for User.createItem() method
+        const input = MOCK_USERS[key as keyof typeof MOCK_USERS];
 
-        // Act on the User.createOne() method
-        const result = await User.createOne(input);
+        // Act on the User.createItem() method
+        const result = await User.createItem(input);
 
         // Assert the result
         expect(result).toStrictEqual({
           id: expect.toSatisfyFn((value) => userModelHelpers.id.isValid(value)),
           sk: expect.toSatisfyFn((value) => userModelHelpers.sk.isValid(value)),
-          handle: mockUser.handle,
-          email: mockUser.email,
-          phone: mockUser.phone,
-          stripeCustomerID: mockUser.stripeCustomerID,
-          ...(mockUser.expoPushToken && { expoPushToken: mockUser.expoPushToken }),
+          handle: input.handle,
+          email: input.email,
+          phone: input.phone,
+          stripeCustomerID: input.stripeCustomerID,
+          expoPushToken: input.expoPushToken,
           profile: {
-            ...mockUser.profile,
+            ...input.profile,
             givenName: expect.toBeOneOf([undefined, null, expect.any(String)]),
             familyName: expect.toBeOneOf([undefined, null, expect.any(String)]),
             businessName: expect.toBeOneOf([undefined, null, expect.any(String)]),
             photoUrl: expect.toBeOneOf([undefined, null, expect.any(String)]),
           },
           login: {
-            ...mockUser.login,
-            ...(mockUser.login.type === "LOCAL" && { passwordHash: expect.any(String) }),
-          },
-          stripeConnectAccount: {
-            userID: expect.toSatisfyFn((value) => userModelHelpers.id.isValid(value)),
-            id: expect.toSatisfyFn((value) => isValidStripeID.connectAccount(value)),
-            sk: expect.toSatisfyFn((value) => scaModelHelpers.sk.isValid(value)),
-            detailsSubmitted: expect.any(Boolean),
-            chargesEnabled: expect.any(Boolean),
-            payoutsEnabled: expect.any(Boolean),
-            createdAt: expect.any(Date),
-            updatedAt: expect.any(Date),
+            ...input.login,
+            ...(input.login.type === "LOCAL" && { passwordHash: expect.any(String) }),
           },
           createdAt: expect.any(Date),
           updatedAt: expect.any(Date),

@@ -1,130 +1,115 @@
 import { ApolloServerErrorCode } from "@apollo/server/errors";
 import { getErrorMessage } from "@nerdware/ts-type-safety-utils";
-import { GraphQLError, type GraphQLErrorOptions } from "graphql";
-import deepMerge from "lodash.merge";
 import { logger } from "@/utils/logger.js";
-import type { Class } from "type-fest";
+import type { GraphQLErrorCustomExtensions } from "@/types/graphql.js";
+import type { Class, OmitIndexSignature } from "type-fest";
+
+type HttpErrorConfig = {
+  errorName: string;
+  defaultErrorMsg: string;
+  gqlErrorExtensions: Required<GraphQLErrorCustomExtensions>;
+};
 
 /**
- * Map of HTTP error status codes used by this app to config properties used
- * to create Error subclasses for each one.
- * - `errName` — The "name" given to associated Error objects. This is prefixed by "Gql" for GraphQLErrors.
- * - `defaultErrMsg` — Default error "message".
- * - `gqlErrCode` — The `extensions.code` value to use for GraphQLErrors.
+ * Map of HTTP error status codes used by this app to config properties
+ * used to create Error subclasses for each one.
  */
-const HTTP_ERR_STATUS_CODE_CONFIGS = {
+export const HTTP_ERROR_CONFIGS: {
+  readonly 400: HttpErrorConfig;
+  readonly 401: HttpErrorConfig;
+  readonly 402: HttpErrorConfig;
+  readonly 403: HttpErrorConfig;
+  readonly 404: HttpErrorConfig;
+  readonly 500: HttpErrorConfig;
+  readonly [statusCode: number]: HttpErrorConfig;
+} = {
   400: {
-    errName: "UserInputError",
-    defaultErrMsg: "Invalid user input",
-    gqlErrCode: ApolloServerErrorCode.BAD_USER_INPUT,
+    errorName: "UserInputError",
+    defaultErrorMsg: "Invalid user input",
+    gqlErrorExtensions: {
+      code: ApolloServerErrorCode.BAD_USER_INPUT,
+      http: { status: 400 },
+    },
   },
   401: {
-    errName: "AuthError",
-    defaultErrMsg: "Authentication required",
-    gqlErrCode: "AUTHENTICATION_REQUIRED",
+    errorName: "AuthError",
+    defaultErrorMsg: "Authentication required",
+    gqlErrorExtensions: {
+      code: "AUTHENTICATION_REQUIRED",
+      http: { status: 401 },
+    },
   },
   402: {
-    errName: "PaymentRequiredError",
-    defaultErrMsg: "Payment required",
-    gqlErrCode: "PAYMENT_REQUIRED",
+    errorName: "PaymentRequiredError",
+    defaultErrorMsg: "Payment required",
+    gqlErrorExtensions: {
+      code: "PAYMENT_REQUIRED",
+      http: { status: 402 },
+    },
   },
   403: {
-    errName: "ForbiddenError",
-    defaultErrMsg: "Forbidden",
-    gqlErrCode: "FORBIDDEN",
+    errorName: "ForbiddenError",
+    defaultErrorMsg: "Forbidden",
+    gqlErrorExtensions: {
+      code: "FORBIDDEN",
+      http: { status: 403 },
+    },
   },
   404: {
-    errName: "NotFoundError",
-    defaultErrMsg: "Unable to find the requested resource",
-    gqlErrCode: "RESOURCE_NOT_FOUND",
+    errorName: "NotFoundError",
+    defaultErrorMsg: "Unable to find the requested resource",
+    gqlErrorExtensions: {
+      code: "RESOURCE_NOT_FOUND",
+      http: { status: 404 },
+    },
   },
   500: {
-    errName: "InternalServerError",
-    defaultErrMsg: "An unexpected error occurred",
-    gqlErrCode: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+    errorName: "InternalServerError",
+    defaultErrorMsg: "An unexpected error occurred",
+    gqlErrorExtensions: {
+      code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+      http: { status: 500 },
+    },
   },
-} as const satisfies Record<number, { errName: string; defaultErrMsg: string; gqlErrCode: string }>;
+};
 
 /**
- * Factory function for classes which extend Error, or GraphQLError if `gqlErrorCode`
- * is provided.
+ * Factory function for "HttpError" classes which extend {@link Error}.
  *
  * @param errorName - The `name` value given to errors created with the returned class.
  * @param statusCode - The HTTP status code.
- * @param gqlErrorCode - The GraphQL error code.
- * @returns A class which extends Error that can be used to create Error instances.
+ * @returns An HttpError class which extends Error that can be used to create Error instances.
  */
-const createHttpErrorClass = <IsGqlError extends boolean = false>(
-  statusCode: keyof typeof HTTP_ERR_STATUS_CODE_CONFIGS,
-  { gql: isGqlError }: { gql?: IsGqlError } = {}
-) => {
+const createHttpErrorClass = (statusCode: keyof OmitIndexSignature<typeof HTTP_ERROR_CONFIGS>) => {
   // Get the status code's relevant configs
-  const { errName, defaultErrMsg, gqlErrCode } = HTTP_ERR_STATUS_CODE_CONFIGS[statusCode];
+  const { errorName, defaultErrorMsg } = HTTP_ERROR_CONFIGS[statusCode];
 
-  const NewClass =
-    isGqlError === true
-      ? class GraphqlHttpError extends GraphQLError implements HttpErrorInterface {
-          override readonly name: string = `Gql${errName}`; // <-- errName is prefixed with "Gql"
-          readonly statusCode: number = statusCode;
-          readonly gqlErrorCode: string = gqlErrCode;
+  const NewClass = class HttpError extends Error implements HttpError {
+    override readonly name: string = errorName;
+    readonly statusCode: number = statusCode;
 
-          constructor(message?: unknown, gqlErrorOpts?: GraphQLErrorOptions) {
-            super(
-              getErrorMessage(message) || defaultErrMsg,
-              deepMerge(
-                {
-                  extensions: {
-                    code: gqlErrCode,
-                    http: {
-                      status: statusCode,
-                    },
-                  },
-                },
-                gqlErrorOpts ?? {}
-              )
-            );
-            // Get stack trace starting where Error was created, omitting the error constructor.
-            Error.captureStackTrace(this, GraphqlHttpError);
-          }
-        }
-      : class HttpError extends Error implements HttpErrorInterface {
-          override readonly name: string = errName;
-          readonly statusCode: number = statusCode;
+    constructor(message?: unknown) {
+      super(getErrorMessage(message) || defaultErrorMsg);
+      Error.captureStackTrace(this, HttpError);
+      if (statusCode >= 500) logger.error(this);
+    }
+  };
 
-          constructor(message?: unknown) {
-            super(getErrorMessage(message) || defaultErrMsg);
-            Error.captureStackTrace(this, HttpError);
-            if (statusCode >= 500) logger.error(this);
-          }
-        };
-
-  return NewClass as unknown as IsGqlError extends true
-    ? Class<GraphQLError, [message?: unknown, gqlErrorOpts?: GraphQLErrorOptions]>
-    : Class<Error, [message?: unknown]>;
+  return NewClass satisfies Class<Error, [message?: unknown]>;
 };
 
-/** Interface for custom errors with HTTP status codes. */
-export interface HttpErrorInterface extends Error {
+/** Base type for custom errors with HTTP status codes. */
+export type HttpError = Error & {
   readonly name: string;
   readonly statusCode: number;
-}
+};
 
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Throwable HTTP error classes:
 
-export const UserInputError = createHttpErrorClass(400, { gql: false });
-export const GqlUserInputError = createHttpErrorClass(400, { gql: true });
-
-export const AuthError = createHttpErrorClass(401, { gql: false });
-export const GqlAuthError = createHttpErrorClass(401, { gql: true });
-
-export const PaymentRequiredError = createHttpErrorClass(402, { gql: false });
-export const GqlPaymentRequiredError = createHttpErrorClass(402, { gql: true });
-
-export const ForbiddenError = createHttpErrorClass(403, { gql: false });
-export const GqlForbiddenError = createHttpErrorClass(403, { gql: true });
-
-export const NotFoundError = createHttpErrorClass(404, { gql: false });
-
-export const InternalServerError = createHttpErrorClass(500, { gql: false });
-export const GqlInternalServerError = createHttpErrorClass(500, { gql: true });
+export const UserInputError = createHttpErrorClass(400);
+export const AuthError = createHttpErrorClass(401);
+export const PaymentRequiredError = createHttpErrorClass(402);
+export const ForbiddenError = createHttpErrorClass(403);
+export const NotFoundError = createHttpErrorClass(404);
+export const InternalServerError = createHttpErrorClass(500);

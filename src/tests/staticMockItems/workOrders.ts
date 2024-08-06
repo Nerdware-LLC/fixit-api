@@ -1,16 +1,22 @@
+import { sanitizePhone } from "@nerdware/ts-string-helpers";
 import { Location } from "@/models/Location";
 import { workOrderModelHelpers as woModelHelpers } from "@/models/WorkOrder/helpers.js";
-import { normalize } from "@/utils/normalize.js";
-import { MOCK_DATES, MOCK_DATE_v1_UUIDs as UUIDs } from "./dates.js";
+import { MOCK_DATES } from "./dates.js";
 import { MOCK_USERS } from "./users.js";
 import type { WorkOrderItem, UnaliasedWorkOrderItem } from "@/models/WorkOrder";
 
 const { USER_A, USER_B, USER_C } = MOCK_USERS;
 
+const WO_IDS = {
+  WO_A: woModelHelpers.id.format(USER_A.id),
+  WO_B: woModelHelpers.id.format(USER_B.id),
+  WO_C: woModelHelpers.id.format(USER_C.id),
+} as const;
+
 export const MOCK_WORK_ORDERS = {
   /** [MOCK WO] createdBy: `USER_A`, assignedTo: `null`, status: `"UNASSIGNED"` */
   WO_A: {
-    id: woModelHelpers.id.format(USER_A.id, UUIDs.MAY_1_2020),
+    id: WO_IDS.WO_A,
     createdByUserID: USER_A.id,
     assignedToUserID: null,
     status: "UNASSIGNED",
@@ -35,7 +41,7 @@ export const MOCK_WORK_ORDERS = {
   },
   /** [MOCK WO] createdBy: `USER_B`, assignedTo: `USER_A`, status: `"ASSIGNED"` */
   WO_B: {
-    id: woModelHelpers.id.format(USER_B.id, UUIDs.MAY_1_2020),
+    id: WO_IDS.WO_B,
     createdByUserID: USER_B.id,
     assignedToUserID: USER_A.id,
     status: "ASSIGNED",
@@ -51,26 +57,17 @@ export const MOCK_WORK_ORDERS = {
     description: "Do cool things at the Googleplex",
     checklist: [
       {
-        id: woModelHelpers.checklistItemID.format(
-          woModelHelpers.id.format(USER_B.id, UUIDs.MAY_1_2020),
-          UUIDs.MAY_1_2020
-        ),
+        id: woModelHelpers.checklistItemID.format(WO_IDS.WO_B),
         description: "Do a cool thing",
         isCompleted: false,
       },
       {
-        id: woModelHelpers.checklistItemID.format(
-          woModelHelpers.id.format(USER_B.id, UUIDs.MAY_1_2020),
-          UUIDs.MAY_2_2020
-        ),
+        id: woModelHelpers.checklistItemID.format(WO_IDS.WO_B),
         description: "Engineer all the things",
         isCompleted: false,
       },
       {
-        id: woModelHelpers.checklistItemID.format(
-          woModelHelpers.id.format(USER_B.id, UUIDs.MAY_1_2020),
-          UUIDs.MAY_3_2020
-        ),
+        id: woModelHelpers.checklistItemID.format(WO_IDS.WO_B),
         description: "Pet a doggo",
         isCompleted: false,
       },
@@ -85,7 +82,7 @@ export const MOCK_WORK_ORDERS = {
   },
   /** [MOCK WO] createdBy: `USER_C`, assignedTo: `USER_A`, status: `"COMPLETE"` */
   WO_C: {
-    id: woModelHelpers.id.format(USER_C.id, UUIDs.MAY_1_2020),
+    id: WO_IDS.WO_C,
     createdByUserID: USER_C.id,
     assignedToUserID: USER_A.id,
     status: "COMPLETE",
@@ -123,9 +120,7 @@ export const UNALIASED_MOCK_WORK_ORDERS = Object.fromEntries(
         sk: id,
         data: assignedToUserID ?? "UNASSIGNED",
         location: Location.convertToCompoundString(location),
-        entryContactPhone: entryContactPhone
-          ? normalize.phone(entryContactPhone)
-          : entryContactPhone,
+        entryContactPhone: entryContactPhone ? sanitizePhone(entryContactPhone) : entryContactPhone,
         ...workOrder,
       },
     ]

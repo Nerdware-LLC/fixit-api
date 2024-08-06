@@ -23,20 +23,31 @@ This project uses [GitHub Flow](https://guides.github.com/introduction/flow/), s
 
 ## Project Layout
 
-- [**`.github/`**](/.github) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; GitHub Actions workflows and other GitHub-related files
-- [**`docs/`**](/docs) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; REST API OpenAPI schema files
-- [**`fixit@current.graphql`**](/fixit%40current.graphql) &nbsp; &nbsp; GraphQL API schema
-- [**`src/`**](/src) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Source code files
-  - [**`src/events/`**](/src/events) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Event emitter and handlers
-  - [**`src/graphql/`**](/src/graphql) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; GraphQL typedefs and resolvers
-  - [**`src/lib/`**](/src/lib) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Third-party clients and internal cache
-  - [**`src/middleware/`**](/src/middleware) &nbsp; &nbsp; &nbsp; &nbsp;Middleware functions used by routers/
-  - [**`src/models/`**](/src/models) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Data-defining classes which implement DB CRUD operations
-  - [**`src/routers/`**](/src/routers) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Express routers
-  - [**`src/server/`**](/src/server) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Server init logic and process handlers
-  - [**`src/tests/`**](/src/tests/README.md) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; End-to-end tests and the Vitest setup file
-  - [**`src/types/`**](/src/types) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Global type definitions and codegen'd types
-  - [**`src/utils/`**](/src/utils) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Utility functions
+| Dir                                                         | Purpose                                                    |
+| :---------------------------------------------------------- | :--------------------------------------------------------- |
+| [**`.github/`**](/.github)                                  | GitHub Actions workflows and other GitHub-related files    |
+| [**`schemas/`**](/schemas)                                  | API schemas (OpenAPI)                                      |
+| [**`src/`**](/src)                                          | Source code                                                |
+| &emsp; [**`src/index.ts`**](/src/index.ts)                  | The server startup entrypoint                              |
+| &emsp; [**`src/httpServer.ts`**](/src/httpServer,ts)        | The NodeJS [http.Server][node-http-ref] instance           |
+| &emsp; [**`src/apolloServer.ts`**](/src/apolloServer.ts)    | The [ApolloServer][apollo-server-api-ref] instance         |
+| &emsp; [**`src/expressApp.ts`**](/src/expressApp.ts)        | The [Express][express-api-ref] app instance                |
+| &emsp; [**`src/controllers/`**](/src/controllers/README.md) | API request/response handlers                              |
+| &emsp; [**`src/events/`**](/src/events)                     | NodeJS event emitter and handlers                          |
+| &emsp; [**`src/graphql/`**](/src/graphql)                   | GraphQL typedefs and resolvers                             |
+| &emsp; [**`src/lib/`**](/src/lib)                           | Third-party clients and internal cache                     |
+| &emsp; [**`src/middleware/`**](/src/middleware)             | Middleware functions                                       |
+| &emsp; [**`src/models/`**](/src/models/README.md)           | Data-defining classes which encapsulate db CRUD operations |
+| &emsp; [**`src/routes/`**](/src/routes/README.md)           | Express routers for REST path-based routes                 |
+| &emsp; [**`src/server/`**](/src/server)                     | Server init logic and process event handlers               |
+| &emsp; [**`src/services/`**](/src/services/README.md)       | Business-logic handlers                                    |
+| &emsp; [**`src/tests/`**](/src/tests/README.md)             | End-to-end tests and the Vitest setup file                 |
+| &emsp; [**`src/types/`**](/src/types)                       | Global type definitions and codegen'd types                |
+| &emsp; [**`src/utils/`**](/src/utils)                       | Utility functions                                          |
+
+[node-http-ref]: https://nodejs.org/docs/latest-v20.x/api/http.html
+[apollo-server-api-ref]: https://www.apollographql.com/docs/apollo-server/api/apollo-server/
+[express-api-ref]: https://expressjs.com/en/4x/api.html
 
 ## Commit Messages
 
@@ -58,7 +69,7 @@ This project uses [Semantic Release](https://github.com/semantic-release/semanti
 >
 > The robot minions work hard to manage these - **_please don't upset them_** 🤖
 
-Once tests are passing on your pull request, and it has been approved by a maintainer, it will be merged into the `next` branch, which will trigger a versioned pre-release. After final review and approval of the pre-release build, a maintainer will merge `next` into `main`, which will trigger a release build of the package to be published to [npm](https://www.npmjs.com/package/ddb-single-table).
+Once tests are passing on your pull request, and it has been approved by a maintainer, it will be merged into the `next` branch, which will trigger a versioned pre-release. After final review and approval of the pre-release build, a maintainer will merge `next` into `main`, which will trigger a release build.
 
 ## Code of Conduct
 

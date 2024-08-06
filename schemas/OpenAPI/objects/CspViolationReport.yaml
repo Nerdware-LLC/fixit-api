@@ -1,0 +1,61 @@
+## yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.yaml#/$defs/schema
+
+# REST Schema: CSP Violation Report
+
+type: object
+description: A Content Security Policy (CSP) violation report.
+externalDocs:
+  description: CSP directives documentation
+  url: "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy"
+properties:
+  document-uri:
+    type: string
+    description: |
+      The URI of the protected resource that was violated.
+  blocked-uri:
+    type: string
+    description: |
+      The URI of the resource that was blocked from loading.
+  status-code:
+    type: integer
+    description: |
+      The HTTP status code of the resource that was blocked from loading.
+  referrer:
+    type: string
+    description: |
+      The referrer of the protected resource that was violated.
+  script-sample:
+    type: string
+    description: |
+      The first 40 characters of the inline script, event handler, or style
+      that caused the violation.
+  original-policy:
+    type: string
+    description: |
+      The original policy as specified by the Content-Security-Policy header.
+  disposition:
+    type: string
+    enum: [enforce, report]
+    description: |
+      Either "enforce" or "report" depending on whether the Content-Security-Policy
+      header or the Content-Security-Policy-Report-Only header is used.
+  violated-directive:
+    type: string
+    description: |
+      The directive whose enforcement was violated (e.g. "default-src 'self'").
+  effective-directive:
+    type: string
+    description: |
+      The effective directive that was violated (e.g. 'img-src').
+  source-file:
+    type: string
+    description: |
+      The URI of the resource where the violation occurred.
+  line-number:
+    type: integer
+    description: |
+      The line number in the resource where the violation occurred.
+  column-number:
+    type: integer
+    description: |
+      The column number in the resource where the violation occurred.

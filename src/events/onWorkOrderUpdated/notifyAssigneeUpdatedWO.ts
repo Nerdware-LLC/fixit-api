@@ -1,7 +1,7 @@
 import { WorkOrderPushNotification } from "@/events/pushNotifications";
 import { lambdaClient } from "@/lib/lambdaClient";
-import { User } from "@/models/User/User.js";
-import type { WorkOrderItem } from "@/models/WorkOrder/WorkOrder.js";
+import { User } from "@/models/User";
+import type { WorkOrderItem } from "@/models/WorkOrder";
 
 /**
  * Sends push notifications to Users when a WorkOrder is updated. Determines which Users
@@ -105,9 +105,8 @@ export const notifyAssigneeUpdatedWO = async (
     );
 
     // If there are any deliverable push notifications, send them to the PushService
-    if (deliverablePNs.length > 0) {
+    if (deliverablePNs.length > 0)
       // Submit deliverable push msgs as the PushService Lambda fn payload
       await lambdaClient.invokeEvent("PushNotificationService", deliverablePNs);
-    }
   }
 };
