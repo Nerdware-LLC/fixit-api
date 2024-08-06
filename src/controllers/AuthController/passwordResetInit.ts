@@ -11,7 +11,7 @@ import { AuthService } from "@/services/AuthService";
 export const pwResetInit = ApiController<"/auth/password-reset-init">(
   zod
     .object({
-      email: zod.string().transform(sanitizeEmail).refine(isValidEmail),
+      email: zod.string().toLowerCase().transform(sanitizeEmail).refine(isValidEmail),
     })
     .strict(),
   async (req, res) => {

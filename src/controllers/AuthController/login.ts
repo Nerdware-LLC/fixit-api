@@ -17,7 +17,7 @@ import type { ParsedGoogleOAuth2IDTokenFields } from "@/services/AuthService/Goo
  */
 export const loginReqBodyZodSchema = zod
   .object({
-    email: zod.string().transform(sanitizeEmail).refine(isValidEmail),
+    email: zod.string().toLowerCase().transform(sanitizeEmail).refine(isValidEmail),
     password: zod
       .string()
       .optional()
