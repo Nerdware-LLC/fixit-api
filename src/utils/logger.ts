@@ -11,6 +11,8 @@ import { ENV } from "@/server/env";
 
 /* eslint-disable no-console */
 
+const jsonStrSpaces = ENV.IS_PROD ? 0 : 2;
+
 /**
  * Returns a log message string.
  * - Log message format: `"[<label>] <msgPrefix?> <message>"`
@@ -26,7 +28,7 @@ const getLogMessage = ({
   if (labelColor) formattedLabel = labelColor(formattedLabel);
 
   let formattedMsg = msgPrefix ? `${msgPrefix} ` : "";
-  formattedMsg += getErrorMessage(input) || safeJsonStringify(input);
+  formattedMsg += getErrorMessage(input) || safeJsonStringify(input, null, jsonStrSpaces);
   if (msgColor) formattedMsg = msgColor(formattedMsg);
 
   return `${formattedLabel} ${formattedMsg}`;
