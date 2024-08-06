@@ -11,7 +11,7 @@ import type {
 import type { ZodObjectWithShape } from "@/types/zod.js";
 import type { RequestHandler } from "express";
 import type { SetReturnType } from "type-fest";
-import type { ZodEffects, ZodRecord } from "zod";
+import type { ZodEffects, ZodRecord, ZodOptional } from "zod";
 
 /**
  * An API `RequestHandler` with `req` and `res` typed to match the {@link RestApiEndpoint} param.
@@ -36,10 +36,18 @@ export type ApiRequestHandler<Path extends RestApiEndpoint> = SetReturnType<
  */
 type ReqBodyZodSchemaParam<
   Path extends RestApiPOSTendpoint,
-  Schema extends ZodObjectWithShape<RestApiRequestBodyByPath[Path]> = ZodObjectWithShape<
+  Schema extends ZodObjectOptionalOnUndefined<
     RestApiRequestBodyByPath[Path]
-  >,
+  > = ZodObjectOptionalOnUndefined<RestApiRequestBodyByPath[Path]>,
 > = Schema | ZodEffects<Schema> | ZodRecord;
+
+/**
+ * Adds `ZodOptional` to `req.body` typings when `req.body` is optional.
+ */
+type ZodObjectOptionalOnUndefined<ReqBody extends Record<string, unknown> | undefined> =
+  undefined extends ReqBody
+    ? ZodOptional<ZodObjectWithShape<NonNullable<ReqBody>>>
+    : ZodObjectWithShape<NonNullable<ReqBody>>;
 
 /**
  * Parameters of the {@link apiController} function.
