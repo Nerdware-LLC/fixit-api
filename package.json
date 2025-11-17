@@ -68,7 +68,7 @@
     "@graphql-codegen/typescript": "^4.0.9",
     "@graphql-codegen/typescript-resolvers": "^4.2.1",
     "@graphql-tools/mock": "^9.0.4",
-    "@redocly/cli": "^1.34.5",
+    "@redocly/cli": "^2.11.1",
     "@serverless-guru/prettier-plugin-import-order": "^0.4.2",
     "@swc/cli": "^0.3.14",
     "@swc/core": "^1.7.5",
