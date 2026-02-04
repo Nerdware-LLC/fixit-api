@@ -35,7 +35,7 @@
     "graphql:update-types": "scripts/codegen.types-graphql.sh"
   },
   "dependencies": {
-    "@apollo/server": "^4.10.5",
+    "@apollo/server": "^5.4.0",
     "@aws-sdk/client-dynamodb": "^3.623.0",
     "@aws-sdk/client-lambda": "^3.623.0",
     "@aws-sdk/client-pinpoint": "^3.623.0",
