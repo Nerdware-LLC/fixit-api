@@ -36,9 +36,9 @@
   },
   "dependencies": {
     "@apollo/server": "^4.10.5",
-    "@aws-sdk/client-dynamodb": "^3.623.0",
-    "@aws-sdk/client-lambda": "^3.623.0",
-    "@aws-sdk/client-pinpoint": "^3.623.0",
+    "@aws-sdk/client-dynamodb": "^3.995.0",
+    "@aws-sdk/client-lambda": "^3.995.0",
+    "@aws-sdk/client-pinpoint": "^3.995.0",
     "@aws-sdk/lib-dynamodb": "^3.623.0",
     "@graphql-tools/schema": "^10.0.4",
     "@graphql-tools/utils": "^10.3.2",
