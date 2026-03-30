@@ -1,5 +1,6 @@
 > [!IMPORTANT]
-> ### ⚠️ This repo has been [ARCHIVED](https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories) — all `fixit-api` code has been migrated to the [Fixit monorepo](https://github.com/Nerdware-LLC/fixit) ⚠️
+> ### ⚠️ This repo has been [ARCHIVED](https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories) ⚠️
+> ### All `fixit-api` code has been migrated to the [Fixit monorepo](https://github.com/Nerdware-LLC/fixit).
 
 <div align="center">
 
