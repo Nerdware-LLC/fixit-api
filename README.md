@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> ### ⚠️ This repo has been [ARCHIVED](https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories) — all `fixit-api` code has been migrated to the [Fixit monorepo](https://github.com/Nerdware-LLC/fixit) ⚠️
+
 <div align="center">
 
 [<img src=".github/assets/Fixit_API_repo_banner.png" alt="Repo banner" />](https://www.youtube.com/@nerdware-io)
